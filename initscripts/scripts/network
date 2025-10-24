@@ -1,0 +1,224 @@
+#!/bin/bash
+#
+# /sbin/network - bring network interfaces up and down :/
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+CONFDIR=/etc/conf.d
+SERVICESDIR=/etc/rc.d
+RUNLEVELDIR=/etc/runlevel.d
+LIBDIR=/lib/decebal/network
+
+usage() {
+  cat << EOF
+usage: network [options] <interface>"
+options:
+  -a, --all, all           - execute comand for all configured network interfaces 
+  -s, --start, start        - bring up <interface>
+  -f, --stop, stop          - bring down <interface>
+  -r, --restart, restart    - restart <interface>
+  -S, --status, status      - status <interface>
+  -V, --version             - print name, version and license
+  -h, --help                - print this message and exit
+interface:
+  eth                       - ethernet interface (eg: eth0, eth1...)
+  ipx                       - ipx interface (eg: ipx0, ipx1...)
+  wlan                      - wireless interface (eg: wlan0, wlan1...)
+  plip                      - plip interface (eg: plip0, plip1...)
+
+For more information see network (8).
+EOF
+}
+
+version() {
+  cat << EOF
+ifaceup v0.0.1 (initscripts 0.1.5)
+  
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+  
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+  
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+if [ $# -eq 0 ]
+then
+  echo "error: network needs an argument." >&2
+  usage >&2
+  exit 1
+fi
+
+case "$1" in
+  -a|--all|all)
+    echo a
+    ;;
+  -s|--start|start)
+     if [ -n "$2" ]
+     then
+       case "$2" in
+         eth*)
+	   . $LIBDIR/eth
+	   start_ethernet $2
+	   ;;
+         ipx*)
+	   . $LIBDIR/ipx
+	   start_ipx $2
+	   ;;
+         plip*)
+	   . $LIBDIR/plip
+	   start_plip $2
+	   ;;
+         wlan*)
+	   . $LIBDIR/wlan
+	   start_wlan $2
+	   ;;
+	 *)
+	   echo "Argument '$2' is not a valid interface." >&2
+	   usage >&2
+	   exit 1
+	   ;;
+       esac
+     else
+       echo "error: interface argument is missing." >&2
+       usage >&2
+       exit 1
+     fi
+     ;;
+  -f|--stop|stop)
+     if [ -n "$2" ]
+     then
+       case "$2" in
+         eth*)
+	   . $LIBDIR/eth
+	   stop_ethernet $2
+	   ;;
+         ipx*)
+	   . $LIBDIR/ipx
+	   stop_ipx $2
+	   ;;
+         plip*)
+	   . $LIBDIR/plip
+	   stop_plip $2
+	   ;;
+         wlan*)
+	   . $LIBDIR/wlan
+	   stop_wlan $2
+	   ;;
+	 *)
+	   echo "Argument '$2' is not a valid interface." >&2
+	   usage >&2
+	   exit 1
+	   ;;
+       esac
+     else
+       echo "error: interface argument is missing." >&2
+       usage >&2
+       exit 1
+     fi
+     ;;
+  -r|--restart|restart)
+     if [ -n "$2" ]
+     then
+       case "$2" in
+         eth*)
+	   . $LIBDIR/eth
+	   restart_ethernet $2
+	   ;;
+         ipx*)
+	   . $LIBDIR/ipx
+	   restart_ipx $2
+	   ;;
+         plip*)
+	   . $LIBDIR/plip
+	   restart_plip $2
+	   ;;
+         wlan*)
+	   . $LIBDIR/wlan
+	   restart_wlan $2
+	   ;;
+	 *)
+	   echo "Argument '$2' is not a valid interface." >&2
+	   usage >&2
+	   exit 1
+	   ;;
+       esac
+     else
+       echo "error: interface argument is missing." >&2
+       usage >&2
+       exit 1
+     fi
+     ;;
+  -S|--status|status)
+     if [ -n "$2" ]
+     then
+       case "$2" in
+         eth*)
+	   . $LIBDIR/eth
+	   status_ethernet $2
+	   ;;
+         ipx*)
+	   . $LIBDIR/ipx
+	   status_ipx $2
+	   ;;
+         plip*)
+	   . $LIBDIR/plip
+	   status_plip $2
+	   ;;
+         wlan*)
+	   . $LIBDIR/wlan
+	   status_wlan $2
+	   ;;
+	 *)
+	   echo "Argument '$2' is not a valid interface." >&2
+	   usage >&2
+	   exit 1
+	   ;;
+       esac
+     else
+       echo "error: interface argument is missing." >&2
+       usage >&2
+       exit 1
+     fi
+     ;;
+  -v|--version)
+    version
+    exit 0
+    ;;
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "error: unrecognized option." >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+exit 0

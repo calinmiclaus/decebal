@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# /etc/rc.d/network  - bring all configured network interfaces up
+#
+# NOTE: only interfaces marked as ONBOOT will be started.
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/network
+. /lib/decebal/network/gateway
+
+case "$1" in
+  start)
+    # Bring only $INTERFACES up.
+    echo "Bringing network interfaces up"
+    for INTERFACE in $INTERFACES
+    do
+      network start $INTERFACE
+    done
+    set_default_gw
+    ;;
+  stop)
+    echo "Bringing network interfaces down"
+    for INTERFACE in $INTERFACES
+    do
+      network stop $INTERFACE
+    done
+    del_default_gw
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    for INTERFACE in $INTERFACES
+    do
+      network status $INTERFACE
+    done
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+    

@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# /etc/rc.d/banner - print a nice banner at boot time
+#
+
+. /etc/conf.d/init
+
+# Only print the banner if the user wants it.
+if [ "$BANNER" = "yes" ]
+then
+  . /etc/rc.d/functions
+  
+  echo
+  banner "Welcome to Decebal Linux 0.9.0 rc2 (Agenor)"
+  homepage "http://www.decebal.org/"
+  echo
+fi

@@ -1,0 +1,95 @@
+#!/bin/bash
+#
+# /etc/rc.d/mountnetfs - mount all network based filesystems
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/netfs
+
+NFS_ENTRY=`awk '!/^#/ && $3 ~ /^nfs/ && $4 !~ /noauto/ {print $2}' /etc/fstab`
+SMBFS_ENTRY=`awk '!/^#/ && $3 == "smbfs" && $4 !~ /noauto/ {print $2}' /etc/fstab`
+CIFS_ENTRY=`awk '!/^#/ && $3 == "cifs" && $4 !~ /noauto/ {print $2}' /etc/fstab`
+NCPFS_ENTRY=`awk '!/^#/ && $3 == "ncpfs" && $4 !~ /noauto/ {print $2}' /etc/fstab`
+
+NETDEV_MOUNTED=`awk '!/^#/ && $4 ~ /_netdev/ && $2 != "/" {print $2}' /proc/mounts`
+NFS_MOUNTED=`awk '!/^#/ && $3 ~ /^nfs/ $2 != "/" {print $2}' /proc/mounts`
+SMBFS_MOUNTED=`awk '!/^#/ && $3 == "smbfs" {print $2}' /proc/mounts`
+CIFS_MOUNTED=`awk '!/^#/ && $3 == "cifs" {print $2}' /proc/mounts`
+NCPFS_MOUNTED=`awk '!/^#/ && $3 == "ncpfs" {print $2}' /proc/mounts`
+
+[ -n "$NFS_ENTRY" ] && depends="portmap"
+
+case "$1" in
+  start)
+    [ -n "$NFS_ENTRY" ] && {
+      msg "Mounting remote NFS file systems"
+      run mount -a -t nfs,nfs4
+    }
+    
+    [ -n "$SMBFS_ENTRY" ] && {
+      msg "Mounting remote SMB file systems"
+      run mount -a -t smbfs
+    }
+
+    [ -n "$CIFS_ENTRY" ] && {
+      msg "Mounting remote CIFS file systems"
+      run mount -a -t cifs
+    }
+
+    [ -n "$NCPFS_ENTRY" ] && {
+      msg "Mounting remote NCP file systems"
+      run mount -a -t ncpfs
+    }
+    ;;
+  stop)
+    [ -n "$NETDEV_MOUNTED" ] && {
+      msg "Unmounting network block file systems"
+      run umount -a -O _netdev
+    }
+
+    [ -n "$NFS_MOUNTED" ] && {
+      msg "Unmounting remote NFS file systems"
+      run umount -a -t nfs,nfs4
+    }
+
+    [ -n "$SMBFS_MOUNTED" ] && {
+      msg "Unmounting remote SMB file systems"
+      run umount -a -t smbfs
+    }
+
+    [ -n "$CIFS_MOUNTED" ] && {
+      msg "Unmounting remote CIFS file systems"
+      run umount -a -t cifs
+    }
+
+    [ -n "$NCPFS_MOUNTED" ] && {
+      msg "Unmounting remote NCP file systems"
+      run umount -a -t ncpfs
+    }
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if [ -f /proc/mounts ]
+    then
+      echo "Mounted NFS file systems:"
+      grep "nfs" /proc/mounts
+      echo "Mounted SMB file systems:"
+      grep "smbfs" /proc/mounts
+      echo "Mounted CIFS file systems:"
+      grep "cifs" /proc/mounts
+      echo "Mounted NCP file systems:"
+      grep "ncpfs" /proc/mounts
+    else
+      echo "/proc file system not available"
+      exit 1
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

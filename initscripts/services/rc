@@ -1,0 +1,127 @@
+#!/bin/bash
+#
+# /etc/rc.d/rc
+#
+
+. /etc/rc.d/functions
+
+# Ignore CTRL+C in this shell
+trap ":" INT QUIT TSTP
+
+# Set onlcr to avoid the starcase effect
+stty onlcr 0>&1
+
+# $1 is the runlevel
+# 0 - halt
+# 1 - singleuser
+# 2 - multiuser (no network)
+# 3 - multiuser
+# 4 - xsession
+# 5 - not used
+# 6 - reboot
+
+# this still needs implementation...
+PREVIOS="`runlevel`"
+PREVIOS=${RUNLEVEL##* }
+
+case "$PREVIOS" in
+  1) PREVIOS=singleuser ;;
+  2) PREVIOS=nonetwork ;;
+  3) PREVIOS=multiuser ;;
+  4) PREVIOS=xsession ;;
+esac
+
+case "$1" in
+  0|halt|shutdown)
+    stty onlcr
+    if [ ! "$INIT_MODE" = "simple" ]
+    then
+      dmesg -n 1
+    fi
+    for service in `grep -vE "^[[:space:]]*(#|$)" /etc/runlevel.d/halt`
+    do
+      [ -x /etc/rc.d/${service:1} ] || continue
+      case "$service" in
+        S*) /etc/rc.d/${service:1} start ;;
+	K*) /etc/rc.d/${service:1} stop ;;
+      esac
+    done
+    ;;
+  1|singleuser)
+    for service in `grep -vE "^[[:space:]]*(#|$)" /etc/runlevel.d/single`
+    do
+      [ -x /etc/rc.d/${service:1} ] || continue
+      case "$service" in
+        S*) /etc/rc.d/${service:1} start ;;
+	K*) /etc/rc.d/${service:1} stop ;;
+      esac
+    done
+    ;;
+  2|nonetwork)
+    for service in `grep -vE "^[[:space:]]*(#|$)" /etc/runlevel.d/nonetwork`
+    do
+      [ -x /etc/rc.d/${service:1} ] || continue
+      case "$service" in
+        S*) /etc/rc.d/${service:1} start ;;
+	K*) /etc/rc.d/${service:1} stop ;;
+      esac
+    done
+    ;;
+  3|5|multiuser)
+    for service in `grep -vE "^[[:space:]]*(#|$)" /etc/runlevel.d/multiuser`
+    do
+      [ -x /etc/rc.d/${service:1} ] || continue
+      case "$service" in
+        S*) /etc/rc.d/${service:1} start ;;
+	K*) /etc/rc.d/{service:1} stop ;;
+      esac
+    done
+    # launch user defined commands here
+    /etc/rc.d/local
+    ;;
+  4|xsession)
+    # lauch multiuser first
+    /etc/rc.d/rc multiuser
+    for service in `grep -vE "^[[:space:]]*(#|$)" /etc/runlevel.d/xsession`
+    do
+      [ -x /etc/rc.d/${service:1} ] || continue
+      case "$service" in
+        S*) /etc/rc.d/${service:1} start ;;
+	K*) /etc/rc.d/${service:1} stop ;;
+      esac
+    done
+    ;;
+  6|reboot)
+    stty onlcr
+    if [ ! "$INIT_MODE" = "simple" ]
+    then
+      dmesg -n 1
+    fi
+    for service in `grep -vE "^[[:space:]]*(#|$)" /etc/runlevel.d/reboot`
+    do
+      [ -x /etc/rc.d/${service:1} ] || continue
+      case "$service" in
+        S*) /etc/rc.d/${service:1} start ;;
+	K*) /etc/rc.d/${service:1} stop ;;
+      esac
+    done
+    ;;
+  sysinit)
+    if [ ! "$INIT_MODE" = "simple" ]
+    then
+      dmesg -n 1
+    fi
+    for service in `grep -vE "^[[:space:]]*(#|$)" /etc/runlevel.d/sysinit`
+    do
+      [ -x /etc/rc.d/${service:1} ] || continue
+      case "$service" in
+        S*) /etc/rc.d/${service:1} start ;;
+	K*) /etc/rc.d/${service:1} stop ;;
+      esac
+    done
+    ;;
+  *)
+    echo "usage: $0 {runlevel}"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# /etc/rc.d/killall - killall processes
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start|stop)
+    msg "Sending all processes the TERM signal"
+    run killall5 -15
+
+    msg "Sending all processes the KILL signal"
+    run killall5 -9
+    ;;
+  *)
+    echo "usage: $0 {start}"
+    exit 1
+    ;;
+esac

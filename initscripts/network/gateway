@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# /lib/decebal/network/gateway - gateway configuration
+#
+
+. /etc/conf.d/network
+
+set_default_gw() {
+  if [ -n "$DEFAULTGW" ]
+  then
+    msg "Setting default gateway: $DEFAULTGW"
+    run route add default gw $DEFAULTGW metric 1
+  else
+    echo "Default gateway is not configured."
+    exit 1
+  fi
+}
+
+del_default_gw() {
+  if [ -n "$DEFAULTGW" ]
+  then
+    msg "Removing default gateway: $DEFAULTGW"
+    run route del default gw
+  fi
+}

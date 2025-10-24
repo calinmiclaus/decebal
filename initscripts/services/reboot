@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# /etc/rc.d/reboot - reboot the system
+#
+
+. /etc/rc.d/functions
+
+msg "Flushing filesystem buffers"
+run sync
+
+echo "Rebooting... "
+reboot -d -f -i

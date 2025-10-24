@@ -1,0 +1,12 @@
+This direcory contains the system initialization scripts
+used on Decebal Linux 0.9.0 (alpha). Still in the early
+stage of development so dont expect to much.
+
+Features:
+  - dependencies and conflicts
+  - new initialization type (combined sysvinit and bsdinit)
+  - initialization methond (colors, simple..) on the fly
+  - not bloated :/
+
+Bugs, ideas...and everything else goes to slider@decebal.org.
+

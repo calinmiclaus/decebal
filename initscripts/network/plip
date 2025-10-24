@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# /lib/decebal/network/plip - PLIP configuration
+#
+
+. /etc/rc.d/functions
+. /lib/decebal/network/functions
+. /etc/conf.d/network
+
+start_plip() {
+  INTERFACE="$1"
+  if is_configured $INTERFACE
+  then
+    $INTERFACE 2>/dev/null
+    if [ -n "$NETWORK" -a -n "$NETMASK" ]
+    then
+      msg "\t * plip network: $NETWORK $NETMASK"
+      run route add -net $NETWORK netmask $NETMASK dev $INTERFACE
+    fi
+    msg "\t * $INTERFACE: $IP1 $IP2"
+    if ! is_running $INTERFACE
+    then
+      run ifconfig $INTERFACE $IP1 pointopoint $IP2 up
+    else
+      already_running
+    fi
+    unset NETWORK NETMASK IP1 IP2
+  else
+    echo "Interface '$INTERFACE' is not configured."
+    exit 1
+  fi
+}
+
+stop_plip() {
+  INTERFACE="$1"
+  msg "\t * $INTERFACE"
+  if is_running $INTERFACE
+  then
+    run ifconfig $INTERFACE down
+  else
+    not_runnning
+  fi
+}
+
+restart_plip() {
+  stop_plip $1
+  sleep 1
+  start_plip $1
+}
+
+status_plip() {
+  for NR in 0 1 2 3 4 5 6 7 8 9
+  do
+    if is_configured plip${NR}
+    then
+      if is_running plip${NR}
+      then
+        echo "plip${NR} is up"
+      else
+        echo "plip${NR} is down"
+      fi
+    fi
+  done
+}

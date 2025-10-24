@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# /lib/decebal/network/adsl - DSL configuration
+#
+
+. /etc/rc.d/functions
+
+start_adsl() {
+  msg "\t * ADSL interfaces"
+  run /usr/sbin/adsl-start
+}
+
+stop_adsl() {
+  msg "\t * ADSL interfaces"
+  run /usr/sbin/adsl-stop
+}
+
+restart_adsl() {
+  stop_adsl
+  sleep 1
+  start_adsl
+}
+
+status_adsl() {
+}

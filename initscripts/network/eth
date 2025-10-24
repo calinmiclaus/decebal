@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# /lib/decebal/network/eth - ethernet configuration
+#
+
+. /etc/rc.d/functions
+. /lib/decebal/network/functions
+. /etc/conf.d/network
+
+start_ethernet() {
+  INTERFACE="$1"
+  if is_configured $INTERFACE
+  then
+    if ! is_running $INTERFACE
+    then
+      $INTERFACE 2>/dev/null
+      if [ "$USEDHCP" = "yes" ]
+      then
+        msg "\t * $INTERFACE dhcp:"
+	if [ -n "$DHCPHOSTNAME" ]
+	then
+	  run dhcpcd -t 10 -h $DHCPHOSTNAME -d $INTERFACE
+	else
+	  run dhcpcd -t 10 -d $INTERFACE
+	fi
+      else
+        msg "\t * $INTERFACE ipv4: $IP $NETMASK $BROADCAST"
+	run ifconfig $INTERFACE $IP netmask $NETMASK broadcast $BROADCAST
+        # Bring up ipv6 interface
+	if [ -n "$IP6" -a -n "$PREFIXLEN" ]
+	then
+	  msg "\t * $INTERFACE ipv6: $IP6/$PREFIXLEN"
+	  run ifconfig $INTERFACE inet6 add $IP6/$PREFIXLEN
+	fi
+      fi
+      unset ONBOOT USEDHCP DHCPHOSTNAME IP NETMASK BROADCAST IP6 PREFIXLEN
+    else
+      msg "\t * $INTERFACE:"
+      already_active
+    fi
+  else
+    echo "Interface '$INTERFACE' is not configured."
+    exit 1
+  fi
+}
+
+stop_ethernet() {
+  INTERFACE="$1"
+  msg "\t * $INTERFACE:"
+  if is_running $INTERFACE
+  then
+    run ifconfig $INTERFACE down
+  else
+    not_active
+  fi
+}
+
+restart_ethernet() {
+  stop_ethernet $1
+  sleep 1
+  start_ethernet $1
+}
+
+status_ethernet() {
+  for NR in 0 1 2 3 4 5 6 7 8 9
+  do
+    if is_configured eth${NR}
+    then
+      if is_running eth${NR}
+      then
+        echo "eth${NR} is up"
+      else
+        echo "eth${NR} is down"
+      fi
+    fi
+  done
+}

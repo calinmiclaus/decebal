@@ -1,0 +1,468 @@
+#!/bin/bash
+#
+# /sbin/decebal - script to help manage services and runlevels.
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+# TODO: - if the user provides more services at the comand line, and one service
+#         will exit with an error, the all operations are stoped, make it continue
+#       - translate usage, version, howto and the error messages in romanian
+#
+
+# Some default directories
+SERVICEDIR=/etc/rc.d
+RUNLEVELDIR=/etc/runlevel.d
+CONFDIR=/etc/conf.d
+
+usage() {
+  cat << EOF
+usage: decebal [options] <argument>
+options:
+  -s, --start, start <service>          - start service
+  -f, --stop, stop <service>            - stop service
+  -r, --restart, restart <service>      - restart service
+  -r, --reload, reload <service>        - reload service
+  -S, --status, status <service>        - status service
+  -a, --add, add <service> <runlevel>   - add service to runlevel
+  -d, --del, del <service> <runlevel>   - del service from runlevel
+  -p, --show, show <runlevel>           - show services in runlevel
+  -i, --sysinit, init <type>            - set init scripts type
+  -v, --version                         - print name, version and license
+  -H, --howto                           - print a short howto
+  -h, --help                            - print this message and exit
+			  
+For a detailed help see decebal (8).
+EOF
+}
+
+version() {
+  cat << EOF
+decebal v0.0.3 (initscripts 0.1.5)
+  
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+  
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+  
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+howto() {
+  cat << EOF
+Examples:
+[root@localhost:~]# decebal start sshd
+Will start sshd if /etc/rc.d/sshd is present and executable.
+	  
+[root@localhost:~]# decebal stop sshd
+Will stop sshd if /etc/rc.d/sshd is present and executable.
+		  
+[root@localhost:~]# decebal restart sshd
+Will restart sshd if /etc/rc.d/sshd is present and executable.
+			  
+[root@localhost:~]# decebal reload sshd
+Will reload sshd if /etc/rc.d/sshd is present and executable.
+				  
+[root@localhost:~]# decebal status sshd
+Will status sshd if /etc/rc.d/sshd is present and executable.
+					  
+[root@localhost:~]# decebal add sshd
+Will add sshd to current runlevel if /etc/rc.d/sshd is present and
+executable. If you specify a third argument then it will use that
+argument as the runlevel for the operation.
+							  
+[root@localhost:~]# decebal del sshd
+Will del sshd from current runlevel if /etc/rc.d/sshd is present and
+executable. If you specify a third argument then it will use that
+argument as the runlevel for the operation.
+									  
+[root@localhost:~]# decebal show multiuser
+Will show all services that will be executed in runlevel multiuser. If
+no argument is provided after show, then it will show all services
+in the default runlevel.
+											  
+[root@localhost:~]# decebal sysinit simple
+Normally all messages and errors from the initialization scripts (services)
+are not printed, instead of this you will get [success] or [failure]. If
+you want to see all messages then use the command above. To reverse the
+operation use: decebal sysinit color or decebal sysinit normal .
+EOF
+}
+	    					  
+create_tmp() {
+  TMP=`mktemp -d /tmp/decebal.XXXXXXXXXX 2>/dev/null`
+  if [ ! -d $TMP ]
+  then
+    mkdir -p /tmp
+    chmod 1777 /tmp
+    mkdir -p /tmp/decebal.$$
+    TMP="/tmp/decebal.$$"
+  fi
+}
+
+remove_tmp() {
+  if [ -d $TMP ]
+  then
+    rm -rf $TMP
+  fi
+}
+
+create_tmp
+
+# Exit and print debuging messages if enabled.
+handle_exit() {
+  if [ "$DEBUG" = "yes" ]
+  then
+    echo "debug: $1 $2 $3"
+  fi
+  remove_tmp
+  exit $3
+}
+
+start_service() {
+  if [ -x $SERVICEDIR/$1 ]
+  then
+    $SERVICEDIR/$1 start
+  else
+    echo "Service $1 can not be found in $SERVICESDIR."
+    handle_exit "start_service()" "$LINENO" "1"
+  fi
+}
+
+stop_service() {
+  if [ -x $SERVICEDIR/$1 ]
+  then
+    $SERVICEDIR/$1 stop
+  else
+    echo "Service $1 can not be found in $SERVICESDIR."
+    handle_exit "stop_service()" "$LINENO" "1"
+  fi    
+}
+
+reload_service() {
+  if [ -x $SERVICEDIR/$1 ]
+  then
+    if $SERVICEDIR/$1 | grep -q 'reload'
+    then
+      $SERVICEDIR/$1 reload
+    else
+      echo "Service $1 does not support reload. Use $SERVICEDIR/$1"
+      echo "to see what command line options are available."
+      handle_exit "reload_service()" "$LINENO" "1"
+    fi  
+  else
+    echo "Service $1 can not be found in $SERVICESDIR."
+    handle_exit "reload_service()" "$LINENO" "1"
+  fi    
+}
+
+restart_service() {
+  if [ -x $SERVICEDIR/$1 ]
+  then
+    $SERVICEDIR/$1 restart
+  else
+    echo "Service $1 can not be found in $SERVICESDIR."
+    handle_exit "restart_service()" "$LINENO" "1"
+  fi    
+}
+
+status_service() {
+  if [ -x $SERVICEDIR/$1 ]
+  then
+    $SERVICEDIR/$1 status
+  else
+    echo "Service $1 can not be found in $SERVICESDIR."
+    handle_exit "status_service()" "$LINENO" "1"
+  fi    
+}
+
+add_service() {
+  SERVICE="$1"
+  RUNLEVEL="$2"
+  
+  # If the user doesnt provide a runlevel then we get the
+  # default runlevel from /etc/inittab 
+  if [ -z "$RUNLEVEL" ]
+  then
+    RUNLEVEL=`grep ^id:[[:digit:]]:initdefault:$ /etc/inittab`
+    RUNLEVEL=${RUNLEVEL:3:1}
+  fi
+  
+  case "$RUNLEVEL" in
+    0|halt)              RUNLEVELFILE=halt ;;
+    1|singleuser|single) RUNLEVELFILE=singleuser ;;
+    2|nonetwork|nonet)   RUNLEVELFILE=nonetwork ;;
+    3|5|multiuser|multi) RUNLEVELFILE=multiuser ;;
+    4|xsession)          RUNLEVELFILE=xsession ;;
+    6|reboot)            RUNLEVELFILE=reboot ;;
+    *)
+      echo "Argument '$RUNLEVEL is not a valid runlevel." >&2
+      usage >&2
+      handle_exit "add_service()" "$LINENO" "1"
+      ;;
+  esac				    
+
+  case "$RUNLEVELFILE" in
+    reboot|halt|singleuser)
+      if ! grep -q "^${SERVICE}$" $RUNLEVELDIR/$RUNLEVELFILE 2>/dev/null
+      then
+        # Clean the runlevel file... :/
+        grep -vE "^[[:space:]]*(#|$)" $RUNLEVELDIR/$RUNLEVELFILE > $TMP/$RUNLEVELFILE
+	echo "K${SERVICE}" > $RUNLEVELDIR/$RUNLEVELFILE
+	cat $TMP/$RUNLEVELFILE >> $RUNLEVELDIR/$RUNLEVELFILE
+      else
+        echo "Service '$SERVICE' is already configured in runlevel $RUNLEVEL."
+	handle_exit "add_service()" "$LINENO" "1"
+      fi
+      ;;
+    *)
+      if ! grep -q "^${SERVICE}$" $RUNLEVELDIR/$RUNLEVELFILE 2>/dev/null
+      then
+        echo "S${SERVICE}" >> $RUNLEVELDIR/$RUNLEVELFILE
+      else
+        echo "Service '$SERVICE' is already configured in runlevel $RUNLEVEL."
+	handle_exit "add_service()" "$LINENO" "1"
+      fi
+      ;;
+  esac        
+}
+
+del_service() {
+  SERVICE="$1"
+  RUNLEVEL="$2"
+  
+  # If the user doesnt provide a runlevel then we get the
+  # default runlevel from /etc/inittab 
+  if [ -z "$RUNLEVEL" ]
+  then
+    RUNLEVEL=`grep ^id:[[:digit:]]:initdefault:$ /etc/inittab`
+    RUNLEVEL=${RUNLEVEL:3:1}
+  fi
+  
+  case "$RUNLEVEL" in
+    0|halt)              RUNLEVELFILE=halt ;;
+    1|singleuser|single) RUNLEVELFILE=singleuser ;;
+    2|nonetwork|nonet)   RUNLEVELFILE=nonetwork ;;
+    3|5|multiuser|multi) RUNLEVELFILE=multiuser ;;
+    4|xsession)          RUNLEVELFILE=xsession ;;
+    6|reboot)            RUNLEVELFILE=reboot ;;
+    *)
+      echo "Argument '$RUNLEVEL is not a valid runlevel." >&2
+      usage >&2
+      handle_exit "del_service()" "$LINENO" "1"
+      ;;
+  esac
+  
+  if grep -q "^$SERVICE$" $RUNLEVELDIR/$RUNLEVELFILE 2>/dev/null
+  then
+    # Clean the runlevel file... :/
+    grep -vE "^[[:space:]]*(#|$)" $RUNLEVELDIR/$RUNLEVELFILE > $TMP/$RUNLEVELFILE
+    mv $TMP/$RUNLEVELFILE $RUNLEVELDIR/$RUNLEVELFILE
+  else
+    echo "Service '$SERVICE' is not configured in runlevel $RUNLEVEL."
+    handle_exit "del_service()" "$LINENO" "1"
+  fi    
+}
+
+show_runlevel() {
+  RUNLEVEL="$1"
+  
+  # If the user doesnt provide a runlevel then we get the
+  # default runlevel from /etc/inittab 
+  if [ -z "$RUNLEVEL" ]
+  then
+    RUNLEVEL=`grep ^id:[[:digit:]]:initdefault:$ /etc/inittab`
+    RUNLEVEL=${RUNLEVEL:3:1}
+  fi
+  
+  case "$RUNLEVEL" in
+    0|halt)              RUNLEVELFILE=halt ;;
+    1|singleuser|single) RUNLEVELFILE=singleuser ;;
+    2|nonetwork|nonet)   RUNLEVELFILE=nonetwork ;;
+    3|5|multiuser|multi) RUNLEVELFILE=multiuser ;;
+    4|xsession)          RUNLEVELFILE=xsession ;;
+    6|reboot)            RUNLEVELFILE=reboot ;;
+    *)
+      echo "Argument '$RUNLEVEL is not a valid runlevel." >&2
+      usage >&2
+      handle_exit "show_service()" "$LINENO" "1"
+      ;;
+  esac
+  
+  if [ -r $RUNLEVELDIR/$RUNLEVELFILE ]
+  then
+    grep -vE "^[[:space:]]*(#|$)" $RUNLEVELDIR/$RUNLEVELFILE
+  else
+    echo "Argument '$RUNLEVEL' is not a valid runlevel." >&2
+    handle_exit "show_runlevel()" "$LINENO" "1"
+  fi		      
+}
+
+set_initialization_type() {
+  local INITTYPE="$1"
+  
+  if [ "$INITTYPE" = "simple" -o "$INITTYPE" = "color" -o "$INITTYPE" = "normal" ]
+  then
+    . $CONFDIR/init
+    sed -i "s:^INITMODE=$INITMODE$:INITMODE=$INITTYPE:" $CONFDIR/init
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ]
+    then
+      echo "There was an error while configuring the initialization type. Please"
+      echo "change manually in $CONFDIR/init."
+      handle_exit "set_initialization_type()" "$LINENO" "$RETVAL"
+    fi
+  else
+    echo "Argument '$INITTYPE' is not a valid initialization type." >&2
+    echo "Valid initialization types: simple color normal" >&2
+    handle_exit "set_initialization_type()" "$LINENO" "1"
+  fi    
+}
+
+
+# Main part
+case "$1" in
+  -s|--start|start)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    # Let the user provide more the one service at the command line.
+    for ARG in ${@:2}
+    do
+      start_service $ARG
+    done
+    ;;
+  -f|--stop|stop)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    # Let the user provide more the one service at the command line.
+    for ARG in ${@:2}
+    do
+      stop_service $ARG
+    done
+    ;;
+  -R|--reload|reload)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    # Let the user provide more the one service at the command line.
+    for ARG in ${@:2}
+    do
+      reload_service $ARG
+    done
+    ;;
+  -r|--restart|restart)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    # Let the user provide more the one service at the command line.
+    for ARG in ${@:2}
+    do
+      restart_service $ARG
+    done
+    ;;
+  -S|--status|status)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    # Let the user provide more the one service at the command line.
+    for ARG in ${@:2}
+    do
+      status_service $ARG
+    done
+    ;;
+  -a|--add|add)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    [ -x $SERVICEDIR/$2 ] || {
+      echo "Service '$2' is not a valid service (not found in $SERVICEDIR)."
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    add_service $2 $3
+    ;;
+  -d|--del|del)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+
+    [ -x $SERVICEDIR/$2 ] || {
+      echo "Service '$2' is not a valid service (not found in $SERVICEDIR)."
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+    
+    del_service $2 $3
+    ;;
+  -i|--setinit|setinit|--init|init|sysinit)
+    [ -z "$2" ] && {
+      usage >&2
+      handle_exit "main" "$LINENO" "1"
+    }
+
+    set_initialization_type $2
+    ;;
+  -p,--show|show)
+    show_runlevel $2
+    ;;
+  -v|--version)
+    version
+    exit 0
+    ;;
+  -H|--howto)
+    howto
+    exit 0
+    ;;
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "error: decebal needs an argument." >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+remove_tmp
+
+exit 0

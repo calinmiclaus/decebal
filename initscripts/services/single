@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# /etc/rc.d/single - bring system in single user mode
+#
+
+# Tell init to switch to single user mode.
+exec init -t1 S
+

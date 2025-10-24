@@ -1,0 +1,8 @@
+0.1.6 - recreate for Decebal 0.9.0 rc2
+0.1.5 - added network and srvstop
+      - made some changes to functions (faster now)
+      - handle dependencies and conflicts
+      - changed the directory layout
+      - bugfixes
+0.1.4 - bugfixes
+0.1.3 - first public release

@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# /etc/rc.d/mountfs - mount all local non root filesystems
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    msg "Mounting all local file systems"
+    run mount -a -t nonfs,nosmbfs,nocpfs,nocoda
+    ;;
+  stop)
+    msg "Unmounting all local file systems"
+    run umount -a -t -d -r noramfs
+    ;;
+  *)
+    echo "usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac

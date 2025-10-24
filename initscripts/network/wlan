@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# /lib/decebal/network/wlan - configure wireless interfaces
+#
+
+. /etc/rc.d/functions
+. /lib/decebal/network/functions
+. /etc/conf.d/network
+
+start_wlan() {
+  local INTERFACE="$1"
+  
+  if is_configured $INTERFACE
+  then
+    $INTERFACE 2>/dev/null
+    msg "\t * $INTERFACE wireless interface: $IP"
+    ifconfig $INTERFACE $IP
+    RETVAL=$?
+    iwconfig $INTERFACE essid $ESSID nick $NICK mode $MODE rate $RATE
+    RETVAL=$(($RETVAL + $?))
+    [ $RETVAL -eq 0 ] && success || failure
+    unset IP ESSID NICK MODE RATE
+  else
+    echo "Interface $INTERFACE is not configured."
+    exit 1
+  fi
+}
+
+stop_wlan() {
+  local INTERFACE="$1"
+  if is_running $INTERFACE
+  then
+    msg "\t * $INTERFACE wireless interface"
+    run ifconfig wlan${NR} down
+  fi
+}
+
+restart_wlan() {
+  stop_wlan $1
+  sleep 1
+  start_wlan $1
+}
+
+status_wlan() {
+  for NR in 1 2 3 4 5 6 7 8 9
+  do
+    if is_configured wlan${NR}
+    then
+      if is_running wlan${NR}
+      then
+        echo "wlan${NR} is up"
+      else
+        echo "wlan${NR} is down"
+      fi
+    fi
+  done
+}

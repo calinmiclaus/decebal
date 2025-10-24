@@ -1,0 +1,44 @@
+#
+# /etc/conf.d/network - network configuration
+#
+# Ethernet configuration (bash function like):
+# eth0() {
+#   USEDHCP=no
+#   DHCPHOSTNAME=""
+#   IP=192.168.0.1
+#   NETMASK=255.255.255.0
+#   BROADCAST=192.168.0.255
+#   IP6=fe80::260:8ff:fec0:dba0
+#   PREFIXLEN=64
+# }
+#
+# IPX configuration:
+# ipx0() {
+#   FRAME=""
+# }
+#
+# PLIP configuration:
+# plip0() {
+#   IP1=192.168.0.1
+#   IP2=192.168.0.2
+# }
+#
+# WLAN configuration:
+# wlan0() {
+#  IP=""
+#  ESSID=""
+#  NICK=""
+#  MODE=""
+#  RATE=""
+# }
+
+# Set the system hostname and domainname.
+HOSTNAME=decebal
+DOMAINNAME=localdomain
+
+# Interfaces that you want to start at boot time.
+# eg: INTERFACES="eth0 eth1"
+INTERFACES=""
+
+# The default gateway.
+DEFAULTGW=""

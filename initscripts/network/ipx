@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+# /lib/decebal/network/ipx - configure IPX interfaces
+#
+
+. /etc/rc.d/functions
+. /lib/decebal/network/functions
+. /etc/conf.d/network
+
+start_ipx() {
+  local INTERFACE="$1"
+  if is_configured $INTERFACE
+  then
+    $INTERFACE 2>/dev/null
+    msg "\t * $INTERFACE IPX interface: $IP"
+    ipx_interface add $1 $FRAME
+    RETVAL=$?
+    ipx_configure --auto_interface=on --auto_primary=on
+    RETVAL=$(($RETVAL + $?))
+    [ $RETVAL -eq 0 ] && success || failure
+  else
+    echo "Interface $INTERFACE is not configured."
+    exit 1
+  fi
+}
+
+stop_ipx() {
+  local INTERFACE="$1"
+  if is_running $INTERFACE
+  then
+    msg "\t * $INTERFACE IPX interface:"
+    ipx_configure --auto_interface=off --auto_primary=off
+    RETVAL=$?
+    ipx_interface del $INTERFACE $FRAME
+    RETVAL=$(($RETVAL + $?))
+    [ $RETVAL -eq 0 ] && success || failure
+    unset FRAME
+  else
+    not_running
+  fi
+}
+
+restart_ipx() {
+  stop_ipx $1
+  sleep 1
+  start_ipx $1
+}
+
+status_ipx() {
+  for NR in 0 1 2 3 4 5 6 7 8 9
+  do
+    if is_configured ipx${NR}
+    then
+      if is_running ipx${NR}
+      do
+        echo "ipx${NR} is up"
+      else
+        echo "ipx${NR} is down"
+      fi
+    fi
+  done
+}

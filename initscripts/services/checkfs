@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# /etc/rc.d/checkfs - check all non root filesystems (not network filesystems)
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    [ -f /fastboot ] && exit 0
+    
+    MESSAGE=""
+    OPTIONS=""
+    
+    [ "$INITMODE" = "simple" ] && OPTIONS="-C"
+    [ -f /forcefsck ] && {
+      MESSAGE="(forced)"
+      OPTIONS="$OPTIONS -f"
+    }
+    
+    msg "Checking non root filesystems ${MESSAGE}"
+    run fsck $OPTIONS -a -A -R -T
+    if [ $? -gt 1 ] && [ $? -lt 3 ]
+    then
+      echo "Filesystems errors were found and fixed."
+      echo
+      echo "System will be rebooted in 2 seconds."
+      sleep 2
+      echo "Rebooting..."
+      umount -a 2>/dev/null
+      mount -n -o remount,ro / 2>/dev/null
+      reboot -f
+    elif [ $? -gt 3 ]
+    then
+      echo "Filesystems errors were found and could not be"
+      echo "fixed. Please repair manually."
+      echo
+      echo "CTRL+D will exit the shell and reboot the system."
+      echo
+      sulogin -p
+      echo "Rebooting..."
+      umount -a 2>/dev/null
+      mount -n -o remount,ro / 2>/dev/null
+      reboot -f
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start}"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,12 @@
+#
+# /etc/conf.d/init - system initialization 
+#
+
+# There are threee ways of printing messages at boot time: 
+# simple - all output (from the commands) is printed on the screen (a lot of information)
+# normal - only success, failure or warning is showed
+# color  - only success, failure or warning but with colors
+INITMODE=color
+
+# Do you want the banner?
+BANNER=yes

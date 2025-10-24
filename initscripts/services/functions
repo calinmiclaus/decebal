@@ -1,0 +1,337 @@
+#!/bin/bash
+#
+# /etc/rc.d/functions - some shared functions
+#
+
+. /etc/conf.d/init
+
+CONFDIR=/etc/conf.d
+SERVICEDIR=/etc/rc.d
+RUNLEVELDIR=/etc/runlevel.d
+RUNDIR=/var/run/services
+
+umask 022
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+columns=`stty size`
+columns=${columns##* }
+
+[ $columns -eq 0 ] && columns=80
+
+bcol=$[$columns/2-20]
+hcol=$[$columns/2-10]
+columns=$[$columns-20]
+
+L="\\033[A"
+C="\\033[${columns}G"
+P="\\033[${bcol}G"
+H="\\033[${hcol}G"
+B="\b\b\b\b\b\b\b\b"
+
+[ "$INITMODE" = "color" ] && SC="\033[0;32m" || SC="\033[1;0m"
+[ "$INITMODE" = "color" ] && FC="\033[1;31m" || FC="\033[1;0m"
+[ "$INITMODE" = "color" ] && WC="\033[1;33m" || WC="\033[1;0m"
+[ "$INITMODE" = "color" ] && NC="\033[1;0m" || NC="\033[1;0m"
+
+banner() {
+  echo -e "${P}$@"
+}
+  
+homepage() {
+  echo -e "${H}$@"
+}
+    
+msg() {
+  if [ "$INITMODE" = "simple" ]
+  then
+    echo -e "$@"
+  else
+    echo -en "$@${C}[ busy ]"
+  fi
+}
+
+vmsg() {
+  [ "$INITMODE" = "simple" ] || msg "$@"
+}
+  
+success() {
+  [ "$INITMODE" = "simple" ] || echo -e "${B}${NC}[ ${SC}success${NC} ]"
+}
+  
+failure() {
+  [ "$INITMODE" = "simple" ] || echo -e "${B}${NC}[ ${FC}failure${NC} ]"
+}
+    
+warning() {
+  [ "$INITMODE" = "simple" ] || echo -e "${B}${NC}[ ${WC}warning${NC} ]"
+}
+      
+already_running() {
+  [ "$INITMODE" = "simple" ] || echo -e "${B}${NC}[ ${WC}already running${NC} ]"
+}
+	
+not_running() {
+  [ "$INITMODE" = "simple" ] || echo -e "${B}${NC}[ ${WC}not running${NC} ]"
+}
+	  
+already_active() {
+  [ "$INITMODE" = "simple" ] || echo -e "${B}${NC}[ ${WC}already active${NC} ]"
+}
+	    
+not_active() {
+  [ "$INITMODE" = "simple" ] || echo -e "${B}${NC}[ ${WC}not active${NC} ]"
+}
+
+run() {
+  if [ "$INITMODE" = "simple" ]
+  then
+    $@
+    return $?
+  else
+    $@ >/dev/null 2>&1
+    RETVAL=$?
+    if [ "$1" = "fsck" ]
+    then
+      if [ $RETVAL -ge 1 ] && [ $RETVAL -lt 3 ]
+      then
+        warning
+	return $RETVAL
+      elif [ $RETVAL -ge 3 ]
+      then
+        failure
+	return $RETVAL
+      else
+        success
+	return 0
+      fi
+    else
+      if [ $RETVAL -eq 0 ]
+      then
+        success
+        return 0
+      else
+        failure
+        return 1
+      fi
+    fi
+  fi
+}
+
+retval() {
+  if [ $? -eq 0 ]
+  then
+    "$@"
+  fi
+}
+
+# Start services as dependencies (only start if not already running).
+depend() {
+  for SERVICE in "$@"
+  do
+    if [ ! -e /var/run/services/$SERVICE ]
+    then
+      /etc/rc.d/$SERVICE start
+    fi
+  done
+}
+
+conflict() {
+  local CURENTSERVICE="${0##*/}"
+  local CONFLICTINGSERVICES=""  
+  for SERVICE in "$@"
+  do
+    if [ -e /var/run/services/$SERVICE ]
+    then
+      CONFLICTINGSERVICES="$CONFLICTINGSERVICES $SERVICE"
+    fi
+  done
+  
+  if [ -n "$CONFLICTINGSERVICES" ]
+  then
+    echo "Service $CURRENTSERVICE conflicts with: $CONFLICTINGSERVICES"
+    exit 1
+  fi
+}
+
+check_proc() {
+  local PIDLIST="`pidof -o %PPID $1`"
+  if [ -n "$PIDLIST" ]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+check_pid() {
+  local PID
+  for PID in $@
+  do
+    if [ -d /proc/$PID ]
+    then
+      return 1
+    fi
+  done
+}
+
+write_pidfile() {
+  local PIDLIST="`pidof -o %PPID $1`"
+  local PIDFILE="$2"
+  local PIDDFIE=`dirname $PIDFILE`
+	
+  if [ -n "$PIDLIST" ]
+  then
+    [ -d $PIDDIR ] || mkdir -p $PIDDIR
+    echo "$PIDLIST" > $PIDFILE
+  fi
+}
+		      
+start_service() {
+  local PIDFILE="$pidfile"
+  local SERVICE="$0"
+  local BASE="${SERVICE##*/}"
+  
+  if ! check_proc $1
+  then
+    run "$@"
+    if [ $? -eq 0 ]
+    then
+      [ -e $PIDFILE ] || write_pidfile $1 $PIDFILE
+      touch /var/run/services/$BASE 2>/dev/null
+    fi
+  else
+    already_running
+  fi
+}
+
+stop_service() {
+  local PIDFILE="$pidfile"
+  local SERVICE="$0"
+  local BASE="${SERVICE##*/}"
+  local RETVAL=0
+  
+  if [ -n "$PIDFILE" ]
+  then
+    PIDLIST="`cat $PIDFILE`"
+  else
+    PIDLIST="`pidof -o %PPID $1`"
+  fi
+    
+  if check_proc $1
+  then
+    local COUNT=0
+    for PID in $PIDLIST
+    do
+      kill -TERM $PID 2>/dev/null
+      while [ $COUNT -lt 3 ]
+      do
+        kill -TERM $PID 2>/dev/null || break
+	COUNT=$(($COUNT + 1))
+	sleep 1
+      done
+      
+      COUNT=0
+      if [ -d /proc/$PID ]
+      then
+        while [ $COUNT -lt 3 ]
+	do
+	  kill -KILL $PID 2>/dev/null || break
+	  COUNT=$(($COUNT + 1))
+	  sleep 1
+	done
+      fi
+      
+      if [ -d /proc/$PID ]
+      then
+        RETVAL=$(($RETVAL + 1))
+      fi
+    done  
+    if [ $RETVAL -eq 0 ]
+    then
+      success
+      rm -f /var/run/services/$BASE
+      rm -f $PIDFILE
+    else
+      failure
+    fi
+  else
+    not_running
+  fi    
+}
+
+reload_service() {
+  local SERVICE="$1"
+  
+  if ! check_proc $SERVICE
+  then
+    local RETVAL=0
+    if [ -n "$pidfile" ]
+    then
+      local PIDLIST="`cat $pidfile`"
+    else
+      local PIDLIST="`pidof -o %PPID $1`"
+    fi
+    
+    for PID in $PIDLIST
+    do
+      kill -HUP $PID || RETVAL=$(($RETVAL + 1))
+    done
+    
+    [ $RETVAL -eq 0 ] && success || failure
+  else
+    not_running
+  fi
+}
+
+status_service() {
+  local SERVICE="$0"
+  local BASE="${SERVICE##*/}"
+  local PIDFILE="$pidfile"
+  
+  if [ -n "$PIDFILE" ]
+  then
+    if check_proc $1
+    then
+      local PIDFILELIST="`cat $PIDFILE`"
+      local PIDLIST="`pidof -o %PPID $1`"
+      if [ -e $PIDFILE ]
+      then
+        if [ "$PIDFILELIST" = "$PIDLIST" ]
+        then
+          echo "$BASE is running (pids: $PIDLIST)"
+        else
+          echo "$BASE is running (pids: $PIDLIST) (pidfile incorrect)" 
+        fi
+      else
+        echo "$BASE is running (pids: $PIDLIST) (pidfile not present)"
+      fi
+    else
+      if [ -e $PIDFILE ]
+      then
+        echo "$BASE is not running (pidfile present)"
+      else
+        echo "$BASE is not running)"
+      fi
+    fi
+  else
+    if check_proc $1
+    then
+      local PIDLIST="`pidof -o %PPID $1`"
+      echo "$BASE is running (pids: $PIDLIST)"
+    else
+      echo "$BASE is not running"
+    fi
+  fi
+}
+
+add_service() {
+  local SERVICE="$0"
+  local BASE="${SERVICE##*/}"
+  touch /var/run/services/$BASE
+}
+
+del_service() {
+  local SERVICE="$0"
+  local BASE="${SERVICE##*/}"
+  rm -f /var/run/services/$BASE
+}

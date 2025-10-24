@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# /etc/rc.d/uramdom - intialize the kernel random number generator
+#
+
+[ -c /dev/urandom ] || exit 0
+
+. /etc/rc.d/functions
+
+[ -d /var/lib/misc ] || mkdir -p /var/lib/misc
+
+case "$1" in
+  start)
+    msg "Initializing kernel random number generator"
+    if [ -r /var/lib/misc/random-seed ]
+    then
+      cat /var/lib/misc/random-seed > /dev/urandom
+      run dd if=/dev/urandom of=/var/lib/misc/random-seed count=1 bs=512
+    fi
+    touch /var/lock/subsys/urandom
+    ;;
+  stop)
+    msg "Saving kernel random number generator"
+    if [ ! -f /var/lib/misc/random-seed ]
+    then
+      touch /var/lib/misc/random-seed
+      chmod 600 /var/lib/misc/random-seed
+    fi
+    run dd if=/dev/urandom of=/var/lib/misc/random-seed count=1 bs=512
+    rm -f /var/lock/subsys/urandom
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if [ -f /var/lib/misc/random-seed ]
+    then
+      echo "the random seed data file exists"
+    else
+      echo "the random seed data file is missing"
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

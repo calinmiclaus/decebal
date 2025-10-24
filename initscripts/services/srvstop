@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# /etc/rc.d/srvstop - script to stop all running services
+#
+# Now this should not be needed...the only services that
+# need special handling are apache, mysql, pgsql, nfsd and samba,
+# but this is here for the nice look at shutdown or reboot. :/
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start|stop)
+    for SERVICE in /var/run/services/*
+    do
+      SERVICE=${SERVICE##*/}
+      /etc/rc.d/$SERVICE stop
+    done
+    ;;
+  *)
+    echo "usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# /etc/rc.d/localnet - configure the system hostname and bring up the loopback device
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/network
+. /lib/decebal/network/functions
+
+case "$1" in
+  start)
+    msg "Bringing up the loopack interface"
+    if ! is_running lo
+    then
+      ifconfig lo 127.0.0.1
+      RETVAL=$?
+      route add -net 127.0.0.0 netmask 255.0.0.0 lo
+      RETVAL=$(($RETVAL + $?))
+      if [ $RETVAL -eq 0 ]
+      then
+        success
+	add_service localnet
+      else
+        failure
+      fi
+    else
+      already_active
+    fi
+
+    msg "Setting system hostname: $HOSTNAME"
+    run hostname $HOSTNAME
+    msg "Setting system domainname: $DOMAINNAME"
+    run domainname $DOMAINNAME
+    ;;
+  stop)
+    msg "Bringing down the loopack interface"
+    if is_running lo
+    then
+      run ifconfig lo down
+      del_service localnet
+    else
+      not_active
+    fi
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+   ;;
+  status)
+    [ `checkinterface lo` ] && echo "lo is up" || echo "lo is down"
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+										      

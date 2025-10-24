@@ -1,0 +1,32 @@
+#!/bin/bash
+
+install -d $DESTDIR/etc/conf.d
+install -d $DESTDIR/etc/rc.d
+install -d $DESTDIR/etc/runlevel.d
+install -d $DESTDIR/sbin
+install -d $DESTDIR/lib/decebal/network
+
+for FILE in etc/*
+do
+  install -m 0644 $FILE $DESTDIR/etc/conf.d/${FILE##*/}
+done
+
+for FILE in network/*
+do
+  install -m 0644 $FILE $DESTDIR/lib/decebal/network/${FILE##*/}
+done
+
+for FILE in runlevels/*
+do
+  install -m 0600 $FILE $DESTDIR/etc/runlevel.d/${FILE##*/}
+done
+
+for FILE in scripts/*
+do
+  install -m 0700 $FILE $DESTDIR/sbin/${FILE##*/}
+done
+
+for FILE in services/*
+do
+  install -m 0700 $FILE $DESTDIR/etc/rc.d/${FILE##*/}
+done

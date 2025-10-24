@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# /etc/rc.d/halt - stop (shutdown) the system
+#
+
+. /etc/rc.d/functions
+
+HDDOWN="-h"
+
+# If we're using RAID dont shut down drives.
+if grep -qs '^md.*active' /proc/mdstat
+then
+  HDDOWN=""
+fi
+
+msg "Flushing filesystem buffers"
+run sync
+
+echo "Bye."
+halt -d -f -i -p $HDDOWN

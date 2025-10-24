@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# /etc/rc.d/mountkernfs - Mount kernel based filesystems (proc and sysfs)
+#
+
+. /etc/rc.d/functions
+
+status_procfs() {
+  if [ -d /proc/sys ] ; then
+    echo "/proc is mounted"
+    return 0
+  else
+    echo "/proc is not mounted"
+    return 3
+  fi
+}
+
+status_sysfs() {
+  if [ "`kernelversion`" = "2.6" ]; then
+    if [ -d /sys/block ]; then
+      echo "/sys is mounted"
+      return 0
+    else
+      echo "/sys is not mounted"
+      return 3
+    fi
+  else
+    return 0
+  fi
+}
+
+status_kernfs() {
+  local RETVAL=0
+
+  status_procfs
+  RETVAL=$?
+
+  status_sysfs
+  RETVAL=$[$RETVAL+$?]
+
+  [ $RETVAL -eq 0 ] && return 0 || return 3
+}
+
+case "$1" in
+  start)
+    if [ ! -e /proc/mounts ]
+    then
+      msg "Mounting the /proc filesystem"
+      run mount -n -t proc /proc /proc
+    fi
+    
+    if [ ! -e /sys/block ]
+    then
+      [ "`kernelversion`" = "2.6" ] && {
+        msg "Mounting the /sys filesystem"
+        run mount -n -t sysfs /sys /sys
+      }
+    fi
+    ;;
+  stop)
+    msg "Unmounting the /proc filesystem"
+    run umount /proc
+    
+    [ "`kernelversion`" = "2.6" ] && {
+      msg "Unmount the /sys filesystem"
+      run umount /sys
+    }
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_kernfs
+    ;;    
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

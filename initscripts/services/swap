@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# /etc/rc.d/swap - activate swap partitions or files
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    msg "Activating swap file(s)/partition(s)"
+    run swapon -a
+    ;;
+  stop)
+    msg "Deactivating swap file(s)/partition(s)"
+    run swapoff -a
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if [ ! "`swapon -s`" = "" ]
+    then
+      echo "swap is mounted."
+    else
+      echo "swap is not mounted."
+      exit 1
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
