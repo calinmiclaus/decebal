@@ -1,0 +1,28 @@
+NAME=gnome-common
+VERSION=2.8.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Sample files that should be in pretty much every GNOME application."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="57K"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/gnome-common/2.8/gnome-common-2.8.0.tar.bz2
+         gnome.sh xinitrc.gnome"
+
+RUNTIME="scrollkeeper desktop-file-utils"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../gnome.sh $PKG/etc/profile.d/gnome.sh
+  install -D -m 0755 ../xinitrc.gnome $PKG/etc/X11/xinit/xinitrc.gnome
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

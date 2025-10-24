@@ -1,0 +1,28 @@
+NAME=docbook-xml
+VERSION=4.1.2
+ARCH=noarch
+RELEASE=1
+URL="http://www.oasis-open.org/docbook/"
+DESC="Utilities useful for structuring books and software documentation."
+GROUP=doc-tools
+LICENSE=OL
+SIZE="73K"
+
+SOURCES="http://www.docbook.org/xml/4.1.2/docbkx412.zip"
+
+BUILDTIME="unzip"
+
+RUNTIME=">=bash-2.05b >=libxml2-2.6.10"
+
+build() {
+  cd $SRC
+  
+  mkdir -p $PKG/etc/xml
+  mkdir -p $PKG/usr/share/xml/docbook/xml-dtd-4.1.2
+  
+  cp -af docbook.cat *.dtd ent/ *.mod $PKG/usr/share/xml/docbook/xml-dtd-4.1.2
+  
+  chmod 755 $PKG/usr/share/xml/docbook/xml-dtd-4.1.2/*
+  
+  install_docs ChangeLog 41chg.txt 40chg.txt readme.txt
+}

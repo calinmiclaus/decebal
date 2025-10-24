@@ -1,0 +1,28 @@
+NAME=emacs
+VERSION=21.4
+ARCH=i686
+RELEASE=1
+DESC="GNU emacs"
+URL="http://www.gnu.org/software/emacs/"
+GROUP=editors
+LICENSE="GPLv2"
+SIZE="20036K"
+
+SOURCES="ftp://ftp.gnu.org/pub/gnu/emacs/$NAME-$VERSION.tar.gz"
+
+BUILDTIME="ncurses zlib libpng libtiff libjpeg libungif"
+
+RUNTIME="xorg"
+
+build () 
+{ 
+    cd $SRC/$NAME-$VERSION;
+    ./configure --prefix=/usr;
+    sed "s|\"/usr/libexec/emacs.*$|\"/usr/lib/emacs/$VERSION\"|g" src/epaths.h >newepaths.h;
+    mv newepaths.h src/epaths.h;
+    make libexecdir=/usr/lib archlibdir=/usr/lib/emacs/${version} || return 1;
+    make prefix=$PKG/usr libexecdir=$PKG/usr/lib archlibdir=$PKG/usr/lib/emacs/${version} install;
+    mkdir -p $PKG/usr/share/doc/$NAME-$VERSION;
+    cd $SRC/$NAME-$VERSION;
+    install_docs AUTHORS BUGS ChangeLog FTP INSTALL README info/COPYING
+}

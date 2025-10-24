@@ -1,0 +1,57 @@
+NAME=pilot-link
+VERSION=0.11.8
+ARCH=i686
+RELEASE=1
+URL="http://www.pilot-link.org/"
+DESC="A suite of tools used to connect your Palm or PalmOS compatible handheld with Linux."
+GROUP=multimedia
+LICENSE="LGPLv2.1 GPLv2"
+SIZE="853K"
+HUSE="tcl efence debug profile perl python java"
+
+SOURCES="http://pilot-link.org/source/pilot-link-0.11.8.tar.bz2"
+
+RUNTIME="readline >=libpng-1.2.8 libusb"
+
+use tcl && RUNTIME="$RUNTIME tcl tk"
+use efnece && RUNTIME="$RUNTIME efence"
+use perl && RUNTIME="$RUNTIME perl"
+use python && RUNTIME="$RUNTIME python"
+use java && RUNTIME="$RUNTIME java"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+   
+  use tcl && OPTS="--with-tcl=/usr/lib --with-tk=yes" || OPTS="--with-tcl=no --with-tk=no"
+  use efence && OPTS="$OPTS --with-efence"
+  use debug || OPTS="$OPTS --disable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+  use python && OPTS="$OPTS --with-python=yes" || OPTS="$OPTS --with-python=no"
+  use perl && OPTS="$OPTS --with-perl=yes" || OPTS="$OPTS --with-perl=no"
+  use java && OPTS="$OPTS --with-java=yes" || OPTS="$OPTS --with-java=no" 
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+              --with-libpng=/usr \
+	      --with-libusb \
+	      --enable-conduits \
+	      $OPTS
+  make
+  
+  use perl && {
+    cd bindings/Perl
+    perl-module_src_prep
+    perl-module_src_compile
+    cd $SRC/$NAME-$VERSION
+  }
+  
+  make DESTDIR=$PKG install
+  use perl && {
+    cd bindings/Perl
+    perl-module_src_install
+    cd $SRC/$NAME-$VERSION
+  }
+      
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README
+}

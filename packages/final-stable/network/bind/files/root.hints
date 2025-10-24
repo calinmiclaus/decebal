@@ -1,0 +1,27 @@
+.                       6D  IN      NS      A.ROOT-SERVERS.NET.
+.                       6D  IN      NS      B.ROOT-SERVERS.NET.
+.                       6D  IN      NS      C.ROOT-SERVERS.NET.
+.                       6D  IN      NS      D.ROOT-SERVERS.NET.
+.                       6D  IN      NS      E.ROOT-SERVERS.NET.
+.                       6D  IN      NS      F.ROOT-SERVERS.NET.
+.                       6D  IN      NS      G.ROOT-SERVERS.NET.
+.                       6D  IN      NS      H.ROOT-SERVERS.NET.
+.                       6D  IN      NS      I.ROOT-SERVERS.NET.
+.                       6D  IN      NS      J.ROOT-SERVERS.NET.
+.                       6D  IN      NS      K.ROOT-SERVERS.NET.
+.                       6D  IN      NS      L.ROOT-SERVERS.NET.
+.                       6D  IN      NS      M.ROOT-SERVERS.NET.
+
+A.ROOT-SERVERS.NET.     6D  IN      A       198.41.0.4
+B.ROOT-SERVERS.NET.     6D  IN      A       128.9.0.107
+C.ROOT-SERVERS.NET.     6D  IN      A       192.33.4.12
+D.ROOT-SERVERS.NET.     6D  IN      A       128.8.10.90
+E.ROOT-SERVERS.NET.     6D  IN      A       192.203.230.10
+F.ROOT-SERVERS.NET.     6D  IN      A       192.5.5.241
+G.ROOT-SERVERS.NET.     6D  IN      A       192.112.36.4
+H.ROOT-SERVERS.NET.     6D  IN      A       128.63.2.53
+I.ROOT-SERVERS.NET.     6D  IN      A       192.36.148.17
+J.ROOT-SERVERS.NET.     6D  IN      A       198.41.0.10
+K.ROOT-SERVERS.NET.     6D  IN      A       193.0.14.129
+L.ROOT-SERVERS.NET.     6D  IN      A       198.32.64.12
+M.ROOT-SERVERS.NET.     6D  IN      A       202.12.27.33

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=SuperTux
+GenericName=Arcade Game
+Comment=A fantasy turn-based strategy game
+Icon=supertux.png
+FilePattern=supertux
+TryExec=supertux
+Exec=supertux
+Categories=Application;Game;ArcadeGame;

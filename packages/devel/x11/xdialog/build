@@ -1,0 +1,26 @@
+NAME=xdialog
+VERSION=2.1.2
+ARCH=i686
+RELEASE=1
+URL="http://xdialog.dyns.net/"
+DESC="Dialog with X support."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="437K"
+
+SOURCES="http://thgodef.nerim.net/xdialog/Xdialog-2.1.2.tar.bz2"
+
+RUNTIME="gtk"
+
+build() {
+  cd $SRC/Xdialog-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc
+
+  make
+  make DESTDIR=$PKG install
+
+  install_docs ABOUT-NLS AUTHORS BUGS COPYING ChangeLog INSTALL \
+    NEWS README
+}

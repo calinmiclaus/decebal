@@ -1,0 +1,36 @@
+NAME=inkscape
+VERSION=0.41
+ARCH=i686
+RELEASE=1
+URL="http://www.inkscape.org/"
+DESC="Is (or at least should be) a vector illustrator."
+GROUP=graphics
+LICENSE="GPLv2 GLGPLv2.1"
+HUSE="gnome-print"
+SIZE="4326K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/inkscape/inkscape-0.41.tar.bz2"
+
+BUILDTIME="gc-boehm"
+
+RUNTIME="perl python libart_lgpl gtkmm2 libxml2 gtk popt"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gnome-print && OPTS="--with-gnome-print" || OPTS="--without-gnome-print"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr \
+              --with-xft \
+	      --with-perl \
+	      --with-python \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  [ -n "`which paxctl`" ] && paxctl -permsx $PKG/usr/bin/inkscape
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL HACKING \
+    NEWS README
+}

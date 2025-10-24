@@ -1,0 +1,108 @@
+NAME=mozilla
+VERSION=1.8b1
+ARCH=i686
+RELEASE=1
+URL="http://www.mozilla.org/"
+DESC="Open Source Web Browser."
+GROUP=web
+LICENSE="MPLv1.1"
+SIZE="29736K"
+HUSE="ipv6 gnomevfs ldap svg static"
+
+SOURCES="http://ftp.mozilla.org/pub/mozilla.org/mozilla/releases/${NAME}${VERSION}/source/$NAME-source-$VERSION.tar.bz2
+         http://downloads.mozdev.org/enigmail/src/enigmail-0.90.1.tar.gz
+	 http://downloads.mozdev.org/enigmail/src/ipc-1.1.2.tar.gz
+         mozilla.desktop mozilla.png"
+
+BUILDTIME="zip pkgconfig"
+
+RUNTIME="gtk2 >=zlib-1.2.1 >=libpng-1.2.8 libmng >=libjpeg-0.6b flash-pluggin"
+
+use gnomevfs && RUNTIME="$RUNTIME gnome-vfs"
+use ldap && RUNTIME="$RUNTIME openldap"
+use svg && RUNTIME="$RUNTIME librsvg"
+
+build() {
+  cp -aR $SRC/enigmail $SRC/mozilla/extensions/
+  cp -aR $SRC/ipc $SRC/mozilla/extensions/
+  chown -R root.root $SRC/mozilla
+  cd $SRC/mozilla
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6"
+  use gnomevfs && OPTS="$OPTS --enable-gnomevfs" || OPTS="$OPTS --disable-gnomevfs"
+  use ldap || OPTS="$OPTS --disable-ldap"
+  use svg && OPTS="$OPTS --enable-svg"
+  use static && OPTS="$OPTS --enable-static"
+  
+  export MOZILLA_OFFICIAL="1"
+  export BUILD_OFFICIAL="1"
+  
+  # This is needed for gnome-vfs...
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+              --with-default-mozilla-five-home=/usr/lib/mozilla \
+	      --enable-toolkit-gtk2 \
+	      --enable-default-toolkit=gtk2 \
+	      --enable-application=suite \
+	      --with-system-jpeg \
+	      --with-system-mng \
+	      --with-system-png \
+	      --with-system-zlib \
+	      --enable-xft \
+	      --enable-xinerama \
+	      --enable-reorder \
+	      --enable-strip \
+	      --enable-strip-libs \
+	      --enable-cpp-rtti \
+	      --enable-calendar \
+	      --enable-xsl \
+	      --enable-crypto \
+	      --disable-freetype2 \
+	      --disable-toolkit-qt \
+	      --disable-toolkit-xlib \
+	      --disable-toolkit-gtk \
+	      --disable-debug \
+	      --disable-tests \
+	      --disable-xprint \
+	      --disable-logging \
+	      --disable-pedantic \
+	      --disable-installer \
+	      --without-system-nspr \
+	      --enable-nspr-autoconf \
+	      --with-pthreads \
+	      --enable-extensions="all" \
+	      --enable-optimize="$CFLAGS" \
+	      $OPTS
+  make
+  build/autoconf/make-makefile extensions/ipc extensions/enigmail
+  make -C extensions/ipc
+  make -C extensions/enigmail
+  make DESTDIR=$PKG install
+  make -C extensions/ipc DESTDIR=$PKG install 
+  make -C extensions/enigmail DESTDIR=$PKG install
+  
+  # Install headers and libraries used by other programs.
+  mkdir -p $PKG/usr/include/mozilla-$VERSION/nss
+  cp -Lf dist/private/nss/*.h dist/public/nss/*.h $PKG/usr/include/mozilla-$VERSION/nss	      
+  for i in lib{nspr4,plc4,plds4,nss3,smime3,softokn3,ssl3}.so libsoftokn3.chk
+  do
+    mv $PKG/usr/lib/mozilla-$VERSION/$i $PKG/usr/lib/
+    ln -sf ../$i $PKG/usr/lib/mozilla-$VERSION/
+  done
+  
+  ln -sf mozilla-$VERSION $PKG/usr/lib/mozilla
+  ln -sf mozilla-$VERSION $PKG/usr/include/mozilla
+  
+  cd $PKG/usr/lib/mozilla-$VERSION
+  export LD_LIBRARY_PATH="$PWD"
+  export MOZILLA_FIVE_HOME="$PWD"
+  ./regxpcom
+  ./regchrome
+  touch `find . -name *.rdf`
+  
+  cd $SRC/mozilla
+  install -D -m 0644 ../mozilla.desktop $PKG/usr/share/applications/mozilla.desktop
+  install -D -m 0644 ../mozilla.png $PKG/usr/share/pixmaps/mozilla.png
+  install_docs LEGAL LICENSE README.txt
+}

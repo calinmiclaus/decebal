@@ -1,0 +1,29 @@
+NAME=libusb
+VERSION=0.1.10a
+ARCH=i686
+RELEASE=1
+URL="http://libusb.sourceforge.net/"
+DESC="Library to enable user space application programs to communicate with USB devices."
+GROUP=multimedia
+LICENSE="LGPLv2.1 BSDL"
+SIZE="367K"
+HUSE="static debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libusb/libusb-0.1.10a.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=yes"
+
+  ./configure --prefix=/usr \
+              --disable-build-docs $OPTS
+  make
+  make prefix=$PKG/usr install
+ 
+  install_docs AUTHORS COPYING ChangeLog INSTALL.libusb LICENSE README \
+    README.in NEWS INSTALL.libusb.in
+}

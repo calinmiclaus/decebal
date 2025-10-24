@@ -1,0 +1,34 @@
+NAME=openntpd
+VERSION=3.6.1p1
+ARCH=i686
+RELEASE=1
+URL="http://www.openntpd.org/"
+DESC="A FREE, easy to use implementation of the Network Time Protocol."
+GROUP=network
+LICENSE="BSDL"
+SIZE="120K"
+
+SOURCES="ftp://ftp.physics.uvt.ro/pub/OpenBSD/OpenNTPD/openntpd-3.6.1p1.tar.gz
+         openntpd-3.6.1p1-Makefile-1.diff
+         openntpd.init"
+
+RUNTIME=">=openssl-0.9.7e"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../openntpd-3.6.1p1-Makefile-1.diff
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --with-privsep-user=openntpd \
+	      --with-privsep-path=/var/lib/openntpd/tmp \
+	      --with-ssl-dir=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../openntpd.init $PKG/etc/rc.d/openntpd
+  
+  install_docs CREDITS ChangeLog README
+}
+

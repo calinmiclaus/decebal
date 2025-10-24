@@ -1,0 +1,12 @@
+NAME=dpack
+VERSION=0.2pre1
+ARCH=noarch
+RELEASE=1
+URL="http://www.decebal.org/~slider/code.php"
+DESC="A simple package manager."
+GROUP=base
+LICENSE="GPLv2"
+MAINTAINER="Calin Bogdan Miclaus <trog@decebal.org>"
+USEFLAGS=""
+SIZE="403K"
+BUILDDATE="Sun Sep 11 19:24:11 2005"

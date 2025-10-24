@@ -1,0 +1,82 @@
+NAME=kernel-server_scsi
+VERSION=2.6.11.10
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org/"
+DESC="The Linux Kernel (GRSEC/PAX patches)."
+GROUP=kernels
+LICENSE="GPLv2"
+SIZE="36368K"
+HUSE="menuconfig xconfig"
+
+SOURCES="http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.11.tar.bz2
+         http://www.kernel.org/pub/linux/kernel/v2.6/patch-2.6.11.10.bz2
+	 http://grsecurity.net/grsecurity-2.1.5-2.6.11.9-200505121617.patch.gz
+	 config-server_scsi-$RELEASE"
+
+RUNTIME="module-init-tools bootloader"	 
+
+PROVIDES="kernel kernel-sources"
+	 
+build() {
+  cd $SRC/linux-2.6.11
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  sed -i "s:\-EXTRAVERSION \= .9:\-EXTRAVERSION \= .10:" ../grsecurity-2.1.5-2.6.11.9-200505121617.patch
+  sed -i "s:\+EXTRAVERSION \= .9-grsec:\+EXTRAVERSION \= .10-grsec:" ../grsecurity-2.1.5-2.6.11.9-200505121617.patch
+  
+  patch -p1 < ../patch-2.6.11.10
+  patch -p1 < ../grsecurity-2.1.5-2.6.11.9-200505121617.patch
+  
+  sed -i "s:EXTRAVERSION \= .10-grsec:EXTRAVERSION \= .10-server-1:" Makefile
+  
+  mkdir -p $PKG/{boot,lib/modules}
+  
+  if use menuconfig
+  then
+    make menuconfig
+  elif use xconfig
+  then
+    make xconfig
+  else
+    cp ../config-server_scsi-$RELEASE ./.config
+    yes "" | make config
+  fi
+  
+  make clean
+  make
+  make INSTALL_MOD_PATH=$PKG modules_install
+  
+  install -m 0644 System.map $PKG/boot/System.map-server_scsi-$VERSION-$RELEASE
+  install -m 0644 arch/i386/boot/bzImage $PKG/boot/vmlinuz-server_scsi-$VERSION-$RELEASE
+  install -m 0644 .config $PKG/boot/config-server_scsi-$VERSION-$RELEASE
+  
+  rdev -R $PKG/boot/vmlinuz-server_scsi-$VERSION-$RELEASE 0
+  rdev -v $PKG/boot/vmlinuz-server_scsi-$VERSION-$RELEASE -1
+  rdev -r $PKG/boot/vmlinuz-server_scsi-$VERSION-$RELEASE 0
+  
+  rm -f $PKG/lib/modules/$VERSION-server-$RELEASE/{build,sources}
+  ln -s /usr/src/linux-$VERSION-server_scsi-$RELEASE $PKG/lib/modules/$VERSION-server-$RELEASE/build
+  ln -s /usr/src/linux-$VERSION-server_scsi-$RELEASE $PKG/lib/modules/$VERSION-server-$RELEASE/source
+  
+  mkdir -p $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/{include,arch/i386/kernel,.tmp_versions}
+  for DIR in acpi asm-generic asm-i386 config linux math-emu media mtd net pcmcia rxrpc scsi sound
+  do
+    cp -a include/$DIR $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/include/$DIR
+  done
+  
+  cp -a scripts $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/
+  cp arch/i386/Makefile $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/arch/i386/
+  cp arch/i386/kernel/asm-offsets.s $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/arch/i386/kernel/
+  
+  for FILE in $(find ./ -type f -name "Kconfig*")
+  do
+    mkdir -p $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/${FILE%/*}
+    cp $FILE $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/$FILE
+  done
+  
+  ( cd $PKG/usr/src/linux-$VERSION-server_scsi-$RELEASE/include; ln -s asm-i386 asm )
+  
+  install_docs COPYING CREDITS MAINTAINERS README REPORTING-BUGS
+}

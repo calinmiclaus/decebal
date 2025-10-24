@@ -1,0 +1,34 @@
+NAME=gettext
+VERSION=0.14.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/gettext/"
+DESC="The GNU internationalization library."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="6869K"
+
+SOURCES="ftp://ftp.gnu.org/pub/pub/gnu/gettext/$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=bash-2.05b"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --enable-csharp
+  make
+  make DESTDIR=$PKG install
+  
+  chmod 0755 $PKG/usr/bin/gettext.sh
+  
+  install_docs AUTHORS COPYING ChangeLog ChangeLog.0 INSTALL \
+    NEWS PACKAGING README README.mingw README.woe32 THANKS
+  
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION/html
+  mv $PKG/usr/share/doc/gettext $PKG/usr/share/doc/$NAME-$VERSION/html
+  mv $PKG/usr/share/doc/libasprintf $PKG/usr/share/doc/$NAME-$VERSION/html
+}

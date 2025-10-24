@@ -1,0 +1,49 @@
+NAME=pciutils
+VERSION=2.1.11
+ARCH=i686
+RELEASE=2
+URL="http://atrey.karlin.mff.cuni.cz/~mj/pciutils.shtml"
+DESC="Utilities and a library for dealing with the PCI bus."
+GROUP=base
+LICENSE=GPLv2
+SIZE="300K"
+
+SOURCES="ftp://ftp.kernel.org/pub/software/utils/pciutils/pciutils-2.1.11.tar.bz2
+         http://pciids.sourceforge.net/pci.ids.bz2
+	 http://pciids.sourceforge.net/pci.db.bz2
+         pcimodules-pciutils-2.1.11.diff
+	 pcimodules.overflow.diff
+	 pciutils_decebal.diff"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../pciutils_decebal.diff
+  patch -p1 < ../pcimodules-pciutils-2.1.11.diff
+  patch -p1 < ../pcimodules.overflow.diff
+  
+  make
+  
+  install -D -m 0755 lspci $PKG/sbin/lspci
+  install -m 0755 setpci $PKG/sbin/setpci
+  install -m 0755 pcimodules $PKG/sbin/pcimodules
+ 
+  mkdir -p $PKG/{usr/include/pci,usr/share/man/man8}
+ 
+  for file in config.h header.h pci.h
+  do
+    cp lib/$file $PKG/usr/include/pci/
+  done
+  
+  install -D -m 0644 lib/libpci.a $PKG/usr/lib/libpci.a
+  
+  cp lspci.8 setpci.8 pcimodules.8 $PKG/usr/share/man/man8/
+  
+  install -D -m 0644 ../pci.db $PKG/usr/share/misc/pci.db
+  install -m 0644 ../pci.ids $PKG/usr/share/misc/pci.ids
+  
+  install_docs ChangeLog README TODO
+}
+

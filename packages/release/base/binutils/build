@@ -1,0 +1,36 @@
+NAME=binutils
+VERSION=2.16.1
+ARCH=i686
+RELEASE=1
+URL="http://sources.redhat.com/binutils"
+DESC="Various GNU compilers, assemblers, linkers and debuggers."
+GROUP=base
+LICENSE=GPLv2
+SIZE="12255K"
+
+SOURCES="http://ftp.gnu.org/gnu/binutils/$NAME-$VERSION.tar.bz2
+	 binutils-2.16-pax-1.diff"
+	 
+BUILDTIME="perl gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../binutils-2.16-pax-1.diff
+  
+  remove_flags -fomit-frame-pointer -fss
+  
+  ./configure --prefix=/usr \
+	      --enable-shared
+  make tooldir=$PKG/usr
+  make prefix=$PKG/usr tooldir=$PKG/usr install
+  
+  cp include/libiberty.h $PKG/usr/include/libiberty.h
+  
+  rm -f $PKG/usr/share/info/standards.info
+  rm -f $PKG/usr/info/standards.info
+  
+  install_docs COPYING* README
+}

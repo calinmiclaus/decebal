@@ -1,0 +1,21 @@
+post_install() {
+  GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` \
+    /opt/gnome/bin/gconftool-2 --makefile-install-rule \
+    /etc/gnome/gconf/schemas/firestarter.schemas
+  /opt/gnome/bin/gconftool-2 --set --type string \
+    /apps/firestarter/client/system_log /var/log/kernel
+}
+
+post_upgrade() {
+  GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` \
+    /opt/gnome/bin/gconftool-2 --makefile-install-rule \
+    /etc/gnome/gconf/schemas/firestarter.schemas
+  /opt/gnome/bin/gconftool-2 --set --type string \
+    /apps/firestarter/client/system_log /var/log/kernel
+}
+
+post_install() {
+  GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` \
+    /opt/gnome/bin/gconftool-2 --makefile-remove-rule \
+    /etc/gnome/gconf/schemas/firestarter.schemas
+}

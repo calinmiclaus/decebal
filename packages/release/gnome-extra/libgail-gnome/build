@@ -1,0 +1,31 @@
+NAME=libgail-gnome
+VERSION=1.1.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="GNOME Accessibility Implementation Library."
+GROUP=gnome-extra
+LICENSE="LGPLv2.1"
+SIZE="138K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/libgail-gnome/1.1/libgail-gnome-1.1.0.tar.bz2"
+
+RUNTIME="gnome-panel at-spi"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/lib/gtk-2.0/modules
+  for i in `ls $PKG/opt/gnome/lib/gtk-2.0/modules`
+  do
+    ln -sf /opt/gnome/lib/gtk-2.0/modules/$i $PKG/usr/lib/gtk-2.0/modules/$i
+  done 
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

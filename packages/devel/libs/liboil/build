@@ -1,0 +1,35 @@
+NAME=liboil
+VERSION=0.3.2
+ARCH=i686
+RELEASE=1
+URL="http://www.schleef.org/liboil/"
+DESC="A library of simple functions that are optimized for various CPUs."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="554K"
+HUSE="gtkdoc static"
+
+SOURCES="http://www.schleef.org/liboil/download/liboil-0.3.2.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+RUNTIME="glib2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  ( cd $PKG/usr/lib/pkgconfig ; ln -s liboil-0.2.pc liboil-0.1.pc )
+  ( cd $PKG/usr/lib/pkgconfig ; ln -s liboil-0.3.pc liboil-0.2.pc )
+  
+  install_docs COPYING
+}
+

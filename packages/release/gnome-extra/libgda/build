@@ -1,0 +1,45 @@
+NAME=libgda
+VERSION=1.1.99
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome-db.org/"
+DESC="GNU Data Access is an attempt to provide uniform access to different kinds of data sources."
+GROUP=gnome-extra
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="1185K"
+HUSE="gtkdoc static"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/libgda/1.1/libgda-1.1.99.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="glib2 libxslt popt scrollkeeper readline db mysql postgresql openldap"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc" || OPTS="$OPTS --disable-gtk-doc"
+  
+  # These packages have no builds...at least not for now so we disable them,
+  # since dependency cant be automated (if you want this you need to creat package
+  # builds for these packages...hmm...i dont try to make you write this builds
+  # but if you do, please send them to me thinking of the Open Source spirit :/).
+  OPTS="$OPTS --without-tds --without-ibmdb2 --without-sybase --without-oracle --without-firebird \
+    --without-xbase -without-sqlite --without-mdb --without-bdb"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --mandir=/usr/share/man \
+              $OPTS
+  make
+  # disable scrollkeeper
+  sed -i 's|^.*\-scrollkeeper-update.*$||' doc/Makefile
+  make DESTDIR=$PKG install
+  
+  ln -s libgda $PKG/usr/lib/libgda-1.1
+    
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS README
+}

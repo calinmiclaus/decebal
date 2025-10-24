@@ -1,0 +1,5 @@
+DEPENDS[0]=">=bash-3.0"
+DEPENDS[1]="grep"
+DEPENDS[2]="sed"
+DEPENDS[3]="coreutils"
+DEPENDS[4]="mktemp"

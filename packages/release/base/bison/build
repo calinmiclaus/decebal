@@ -1,0 +1,28 @@
+NAME=bison
+VERSION=2.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/bison/bison.html"
+DESC="The GNU response to YACC."
+GROUP=base
+LICENSE=GPLv2
+SIZE="1136K"
+
+SOURCES="http://ftp.gnu.org/gnu/bison/bison-2.0.tar.gz"
+
+BUILDTIME="m4"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS ChangeLog COPYING INSTALL NEWS \
+    OChangeLog README REFERENCES THANKS TODO
+}

@@ -1,0 +1,35 @@
+NAME=alsa-utils
+VERSION=1.0.8
+ARCH=i686
+RELEASE=1
+URL="http://www.alsa-project.org/"
+DESC="Utilities for the ALSA drivers."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="219K"
+
+SOURCES="ftp://ftp.alsa-project.org/pub/utils/alsa-utils-1.0.8.tar.bz2
+         alsa.init"
+
+BACKUPS="etc/asound.state"
+
+RUNTIME=">=alsa-lib-1.0.8 >=ncurses-5.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var/lib \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+
+  install -D -m 0700 ../alsa.init $PKG/etc/rc.d/alsa
+
+  install_docs COPYING ChangeLog INSTALL README TODO
+}
+
+
+

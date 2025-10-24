@@ -1,0 +1,56 @@
+#!/bin/bash
+
+build_packages_gui() {
+  dialog --backtitle "$BACKTITLE" \
+         --title "BUILD PACKAGES" \
+         --cancel-label "Exit" \
+         --ok-label "Proceed" \
+         --extra-button \
+         --extra-label "Back" \
+         --help-button \
+         --menu \
+"\n Please select an action to perform: \n\n" 0 0 0 \
+"sync" "Update the build database (dsrc sync)" \
+"package" "Build/Install a package (dsrc <package>)" \
+"group" "Build/Install an entire group (dsrc <group>)" \
+"world" "Build/Upgrade the entire system (dsrc world)" 2>$TMP/build_answer
+  local RETVAL=$?
+  local ANSWER=$(cat $TMP/build_answer)
+  case "$RETVAL" in
+    0)
+      case "$ANSWER" in
+        sync)
+	  source /usr/share/dpack/gui/build/sync
+	  sync_database_gui
+	  ;;
+	package)
+	  source /usr/share/dpack/gui/build/package
+	  build_package_gui
+	  ;;
+	group)
+	  source /usr/share/dpack/gui/build/group
+	  build_group_gui
+	  ;;
+	world)
+	  source /usr/share/dpack/gui/build/world
+	  build_world_gui
+	  ;;
+      esac
+      ;;
+    1) pkg_exit "build_packages_gui()" "exit_pressed" "$LINENO" 1 ;;
+    2)
+      source /usr/share/dpack/gui/build/help/build_help
+      build_help_gui
+      ;;
+    3)
+      if [ "$MODULE" = "main" ]
+      then
+        main
+      else
+        pkg_exit "build_packages_gui()" "back_pressed_no_main" "$LINENO" 1
+      fi
+      ;;
+   -1) pkg_exit "build_packages_gui()" "esc_pressed" "$LINENO" 1 ;;
+ esac 
+}
+  	 

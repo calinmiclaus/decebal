@@ -1,0 +1,37 @@
+NAME=glade
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://glade.gnome.org"
+DESC="A user interface builder for the GTK+ toolkit and GNOME."
+GROUP=devel
+LICENSE="GPLv2"
+SIZE="2433K"
+HUSE="static db gtkdoc"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/glade/2.10/glade-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libxml2-2.4.1 >=gtk2-2.6.0 >=libgnomeui-2.9.0 scrollkeeper"
+
+use db && RUNTIME="$RUNTIME gnome-db"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc || OPTS="$OPTS --disable-gtk-doc"
+  use db && OPTS="$OPTS --enable-gnome-db"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --with-gtk2 \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog FAQ INSTALL \
+    NEWS README TODO
+}

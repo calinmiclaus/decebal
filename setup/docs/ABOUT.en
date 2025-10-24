@@ -1,0 +1,233 @@
+
+
+
+Decebal Linux 0.9.0 (Diurapneus)
+
+
+
+Thank you for trying out Decebal Linux.
+
+
+Decebal Linux is intented for developers (at least the 0.9 series).
+Newbies can use it too...we've tried to include all sorts of packages.
+
+With a full instalation you'll find :
+
+As a windows user and not only :
+
+-firefox,mozilla + flash plugin (web browsers)
+-openoffice,koffice (replacements for M$ word,excel,powerpoint...)
+-abiword (fast, powerfull word processor)
+-gnumeric (fast, powerfull spreadsheet program)
+-gimp (powerfull graphics editor)
+-xmms (winamp clone)
+-kde-3.4.2, Gnome-2.10.0,xfce-4.2.0,openbox,fluxbox,blackbox,enlightenment,
+ fvwm window managers
+-xchat,kvirc (irc clients, very simmilar to mIRC)
+-gaim,kopete (for yahoo,icq,msn and other IM protocols)
+-mplayer (THE video player, with subtitles capabilities, codecs and
+ alot of themes included)
+-thunderbird,kmail (if you're used to M$ outlook, you'll find these good)
+-k3b, (if you're used to nero)
+-xpdf (for pdf files)
+-unzip,unrar,unarj ...
+-ppp (with pppconf, simmilar to dialup networking, accounts...)
+-valknut (DC++ client)
+-audacity (powerfull free multitrack audio editor)
+-gthumb,gqview (free alternatives to acdsee)
+-xsane (scanner access easy)
+-xine (another video player)
+-inkscape (a SVG editor)
+-cinelerra (a video editor)
+-blender (a grahhical 3D editor)
+-no viruses (so, no need for an antivirus)
+-no crashes
+
+Console fans, might find the following interesting :
+
+-zgv (console picture viewer)
+-links,lynx,elinks (browsers, links can run in graphics mode)
+-mplayer (movies in the console :)
+-cone (pine clone), mutt
+-nano (pico clone), joe
+-mp3blaster (mp3 player with playlist capabilities),mpg321
+-irssi,BitchX (irc clients)
+-centericq (yahoo,icq,msn... client)
+-cdrecord (cd burning)
+-ncftp (ftp client)
+-mc (THE console file manager)
+-mencal (very usefull)
+-bc (THE calculator. amazing precision, power, SPEED)
+-aumix (audio mixer)
+-sysconf (not finished system configurator for decebal)
+
+If you install Decebal as a server :
+
+-kernel 2.6.10-grsec (with grsec/pax), (exec-shield in 0.9.0rc2)
+-Smash-Stack-Protector (all packages are compiled with SSP)
+-apache+ssl+php (Hardened-PHP)
+-vsftpd (very secure ftp server)
+-postfix (with spamassasin and clamav antivirus) - email system
+-dovecot (secure imap and pop3 servers with SSL)
+-openssh (3.9p1)
+-iptables
+-gnupg
+-nmap
+-mysql,postgresql
+-samba
+-squid
+-bind (9.3.0 - runs default in chroot)
+-dhcpd and dhcp clients
+
+
+If you are a programmer :
+
+-anjuta (Integrated Development Enviroment)
+-bluefish (advanced HTML editor)
+-quanta
+-kdevelop
+-clisp (will be available in 0.9.0rc2)
+-java
+-nasm
+-python
+-tcl
+-emacs
+-gcc [ gcc (GCC) 3.4.4 (Smash Stack Protector v3.4.1-1) ]
+-perl (5.8.6)
+
+
+If you're used to Linux ...
+
+Decebal Linux has its own package manager. Its called dpack and is
+able to recompile each package or the whole system or just a group
+with dsrc. For this you need a 'build' file. All build
+files are found in /usr/src/packages
+dsrc will download the sources (if they're not found on the system)
+and compile the package for you. 'dsrc --help' is always good.
+Whats the point of compiling the packages ? optimisation. Each
+compiled package will be optimised for your system and will run faster.
+How do you compile (and install) a package ? 'dsrc package' (eg. dsrc bash)
+As a developer, please take a look at the package builds. You'll
+probably find them _very_ easy to write/maintain.
+
+If you dont want to compile the packages (its time consuming) you
+can installed precompiled binaries. A Decebal precompiled packages looks
+like this : name-version-arch-release.tbz2
+Also, remember that Decebal has packages precompiled for i686, this
+means that it wont run on lower architectures older than Pentium2.
+We're looking towards making an instalation CD, which will compile
+the system on any architecture >=i386
+
+So, if you want to install a precompiled package,
+  pkg_install package.tbz2
+and 'pkg_install --help' is your friend.
+
+Removing a package, is very easy, 'pkg_remove package' (eg. pkg_remove mencal)
+
+Information about a package, 'pkg_query package' (eg. pkg_query mencal)
+
+Note that dpack is still in development.
+
+---+++---
+
+Along with the dpack package manager, Decebal Linux comes with a system
+configuration tool called sysconf (version 0.2). Its made using dialog,
+you can even use the mouse to configure Decebal (only console at this
+stage of development, plan to use Xdialog in the future, or gtk...)
+
+At this stage of development, it is capable to configure the network,
+some daemons (vsftp, inetd), login configuration, console settings,
+users configuration...
+
+Its modular, and you can run each module by its own like this :
+'sysconf network'
+or
+'netconf'
+
+'sysconf ppp'
+or
+'pppconf'
+
+'sysconf howto'
+or
+'howtobrowser'
+(for browsing the howto's)
+
+Use 'sysconf --help' for more info.
+
+---+++---
+
+About the system initialisation, we can say that its a combination of
+bsdinit and sysV-init.
+All services are found in /etc/rc.d
+The runlevels can be found in /etc/runlevel.d
+Also, take a look at /etc/conf.d
+
+You can modify these files manually (very easy, no linux or programming
+skills required) or you can use the frontend we've included.
+Its called 'decebal', some exemples :
+
+'decebal start sshd'
+
+'decebal add sshd' - will add sshd to the current runlevel (will be
+started at the next boot)
+
+'decebal add sshd 1' - adds sshd to runlevel 1
+
+'decebal show' - shows the services that current runlevel starts
+
+'decebal show 1' - shows the services that start in runlevel 1
+
+'decebal sysinit <type>' - sets the booting init type, where type can be :
+  simple - all messages are echoed to stdout
+  normal - print success, failure...
+  color  - print success, failure...using colors
+
+---+++---
+
+We've tried to keep the configuration files as simple as possible.
+In simplicity lies the power. If you're a linux guru (or just familiar
+with linux) you can modify everything by your own. If you are a linux
+newbie, you can use sysconf (or another) configuration tool.
+Whats the point of complicating things when they can be left simple ?
+
+---+++---
+
+We seek help in further developing Decebal Linux.
+currently we're looking for :
+
+1. package maintainers (most important)
+2. new package builds
+3. gtk/python programmers (for a graphical sysconf)
+
+and
+-graphics (themes for kde, gnome, grub, lilo, homepage...)
+-security tips and tricks
+-ports (for i586, ppc,...)
+-alot of feedback
+-financial help (donations or other)
+-hardware (old or new, good or bad...)
+-web developers (no flash)
+-hosting mirrors
+
+---+++---
+
+What to expect from Decebal in the future ?
+
+-live cds
+-bug fixes
+-more packages
+-server releases
+
+---+++---
+
+If you find bugs, have sugestions, want to thank of flame us,
+<trog@decebal.org>
+<slider@decebal.org>
+
+You can find us on irc, #decebal.org on irc.freenode.net
+
+Remember to visit http://www.decebal.org
+
+Have a lot of freedom.
+

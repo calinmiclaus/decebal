@@ -1,0 +1,28 @@
+NAME=ntalkd
+VERSION=0.17
+ARCH=i686
+RELEASE=1
+URL="http://www.hcs.harvard.edu/~dholland/computers/netkit.html"
+DESC="Network talk daemon."
+GROUP=network
+LICENSE=PM
+SIZE="36K"
+
+SOURCES="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-ntalk-$VERSION.tar.gz
+         talkd.patch"
+
+RUNTIME=">=netkit-base-0.17"
+
+build() {
+  cd $SRC/netkit-ntalk-$VERSION
+  
+  patch -p0 < ../talkd.patch
+  
+  ./configure --prefix=/usr
+  make
+  
+  install -D -m 0755 talkd/talkd $PKG/usr/sbin/talkd
+  install -D -m 0644 talkd/talkd.8 $PKG/usr/share/man/man8/talkd.8
+  
+  install_docs BUGS ChangeLog MRULES README
+}  

@@ -1,0 +1,69 @@
+diff -Naur imlib-1.9.14-old/configure imlib-1.9.14/configure
+--- imlib-1.9.14-old/configure	2002-03-25 16:45:33.000000000 +0000
++++ imlib-1.9.14/configure	2002-09-04 19:25:27.000000000 +0000
+@@ -7583,7 +7583,7 @@
+ EOF
+ ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
+ { (eval echo configure:7586: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+-ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
++ac_err=`grep -v '^ *+' conftest.out | grep -v ": warning: " | grep -v "^conftest.${ac_ext}\$"`
+ if test -z "$ac_err"; then
+   rm -rf conftest*
+   jpeg_ok=yes
+@@ -7655,7 +7655,7 @@
+ EOF
+ ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
+ { (eval echo configure:7658: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+-ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
++ac_err=`grep -v '^ *+' conftest.out | grep -v ": warning: " | grep -v "^conftest.${ac_ext}\$"`
+ if test -z "$ac_err"; then
+   rm -rf conftest*
+   eval "ac_cv_header_$ac_safe=yes"
+@@ -7757,14 +7757,14 @@
+ 
+ else
+   echo "$ac_t""no" 1>&6
+-echo $ac_n "checking for TIFFFlushData in -ltiff34""... $ac_c" 1>&6
+-echo "configure:7762: checking for TIFFFlushData in -ltiff34" >&5
+-ac_lib_var=`echo tiff34'_'TIFFFlushData | sed 'y%./+-%__p_%'`
++echo $ac_n "checking for TIFFFlushData in -ltiff""... $ac_c" 1>&6
++echo "configure:7762: checking for TIFFFlushData in -ltiff" >&5
++ac_lib_var=`echo tiff'_'TIFFFlushData | sed 'y%./+-%__p_%'`
+ if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   ac_save_LIBS="$LIBS"
+-LIBS="-ltiff34 -ljpeg -lz $GX_LIBS $LIBS"
++LIBS="-ltiff -ljpeg -lz $GX_LIBS $LIBS"
+ cat > conftest.$ac_ext <<EOF
+ #line 7770 "configure"
+ #include "confdefs.h"
+@@ -7820,8 +7820,8 @@
+ fi
+ if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
+   echo "$ac_t""yes" 1>&6
+-  TIFFLIBS="-ltiff34 -ljpeg -lz"
+-        SUPPORT_LIBS="$SUPPORT_LIBS -ltiff34 -ljpeg -lz"; cat >> confdefs.h <<\EOF
++  TIFFLIBS="-ltiff -ljpeg -lz"
++        SUPPORT_LIBS="$SUPPORT_LIBS -ltiff -ljpeg -lz"; cat >> confdefs.h <<\EOF
+ #define HAVE_LIBTIFF 1
+ EOF
+ 
+@@ -7854,7 +7854,7 @@
+ EOF
+ ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
+ { (eval echo configure:7857: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+-ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
++ac_err=`grep -v '^ *+' conftest.out | grep -v ": warning: " | grep -v "^conftest.${ac_ext}\$"`
+ if test -z "$ac_err"; then
+   rm -rf conftest*
+   eval "ac_cv_header_$ac_safe=yes"
+@@ -8014,7 +8014,7 @@
+ EOF
+ ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
+ { (eval echo configure:8017: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+-ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
++ac_err=`grep -v '^ *+' conftest.out | grep -v ": warning: " | grep -v "^conftest.${ac_ext}\$"`
+ if test -z "$ac_err"; then
+   rm -rf conftest*
+   eval "ac_cv_header_$ac_safe=yes"

@@ -1,0 +1,63 @@
+NAME=abiword
+VERSION=2.2.9
+ARCH=i686
+RELEASE=1
+URL="http://www.abisource.com/"
+DESC="A fully-featured word processor under a GPL License."
+GROUP=office
+LICENSE=GPLv2
+SIZE="26466K"
+HUSE="gucharmap static profile plugins"
+
+SOURCES="http://www.abiword.com/downloads/abiword/$VERSION/source/$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=gtk2-2.2.0 >=zlib-1.1.1 >=fribidi-0.10.4 libglade libxml2 libpng libjpeg popt aspell libgnomeui nautilus
+         >=aiksaurus-1.0 libgda libgnomedb libots libwmf psiconv libwpd"
+
+use gucharmap && RUNTIME="$RUNTIME gucharmap"
+
+build() {
+  cd $SRC/$NAME-$VERSION/abi
+  
+  use gucharmap && OPTS="$OPTS --enable-gucharmap" || OPTS="$OPTS --disable-gucharmap"
+  use static && OPTS="$OPTS --enable-static"
+  use profile && OPTS="$OPTS --enable-profile"
+  use optimize && OPTS="$OPTS --enable-extra-optimization"
+  
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/abiword \
+	      --localstatedir=/var/lib \
+	      --enable-threads \
+	      --with-libxml2 \
+	      --with-zlib \
+	      --with-libpng \
+	      --with-fribidi \
+	      --with-libxml2 \
+	      --with-popt \
+	      --with-pspell \
+	      $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  cd $SRC/$NAME-$VERSION/abiword-plugins
+  use static && POPTS="--enable-static" || POPTS="--disable-static"
+     
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/usr \
+              --enable-all \
+              --enable-gnome \
+	      --disable-kword \
+	      --with-abiword=$SRC/$NAME-$VERSION/abi \
+	      $POPTS
+  make
+  make DESTDIR=$PKG install
+  
+  cd $SRC/$NAME-$VERSION/abi
+  
+  ( cd $PKG/opt/abiword/bin ; ln -s AbiWord-2.0 abiword )
+  
+  sed -i "s:Icon=abiword_48.png:Icon=/usr/share/icons/abiword_48.png:" $PKG/usr/share/applications/abiword.desktop
+  
+  install_docs *.TXT
+}

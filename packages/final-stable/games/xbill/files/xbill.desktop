@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=XBill
+GenericName=Arcade Game
+Comment=Save the world from the evil hacker known only as Bill
+Icon=xbill.png
+FilePattern=xbill
+TryExec=xbill
+Exec=xbill
+Categories=Application;Game;ArcadeGame;

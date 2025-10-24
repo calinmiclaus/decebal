@@ -1,0 +1,29 @@
+NAME=gnome-vfsmm
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gtkmm.sourceforge.net/"
+DESC="C++ bindings for Gnome-VFS."
+GROUP=gnome-extra
+LICENSE="LGPLv2.1"
+SIZE="309K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/bindings/2.10/2.10.0/sources/c++/gnome-vfsmm-2.10.0.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=glibmm-2.4.0 >=gnome-vfs-2.8.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

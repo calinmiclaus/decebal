@@ -1,0 +1,29 @@
+NAME=libgnomemm
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gtkmm.sourceforge.net/"
+DESC="C++ bindings for libgnome."
+GROUP=gnome-extra
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="239K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/bindings/2.10/2.10.0/sources/c++/libgnomemm-2.10.0.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=gtkmm2-2.6.0 >=libgnome-2.10.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

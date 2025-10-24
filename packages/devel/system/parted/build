@@ -1,0 +1,38 @@
+NAME=parted
+VERSION=1.6.23
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/parted/parted.html"
+DESC="A program for creating, destroying, resizing, checking and copying partitions."
+GROUP=system
+LICENSE="GPLv2"
+SIZE="1462K"
+HUSE="nls static debug"
+
+SOURCES="http://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION.tar.gz"
+
+RUNTIME="ncurses readline"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr \
+              --sbindir=/sbin \
+	      --with-readline \
+	      --enable-fs \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/lib
+  mv $PKG/usr/lib/{libparted-1.6.so.12,libparted-1.6.so.12.11.0} $PKG/lib/
+  ln -sf ../../lib/libparted-1.6.so.12.11.0 $PKG/usr/lib/libparted.so
+    
+  install_docs ABOUT-NLS AUTHORS BUGS COPYING ChangeLog INSTALL \
+    NEWS README THANKS TODO
+}

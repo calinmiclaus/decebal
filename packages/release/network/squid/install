@@ -1,0 +1,20 @@
+post_install() {
+  /usr/sbin/groupadd -g 81 squid &>/dev/null
+  /usr/sbin/useradd -g 81 -u 81 -d /var/lib/squid -s /bin/false squid &>/dev/null
+  /bin/chown -R squid.squid /var/lib/squid &>/dev/null
+  /bin/chown -R squid.squid /var/log/squid &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 81 squid &>/dev/null
+  /usr/sbin/useradd -g 81 -u 81 -d /var/lib/squid -s /bin/false squid &>/dev/null
+  /bin/chown -R squid.squid /var/lib/squid &>/dev/null
+  /bin/chown -R squid.squid /var/log/squid &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel squid &>/dev/null
+  /usr/sbin/groupdel squid &>/dev/null
+  /sbin/decebal remove squid &>/dev/null
+}
+  

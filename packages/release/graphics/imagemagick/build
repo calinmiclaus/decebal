@@ -1,0 +1,32 @@
+NAME=imagemagick
+VERSION=6.1.9_4
+ARCH=i686
+RELEASE=2
+DESC="A image viewing/manipulation program."
+URL="http://www.imagemagick.org/"
+GROUP=graphics
+LICENSE=OL
+SIZE="5504K"
+HUSE="static"
+
+SOURCES="http://www.imagemagick.org/download/ImageMagick-6.1.9-4.tar.gz"
+
+RUNTIME="xorg bzip2 libjpeg libpng libtiff libxml2"
+
+build() {
+  cd $SRC/ImageMagick-6.1.9
+
+  use static || OPTS="--disable-static"    
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  rm $PKG/usr/lib/perl5/*/i686-linux/perllocal.pod
+  rm $PKG/usr/lib/perl5/site_perl/*/i686-linux/auto/Image/Magick/.packlist
+  
+  rm -f $PKG/usr/lib/libltdl*
+        
+  install_docs ChangeLog *.txt
+}
+	  

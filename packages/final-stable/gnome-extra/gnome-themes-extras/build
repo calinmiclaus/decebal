@@ -1,0 +1,27 @@
+NAME=gnome-themes-extras
+VERSION=0.8.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Additional themes for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPL LGPL DSL"
+SIZE="3745K"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/gnome-themes-extras/0.8/gnome-themes-extras-0.8.1.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=gtk-engines-2.6.0 >=librsvg-2.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL MAINTAINERS \
+    NEWS README TODO
+}
+

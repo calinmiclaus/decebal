@@ -1,0 +1,27 @@
+NAME=aalib
+VERSION=1.4rc5
+ARCH=i686
+RELEASE=1
+DESC="AAlib is a low level gfx library."
+URL="http://aa-project.sourceforge.net"
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="381K"
+HUSE="static"
+
+SOURCES="http://unc.dl.sourceforge.net/sourceforge/aa-project/aalib-1.4rc5.tar.gz"
+
+RUNTIME=">=ncurses-5.3 slang xorg gpm"
+
+build () { 
+  cd $SRC/$NAME-1.4.0
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --with-ncurses $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs ANNOUNCE AUTHORS COPYING INSTALL ChangeLog NEWS README*
+}

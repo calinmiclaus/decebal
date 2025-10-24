@@ -1,0 +1,40 @@
+NAME=gnopernicus
+VERSION=0.10.4
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A screen reader for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="1907K"
+HUSE="ipv6 paranoia brltty"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnopernicus-0.10.4.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="libgail-gnome gnome-speech gnome-mag libgnomeui"
+
+use brltty && RUNTIME="$RUNTIME brltty"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+
+  use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+  use paranoia && OPTS="$OPTS --enable-paranoia"
+	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

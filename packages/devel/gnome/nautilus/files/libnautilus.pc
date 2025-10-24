@@ -1,0 +1,11 @@
+prefix=/opt/gnome
+exec_prefix=/opt/gnome
+libdir=/opt/gnome/lib
+includedir=/opt/gnome/include
+
+Name: libnautilus
+Description: A library to create Nautilus components
+Version: 2.10.0
+Requires: eel-2.0
+Libs: -L${libdir} -lnautilus
+Cflags: -I${includedir}

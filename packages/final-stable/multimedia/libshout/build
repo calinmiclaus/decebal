@@ -1,0 +1,26 @@
+NAME=libshout
+VERSION=2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.icecast.org/"
+DESC="A library for communicating with and sending data to an icecast server."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="444K"
+HUSE="static"
+
+SOURCES="http://downloads.xiph.org/releases/libshout/libshout-2.1.tar.gz"
+
+RUNTIME="libvorbis libogg libtheora"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING INSTALL README
+}

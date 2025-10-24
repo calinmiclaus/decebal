@@ -1,0 +1,35 @@
+NAME=e17
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="The Enlightenment Desktop."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="38410K"
+HUSE="static nls"
+
+SOURCES="e17-21052005.tar.bz2
+         xinitrc.enlightenment"
+
+RUNTIME="=evas-21052005 =eet-21052005 >=edb-21052005 =embryo-21052005 =edje-21052005"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+  
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/etc/X11/xinit
+  cp $SRC/xinitrc.enlightenment $PKG/etc/X11/xinit
+
+  install_docs ABOUT-NLS AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README TODO
+}

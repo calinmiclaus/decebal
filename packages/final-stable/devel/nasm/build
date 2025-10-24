@@ -1,0 +1,27 @@
+NAME=nasm
+VERSION=0.98.39
+ARCH=i686
+RELEASE=1
+URL="http://nasm.sourceforge.net/"
+DESC="A widespread, portable and very flexible and mature assembler tool."
+GROUP=devel
+LICENSE="LGPL2.1"
+SIZE="531K"
+
+SOURCES="http://ovh.dl.sourceforge.net/sourceforge/nasm/nasm-0.98.39.tar.bz2"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  mkdir -p $PKG/usr/{bin,man/man1}
+
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make prefix=$PKG/usr install
+
+  install_docs AUTHORS CHANGES COPYING ChangeLog INSTALL README TODO
+}

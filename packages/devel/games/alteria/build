@@ -1,0 +1,11 @@
+NAME=alteria
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://www.planetquake.com/cor/omen/"
+DESC=""
+GROUP=games
+LICENSE=""
+SIZE=""
+
+SOURCES="

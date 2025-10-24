@@ -1,0 +1,49 @@
+NAME=bzip2
+VERSION=1.0.3
+ARCH=i686
+RELEASE=1
+URL="http://sources.redhat.com/bzip2/"
+DESC="A block-sorting file compressor."
+GROUP=base
+LICENSE=BSD
+SIZE="649K"
+
+SOURCES="http://www.bzip.org/$VERSION/$NAME-$VERSION.tar.gz
+         bzip2-1.0.3-decebal-1.diff"
+
+BUILDTIME="bzip2"	 
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../bzip2-1.0.3-decebal-1.diff
+  
+  sed -i "s:#CFLAGS#:$CFLAGS:" Makefile
+  sed -i "s:#CFLAGS#:$CFLAGS:" Makefile-libbz2_so
+  
+  make -f Makefile-libbz2_so
+  make clean
+  make 
+
+  mkdir -p $PKG/{bin,lib,usr/share/man/man1}
+
+  make PREFIX=$PKG/usr install
+  
+  cp bzip2-shared $PKG/bin/bzip2
+  cp -a libbz2.so* $PKG/lib/
+  
+  ln -sf ../../lib/libbz2.so.1.0 $PKG/usr/lib/libbz2.so
+  
+  rm -f $PKG/usr/bin/{bunzip2,zcat,bzip2,bzegrep,bzfgrep,bzmore,bzdiff}
+  
+  ln -sf bzip2 $PKG/bin/bunzip2
+  ln -sf bzip2 $PKG/bin/bzcat
+  ln -sf bzgrep $PKG/usr/bin/bzegrep
+  ln -sf bzgrep $PKG/usr/bin/bzfgrep
+  ln -sf bzless $PKG/usr/bin/bzmore
+  ln -sf bzcmp $PKG/usr/bin/bzdiff
+      
+  install_docs CHANGES LICENSE README* Y2K_INFO
+}  

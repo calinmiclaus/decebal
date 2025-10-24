@@ -1,0 +1,42 @@
+NAME=exo
+VERSION=0.3.0
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="An extension library to Xfce."
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="378K"
+HUSE="python gtkdoc static debug profile"
+
+SOURCES="http://download.berlios.de/xfce-goodies/exo-0.3.0.tar.bz2"
+
+BUILDTIME="gettext >=pkgconfig-0.9.0"
+
+RUNTIME=">=dbus-0.22 python >=gtk2-2.4.0 >=libxfcegui4-4.2.0 xorg >=pygtk-2.4.0"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+      
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --with-locales-dir=/usr/share/locale \
+	      --enable-python \
+	      --enable-final \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/usr/lib
+  mv $PKG/opt/xfce/lib/python2.4 $PKG/usr/lib/
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README \
+    HACKING NEWS
+}

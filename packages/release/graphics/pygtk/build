@@ -1,0 +1,29 @@
+NAME=pygtk
+VERSION=2.6.0
+ARCH=i686
+RELEASE=1
+URL="http://www.pygtk.org/"
+DESC="Python bindings for GTK+."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="712K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/bindings/2.10/2.10.0/sources/python/pygtk-2.6.0.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=python-2.3 >=libglade-2.4.0 >=glib2-2.6.0 >=gtk2-2.6.0" 
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL MAPPING \
+    NEWS PKG-INFO README THREADS TODO
+}

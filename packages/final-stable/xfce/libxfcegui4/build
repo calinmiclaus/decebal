@@ -1,0 +1,39 @@
+NAME=libxfcegui4
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="Basic GUI library for Xfce4."
+GROUP=xfce
+LICENSE=GPLv2
+SIZE="833K"
+HUSE="static debug profile gtkdoc"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/libxfcegui4-4.2.2.tar.gz"
+
+BUILTIME="gettext >=pkgconfig-0.9.0"
+
+RUNTIME=">=gtk2-2.4.7 >=glib-1.2.10 >=dbh-1.0.19 >=libxml2-2.2.10 >=libxfce4util-4.2.0
+	 >=gtk-xfce-engine-2.2.2 >=xfce4-icon-theme-4.2.0 >=startup-notification-0.6"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --enable-libdbh \
+	      --enable-final \
+	      --enable-startup-notification \
+	      --with-locales-dir=/usr/share/locale \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO
+}

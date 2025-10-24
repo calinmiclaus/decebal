@@ -1,0 +1,239 @@
+#!/bin/bash
+
+play_sound() {
+  if [ "$SOUND" = "yes" -a -n "`type -p play`" ]
+  then
+    case "$1" in
+      success) play /usr/share/dpack/sounds/success.wav ;;
+      failure) play /usr/share/dpack/sounds/failure.wav ;;
+      warning) play /usr/share/dpack/sounds/warning.wav ;;
+      start)   play /usr/share/dpack/sounds/start.wav ;;
+      end)     play /usr/share/dpack/sounds/end.wav ;;
+      *) true ;;
+    esac
+  fi
+}
+
+msg_start() {
+  echo -e "[+] $@"
+}
+
+msg_start_nnl() {
+  echo -en "[+] $@"
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo
+  fi
+}
+
+msg() {
+  echo -en "    [-] $@"
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo
+  fi
+}						  
+
+msg_nnl() {
+  echo -en "    [-] $@"
+}
+
+msg_error() {
+  echo -e "[ERROR] $@"
+}
+
+msg_warning() {
+  echo -e "[WARNING] $@"
+}
+
+msg_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -en "    [-] $@"
+  else
+    return 1
+  fi
+}
+
+msg_verbose_nnl() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -en "    [-] $@"
+  fi
+}
+
+msg_child() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -en "         -> $@"
+  fi	    
+}
+
+msg_ok() {
+  if [ ! "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ OK ]"
+  fi
+}
+
+msg_ok_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ OK ]"
+  fi
+}
+
+msg_passed() {
+  if [ "$PKG_VERBOSE" != "1" ]
+  then
+    echo -e "[ PASSED ]"
+  fi
+}
+
+msg_passed_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ PASSED ]"
+  fi
+}
+
+msg_failed() {
+  if [ "$PKG_VERBOSE" != "1" ]
+  then
+    echo -e "[ FAILED ]"
+  fi
+}
+	  
+msg_failed_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ FAILED ]"
+  fi
+}
+
+msg_corrupt_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ CORRUPT ]"
+  fi
+}
+
+msg_done() {
+  if [ "$PKG_VERBOSE" != "1" ]
+  then
+    echo -e "[ DONE ]"
+  fi
+}
+	  
+msg_done_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ DONE ]"
+  fi
+}
+
+msg_notfound_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ NOT FOUND ]"
+  fi
+}
+	  
+msg_building_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ BUILDING ]"
+  fi
+}
+		    
+msg_syncing_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ SYNCING ]"
+  fi
+}
+
+msg_processing() {
+  if [ "$PKG_VERBOSE" != "1" ]
+  then
+    echo -e "[ PROCESSING ]"
+  fi
+}
+	  
+msg_downloading_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ DOWNLOADING ]"
+  fi
+}
+		    
+msg_localfile_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ LOCALFILE ]"
+  fi
+}
+			      
+msg_none() {
+  echo -e "[ NONE ]"
+}
+				
+msg_none_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ NONE ]"
+  fi
+}
+
+msg_building_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ BUILDING ]"
+  fi
+}
+
+msg_syncing_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ SYNCING ]"
+  fi
+}
+
+msg_found_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ FOUND ]"
+  fi
+}
+
+msg_notfound_verbose() {
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    echo -e "[ MISSING ]"
+  fi
+}
+
+msg_handle_depends() {
+  if [ "$PKG_BUILDDEPS" = "1" ]
+  then
+    msg_building_verbose
+  elif [ "$PKG_SYNCDEPS" = "1" ]
+  then
+    msg_syncing_verbose
+  else
+    msg_notfound_verbose
+  fi
+}
+
+msg_group_or_world() {
+ echo -e "===>      $@      <==="
+}
+
+msg_resolve_depends() {
+  echo -e "===>      $1 $2 dependencies      <==="
+}
+  
+msg_continue_base_pkg() {
+  echo -e "===>         continue $1 build         <==="
+}
+     					  			      		    	  		    	  	  

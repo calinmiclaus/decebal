@@ -1,0 +1,22 @@
+NAME=mencal
+VERSION=2.3
+ARCH=noarch
+RELEASE=1
+URL="http://kyberdigi.cz/projects/mencal/english.html"
+DESC="Menstrual calculator."
+GROUP=system
+LICENSE=GPLv2
+SIZE="18K"
+
+SOURCES="http://kyberdigi.cz/projects/mencal/mencal-2.3.tar.gz"
+
+RUNTIME="perl"
+
+build() {
+    cd $NAME-$VERSION
+    
+    mkdir -p $PKG/usr/bin
+    install -m 0755 mencal $PKG/usr/bin/mencal
+
+    install_docs README LICENCE_CZ.html LICENSE_EN.html
+}

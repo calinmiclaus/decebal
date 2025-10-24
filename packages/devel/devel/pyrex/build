@@ -1,0 +1,22 @@
+NAME=pyrex
+VERSION=0.9.3
+ARCH=i686
+RELEASE=1
+URL="http://www.cosc.canterbury.ac.nz/~greg/python/Pyrex/"
+DESC="A Language for Writing Python Extension Modules."
+GROUP=devel
+LICENSE="Own License"
+SIZE="171K"
+
+SOURCES="http://www.cosc.canterbury.ac.nz/~greg/python/Pyrex/Pyrex-0.9.3.tar.gz"
+
+RUNTIME="python"
+
+build() {
+  cd $SRC/Pyrex-$VERSION
+  
+  python setup.py build
+  python setup.py install --root $PKG
+  
+  install_docs CHANGES.txt INSTALL.txt README.txt ToDo.txt USAGE.txt
+}

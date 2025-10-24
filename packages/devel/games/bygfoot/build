@@ -1,0 +1,32 @@
+NAME=bygfoot
+VERSION=1.8.1
+ARCH=i686
+RELEASE=1
+URL="http://bygfoot.sourceforge.net/"
+DESC="A small and simple graphical football (a.k.a. soccer)."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="382K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/bygfoot/bygfoot-1.8.1.tar.bz2
+         bygfoot.desktop bygfoot.png"
+
+BUILDTIME="pkgconfig gettext"
+
+RUNTIME=">=gtk2-2.0.0" 
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr/games \
+              --sysconfdir=/etc/games \
+	      --mandir=/usr/games/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../bygfoot.desktop $PKG/usr/share/applications/bygfoot.desktop
+  install -D -m 0644 ../bygfoot.png $PKG/usr/share/pixmaps/bygfoot.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README \
+    ReleaseNotes TODO UPDATE
+}

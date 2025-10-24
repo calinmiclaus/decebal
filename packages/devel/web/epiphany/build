@@ -1,0 +1,43 @@
+NAME=epiphany
+VERSION=1.6.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/projects/epiphany/"
+DESC="A GNOME web browser based on the mozilla rendering engine."
+GROUP=web
+LICENSE="GPLv2 MPLv1.1"
+SIZE="2913K"
+HUSE="static debug gtkdoc"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/epiphany-1.6.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=mozilla-1.7 >=libgnomeui-2.6.0 gnome-desktop >=dbus-0.22"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  
+  PKG_CONFIG_PATH=/opt/gnome/lib/pkgconfig ./configure --prefix=/opt/gnome \
+                                                       --sysconfdir=/etc/opt/gnome \
+						       --mandir=/opt/gnome/share/man \
+						       --localstatedir=/var/lib \
+						       --enable-cpp-rtti \
+						       --enable-dbus $OPTS						       
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog* HACKING INSTALL \
+    NEWS README TODO
+}

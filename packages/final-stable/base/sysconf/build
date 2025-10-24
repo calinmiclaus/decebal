@@ -1,0 +1,24 @@
+NAME=sysconf
+VERSION=0.2.0
+ARCH=noarch
+RELEASE=1
+URL="http://people.decebal.org/~trog/projects/sysconf"
+DESC="Yet another system tool used to configure Decebal Linux."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="93K"
+
+SOURCES="http://people.decebal.org/~trog/projects/sysconf/$NAME-$VERSION.tar.bz2"
+
+RUNTIME="dialog gawk sed coreutils"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  for i in usr etc;
+  do
+    cp -R $i $PKG/$i
+  done
+  
+  install_docs AUTHORS COPYING INSTALL
+}

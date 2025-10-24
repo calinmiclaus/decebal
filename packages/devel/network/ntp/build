@@ -1,0 +1,43 @@
+NAME=ntp
+VERSION=4.2.0
+ARCH=i686
+RELEASE=1
+DESC="The Network Time Protocol distribution."
+URL="http://www.ntp.org/"
+GROUP=network
+LICENSE="Own License"
+SIZE="2455K"
+HUSE="arlib"
+
+SOURCES="http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/$NAME-$VERSION.tar.gz
+         ntpd.init ntpd.logrotate ntpd.sysconf"
+
+BACKUPS="etc/conf.d/ntpd"
+
+RUNTIME=">=ncurses-5.3 >=openssl-0.9.7e"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use arlib && OPTS="--with-arlib"
+  
+  LIBS=-lncurses ./configure --prefix=/usr \
+                             --sysconfdir=/etc \
+			     --sbindir=/usr/sbin \
+			     --enable-debugging=no \
+			     --enable-parse-clocks \
+			     --enable-all-clocks \
+			     --with-crypto $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install -D -m 0700 ../ntpd.init $PKG/etc/rc.d/ntpd
+  install -D -m 0644 ../ntpd.sysconf $PKG/etc/conf.d/ntpd
+  install -D -m 0755 ../ntpd.logrotate $PKG/etc/logrotate.d/ntpd
+  
+  mkdir -p $PKG/var/log
+  touch $PKG/var/log/ntpd.log
+  
+  install_docs COPYRIGHT ChangeLog* INSTALL NEWS NOTES.y2kfixes \
+    README* TODO WHERE-TO-START
+}

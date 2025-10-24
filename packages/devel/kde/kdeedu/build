@@ -1,0 +1,30 @@
+NAME=kdeedu
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="Educational programs for KDE."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="29302K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.5.0 arts"
+
+function build() {
+    OPTS=""
+    use static && OPTS="--enable-static" || OPTS="--disable-static"
+    use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+    cd $SRC/$NAME-$VERSION
+    export PATH=$PATH:/opt/kde/bin
+    ./configure --prefix=/opt/kde \
+	        --disable-debug $OPTS
+		
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs COPYING INSTALL README
+}

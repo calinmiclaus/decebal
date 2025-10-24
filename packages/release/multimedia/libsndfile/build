@@ -1,0 +1,26 @@
+NAME=libsndfile
+VERSION=1.0.11
+ARCH=i686
+RELEASE=1
+URL="http://www.zip.com.au/~erikd/libsndfile/"
+DESC="A C library for reading and writing files containing sampled sound."
+GROUP=multimedia
+LICENSE="GPLv2.1"
+SIZE="796K"
+HUSE="static"
+
+SOURCES="http://www.mega-nerd.com/libsndfile/libsndfile-1.0.11.tar.gz"
+
+RUNTIME="alsa-lib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static"
+
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

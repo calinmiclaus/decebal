@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# /etc/rc.d/devfsd - Control file for the devfsd daemon
+#
+
+. /etc/rc.d/functions
+
+# Exit if we dont have devfs support in the kernel.
+[ -e /dev/.devfsd ] || exit 1
+[ -x /sbin/devfsd ] || exit 1
+
+case "$1" in
+  start)
+    msg "Starting the DevFS daemon"
+    start_service /sbin/devfsd /dev
+    ;;
+  stop)
+    msg "Stopping the DevFS daemon"
+    stop_service /sbin/devfsd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /sbin/devfsd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

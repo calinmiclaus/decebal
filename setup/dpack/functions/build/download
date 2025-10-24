@@ -1,0 +1,16 @@
+#!/bin/bash
+
+pkg_download() {
+  msg_downloading_verbose
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    $DOWNLOADTOOL $1
+  else
+    $DOWNLOADTOOL $1 >/dev/null 2>&1
+  fi
+
+  if [ ! -r $(stripurl $1) ]
+  then
+    return 1
+  fi
+}

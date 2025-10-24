@@ -1,0 +1,161 @@
+#!/bin/bash
+#
+# /etc/rc.d/init.d/httpd - control file for the Apache Web Server
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/httpd
+
+pidfile="/var/run/httpd.pid"
+
+config_httpd() {
+  HTTPD_OPTS=""
+
+  [ -d /var/log/httpd ] || mkdir -p /var/log/httpd
+  
+  [ "$USE_SSL" = "yes" ] && HTTPD_OPTS="-DSSL"
+  
+  HTTPD_CONF=/etc/httpd/httpd.conf
+  MODULES_CONF=/etc/httpd/modules.conf
+  PHP_CONF=/etc/httpd/mod.d/php.conf
+  PERL_CONF=/etc/httpd/mod.d/mod_perl.conf
+  PYTHON_CONF=/etc/httpd/mod.d/mod_python.conf
+  TCL_CONF=/etc/httpd/mod.d/tcl.conf
+  MONO_CONF=/etc/httpd/mod.d/mod_mono.conf
+  AUTH_MYSQL_CONF=/etc/httpd/mod.d/mod_auth_mysql.conf
+  AUTH_PGSQL_CONF=/etc/httpd/mod.d/mod_auth_pgsql.conf
+  TMP=/etc/httpd/tmp.$$
+  
+  [ -d $TMP ] || mkdir -p $TMP
+  
+  if [ "$USE_PHP" = "yes" ]
+  then
+    if ! grep -q "Include $PHP_CONF$" $MODULES_CONF
+    then
+      echo "Include $PHP_CONF" >> $MODULES_CONF
+    fi
+  else
+    if grep -q "Include $PHP_CONF$" $MODULES_CONF
+    then
+      grep -v "Include $PHP_CONF$" $MODULES_CONF >> $TMP/modules.conf
+      mv $TMP/modules.conf $MODULES_CONF
+    fi
+  fi
+
+  if [ "$USE_PERL" = "yes" ]
+  then
+    if ! grep -q "Include $PERL_CONF$" $MODULES_CONF
+    then
+      echo "Include $PERL_CONF" >> $MODULES_CONF
+    fi
+  else
+    if grep -q "Include $PERL_CONF$" $MODULES_CONF
+    then
+      grep -v "Include $PERL_CONF$" $MODULES_CONF >> $TMP/modules.conf
+      mv $TMP/modules.conf $MODULES_CONF
+    fi
+  fi
+    
+  
+  if [ "$USE_PYTHON" = "yes" ]
+  then
+    if ! grep -q "Include $PYTHON_CONF$" $MODULES_CONF
+    then
+      echo "Include $PYTHON_CONF" >> $MODULES_CONF
+    fi
+  else
+    if grep -q "Include $PYTHON_CONF$" $MODULES_CONF
+    then
+      grep -v "Include $PYTHON_CONF$" $MODULES_CONF >> $TMP/modules.conf
+      mv $TMP/modules.conf $MODULES_CONF
+    fi
+  fi
+  
+  if [ "$USE_TCL" = "yes" ]
+  then
+    if ! grep -q "Include $TCL_CONF$" $MODULES_CONF
+    then
+      echo "Include $TCL_CONF" >> $MODULES_CONF
+    fi
+  else
+    if grep -q "Include $TCL_CONF$" $MODULES_CONF
+    then
+      grep -v "Include $TCL_CONF$" $MODULES_CONF >> $TMP/modules.conf
+      mv $TMP/modules.conf $MODULES_CONF
+    fi
+  fi
+
+  if [ "$USE_MONO" = "yes" ]
+  then
+    if ! grep -q "Include $MONO_CONF$" $MODULES_CONF
+    then
+      echo "Include $MONO_CONF" >> $MODULES_CONF
+    fi
+  else
+    if grep -q "Include $MONO_CONF$" $MODULES_CONF
+    then
+      grep -v "Include $MONO_CONF$" $MODULES_CONF >> $TMP/modules.conf
+      mv $TMP/modules.conf $MODULES_CONF
+    fi
+  fi
+
+  if [ "$USE_AUTH_MYSQL" = "yes" ]
+  then
+    if ! grep -q "Include $AUTH_MYSQL_CONF$" $MODULES_CONF
+    then
+      echo "Include $AUTH_MYSQL_CONF" >> $MODULES_CONF
+    fi
+  else
+    if grep -q "Include $AUTH_MYSQL_CONF$" $MODULES_CONF
+    then
+      grep -v "Include $AUTH_MYSQL_CONF$" $MODULES_CONF >> $TMP/modules.conf
+      mv $TMP/modules.conf $MODULES_CONF
+    fi
+  fi
+
+  if [ "$USE_AUTH_PGSQL" = "yes" ]
+  then
+    if ! grep -q "Include $AUTH_PGSQL_CONF$" $MODULES_CONF
+    then
+      echo "Include $AUTH_PGSQL_CONF" >> $MODULES_CONF
+    fi
+  else
+    if grep -q "Include $AUTH_PGSQL_CONF$" $MODULES_CONF
+    then
+      grep -v "Include $AUTH_PGSQL_CONF$" $MODULES_CONF >> $TMP/modules.conf
+      mv $TMP/modules.conf $MODULES_CONF
+    fi
+  fi
+  rm -rf $TMP
+}
+
+case "$1" in
+  start)
+    msg "Starting the Apache Web Server"
+    config_httpd
+    start_service /usr/sbin/httpd -k start $HTTPD_OPTS
+    ;;
+  stop)
+    msg "Stopping the Apache Web Server"
+    stop_service /usr/sbin/httpd
+    ;;
+  reload)
+    msg "Reloading the Apache Web Server"
+    reload_service /usr/sbin/httpd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/httpd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
+    

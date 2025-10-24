@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# /etc/rc.d/stunnel - control file for the stunnel daemon
+#
+
+. /etc/rc.d/functions
+
+check_rundir() {
+  if [ -d /var/lib/stunnel ]
+  then
+    chown stunnel.stunnel /var/lib/stunnel
+  else
+    mkdir -p /var/lib/stunnel
+    chown stunnel.stunnel /var/lib/stunnel
+  fi
+}    
+
+case "$1" in
+  start)
+    check_rundir
+    msg "Starting the stunnel daemon"
+    start_service /usr/sbin/stunnel
+    ;;
+  stop)
+    msg "Stoping the stunnel daemon"
+    stop_service /usr/sbin/stunnel
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/stunnel
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+      

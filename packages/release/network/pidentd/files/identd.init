@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# /etc/rc.d/identd
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/identd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the PIdentd daemon"
+    start_service /usr/sbin/identd
+    ;;
+  stop)
+    msg "Stopping the PIdentd daemon"
+    stop_service /usr/sbin/identd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/identd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status"
+    exit 1
+    ;;
+esac

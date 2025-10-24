@@ -1,0 +1,30 @@
+NAME=netkit-telnet
+VERSION=0.17
+ARCH=i686
+RELEASE=1
+DESC="A telnet server."
+URL="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/"
+GROUP=network
+LICENSE=PD
+SIZE="130K"
+
+SOURCES="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-telnet-$VERSION.tar.gz
+         netkit-telnet-0.17.patch"
+
+build() {
+  cd $SRC/netkit-telnet-$VERSION
+  
+  patch -p1 < ../netkit-telnet-0.17.patch
+  
+  mkdir -p $PKG/usr/{sbin,man/man{5,8}}
+  
+  ./configure --prefix=/usr \
+              --installroot=$PKG \
+	      --with-c++-compiler=g++
+  make SUB=telnetd
+  make SUB=telnetd install
+  
+  ln -sf in.telnetd $PKG/usr/sbin/telnetd
+  
+  install_docs BUGS ChangeLog MRULES README
+}

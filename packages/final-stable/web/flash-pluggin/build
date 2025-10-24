@@ -1,0 +1,22 @@
+NAME=flash-pluggin
+VERSION=7.0.25.0
+ARCH=i686
+RELEASE=1
+URL="http://www.macromedia.com/"
+DESC="Macromedia Flash Player for Linux."
+GROUP=web
+LICENSE=own
+
+SOURCES="http://fpdownload.macromedia.com/get/shockwave/flash/english/linux/7.0r25/install_flash_player_7_linux.tar.gz"
+
+build() {
+    cd $SRC/install_flash_player_7_linux
+
+    mkdir -p $PKG/opt/firefox/lib/firefox/plugins
+    mkdir -p $PKG/usr/lib/mozilla/plugins
+    
+    cp flashplayer.xpt libflashplayer.so $PKG/opt/firefox/lib/firefox/plugins/
+    cp flashplayer.xpt libflashplayer.so $PKG/usr/lib/mozilla/plugins
+    
+    install_docs Readme.txt Readme.htm
+}

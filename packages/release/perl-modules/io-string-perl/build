@@ -1,0 +1,24 @@
+NAME=io-string-perl
+VERSION=1.06
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~gaas/IO-String-1.06/"
+DESC="Read or write data from in-core strings."
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SIZE="6K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/G/GA/GAAS/IO-String-1.06.tar.gz"
+
+build() {
+  cd $SRC/IO-String-$VERSION
+
+  perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs Changes README MANIFEST
+}

@@ -1,0 +1,22 @@
+post_install() {
+  /usr/sbin/groupadd -g 43 avirus &>/dev/null
+  /usr/sbin/useradd -u 42 -g 43 -c "Clam Antivirus" -d /var/lib/clamav -s /bin/false clamav &>/dev/null
+  /bin/mkdir -p /var/{lib/clamav,log/clamav} &>/dev/null
+  /bin/chown clamav.avirus /var/lib/clamav &>/dev/null
+  /bin/chown clamav.avirus /var/log/clamav &>/dev/null
+  /bin/chown clamav.avirus /var/run/clamav &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 43 avirus &>/dev/null
+  /usr/sbin/useradd -u 42 -g 43 -c "Clam Antivirus" -d /var/lib/clamav -s /bin/false clamav &>/dev/null
+  /bin/mkdir -p /var/{lib/clamav,log/clamav} &>/dev/null
+  /bin/chown clamav.avirus /var/lib/clamav &>/dev/null
+  /bin/chown clamav.avirus /var/run/clamav &>/dev/null
+  /bin/chown clamav.avirus /var/log/clamav &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel clamav &>/dev/null
+  /usr/sbin/groupdel avirus &>/dev/null
+}

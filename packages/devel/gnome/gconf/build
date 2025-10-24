@@ -1,0 +1,37 @@
+NAME=gconf
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A configuration database system for the GNOME Desktop."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="1693K"
+HUSE="gtkdoc static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/GConf-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=orbit2-2.9.8 >=gtk2-2.4.7 gnome-common"	   
+
+use gtk-doc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/GConf-$VERSION
+  
+  use gtkdoc && OPTS="--enable-gtk-doc"
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debug=yes"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING INSTALL ChangeLog \
+    NEWS README TODO
+}

@@ -1,0 +1,31 @@
+NAME=kdegraphics
+VERSION=3.4.2
+ARCH=i686
+RELEASE=1
+DESC="KDE Graphics Programs."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="6425K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+BUILDTIME=">=kdebase-3.4.2 imlib openglut sane libgphoto2 arts"
+
+function build() {
+    use static && OPTS="--enable-static" || OPTS="--disable-static"
+    use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+    cd $SRC/$NAME-$VERSION
+    export PATH=$PATH:/opt/kde/bin
+
+    ./configure --prefix=/opt/kde \
+        	--disable-debug \
+		$OPTS
+
+    make
+    make DESTDIR=$PKG install
+
+    install_docs AUTHORS COPYING ChangeLog INSTALL README
+}

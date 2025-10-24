@@ -1,0 +1,112 @@
+#!/bin/bash
+
+pkg_check_dependencies() {
+  local MISSINGDEPENDENCIES=""
+  
+  if [ -n "$BUILDTIME" ]
+  then
+    msg "checking buildtime dependencies..."
+    for DEP in $(echo -E $BUILDTIME)
+    do
+      msg_child "$DEP..."
+      if ! check_depend $(echo -E $DEP)
+      then
+        msg_handle_depends
+	MISSINGDEPENDENCIES="$MISSINGDEPENDENCIES $DEP"
+      else
+        msg_found_verbose
+      fi
+    done
+    [ -z "$MISSINGDEPENDENCIES" ] && msg_ok || msg_failed
+  fi
+  
+  if [ -n "$RUNTIME" ]
+  then
+    msg "checking runtime dependencies..."
+    for DEP in $(echo -E $RUNTIME)
+    do
+      msg_child "$DEP..."
+      if ! check_depend $(echo -E $DEP)
+      then
+        msg_handle_depends
+	MISSINGDEPENDENCIES="$MISSINGDEPENDENCIES $DEP"
+      else
+        msg_found_verbose
+      fi
+    done
+  fi
+  
+  if [ -n "$MISSINGDEPENDENCIES" ]
+  then
+    local REMAININGDEPENDENCIES=""
+    if [ "$PKG_BUILDDEPS" = "1" ]
+    then
+      msg_resolve_depends "building" "$NAME"
+      
+      local NEW_DSRC_OPTS=""
+      for DSRC_OPT in $DSRC_OPTS
+      do
+        if [ ! "$DSRC_OPT" = "-i" ]
+	then
+	  NEW_DSRC_OPTS="$NEW_DSRC_OPTS $DSRC_OPT"
+	fi
+      done
+      DSRC_OPTS="$NEW_DSRC_OPTS"
+      
+      for DEP in $(echo -E $MISSINGDEPENDENCIES)
+      do
+	if ! check_depend $(echo -E $DEP)
+	then
+	  dsrc $DSRC_OPTS $(get_dep_name $DEP)
+	fi
+      done
+      
+      for DEP in $(echo -E $MISSINGDEPENDENCIES)
+      do
+	if ! check_depend $(echo -E $DEP)
+	then
+          REMAININGDEPENDENCIES="$REMAININGDEPENDENCIES $DEP"
+	fi
+      done
+    elif [ "$PKG_SYNCDEPS" = "1" ]
+    then
+      msg_resolve_depends "syncing" "$NAME"
+      
+      for DEP in $(echo -E $MISSINGDEPENDENCIES)
+      do
+	if ! check_depend $(echo -E $DEP)
+	then
+	  dupdate $DUPDATE_OPTS $(get_dep_name $DEP)
+	fi
+      done
+      
+      for DEP in $(echo -E $MISSINGDEPENDENCIES)
+      do
+	if ! check_depend $(echo -E $DEP)
+	then
+          REMAININGDEPENDENCIES="$REMAININGDEPENDENCIES $DEP"
+	fi
+      done
+    else
+      msg_failed
+      msg_error "Missing dependencies:"
+      for DEP in $(echo -E $MISSINGDEPENDENCIES)
+      do
+        echo -e "\t $DEP"
+      done
+      pkg_exit "pkg_check_dependencies" "print_missing_dependencies" "$LINENO" 1
+    fi
+    
+    if [ -n "$REMAININGDEPENDENCIES" ]
+    then
+      msg_error "Following dependencies could not be installed:"
+      for DEP in $(echo -E $REMAININGDEPENDENCIES)
+      do
+        echo -e "\t $DEP"
+      done
+      pkg_exit "pkg_check_dependencies()" "print_remaining_dependencies" "$LINENO" 1
+    fi
+    msg_continue_base_pkg "$NAME"
+  fi
+  msg_ok
+}

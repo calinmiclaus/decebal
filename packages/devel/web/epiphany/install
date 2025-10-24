@@ -1,0 +1,44 @@
+post_install() {
+  schemas="/etc/opt/gnome/gconf/schemas/epiphany-lockdown.schemas
+    /etc/opt/gnome/gconf/schemas/epiphany.schemas"
+  
+  for schema in $schemas
+  do
+    GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-install-rule "$schema" >/dev/null 2>&1
+  done
+  /bin/killall -HUP /opt/gnome/sbin/gconfd-2 >/dev/null 2>&1
+  /bin/killall -HUP /opt/gnome/sbin/bonobo-activation-server >/dev/null 2>&1
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+}
+
+post_upgrade() {
+  schemas="/etc/opt/gnome/gconf/schemas/epiphany-lockdown.schemas
+    /etc/opt/gnome/gconf/schemas/epiphany.schemas"
+  
+  for schema in $schemas
+  do
+    GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-install-rule "$schema" >/dev/null 2>&1
+  done
+  /bin/killall -HUP /opt/gnome/sbin/gconfd-2 >/dev/null 2>&1
+  /bin/killall -HUP /opt/gnome/sbin/bonobo-activation-server >/dev/null 2>&1
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+}
+
+pre_remove() {
+  schemas="/etc/opt/gnome/gconf/schemas/epiphany-lockdown.schemas
+    /etc/opt/gnome/gconf/schemas/epiphany.schemas"
+  
+  for schema in $schemas
+  do
+    GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-uninstall-rule "$schema" >/dev/null 2>&1
+  done
+  /bin/killall -HUP /opt/gnome/sbin/gconfd-2 >/dev/null 2>&1
+  /bin/killall -HUP /opt/gnome/sbin/bonobo-activation-server >/dev/null 2>&1
+}
+
+post_remove() {
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+}

@@ -1,0 +1,66 @@
+NAME=dovecot
+VERSION=0.99.14
+ARCH=i686
+RELEASE=1
+URL="http://dovecot.org/"
+DESC="A secure POP3 and IMAP server."
+GROUP=mail
+LICENSE=GPLv2
+SIZE="847K"
+HUSE="ipv6 pam mysql pgsql ldap sasl"
+
+SOURCES="http://dovecot.org/releases/dovecot-0.99.14.tar.gz
+         dovecot.conf dovecot.init"
+
+RUNTIME=">=openssl-0.9.7e"
+
+use pam && RUNTIME="$RUNTIME pam"
+use ldap && RUNTIME="$RUNTIME ldap"
+use mysql && RUNTIME="$RUNTIME mysql"
+use pgsql && RUNTIME="$RUNTIME pgsql"	 
+use sasl && RUNTIME="$RUNTIME cyrus-sasl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+  use pam && OPTS="$OPTS --with-pam" || OPTS="$OPTS --without-pam"
+  use mysql && OPTS="$OPTS --with-mysql"
+  use pgsql && OPTS="$OPTS --with-mysql"
+  use ldap && OPTS="$OPTS --with-ldap"
+  use sasl && OPTS="$OPTS --with-cyrus-sasl2"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/dovecot \
+	      --libexecdir=/usr/lib \
+	      --localstatedir=/var \
+	      --with-pop3d \
+	      --with-ssl=openssl \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 700 ../dovecot.init $PKG/etc/rc.d/dovecot
+  install -m 0644 ../dovecot.conf $PKG/etc/dovecot/dovecot.conf
+  
+  install -m 0644 doc/dovecot-openssl.cnf $PKG/etc/dovecot/dovecot-openssl.cnf
+  install -m 0644 doc/dovecot-ldap.conf $PKG/etc/dovecot/dovecot-ldap.conf
+  install -m 0644 doc/dovecot-mysql.conf $PKG/etc/dovecot/dovecot-mysql.conf
+  install -m 0644 doc/dovecot-pgsql.conf $PKG/etc/dovecot/dovecot-pgsql.conf
+  
+  mkdir -p $PKG/var/{lib/dovecot/empty,run/dovecot}
+  
+  mkdir -p $PKG/etc/ssl/{certs,private}
+  
+  CERTFILE=$PKG/etc/ssl/certs/dovecot.pem
+  KEYFILE=$PKG/etc/ssl/private/dovecot.pem
+  CONFFILE=$PKG/etc/dovecot/dovecot-openssl.cnf
+  
+  openssl req -new -x509 -nodes -config $CONFFILE -out $CERTFILE -keyout $KEYFILE -days 365
+  chmod 0600 $KEYFILE
+  openssl x509 -subject -fingerprint -noout -in $CERTFILE 
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS README \
+    TODO
+  mv $PKG/usr/share/doc/$NAME $PKG/usr/share/doc/$NAME-$VERSION
+}

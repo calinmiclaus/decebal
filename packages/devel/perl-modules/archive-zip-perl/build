@@ -1,0 +1,27 @@
+NAME=archive-zip-perl
+VERSION=1.16
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~nedkonz/Archive-Zip-1.14/"
+DESC="Create, manipulate, read and write zip files."
+GROUP=perl-modules
+LICENSE="ARTISTIC"
+SIZE="108K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/S/SM/SMPETERS/Archive-Zip-1.16.tar.gz"
+
+RUNTIME="compress-zlib-perl"
+
+build() {
+  cd $SRC/Archive-Zip-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs Changes INSTALL README TODO MANIFEST
+}
+

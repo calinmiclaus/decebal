@@ -1,0 +1,128 @@
+#!/bin/bash
+
+pkg_update_group() {
+  local STARTTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  local TOTAL=0
+  local SUCCESS=0
+  local INSTALLED=0
+  local FAILURE=0
+  local FAILEDPKGS=""
+  local PACKAGES=""
+
+  pkg_log "updating group $1 started."
+  
+  for PKG in $(grep -H ^GROUP= $DATABASEDIR/update/*)
+  do
+    PKG="${PKG%:*}"
+    PKG="${PKG##*/}"
+    PACKAGES="$PACKAGES $PKG"
+  done	
+ 
+  for PKG in $PACKAGES
+  do
+    if [ "$PKG_UPGRADE" = "1" ]
+    then
+      if pkg_is_installed $PKG
+      then
+        local IPKG=$(get_installed_pkg $PKG)
+        local IVER=$(pkgversion $PKG)
+        local IREL=$(pkgrelease $PKG)
+        source $DATABASEDIR/update/$PKG 2>/dev/null
+        if [ ! "$UVERSION" = "$IVER" -o ! "$URELEASE" = "$IREL" ]
+        then
+          dupdate $DUPDATE_OPTS $PKG
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1))
+          else
+            FAILURE=$(($FAILURE + 1))
+            FAILEDPKGS=$(($FAILEDPKGS $PKG
+          fi
+        fi
+	unset IPKG IVER IREL UNAME UVERSION URELEASE UURL UDESC USIZE UDEPENDS UMD5SUM      
+      fi
+    elif [ "$PKG_REINSTALL" = "1" ]
+      if pkg_is_installed $PKG
+      then  
+        dupdate $DUPDATE_OPTS $PKG
+	if [ $? -eq 0 ]
+	then
+	  SUCCESS=$(($SUCCESS + 1))
+	else
+	  FAILURE=$(($FAILURE + 1))
+	  FAILEDPKGS=$(($FAILEDPKGS $PKG
+	fi
+      fi
+    else
+      if pkg_is_installed $PKG
+      then
+        local IPKG=$(get_installed_pkg $PKG)
+        local IVER=$(pkgversion $PKG)
+        local IREL=$(pkgrelease $PKG)
+        source $DATABASEDIR/update/$PKG 2>/dev/null
+        if [ ! "$UVERSION" = "$IVER" -o ! "$URELEASE" = "$IREL" ]
+        then
+          dupdate $DUPDATE_OPTS $PKG
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1))
+          else
+            FAILURE=$(($FAILURE + 1))
+            FAILEDPKGS=$(($FAILEDPKGS $PKG
+          fi
+        else
+	  echo "package '$PKG' already installed (use --reinstall)."
+	  INSTALLED=$(($INSTALLED + 1))
+	fi
+	unset IPKG IVER IREL UNAME UVERSION URELEASE UURL UDESC USIZE UDEPENDS UMD5SUM        
+      else
+        dupdate $DUPDATE_OPTS $PKG
+	if [ $? -eq 0 ]
+	then
+	  SUCCESS=$(($SUCCESS + 1))
+	else
+	  FAILURE=$(($FAILURE + 1))
+	  FAILEDPKGS=$(($FAILEDPKGS $PKG
+	fi
+      fi        
+    fi
+  done      
+  
+  local ENDTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  
+  if [ "$PKG_DOWLOAD" = "1" ]
+  then
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages downloaded successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages download failed        : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the following packages could not be downloaded:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  else							         	      
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages updated successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    [ "$PKG_UPGRADE" = "1" ] || echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages already installed   : ${YELLOW}$INSTALLED${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages update failed       : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the following packages could not be built/installed:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  fi
+  
+  unset UNAME UVERSION URELEASE UURL UDESC USIZE UDEPENDS UMD5SUM EPKG PACKAGES \
+    INSTALLED SUCCESS FAILURE FAILEDPKGS STARTTIME ENDTIME 									
+}
+

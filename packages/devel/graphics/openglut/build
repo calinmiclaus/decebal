@@ -1,0 +1,29 @@
+NAME=openglut
+VERSION=0.6.3
+ARCH=i686
+RELEASE=1
+DESC="An open source evolution of the GLUT API."
+URL="http://freshmeat.net/projects/openglut/"
+GROUP=graphics
+LICENSE="BSDL"
+SIZE="427K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/openglut/openglut-0.6.3.tar.bz2"
+
+RUNTIME="xorg gcc"
+
+PROVIDES="glut"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs COPYING ChangeLog INSTALL README
+}

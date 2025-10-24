@@ -1,0 +1,12 @@
+NAME=fnlib
+VERSION=
+ARCH=i686
+RELEASE=1
+URL=""
+DESC=""
+GROUP=graphics
+LICENSE=""
+SIZE=""
+HUSE=""
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/enlightenment/fnlib-0.5.tar.gz"

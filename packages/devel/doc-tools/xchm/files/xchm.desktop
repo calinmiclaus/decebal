@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=CHM Viewer
+Comment=View Window Help Files
+Exec=xchm
+Terminal=false
+Type=Application
+StartupNotify=true
+MimeType=text/chm;
+Icon=/usr/share/pixmaps/xchm-48.xpm
+Categories=Application;Utility;

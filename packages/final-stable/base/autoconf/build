@@ -1,0 +1,28 @@
+NAME=autoconf
+VERSION=2.59
+ARCH=noarch
+RELEASE=1
+URL="http://www.gnu.org/software/autoconf/"
+DESC="A GNU tool for automatically configuring source code."
+GROUP=base
+LICENSE=GPLv2
+SIZE="903K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/autoconf/autoconf-2.59.tar.bz2"
+
+BUILDTIME=">=texinfo-4.3"
+
+RUNTIME=">=m4-1.4 >=bash-2.5 >=gawk-3.1 perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog* BUGS INSTALL NEWS README \
+        THANKS TODO
+}  

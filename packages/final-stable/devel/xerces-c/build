@@ -1,0 +1,43 @@
+NAME=xerces-c
+VERSION=2.6.0
+ARCH=i686
+RELEASE=1
+URL="http://xml.apache.org/xerces-c/"
+DESC="A validating XML parser written in a portable subset of C++ by the Apache project."
+GROUP=devel
+LICENSE="APACHEv2.0"
+SIZE="9106K"
+
+SOURCES="http://www.apache.org/dist/xml/xerces-c/xerces-c-current.tar.gz"
+
+build() {
+  export XERCESCROOT=$SRC/${NAME}-src_2_6_0
+
+  cd $XERCESCROOT/src/xercesc
+  
+  ./runConfigure -plinux -cgcc -xg++ -minmem -nsocket -tnative -rpthread -P/usr
+  make
+                  
+  cd $XERCESCROOT/samples
+  
+  ./runConfigure -plinux -cgcc -xg++
+  make
+  
+  cd $XERCESCROOT/src/xercesc
+  
+  make PREFIX=$PKG/usr install
+  
+  install -d $PKG/usr/bin
+  for file in `find $XERCESCROOT/bin -type f -maxdepth 1`
+  do
+    install -m 0755 $file  $PKG/usr/bin/${file##*/}
+  done
+  
+  mkdir -p $PKG/usr/share/$NAME
+  
+  cp -a $XERCESCROOT/samples $PKG/usr/share/$NAME
+  
+  cd $XERCESCROOT
+  
+  install_docs KEYS LICENSE* NOTICE Readme.html STATUS
+}

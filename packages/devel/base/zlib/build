@@ -1,0 +1,37 @@
+NAME=zlib
+VERSION=1.2.3
+ARCH=i686
+RELEASE=1
+URL="http://www.zlib.org"
+DESC="A general purpose data compression library."
+GROUP=base
+LICENSE=ZLIB
+SIZE="484K"
+
+SOURCES="http://www.zlib.net/$NAME-$VERSION.tar.gz"
+
+BUILDTIME=">=binutils-2.14.90"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr mandir=$PKG/usr/share/man install
+  
+  export CFLAGS="$CFLAGS -fPIC"
+  ./configure --prefix=/usr \
+              -shared
+  make
+  make prefix=$PKG/usr mandir=$PKG/usr/share/man install
+  
+  mkdir -p $PKG/lib
+  mv $PKG/usr/lib/libz.so.* $PKG/lib/
+  ln -sf ../../lib/libz.so.1 $PKG/usr/lib/libz.so
+  
+  chmod 644 $PKG/usr/lib/libz.a
+  
+  install_docs ChangeLog FAQ INDEX README
+}

@@ -1,0 +1,14 @@
+function post_install() {
+  /usr/sbin/groupadd -g 33 vsftpd 2>/dev/null
+  /usr/sbin/useradd -u 33 -g 33 -c "VSFtpd Daemon" -s /bin/false -d /dev/null vsftpd 2>/dev/null
+}
+
+function post_upgrade() {
+  /usr/sbin/groupadd -g 33 vsftpd 2>/dev/null
+  /usr/sbin/useradd -u 33 -g 33 -c "VSFtpd Daemon" -s /bin/false -d /dev/null vsftpd 2>/dev/null
+}
+
+function post_remove() {
+  /usr/sbin/userdel vsftpd 2>/dev/null
+  /usr/sbin/groupdel vsftpd 2>/dev/null
+}

@@ -1,0 +1,59 @@
+#!/bin/bash
+
+pkg_fetch_sources() {
+  local MISSINGSOURCES=""
+  msg "fetching source files..."
+  [ -d $CACHEDIR ] && mkdir -p $CACHEDIR
+  
+  cd $CACHEDIR
+  
+  source $FUNCTIONSDIR/dpack/build/download
+  
+  for FILE in $SOURCES
+  do
+    local LOCALFILE=$(stripurl $FILE)
+    
+    msg_child "$LOCALFILE..."
+    
+    if [ -r $1/files/$LOCALFILE ]
+    then
+      cp $1/files/$LOCALFILE $SRC/
+      [ $? -eq 0 ] && msg_ok_verbose || msg_failed_verbose
+    elif [ -r $CACHEDIR/$LOCALFILE ]
+    then
+      cp $CACHEDIR/$LOCALFILE $SRC/
+      [ $? -eq 0 ] && msg_ok_verbose || msg_failed_verbose
+    else
+      if [ -n "$SOURCESMIRROR" ]
+      then
+        pkg_download $SOURCESMIRROR/$LOCALFILE
+        if [ $? -ne 0 ]
+        then
+          MISSINGSOURCES="$MISSINGSOURCES $LOCALFILE"
+        else
+          cp $CACHEDIR/$LOCALFILE $SRC/
+        fi
+      else    
+        pkg_download $FILE
+        if [ $? -ne 0 ]
+        then
+          MISSINGSOURCES="$MISSINGSOURCES $LOCALFILE"
+        else
+          cp $CACHEDIR/$LOCALFILE $SRC/
+        fi
+      fi
+    fi
+  done
+  
+  if [ -n "$MISSINGSOURCES" ]
+  then
+    msg_failed
+    msg_error "Following source files could not be found:"
+    for FILE in $MISSINGSOURCES
+    do
+      echo -e "\t $FILE"
+    done
+    pkg_exit "pkg_fetch_sources()" "print_files_that_are_not_found" "$LINENO" 1
+  fi
+  msg_done
+}

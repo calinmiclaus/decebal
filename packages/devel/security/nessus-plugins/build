@@ -1,0 +1,35 @@
+NAME=nessus-plugins
+VERSION=2.3.0
+ARCH=i686
+RELEASE=2
+URL="http://www.nessus.com"
+DESC="A bunch of plugins for nessus."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="2737K"
+HUSE="static"
+
+SOURCES="http://ftp.gwdg.de/pub/linux/misc/nessus/nessus-2.3.0/src/nessus-plugins-2.3.0.tar.gz"
+
+RUNTIME="nessus-libraries libnasl nessus-core"
+
+build() {
+  cd $SRC/$NAME
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --libexecdir=/usr/bin \
+              --infodir=/usr/share/info \
+              --mandir=/usr/share/man \
+	      --localstatedir=/var/lib \
+	      --sharedstatedir=/usr/share \
+	      --enable-syslog \
+	      --enable-client \
+	      $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs INSTALL LICENSE.TXT
+}

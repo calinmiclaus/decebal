@@ -1,0 +1,80 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="creating.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="security.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Updating packages</h1>
+<p>Instead of downloading packages manually from the internet, or building them with
+<b><code>dsrc</code></b> (although you can enable special options), it is possible
+to install or upgrade packages "on-the-fly" with <b><code>dupdate</code></b>. The updating
+mechanism is very simple, you have a update info database in <b><code>$DATABASEDIR/update/</code></b>,
+which can be updated every day and packages that wait for you on the internet.<br><br>
+To install/upgrade a package you use this command:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dupdate -h<br>
+usage: dupdate [options] &lt;argument1&gt; &lt;argument2&gt; ...<br>
+options:<br>
+&nbsp;&nbsp;-d, --nodeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - skip all dependencies checks (dangerous)<br>
+&nbsp;&nbsp;-D, --deps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - resolve dependencies before updating<br>
+&nbsp;&nbsp;-f, --fetch &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - only download packages, do not install them<br>
+&nbsp;&nbsp;-i, --info &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - show information about a package<br>
+&nbsp;&nbsp;-m, --md5sum &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - skip md5sum check<br>
+&nbsp;&nbsp;-r, --reinstall &nbsp;&nbsp; - reinstall the package (same version and release)<br>
+&nbsp;&nbsp;-s, --search &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - search packages that contain *argument*<br>
+&nbsp;&nbsp;-u, --upgrade &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - only upgrade installed packages (used with a group)<br>
+&nbsp;&nbsp;-v, --verbose &nbsp;&nbsp;&nbsp;&nbsp; - be more verbose<br>
+&nbsp;&nbsp;-V, --version &nbsp;&nbsp;&nbsp;&nbsp; - print name, version and license<br>
+&nbsp;&nbsp;-H, --howto &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - a short howto with some examples<br>
+&nbsp;&nbsp;-h, --help &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - print this message and exit<br>
+arguments:<br>
+&nbsp;&nbsp;&lt;package&gt; &nbsp;&nbsp; - will update the package<br>
+&nbsp;&nbsp;&lt;group&gt; &nbsp;&nbsp;&nbsp;&nbsp; - will update entire group<br>
+&nbsp;&nbsp;&lt;world&gt; &nbsp;&nbsp;&nbsp;&nbsp; - will update the entire system<br>
+&nbsp;&nbsp;&lt;sync&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - will update the package info files<br><br>
+For a detailed help please see dupdate (8).<br>
+[root@localhost:~]#
+</code></font></td></tr></table><br>
+The detailed explanation for the options:<br><br>
+<b><code>-d,--nodeps</code></b><ul>this will make <b><code>dupdate</code></b> skip all 
+dependencies checks. This is not recommended since a package cant work if it has missing
+dependencies. Only use if you really know what you are doing.<br></ul>
+<b><code>-D,--deps</code></b><ul>normally <b><code>dupdate</code></b> will check if all
+needed dependencies are installed and if not, it will exit with an error message (the missing
+dependencies). If you want <b><code>dupdate</code></b> to install missing dependencies
+before installing/upgrading the package use this option.<br></ul>
+<b><code>-i, --info</code></b><ul>print information about a package that is available
+for installation with <b><code>dupdate</code></b>. It will show the following variables:
+<b><code>LATEST</b></code>, <b><code>INSTALLED</b></code>, <b><code>HOMEPAGE</b></code>,
+<b><code>DESCRIPTION</b></code>, <b><code>LICENSE</b></code>, <b><code>DOWNLOAD</b></code>,
+<b><code>SIZE</b></code>, <b><code>DEPENDENCIES</b></code> and <b><code>MD5SUM</b></code>.<br></ul>
+<b><code>-m, --md5sum</code></b><ul>normally <b><code>dupdate</code></b> will check package
+integrity (against the md5sum from the update info file) and exit its corrupted. use this
+option to skip this step.<br></ul>
+<b><code>-r, --reinstall</code></b><ul>if the package that is about to be upgraded is the same
+as the installed one (same version and release) <b><code>dupdate</code></b> will exit with
+a error message (<b><code>package name-version-arch-release.tbz2 already installed (use --reinstall)</b></code>). Use
+this option if you want to reinstall the package.<br></ul>
+<b><code>-s, --search</code></b><ul>search for a string in the package update database and print
+packages that contain the string.<br></ul>
+<b><code>-u, --upgrade</code></b><ul>only upgrade packages that are out of date (this should be used
+when you update a group.<br></ul>
+<b><code>-v, --verbose</code></b><ul>be more verbose (self explanatory).<br></ul><br>
+And now some examples:<br><br>
+
+</ul>
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="creating.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="security.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Creating your own package builds</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Automatic security updates</td></tr></table>
+</body>
+</html>

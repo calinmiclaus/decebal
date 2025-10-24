@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/syslogd - configuration file for /etc/rc.d/syslogd
+#
+
+# Aditional sylogd options.
+SYSLOGD_OPTS="-m 0"

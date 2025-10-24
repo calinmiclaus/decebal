@@ -1,0 +1,36 @@
+NAME=clamav
+VERSION=0.83
+ARCH=i686
+RELEASE=1
+URL="http://www.clamav.net/"
+DESC="Anti-virus toolkit for Unix."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="3568K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/clamav/clamav-0.83.tar.gz
+         clamd.init clamd.sysconf"
+	 
+BACKUPS="etc/clamav/clamd.conf
+         etc/clamav/freshclam.conf"
+
+RUNTIME=">=zlib-1.2.2 bzip2 gmp curl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/clamav \
+	      --with-dbdir=/var/lib/clamav \
+	      --disable-clamav
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../clamd.init $PKG/etc/rc.d/clamd
+  install -D -m 0644 ../clamd.sysconf $PKG/etc/conf.d/clamd
+  
+  mkdir -p $PKG/var/{run/clamav,log/clamav}
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog FAQ INSTALL NEWS \
+    README TODO UPGRADE
+}

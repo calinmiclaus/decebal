@@ -1,0 +1,29 @@
+NAME=gpgme
+VERSION=1.0.2
+ARCH=i686
+RELEASE=1
+URL="http://www.gnupg.org/"
+DESC="A C language library that allows to add support for cryptography to a program."
+GROUP=libs
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="814K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnupg.org/gcrypt/gpgme/gpgme-1.0.2.tar.gz"
+
+RUNTIME=">=gnupg-1.2.2 >=libgpg-error-0.5 pth"
+
+have gpgsm && RUNTIME="$RUNTIME gpgsm"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+ 
+  use static && OPTS="--enable-static"
+   
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS \
+    README THANKS TODO
+}

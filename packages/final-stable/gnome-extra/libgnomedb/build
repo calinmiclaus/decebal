@@ -1,0 +1,32 @@
+NAME=libgnomedb
+VERSION=1.1.99
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome-db.org/"
+DESC="Database Widget Library for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="661K"
+HUSE="static gtkdoc"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/libgnomedb/1.1/libgnomedb-1.1.99.tar.bz2"
+
+RUNTIME=">=libgda-1.1.1 gtksourceview >=libgnomeui-1.103"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc" || OPTS="$OPTS --disable-gtk-doc"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      $OPTS
+  make
+  sed -i 's|\t\(-GCONF_CONFIG_SOURCE\)|\t # \1|' data/Makefile
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+

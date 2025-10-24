@@ -1,0 +1,26 @@
+NAME=openquicktime
+VERSION=1.0
+ARCH=i686
+RELEASE=1
+URL="http://openquicktime.sourceforge.net"
+DESC="Allows you to load, create and manipulate QuickTime files."
+GROUP=multimedia
+LICENSE="LGPLv2"
+
+SOURCES="http://belnet.dl.sourceforge.net/sourceforge/openquicktime/openquicktime-1.0-src.tgz"
+
+RUNTIME=">=zlib-1.2.1 >=libjpeg-6b lame"
+
+build() {
+  cd $SRC/$NAME-$VERSION-src
+  
+  mkdir -p $PKG/usr/{bin,lib,include}
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr libdir=$PKG/usr/lib includedir=$PKG/usr/include \
+    bindir=$PKG/usr/bin install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO
+}

@@ -1,0 +1,35 @@
+NAME=etox
+VERSION=0.9.0.004
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="Provides a widget abstraction for creating GUI's using Evas and Edje."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="1021K"
+HUSE="static"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=etox-0.9.0.004.tar.gz
+SOURCES="$NAME-$VERSION.tar.gz"
+
+RUNTIME="=evas-0.9.9.013 =ecore-0.9.9.013 =edb-1.0.5.004"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  for FILE in $(find ./ -type f -name Makefile.am)
+  do
+    cp $FILE ${FILE%/*}/Makefile.in
+  done
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog README
+}

@@ -1,0 +1,32 @@
+NAME=flex
+VERSION=2.5.31
+ARCH=i686
+RELEASE=1
+URL="http://lex.sourceforge.net/"
+DESC="A tool for generating programs that perform pattern-matching on text."
+GROUP=base
+LICENSE=BSDL
+SIZE="665K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/lex/flex-2.5.31.tar.bz2
+         lex flex-yytext.patch"
+
+BUILDTIME="bison"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../flex-yytext.patch
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install
+  
+  install -m 0755 ../lex $PKG/usr/bin/lex
+  
+  ln -s libfl.a $PKG/usr/lib/libl.a
+  ln -sf flex.1.gz $PKG/usr/man/man1/lex.1.gz
+  ln -sf flex.1.gz $PKG/usr/man/man1/flex++.1.gz
+
+  install_docs COPYING INSTALL NEWS README
+}

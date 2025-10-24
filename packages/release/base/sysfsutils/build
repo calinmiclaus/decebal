@@ -1,0 +1,27 @@
+NAME=sysfsutils
+VERSION=1.2.0
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org/pub/linux/utils/kernel/hotplug/"
+DESC="A set of utilities for interfacing with sysfs, a virtual filesystem in Linux."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="277K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/linux-diag/sysfsutils-1.2.0.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING CREDITS ChangeLog \
+    NEWS README TODO
+}

@@ -1,0 +1,11 @@
+NAME=xevil
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://www.xevil.com/"
+DESC="A 3rd person, side-view, fast-action, kill-them-before-they-kill-you game."
+GROUP=games
+LICENSE="GPLv2"
+SIZE=""
+
+SOURCES="http://www.xevil.com/download/stable/xevilsrc2.02r2.zip"

@@ -1,0 +1,51 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="configuration.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="srcconf.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Configuring precompiled package handling</h1>
+<p>To configure precompiled package handling, you have to edit the following file <b><code>
+/etc/dpack/common</code></b>, here is an exemple of this file:<br><br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+#<br>
+# /etc/dpack/common - common variables used by pkg_add, pkg_del, pkg_info,<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;dsrc and dupdate.<br>
+#<br><br>
+# This is the directory where information about installed packages is saved (the<br>
+# package database directory).<br>
+<b>DATABASEDIR=/var/lib/pkg</b><br><br>
+# Directory where <b>pkg_install</b>, <b>dsrc</b>, <b>dsec</b> and <b>dupdate</b> will save downloaded files (there<br>
+# will be tree directories in the cache directory, <b>dupdate</b>, <b>dsrc</b>, and <b>dsec</b>)<br>
+<b>CACHEDIR=/var/cache</b><br><br>
+# Directory where <b>pkg_install</b>, <b>pkg_remove</b>, <b>dsrc</b>, <b>dsec</b> and <b>dupdate</b> will log actios.<br>
+<b>LOGDIR=/var/log/dpack</b><br><br>
+# Log method (can be <b>combined</b>, all actions save in one log file, or<br>
+# <b>separate</b>, actions are saved in separate files).<br>
+<b>LOGMETHOD=combined</b><br><br>
+# Donwload tool used by <b>pkg_install</b>, <b>dsrc</b> and <b>dupdate</b> to download files (if you<br>
+# want a separate tool for <b>dsrc</b> then edit the line in <b>/etc/dpack/build</b> containing<br>
+# your download tool, ex: <b>DOWNLOADTOOL="axel"</b>). The program should be able to<br>
+# download files from both <b>http</b> and <b>ftp</b>.<br>
+<b>DOWNLOADTOOL="wget --continue --passive-ftp --tries=3 --waitretry=3"</b><br><br>
+# Do you want color messages (usefull for debugging).<br>
+<b>USECOLORS=yes</b><br><br>
+# Do you want sounds for events (not really implmented in this version).<br>
+<b>USESOUNDS=no</b><br>
+<br></code></font></td></tr></table>
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="configuration.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="srcconf.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Configuration</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Configuring source package handling</td></tr></table>
+</body>
+</html>

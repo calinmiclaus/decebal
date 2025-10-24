@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# /etc/rc.d/hald
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/hal/hald.pid"
+
+check_rundir() {
+  if [ -d /var/run/hal ]
+  then
+    chown haldaemon.haldaemon /var/run/hal
+  else
+    mkdir -p /var/run/hal
+    chown haldaemon.haldaemon /var/run/hal
+  fi
+}    
+
+case "$1" in
+  start)
+    depend dbus
+    check_rundir
+    msg "Starting the Hardware Abstraction Layer daemon"
+    start_service /usr/sbin/hald
+    ;;
+  stop)
+    msg "Stopping the Hardware Abstraction Layer daemon"
+    stop_service /usr/sbin/hald
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/hald
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

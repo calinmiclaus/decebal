@@ -1,0 +1,23 @@
+post_install() {
+  /usr/bin/xmlcatalog --noout --add "public" \
+    "-//OMF//DTD Scrollkeeper OMF Variant V1.0//EN" \
+    "/usr/share/xml/scrollkeeper/dtds/scrollkeeper-omf.dtd" \
+    /etc/xml/catalog
+  /usr/bin/scrollkeeper-rebuilddb -q -p /var/lib/scrollkeeper >/dev/null 2>&1
+}
+
+post_upgrade() {
+  /usr/bin/xmlcatalog --noout --add "public" \
+    "-//OMF//DTD Scrollkeeper OMF Variant V1.0//EN" \
+    "/usr/share/xml/scrollkeeper/dtds/scrollkeeper-omf.dtd" \
+    /etc/xml/catalog
+  /usr/bin/scrollkeeper-rebuilddb -q -p /var/lib/scrollkeeper >/dev/null 2>&1
+}
+
+post_remove() {
+  /usr/bin/xmlcatalog --noout --remove "public" \
+    "-//OMF//DTD Scrollkeeper OMF Variant V1.0//EN" \
+    "/usr/share/xml/scrollkeeper/dtds/scrollkeeper-omf.dtd" \
+    /etc/xml/catalog
+}
+

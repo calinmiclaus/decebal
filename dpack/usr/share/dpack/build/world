@@ -1,0 +1,124 @@
+#!/bin/bash
+
+pkg_build_world() {
+  local STARTTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  local PACKAGES="$(find $DATABASEDIR/db/ -type f 2>/dev/null)"
+  local TOTAL=0
+  local SUCCESS=0
+  local INSTALLED=0
+  local FAILURE=0
+  local FAILEDPKGS=""
+  
+  pkg_log "building world started."
+  
+  if [ -z "$PACKAGES" ]
+  then
+    msg_error "There was an error while getting the installed package"
+    msg_error "list. This is happening when:"
+    msg_error "    - the database is missing ($DATABASEDIR/db/)"
+    msg_error "    - unknown error :/"
+    pkg_exit "pkg_build_world()" "database_failed" "$LINENO" 1
+  fi
+  
+  if [ -n "$PKG_WRITEDIR" ]
+  then
+    DSRC_OPTS="$DSRC_OPTS -w $PKG_WRITEDIR"
+  fi
+
+  for PKG in $PACKAGES
+  do
+    PKG=${PKG##*/}
+    PKG=$(pkgname $PKG)
+    
+    if [ "$PKG_DOWNLOAD" = "1" ]
+    then
+      dsrc $DSRC_OPTS $PKG
+      if [ $? -eq 0 ]
+      then
+        SUCCESS=$(($SUCCESS + 1))
+      else
+        FAILURE=$(($FAILURE + 1))
+	FAILEDPKGS="$FAILEDPKGS $PKG"
+      fi
+    elif [ "$PKG_REBUILD" = "1" ]
+    then
+      dsrc $DSRC_OPTS $PKG
+      if [ $? -eq 0 ]
+      then
+        SUCCESS=$(($SUCCESS + 1))
+      else
+        FAILURE=$(($FAILURE + 1))
+	FAILEDPKGS="$FAILEDPKGS $PKG"
+      fi
+    else
+      local IPKG=$(get_installed_pkg $PKG)
+      local IVER=$(pkgversion $IPKG)
+      local IREL=$(pkgrelease $IPKG)
+      
+      local BUILD=$(find $PACKAGEDIR/ -type d -name "$PKG" 2>/dev/null)
+      if [ -n "$BUILD" ]
+      then
+        if [ ! "$VERSION" = "$IVER" -o ! "$RELEASE" = "$IREL" ]
+	then
+          dsrc $DSRC_OPTS $PKG
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1))
+          else
+            FAILURE=$(($FAILURE + 1))
+	    FAILEDPKGS="$FAILEDPKGS $PKG"
+          fi
+	else
+	  echo "package '$PKG' already installed ($PKG-$IVER-i686-$IREL)."
+	  INSTALLED=$(($INSTALLED + 1))
+	fi      
+      else
+        FAILURE=$(($FAILURE + 1))
+	FAILEDPKGS="$FAILEDPKGS $PKG"
+      fi
+    fi
+    TOTAL=$(($TOTAL + 1))
+  done
+  
+  local ENDTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  
+  echo
+  if [ "$PKG_DOWNLOAD" = "1" ]
+  then
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages downloaded successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages download failed        : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the sources for the following packages could not be downloaded:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi		
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  else
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages built/installed successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages already installed           : ${YELLOW}$INSTALLED${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages built/installed failure     : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the following packages could not be built/installed:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi		    
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  fi
+  
+  pkg_log "building world ended (upgraded $SUCCESS packages)"
+  
+  unset SUCCESS FAILURE FAILEDPKGS TOTAL STARTTIME ENDTIME INSTALLED \
+    NAME VERSION RELEASE ARCH URL DESC GROUP LICENSE SIZE HUSE RUNTIME \
+    BUILDTIME SOURCES CONFLICTS PROVIDES REPLACES BACKUPS
+  unset -f build
+}

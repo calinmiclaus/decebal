@@ -1,0 +1,19 @@
+#
+# /opt/gnome/share/gnome-panelrc - default panel settings
+#
+
+pixmap_path "/opt/gnome-2.8/share/pixmaps"
+
+style "panel-icons"
+{
+     stock ["panel-screenshot"] =    {{"gnome-screenshot.png"}}
+     stock ["panel-gnome-logo"] =    {{"gnome-logo-icon-transparent.png"}}
+     stock ["panel-cde"] =           {{"cdeappmenu.png"}}
+     stock ["panel-launcher"] =      {{"launcher-program.png"}}
+     stock ["panel-run"] =           {{"gnome-run.png"}}
+     stock ["panel-drawer"] =        {{"panel-drawer.png"}}
+     stock ["panel-main-menu"] =     {{"gnome-main-menu.png"}}
+     stock ["panel-force-quit"] =    {{"panel-force-quit.png"}}
+}
+
+class "GtkWidget" style "panel-icons"

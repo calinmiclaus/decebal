@@ -1,0 +1,4053 @@
+#!/bin/bash
+#
+# setup - script to install Decebal Linux
+#
+# Copyright (C) 2004-2005 Calin Bogdan Miclaus <trog@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#
+# TODO
+#
+# source install is very buggy and lacks some features
+# also, check_depends_src doesent know how to ask for
+# resolving deps manually...does it need that ? can it be done ?
+#
+# conflicts
+#
+# ctrl+c signal trap
+#
+setup_dir="/setup"
+setup_version="v0.0.2"
+docs_dir="$setup_dir/docs"
+hardware_list="$setup_dir/database/hardware.data"
+
+packages_list="$setup_dir/database/packages.list"
+groups_list="$setup_dir/database/groups.list"
+types_list="$setup_dir/database/installtypes.list"
+kernels_list="$setup_dir/database/kernels.list"
+mirrors_list="$setup_dir/database/mirrors.list"
+
+install_source="bin" # "bin"|"src"
+install_type="Desktop-Gnome" # default instalation type
+version="Decebal Linux 0.9.0rc2 (Agenor)"
+decebal_version="0.9.0rc2"
+root_partition="none"
+swap_partition="none"
+formatted_partitions=""
+root_filesystem="ext3"  # default filesystem for the root partition
+kernel="kernel-ide-2.6.12"     # default kernel
+
+setup_hostname="decebal"     # default hostname
+setup_domainname="localdomain"          # default domainname
+setup_gateway="" #default gateway
+interfaces="" # which network interfaces should be started by default (after install)
+setup_mirror="http://trog.decebal.org/decebal/0.9.0rc2" # default mirror
+setup_interfaces=""   # interfaces configured for netinstall
+database_medium="CD"  # default medium for the packages database
+
+required_list="" # list of indexes of _required_ packages
+install_src_list="" #the right package order for source install
+dialog=`which dialog`
+tmp="/tmp/setup" # (the directory used for setup. also contains mounted partitions)
+root="$tmp/root"
+install_medium="CD" # default instalation medium
+pkg_install="$setup_dir/dpack/pkg_install"   # path to pkg_install script
+
+current_cd=1 		# the cd# we're using at the moment
+setupstart=`date +%s`   # used for replacement of mktemp
+ask_deps=0		# by default, dont ask to manualy resolve dependencies
+param=$*                # keep the parameters so we dont screw local/global $1..
+nameserver_num=0        # number of nameservers
+network_saved=0		# did we save the network settings ?
+network_start=0		# did we start the network ?
+
+[ -e $tmp/lock ] && \
+  {
+  echo "another instance of setup is running."
+  echo "aborting."
+  exit 1
+  }
+
+function infobox()
+{
+[ $# -eq 2 ] && local delay="--sleep $2" || local delay=""
+$dialog $delay --backtitle "$version" --infobox "\n$1" 5 50
+}
+
+function locase()
+# converts stdin from upper case to lower case
+{
+echo $*|tr "[:upper:]" "[:lower:]"
+}
+
+function linenumber()
+# echo's the $1'th line number from stdin
+{
+head -n $1|tail -n 1
+}
+
+function replace()
+# used by netconf ...
+{
+sed s/^"$1".*/"$2"/
+}
+
+function make_date()
+# transforms an integer (number of seconds) to hh:mm:ss format
+{
+local hours=0 minutes=0 seconds=0 n=$1
+hours=$(( $n / 3600 ))
+n=$(( $n % 3600 ))
+minutes=$(( $n / 60 ))
+seconds=$(( $n % 60 ))
+# transform 9 -> 09  .... 0 -> 00
+[ $hours -lt 10 ] && hours="0${hours}"
+[ $minutes -lt 10 ] && minutes="0${minutes}"
+[ $seconds -lt 10 ] && seconds="0${seconds}"
+
+echo "${hours}:${minutes}:${seconds}"
+}
+
+function get_pkg_index1()
+# returns the index (number) of the package named $1
+# returns 0 if no package named $1 exists
+# aint used any more, since divide et impera is much faster
+# letf it here for emergencies
+{
+local returncode=0 i=0
+#until [ $i -gt $pkg_num -o $returncode -gt 0 ];
+for (( i=1;i<=$pkg_num;i=$i+1 ))
+do
+ # let i=$i+1
+  if [ "${pkg_name[$i]}" = "$1" ];
+  then
+    returncode=$i
+    echo $returncode
+    return 1 # we found the package, stop looping
+  fi
+done
+# just to be sure, bash is full of surprises
+echo $returncode
+}
+
+function get_pkg_index()
+# uses divide et impera (binary search) to lookup the $pkg_name array
+# returns the index (number) of the package named $1
+# return 0 if no package named $1 exists
+# $1 - what i'm looking for (string)
+# $2 - left (integer)
+# $3 - right (integer)
+{
+local mid_i mid_s
+if [ $2 -eq $3 ]
+then
+  [ "${pkg_name[$2]}" = "$1" ] && \
+    {
+    # we found the package
+    echo $2
+    return 0
+    } || return 1
+    
+else
+  [ "${pkg_name[$2]}" = "$1" ] && \
+    {
+    # we found the package
+    echo $2
+    return 0
+    }
+  [ "${pkg_name[$3]}" = "$1" ] && \
+    {
+    # we found the package
+    echo $3
+    return 0
+    }
+  
+  # middle possition in the lookup segment
+  mid_i=$(( ($2+$3)/2 ))
+  # middle + 1
+  local mid_i1=$(( $mid_i + 1 ))
+  mid_s=${pkg_name[$mid_i]}
+  
+  # is the wanted package name < than the name of the package in the middle
+  # of the lookup segment ?
+  if [[ "$1" < "$mid_s" ]]
+  then
+    # look for the package in the lower half
+    get_pkg_index $1 $2 $mid_i
+  # is the wanted package name > than the name of the package in the middle
+  # of the lookup segment ?
+  elif [[ "$1" > "$mid_s" ]]
+  then
+    # look for the package in the upper half
+    get_pkg_index $1 $mid_i1 $3
+  elif [ "$1" = "$mid_s" ]
+  then
+    # we found the package
+    echo $mid_i
+    return 0
+  fi
+fi
+}
+
+
+function scan_cd_bin()
+# scans for a decebal cd
+# part of it ripped from slackware
+# if you have multiple drives, you can insert the next cd
+# in any drive...this function will detect the device in which
+# the required cd is inserted...
+{
+cd_device=""
+local device
+infobox "Scanning for Decebal CD$1"
+for device in \
+  /dev/hdd /dev/hdc /dev/hdb /dev/hda \
+  /dev/hde /dev/hdf /dev/hdg /dev/hdh \
+  /dev/hdi /dev/hdj /dev/hdk /dev/hdl \
+  /dev/hdm /dev/hdn /dev/hdo /dev/hdp \
+  /dev/sr0 /dev/sr1 /dev/sr2 /dev/sr3 \
+  /dev/pcd0 /dev/pcd1 /dev/pcd2 /dev/pcd3 \
+  /dev/aztcd /dev/cdu535 /dev/gscd /dev/sonycd \
+  /dev/optcd /dev/sjcd /dev/mcdx0 /dev/mcdx1 \
+  /dev/sbpcd /dev/cm205cd /dev/cm206cd /dev/mcd \
+  /dev/sg0 /dev/sg1 /dev/sg2 /dev/sg3 \
+  /dev/sr0 /dev/sr1 /dev/sr2 /dev/sr3 \
+  ; do
+  mount -o ro -t iso9660 $device /media/cdrom 1> /dev/null 2> /dev/null
+  if [ $? = 0 ]; then
+    if [ -e /media/cdrom/Decebal-CD${1}-binary ]
+    then
+      cd_device=$device
+      return 0
+      break
+    else
+      umount $device 1>/dev/null 2>/dev/null
+    fi
+  fi
+done
+[ ! -z "$cd_device" ] && return 0 || return 1
+}
+
+function ask_cd_bin()
+{
+# checks if the mounted cd is the cd specified in $1, else
+# asks the user to insert it into the drive and tries to mount it
+local ac_button
+if [ ! -r "/media/cdrom/Decebal-CD${1}-binary" ];
+then
+  umount /media/cdrom 1>/dev/null 2>/dev/null
+  [ ! -z "$cd_device" ] && eject $cd_device
+  $dialog --backtitle "$version" --title \
+  " Next CD " --yes-label "OK" --no-label "Skip" \
+  --yesno "\nPlease insert CD $1 into any CD drive.\n\n" 0 0
+  ac_button=$?
+  if [ $ac_button -eq 1 ];
+  then
+# dirty workaround, if the user pressed "skip", we assume all packages
+# on cd $1 are installed
+    for i in $install_list
+    do
+    [ ${pkg_cd[$i]} -eq $1 ] && installed[$i]="on"
+    done
+  else
+    scan_cd_bin $1
+    [ $? -eq 0 ] && \
+      {
+# used to check if we need to ask for a new cd, while we're installing the pkgs
+      current_cd=$1
+
+# used for ETA and time passed
+      } || ask_cd_bin $1
+  fi
+fi
+}
+
+
+function select_required()
+# some packages are REQUIRED in order to install the others
+# this function will change selected[$i] array
+{
+local i fi_tmp
+if [ -z "$required_list" ]
+then
+for i in filesystem etc linux-libc-headers gpm glibc ncurses readline bash coreutils shadow sysvinit initscripts sysconf;
+do
+  fi_tmp=`get_pkg_index $i 1 $pkg_num`
+  selected[$fi_tmp]="on"
+  required_list="$required_list $fi_tmp"
+done
+else
+  for i in $required_list;
+  do
+    selected[$i]="on"
+  done
+fi
+}
+
+function make_pkg_index_db()
+# makes a database of packages with the following fields
+# 123:abc
+# where 123 is the package numer, and abc the package name
+# and a database for each group with the same format
+{
+infobox "Generating packages index database"
+local i
+rm -f $tmp/group.*.list
+for (( i=1;i<=$pkg_num;i=$i+1 ))
+do
+  echo $i:${pkg_name[$i]}>>$tmp/group.${pkg_group[$i]}.list
+  echo $i:${pkg_name[$i]}>>$tmp/packages.list
+done
+}
+
+function make_group_index_db()
+# creates several files. $group.index.list.
+# each files contains a package index, on each line.
+# the file base.index.list might look like this :
+# 123
+# 234
+# 345
+# that means, that packages 123,234,345 are in the group base
+{
+local i
+
+rm -f $tmp/*.index.list
+for i in `cat $groups_list|cut -f 1 -d ":"`
+do
+  touch $tmp/`locase $i`.index.list
+done
+
+for (( i=1;i<=$pkg_num;i=$i+1 ))
+do
+  echo $i >>$tmp/${pkg_group[$i]}.index.list
+done
+}
+
+function make_depends_index_db()
+# makes a database with the following fields
+# 123:234 345 456 567
+# where 123 is the package index and the second field are its dependencies (indexes)
+{
+infobox "Generating dependencies index database..."
+local i j retval
+
+cat /dev/null >$tmp/depends.list
+for (( i=1;i<=$pkg_num;i=$i+1 ))
+do
+  echo -n "$i:" >>$tmp/depends.list
+  if [ ! -z "${pkg_depends[$i]}" ];
+  then
+    for j in ${pkg_depends[$i]};
+    do
+      retval=`get_pkg_index $j 1 $pkg_num`
+      [ "$retval" != "" ] && echo -n "$retval ">>$tmp/depends.list
+    done
+  fi
+  echo >>$tmp/depends.list
+done
+}
+
+function make_conflicts_index_db()
+# makes a database with the following fields
+# 123:234 345 456 567
+# where 123 is the package index and the second field are its conflicts (indexes)
+{
+infobox "Generating conflicts index database"
+local i j retval
+
+cat /dev/null >$tmp/conflicts.list
+for (( i=1;i<=$pkg_num;i=$i+1 ))
+do
+  echo -n "$i:" >>$tmp/conflicts.list
+  [ ! -z "${pkg_conflicts[$i]}" ] &&
+    {
+    for j in ${pkg_conflicts[$i]}
+    do
+      retval=`get_pkg_index $j 1 $pkg_num`
+      [ $retval -ne 0 ] && echo -n "$retval ">>$tmp/conflicts.list
+    done
+    }
+  echo >>$tmp/conflicts.list
+done
+}
+
+function make_group_size()
+# computes the total size of a SINGLE group into $tmp/$1.size
+{
+local i kb_used=0 mb_used=0 pkg_use=0
+for i in `cat $tmp/$1.index.list`;
+do
+  [ ${selected[$i]} = "on" ] && \
+    {
+    pkg_use=$(( ${pkg_usize[$i]} / 1024 ))
+    let kb_used=$kb_used+$pkg_use
+    }
+done
+
+mb_used=$(( $kb_used / 1024 ))
+
+echo "Size used by group [$1] : $mb_used MB ($kb_used KB)">$tmp/$1.size
+}
+
+function make_groups_size()
+# computes the size of all groups intro $tmp/GROUPNAME.size
+{
+local i groupname locase_groupname
+
+infobox "Calculating group's size"
+
+while read i
+do
+  groupname=`echo $i|cut -f 1 -d ":"`
+  locase_groupname=`locase $groupname`
+  make_group_size $locase_groupname
+done <$groups_list
+}
+
+function make_tmp_files()
+# creates the $tmp files needed for setup
+{
+make_pkg_index_db
+make_group_index_db
+make_groups_size
+make_conflicts_index_db
+make_depends_index_db
+}
+
+function check_depends_bin()
+# checks the dependencies of $1, and selects the packages to be installed.
+# also, its recursive, getting into the dependencies of the
+# dependencies of $1 ....
+#
+# uncomment #1 to make setup lookup the dependencies from the array (slow)
+#
+{
+local tmp_depend dep_index
+[ ! -z "${pkg_depends[$1]}" ] && \
+#1  for tmp_depend in ${pkg_depends[$1]}
+  for dep_index in `grep "^$1:" $tmp/depends.list|cut -f 2- -d ":"`
+  do
+#1    get_pkg_index $tmp_depend 1 $pkg_num
+#1    dep_index=$?
+
+    if [ $ask_deps -ne 0 ]
+    then
+      if [ "${selected[$dep_index]}" = "off" -a "${selected[$1]}" = "on" ]
+      then
+        $dialog --backtitle "$version" --title " Confirmation " --yesno \
+        "\n${pkg_name[$1]} depends on ${pkg_name[$dep_index]}. Do you want to \
+install ${pkg_name[$dep_index]} ?\n\n" 0 0
+        [ $? -eq 0 ] && selected[$dep_index]="on"
+      fi
+    else
+      selected[$dep_index]="on"
+    fi
+      test ${deps_ok[$dep_index]} -eq 1 && check_depends_bin $dep_index # getting recursive
+      deps_ok[$dep_index]=0
+  done
+}
+
+function exists()
+# check if a package index ($1) is in the list provided by $2
+{
+local i nico=$1 #1
+shift
+for i in $*;
+do
+  [ "$i" = "$nico" ] && return 0
+done
+return 1
+}
+
+function check_depends_src()
+# used to put the dependencies of $1 (in the right order) into install_src_list
+# eg. if A depends on B, then B will be installed before A
+{
+local dep_index=""
+[ ! -z "${pkg_depends[$1]}" ] && \
+  {
+  for dep_index in `grep "^$1:" $tmp/depends.list|cut -f 2- -d ":"`
+  do
+    [ "${deps_ok[$dep_index]}" = "1" ] && check_depends_src $dep_index
+    selected[$dep_index]="on"
+    exists $dep_index $install_src_list || install_src_list="$install_src_list $dep_index"
+    deps_ok[$dep_index]=0
+  done
+  exists $1 $install_src_list || install_src_list="$install_src_list $1"
+  deps_ok[$1]=0
+  selected[$1]="on"
+  } || \
+  {
+  exists $1 $install_src_list || install_src_list="$install_src_list $1"
+  deps_ok[$1]=0
+  selected[$1]="on"
+  }
+}
+
+function show_pkg_checklist()
+# displays a dialog menu with all the packages from a group
+{
+local i tmp_pkg_index kb_used kb_used_f
+# build the menu. actually, build a small script file, since i dont
+# know how to make dialog accept a variable with multiple fields
+# for menu (fields containing spaces). so i build the script myself & run it
+# slow & ugly, i'd appreciate some help > trog@decebal.org
+cat <<EOF>$tmp/checklist.$1.sh
+#!/bin/bash
+$dialog --backtitle "$version" --title " Package Selection - $1 " \\
+--ok-label "Save" --item-help --extra-button --extra-label "Revert" \\
+--separate-output --cancel-label "Back" --checklist "\nSelect the packages \\
+you wish to install. Use space to select/deselect. When you're finished, \\
+press 'Save'. Press 'Revert' to revert your selection (usefull if you \\
+want to deselect all packages in group $1. Press 'Back' to go back \\
+to the group menu.\n\n" 44 76 33 \\
+EOF
+
+# Method 1 (with arrays) :
+# ---------
+#for (( i=1;i<=$pkg_num;i=$i+1 ))
+#do
+#  [ "${pkg_group[$i]}" = "$1" ]
+#    {
+#    echo "${pkg_name[$i]} \"${pkg_desc[$i]}\" ${selected[$i]} \\" >>$tmp/checklist.$1
+#    }
+#done
+# --------
+
+# Method 2 (with files - see make_tmp_files) :
+# --------
+for i in `cat $tmp/group.$1.list|cut -f 1 -d ":"` #get packages by their indexes
+do
+  kb_used=${pkg_usize[$i]}
+  kb_used=$(( $kb_used / 1024 ))
+  
+  if [ $kb_used -gt 1023 ]
+  then
+    kb_used_f=$(( $kb_used / 1024 ))
+    kb_used_f="$kb_used_f MB"
+  else
+    kb_used_f="$kb_used KB"
+  fi
+
+  echo "${pkg_name[$i]} \"${pkg_desc[$i]}\" ${selected[$i]} \"[Package Name : ${pkg_name[$i]}]  [Size : $kb_used_f]  [Version : ${pkg_ver[$i]}]\" \\" >>$tmp/checklist.$1.sh
+done
+# --------
+# i think if the number of packages in a group is > 100, the second method
+# is faster. could someone help me with a test/illumination ? trog@decebal.org
+
+cat <<EOF>>$tmp/checklist.$1.sh
+2>$tmp/selection.$1
+echo \$?>$tmp/pkg_list_button.$1
+EOF
+
+local pl_button=0
+sh $tmp/checklist.$1.sh
+pl_button=`cat $tmp/pkg_list_button.$1`
+# the user pressed "OK" (or "Save"), so we take the selection and
+# update the selected[] array 
+case $pl_button in
+0)
+  {
+  for i in `cat $tmp/group.$1.list|cut -f 1 -d ":"` #set all packages from group $1 to selected=off
+  do
+    selected[$i]="off"
+  done
+    
+  for i in `cat $tmp/selection.$1` #set all packages the user selected to selected=on
+  do
+    tmp_pkg_index=`grep ":${i}$" $tmp/group.$1.list|cut -f 1 -d ":"`
+    selected[$tmp_pkg_index]="on"
+  done
+  
+  # maybe the user selected/deselected some packages. compute new group size
+  make_group_size $1
+  }
+;;
+3)
+  # revert the selection...
+  for i in `cat $tmp/group.$1.list|cut -f 1 -d ":"` #set all packages from group $1 to selected=off
+  do
+    [ ${selected[$i]} = "off" ] && selected[$i]="on" || selected[$i]="off"
+  done
+  select_required
+  make_group_size $1
+;;
+esac
+rm -f $tmp/selection.$1 $tmp/pkg_list_button.$1 $tmp/checklist.$1.sh
+select_required
+return $pl_button
+}
+
+function usr1()
+{
+reset
+clear
+echo "AYRELIA            | STRALUCITOARE"
+echo "BENERIA            | CURATA"
+echo "SYM FORO           | MAREATA DOAMNA"
+echo "SYN DIO            | SUNT CREDINCIOASA"
+echo "SYN ZE SASE TRI    | SUNT CU TREI DE SASE"
+echo "KAI TETHI GATRI    | DAR ATAT TE ROG"
+echo "AYRIS NONAM        | CANDVA SA MA AJUTI"
+echo "NIASCHARIAN        | SA RENASC"
+echo
+echo "(acrostih dac)"
+echo
+}
+
+function usr2()
+{
+reset
+clear
+echo
+echo Pohvala hula
+echo
+echo Pren vremi vetuste
+echo Dupre reci imbre
+echo Di pin pregiur
+echo Arunc porunca
+echo Blastamateasca
+echo Pohvala hula
+echo Strapunga horba
+echo Sa pozvoleasca-n
+echo Ucaz pagin
+echo Dentai zapis
+echo Oblicind leftu
+echo Necicind vodata
+echo Haladuiasca
+echo Aiest salas
+echo Aret de lumen.
+echo
+echo
+echo Vel proclet
+echo
+echo Olat atocma
+echo Bezzaconic
+echo Blem ciudotvoret
+echo "'N horde salt"
+echo Vel proclet au
+echo Pirdalnic ce se cade-n
+echo A stapinirii vilhva
+echo Samodirjet pe thron.
+echo Idol moloh
+echo Diiavol cintes
+echo Singe valah
+echo Vampiri si vreji
+echo Lorus amar
+echo Vecinic varvar.
+echo Din ceir sirep
+echo Povodnic aleg
+echo Suous soltar
+echo Ascuns in dzale
+echo Otcirmui gospod
+echo Pohtitoriu si sorbitoriu
+echo In tunerid
+echo Cu sabia zmulta.
+echo
+echo "(Negura Bunget)"
+echo
+}
+
+function show_group_menu()
+# displays a list of all groups. when the user selects one group, he/she
+# will get a menu with all the packages in that group, in order to select/
+# deselect them.
+{
+local i sgm_but=0 sgm_sel groupsize j locase_groupname kb_used
+select_required
+make_groups_size
+
+until [ $sgm_but -eq 1 ]
+do
+
+# build GroupMenu.sh - displays a list of all groups (package groups)
+cat <<EOF>$tmp/GroupMenu.sh
+#!/bin/bash
+touch $tmp/sgm.sel
+$dialog --backtitle "$version" --title " Configure Group " \\
+--default-item "\`cat $tmp/sgm.sel\`" --item-help \\
+--ok-label "Configure" \\
+--cancel-label "Back" --menu "\nSelect the group of packages you want to \\
+browse. You will be able to manually select or deselect (for instalation) \\
+each package in the group.\n\nChoose 'Back' to return to \\
+the instalation main menu.\n\n" 0 0 0 \\
+EOF
+
+#infobox "Getting groups and computing space used"
+
+#for i in `cat $groups_list|tr " " "_"`;
+while read i
+do
+##  groupname=`echo $i|cut -f 1 -d ":"`
+##  groupdesc=`echo $i|cut -f 2- -d ":"|tr "_" " "`
+  groupname="${i%%:*}"
+  groupdesc="${i##*:}"
+  locase_groupname=`locase $groupname`
+  
+  echo -n "$groupname \"$groupdesc\" " >>$tmp/GroupMenu.sh
+
+  echo -n "\"" >>$tmp/GroupMenu.sh
+  tmp_size=`cat $tmp/${locase_groupname}.size`
+  echo -n $tmp_size >>$tmp/GroupMenu.sh
+  echo "\" \\" >>$tmp/GroupMenu.sh
+done <$groups_list
+
+cat <<EOF>>$tmp/GroupMenu.sh
+2>$tmp/sgm.sel
+echo \$?>$tmp/sgm.but
+EOF
+
+  # execute the script, shows the menu
+  sh $tmp/GroupMenu.sh
+
+  sgm_but=`cat $tmp/sgm.but`
+  sgm_sel=`cat $tmp/sgm.sel`
+  case $sgm_but in
+  0)
+    local pkg_checklist_ret=3
+    while [ $pkg_checklist_ret -eq 3 ]
+    do
+    show_pkg_checklist `locase $sgm_sel`
+    pkg_checklist_ret=$?
+    done
+  ;;
+  esac
+done
+rm -f $tmp/sgm.but $tmp/sgm.sel
+}
+
+function change_selection()
+# changes the package selection (selected[] array) according to
+# the instalation type specified - $1
+# $1 can be full, minimal, desktop...
+{
+infobox "Changing the package selection to $1"
+local i j
+[ "$1" = "full" ] && \
+  {
+  for (( i=1;i<=$pkg_num;i=$i+1 ))
+  do
+    selected[$i]="on"
+  done
+  } || \
+  {
+  for (( i=1;i<=$pkg_num;i=$i+1 ))
+  do
+    # i think this is faster than [ ! -z "`echo ${pkg_types[$i]}|grep $1`" ] && selected[$i]="on" || selected[$i]="off"
+    # but i can be wrong. any sugestions > trog@decebal.org please
+    selected[$i]="off"
+    # a package can be in several instalation types
+    for j in ${pkg_types[$i]};
+    do
+      [ "$j" = "$1" ] && selected[$i]="on"
+    done
+  done
+  }
+  select_required
+}
+
+function install_type_menu()
+# displays a list of instalation types (full,minimal...)
+# if the user selects one of them, changes the selected[] array
+# according to the selected instalation type
+{
+local itm_but=0 itm_sel i typename typedesc
+# InstallTypeMenu.sh - displays a list of all instalation types (full, minimal...)
+cat <<EOF>$tmp/InstallTypeMenu.sh
+#!/bin/bash
+touch $tmp/itm.sel
+$dialog --backtitle "$version" --title " Instalation Type " \\
+--default-item "$install_type" \\
+--cancel-label "Back" --menu "\nSelect the instalation type. Note that \\
+instalation types differ by the packages selected to be installed. \\
+So, if you select an instalation type, the setup script will select \\
+or deselect the packages to be installed.\nIf you manually selected or \\
+deselected some packages and now you choose an instalation type, your \\
+selection will be lost.\n\n" 0 0 0 \\
+EOF
+
+for i in `cat $types_list|tr " " "_"`
+do
+  typename=`echo $i|cut -f 1 -d ":"`
+  typedesc=`echo $i|cut -f 2- -d ":"|tr "_" " "`
+  echo "$typename \"$typedesc\" \\">>$tmp/InstallTypeMenu.sh
+done
+
+cat <<EOF>>$tmp/InstallTypeMenu.sh
+2>$tmp/itm.sel
+echo \$?>$tmp/itm.but
+EOF
+
+sh $tmp/InstallTypeMenu.sh
+itm_but=`cat $tmp/itm.but`
+itm_sel=`cat $tmp/itm.sel`
+rm -f $tmp/itm.{but,sel}
+
+[ $itm_but -eq 0 ] && \
+  {
+  change_selection `locase $itm_sel`
+  install_type=$itm_sel
+  }
+}
+
+function instalation_size()
+# calculate how much the selected packages occupy
+{
+      select_required
+      infobox "Calculating selected packages size"
+      local size=0 size_kb
+      for (( i=1;i<=$pkg_num;i=$i+1 ))
+      do
+        # count only selected packages
+        [ ${selected[$i]} = "on" ] && let size=$size+${pkg_usize[$i]}
+      done
+      size_kb=$(( $size / 1024 ))
+      size=$(( $size / 1048576 ))
+      $dialog --backtitle "$version" --title " Instalation size " \
+      --msgbox "\nThe selected packages take up $size MB ($size_kb KB) \
+of hard disk space (not counting unresolved dependencies).\n\n" 0 0
+}
+
+function format_partition()
+# asks the user what filesystem he wants and formats the $1 partition
+{
+local filesystem="" mkfs_ok=0
+$dialog --backtitle "$version" --title " Format " \
+--cancel-label "Back" --default-item "ext3" \
+--menu "\nPlease select the filesystem for the $1 partition.\n\n" 0 0 0 \
+"ext3" "Linux extended 3 filesystem (RECOMENDED journaled)" \
+"reiser" "Linux ReiserFS file system (journaled)" \
+"xfs" "SGI IRIX journaled file system (journaled)" \
+"jfs" "IBM's journaled file system (journaled)" \
+"ext2" "Linux extended 2 filesystem (NOT journaled)" 2>$tmp/filesystem && \
+  {
+  filesystem=`cat $tmp/filesystem`
+  rm -f $tmp/filesystem
+  $dialog --backtitle "$version" --title " FORMAT " --yesno \
+  "\nAre you sure you want to format $1 with $filesystem filesystem ?\n\
+note that this is irreversible.\n\n" 0 0 && \
+    {
+    infobox "Formatting $1 with $filesystem filesystem ..."
+    case "$filesystem" in
+      "jfs")mkfs.jfs -q $1 1>/dev/null 2>$tmp/mkfs.error || mkfs_ok=1;;
+      "reiser")mkreiserfs -q $1 1>/dev/null 2>$tmp/mkfs.error || mkfs_ok=1;;
+      "ext3")mkfs.ext3 -q $1 1>/dev/null 2>$tmp/mkfs.error || mkfs_ok=1;;
+      "ext2")mkfs.ext2 -q $1 1>/dev/null 2>$tmp/mkfs.error || mkfs_ok=1;;
+      "xfs")mkfs.xfs -f -q $1 1>/dev/null 2>$tmp/mkfs.error || mkfs_ok=1;;
+    esac
+    
+    [ $mkfs_ok -eq 1 ] && \
+      {
+      $dialog --backtitle "$version" --title " ERROR " --msgbox \
+      "\nAn error occured while trying to format $1 with the $filesystem \
+filesystem. Below you can see the error message.\n\n`cat $tmp/mkfs.error`\n\
+\n" 0 0
+      } || \
+      {
+      [ -z "`echo $formatted_partitions|grep $1`" ] && \
+        formatted_partitions="$formatted_partitions $1"
+      }
+
+    [ "$root_partition" = "$1" ] && root_filesystem=$filesystem
+    }
+  } || return 0
+}
+
+function format_partition_menu()
+# displays a menu of linux partitions, when the user selects a menu entry
+# calls format_partition
+{
+local i size partitions fp_sel=""
+for i in `fdisk -l|grep -v "swap"|grep "Linux"|cut -f 1 -d " "`;
+do
+  size=`fdisk -s $i`
+  size=$(( $size / 1024 ))
+  [ $size -gt 0 ] && \
+    {
+    [ "$i" != "$root_partition" ] && partitions="$partitions $i ${size}" || \
+      partitions="$partitions ${i}(root) $size"
+    }
+done
+
+#--default-item "$root_partition" \
+$dialog --backtitle "$version" --title " Format " \
+--menu "\nSelect the partition you want to format. You will be then asked \
+to select a filesystem for the partitions.\nOn the left collumn you can see \
+the partition name,\non the right column, you can see \
+its size in MB.\n\nYour current selected root partition is $root_partition.\n\n" \
+0 0 0 $partitions 2>$tmp/fp_sel && \
+  {
+  fp_sel=`cat $tmp/fp_sel`
+  rm -f $tmp/fp_sel
+
+# the root partition has a different menu entry ( root(/dev/hda1) ) ...
+  if [ ! -z "`echo $fp_sel|grep \"root\"`" ]
+  then
+    format_partition $root_partition
+  else
+    format_partition $fp_sel
+  fi
+  }
+}
+
+function select_root_partition()
+# a menu which displays all linux partitions on your hard drives
+# (except the swap partition)
+{
+local i partitions size name
+partitions=""
+for i in `fdisk -l|grep -v "swap"|grep "Linux"|cut -f 1 -d " "`;
+do
+  size=`fdisk -s $i`
+  size=$(( $size / 1024 ))
+  [ $size -gt 0 ] && partitions="$partitions $i ${size}"
+done
+
+$dialog --backtitle "$version" --title " Root Partition" \
+--default-item "$root_partition" \
+--menu "\nSelect the root partition.\n\nOn the left collumn you can see \
+the partition name,\non the right column, you can see \
+its size in MB.\n\nYour current selected root partition is $root_partition.\n\n" \
+0 0 0 $partitions 2>$tmp/rootpart && \
+  {
+  root_partition=`cat $tmp/rootpart`
+  rm -f $tmp/rootpart
+  $dialog --backtitle "$version" --title " Format " --yesno \
+  "\nDo you want to format the root partition ? If you dont update an \
+already installed system, then you need to format it. So, if this is a \
+fresh instalation, answer 'Yes'.\n\nDo you want to format $root_partition ?\
+\n\n" 0 0 && format_partition $root_partition
+  } || return 0
+}
+
+function select_root_filesystem()
+# which filesystem will the root partition will have
+{
+if [ "$root_partition" = "none" ]
+then
+  $dialog --backtitle "$version" --title " ERROR " --msgbox "\nYou havent \
+selected a root partition. Select one.\n\n" 0 0
+  return 1
+else
+  $dialog --backtitle "$version" --title " root Partition Filesystem " \
+  --cancel-label "Back" --default-item "$root_filesystem" \
+  --menu "\nPlease select the filesystem for your root partition ($root_partition).\n\n" 0 0 0 \
+  "ext3" "Linux extended 3 filesystem (RECOMENDED journaled)" \
+  "xfs" "SGI IRIX journaled file system (journaled)" \
+  "jfs" "IBM's journaled file system (journaled)" \
+  "ext2" "Linux extended 2 filesystem (NOT journaled)" 2>$tmp/root_fs
+[ $? -eq 0 ] && root_filesystem=`cat $tmp/root_fs`
+rm -f $tmp/root_fs
+fi
+}
+
+function format_root_partition()
+# formats the root partition with the selected root filesystem
+{
+if [ "$root_partition" = "none" ]
+then
+  $dialog --backtitle "$version" --title " ERROR " --msgbox "\nYou havent \
+selected a root partition. Select one.\n\n" 0 0
+  return 1
+else
+  $dialog --backtitle "$version" --title " Format " --yesno "\nAre you sure \
+you want to format $root_partition with the $root_filesystem filesystem ?\n\n\
+Be advised that if you answer yes, all your data on $root_partition will be \
+lost.\n\n" 0 0
+  [ $? -eq 0 ] &&
+    {
+    infobox "Formatting $root_partition with $root_filesystem filesystem ..."
+    case "$root_filesystem" in
+    "jfs")mkfs.jfs -q $root_partition 1>/dev/null 2>/dev/null;;
+    "reiser")mkreiserfs -q $root_partition 1>/dev/null 2>/dev/null;;
+    "ext3")mkfs.ext3 -q $root_partition 1>/dev/null 2>/dev/null;;
+    "ext2")mkfs.ext2 -q $root_partiton 1>/dev/null 2>/dev/null;;
+    "xfs")mkfs.xfs -f -q $root_partition 1>/dev/null 2>/dev/null;;
+    esac
+    }
+fi
+
+}
+
+function setup_root_partition()
+# root partition main menu
+{
+local rp_but=0 rp_sel=""
+until [ $rp_but -eq 1 ]
+do
+  $dialog --backtitle "$version" --title " ROOT Partition " \
+  --default-item "$rp_sel" --cancel-label "Back" \
+  --menu "\nSelect 'partition' to choose which hard disk partition to use \
+as your linux root partition.\n\nSelect 'filesystem' to choose the \
+filesystem to use on your root partition.\n\n" 0 0 0 \
+  "Partition" "Select your root partition (/dev/hdXXX)" \
+  "Filesystem" "Select your root filesystem (ext3,jfs,....)" \
+  "Format" "Format the root partition with the selected filesystem" \
+  2>$tmp/rp_sel
+  rp_but=$?
+  rp_sel=`cat $tmp/rp_sel`
+  rm $tmp/rp_sel
+
+  case $rp_but in
+    0)
+    case $rp_sel in
+      "Partition") select_root_partition;;
+      "Filesystem") select_root_filesystem;;
+      "Format") format_root_partition;;
+    esac
+    ;;
+  esac
+done
+}
+
+
+function select_swap_partition()
+# selects the swap partitions (a checklist)
+{
+local i partitions size name
+partitions=""
+for i in `fdisk -l|grep "Linux swap"|cut -f 1 -d " "`;
+do
+  size=`fdisk -s $i`
+  size=$(( $size / 1024 ))
+  [ $size -gt 0 ] && partitions="$partitions $i $size ON"
+done
+
+$dialog --backtitle "$version" --title " swap Partition" \
+--cancel-label "Back" \
+--checklist "\nSelect the swap partitions. If several partitions are made \
+you can check/uncheck them with space.\n\nOn the left collumn you can see \
+the partition name, on the right column, you can see \
+its size in MB.\n\nYour current selected swap partition(s) is $swap_partition" \
+0 0 0 $partitions 2>$tmp/swappart
+
+[ $? -eq 0 ] &&
+  {
+    swap_partition=`cat $tmp/swappart`
+    [ ! -z "$swap_partition" ] &&
+    {
+    $dialog --backtitle "$version" --title " swap Partition " \
+    --yesno "\nYou selected ($swap_partition) as your swap partition(s). \
+Do you want to format the partition(s) ? (RECOMENDED)\n\n" 0 0
+    [ $? -eq 0 ] &&
+      {
+        for i in $swap_partition;
+        do
+          infobox "Formatting $i as swap"
+	  mkswap $i 1>/dev/null 2>/dev/null
+        done
+        $dialog --backtitle "$version" --title " swap formated " --msgbox \
+        "\nThe partition(s) ($swap_partition) was/were formatted.\n\n" 0 0
+      }
+    }
+  }
+rm -f $tmp/swappart
+
+}
+
+function add_linux_partition()
+{
+local partitions="" i size alp_but alp_sel fs_type alp_dir alp_tmp
+for i in `fdisk -l|grep -v "swap"|grep "Linux"|cut -f 1 -d " "`
+do
+  size=`fdisk -s $i`
+  size=$(( $size / 1024 ))
+  [ $size -gt 0 ] && partitions="$partitions $i $size"
+done
+
+$dialog --backtitle "$version" --title " Linux Mountpoint" \
+--cancel-label "Back" \
+--menu "\nSelect the linux partition.\n\nOn the left collumn you can see \
+the partition name, on the right column, you can see \
+its size in MB.\n\n" \
+0 0 0 $partitions 2>$tmp/alp_sel
+alp_but=$?
+alp_sel=`cat $tmp/alp_sel`
+rm -f $tmp/alp_sel
+
+[ $alp_but -eq 0 ] &&
+  {
+  $dialog --backtitle "$version" --title " $alp_sel mountpoint " --inputbox \
+  "\nEnter the directory where $alp_sel will be mounted.\n\nYou will be \
+able to change this after the instalation by editing /etc/fstab.\n\n" 0 0 \
+"/mnt/`basename $alp_sel`" 2>$tmp/alp_dir
+  alp_tmp=$?
+  alp_dir=`cat $tmp/alp_dir`
+  rm -f $tmp/alp_dir
+  [ $alp_tmp -eq 0 ] &&
+    {
+    local fs=`file -s $alp_sel|cut -f 5 -d " "`
+    case $fs in
+      "ext3") fs_type="ext3";;
+      "ext2") fs_type="ext2";;
+      *)
+    $dialog --backtitle "$version" --title " Choose the Filesystem " \
+    --menu "\nThe filesystem of $alp_sel couldnt be detected. Select the \
+filesystem of $alp_sel from the menu below:\n\n" 0 0 0 \
+    "ext3" "Linux extended 3 filesystem" \
+    "ext2" "Linux extended 2 filesystem" \
+    "xfs" "SGI IRIX journaled file system" \
+    "jfs" "IBM's journaled file system" \
+    "reiser" "Linux ReiserFS file system" \
+    "vfat" "Windows FAT filesystem" \
+    "iso9660" "CDROM" 2>$tmp/fs_type
+    fs_type=`cat $tmp/fs_type`
+    rm -f $tmp/fs_type
+    ;;
+     esac
+# FIXME use format_partition instead
+      $dialog --backtitle "$version" --title " Format " --defaultno \
+      --yesno "\nDo you want \
+to format $alp_sel ?\n\nBe advised that formatting \
+$alp_sel will DESTROY all data on it.\n\n" 0 0
+      alp_tmp=$?
+      [ $alp_tmp -eq 0 ] &&
+        {
+        $dialog --backtitle "$version" --title " Choose the Filesystem " \
+        --menu "\nWhat filesystem do you want to have on $alp_sel ?\n\n" 0 0 0 \
+        "ext3" "Linux extended 3 filesystem" \
+        "ext2" "Linux extended 2 filesystem" \
+        "xfs" "SGI IRIX journaled file system" \
+        "jfs" "IBM's journaled file system" \
+        "reiser" "Linux ReiserFS file system" \
+	2>$tmp/fs_type
+        [ $? -eq 0 ] && fs_type=`cat $tmp/fs_type` || fs_type="ext3"
+        rm -f $tmp/fs_type
+	
+        infobox "Formatting $alp_sel with $fs_type filesystem..."
+	case $fs_type in
+          "jfs")mkfs.jfs -q $alp_sel 1>/dev/null 2>/dev/null;;
+          "reiser")mkreiserfs -q $alp_sel 1>/dev/null 2>/dev/null;;
+          "ext3")mkfs.ext3 -q $alp_sel 1>/dev/null 2>/dev/null;;
+          "ext2")mkfs.ext2 -q $alp_sel 1>/dev/null 2>/dev/null;;
+          "xfs")mkfs.xfs -f -q $alp_sel 1>/dev/null 2>/dev/null;;
+	  *) infobox "Cant format $alp_sel with $fs_type filesystem !"
+	esac
+	}
+	cat $tmp/lin_fstab|grep -v "^${alp_sel}" >$tmp/lin_fstab1
+	mv -f $tmp/lin_fstab1 $tmp/lin_fstab
+	echo -e "$alp_sel\t$alp_dir\t$fs_type\tdefaults\t\t0 0" >>$tmp/lin_fstab
+	$dialog --backtitle "$version" --title " fstab entry " \
+	--msgbox "\nAdded :\n\n \
+$alp_sel      $alp_dir      $fs_type      defaults      0 0 \
+\n\nto /etc/fstab\n\n" 0 0 
+    }
+  }
+}
+
+
+function add_win_partition()
+# dont flame me for the code....i dont have any fat32/ntfs partitions
+# at home, so i cant test the code...i can just hope it will work
+# coding blindly...
+{
+local partitions="" i size device line awp_but awp_sel win_mountpoint awp_tmp
+local firstchar awp_type
+
+fdisk -l >$tmp/partitions
+cat $tmp/partitions|grep "FAT32" >$tmp/fat32_partitions
+cat $tmp/partitions|grep "NTFS" >$tmp/ntfs_partitions
+rm $tmp/partitions
+
+# check if there are windows partitions on the hard drives
+if [ ! -s $tmp/fat32_partitions -a ! -s $tmp/ntfs_partitions ] # both files have a length of 0 - great !
+then
+  $dialog --backtitle "$version" --title " ERROR " --msgbox "\nNo Windows \
+partitions found on your hard drive.\n\n" 0 0
+  rm -f $tmp/ntfs_partitions
+  rm -f $tmp/fat32_partitions
+  return
+fi
+
+# get FAT32 partitions
+while read line
+do
+firstchar=`echo "$line"|cut -b 1`  # check if its a device (/dev/...)
+[ "$firstchar" = "/" ] &&
+  {
+  device=`echo "$line"|cut -f 1 -d " "`
+  size=`fdisk -s $device` #size of device
+  size=$(( $size / 1024 ))
+  partitions="$partitions $device-(FAT32) $size"
+  }
+done <$tmp/fat32_partitions
+rm -f $tmp/fat32_partitions
+
+#get NTFS partitions
+while read line
+do
+firstchar=`echo "$line"|cut -b 1` # check if its a device (/dev/...)
+[ "$firstchar" = "/" ] &&
+  {
+  device=`echo "$line"|cut -f 1 -d " "`
+  size=`fdisk -s $device`
+  size=$(( $size / 1024 ))
+  partitions="$partitions $device-(NTFS) $size"
+  }
+done <$tmp/ntfs_partitions
+rm -f $tmp/ntfs_partitions
+
+# display the menu
+$dialog --backtitle "$version" --title " Select the partition " \
+--cancel-label "Back" --menu "\n\
+Select the MS Windows partition you want to add to the fstab.\n\nOn the \
+left column you can see the partition filesystem and number, and on the \
+right column its size in MB.\n\n" 0 0 0 $partitions 2>$tmp/awp_sel
+awp_but=$?
+awp_sel=`cat $tmp/awp_sel`
+awp_sel=`echo $awp_sel|cut -f 1 -d "-"`
+awp_type=`echo $awp_sel|cut -f 2- -d "(" -f 1 -d ")"`
+rm -f $tmp/awp_sel
+
+[ $awp_but -eq 0 ] &&
+  {
+  $dialog --backtitle "$version" --title " Windows Mountpoint Directory " \
+  --inputbox "\nEnter the directory where $aw_sel will be mounted :\n\n" \
+  0 0 "/mnt/windows-`basename $awp_sel`" 2>$tmp/win_mountpoint
+  awp_tmp=$?
+  [ $awp_tmp -eq 0 ] &&
+    {
+    win_mountpoint=`cat $tmp/win_mountpoint`
+    rm -f $tmp/win_mountpoint
+    cat $tmp/win_fstab|grep -v "^${awp_sel}" >$tmp/win_fstab1
+    mv -f $tmp/win_fstab1 $tmp/win_fstab
+    
+    if [ "$awp_type" = "NTFS" ]
+    then
+      echo -e "$awp_sel\t$win_mountpoint\tntfs\tdefaults\t\t0 0" >>$tmp/win_fstab
+      $dialog --backtitle "$version" --title " fstab entry " \
+      --msgbox "\nAdded :\n\n \
+$awp_sel      $win_mountpoint      ntfs      defaults      0 0\
+\n\nto /etc/fstab\n\n" 0 0
+    else
+      echo -e "$awp_sel\t$win_mountpoint\tvfat\tdefaults\t\t0 0" >>$tmp/win_fstab
+      $dialog --backtitle "$version" --title " fstab entry " \
+      --msgbox "\nAdded :\n\n \
+$awp_sel      $win_mountpoint      vfat      defaults      0 0\
+\n\nto /etc/fstab\n\n" 0 0
+    fi
+    
+    }
+  }
+}
+
+function save_mouse()
+# $1-type
+# $2-device
+{
+    rm -f $root/dev/mouse
+    ln -s $2 $root/dev/mouse
+    cat $root/etc/conf.d/mouse|replace "MOUSE_TYPE=" "MOUSE_TYPE=$1" >$tmp/mouse1
+    cat $tmp/mouse1|replace "MOUSE_DEVICE=" "MOUSE_DEVICE=\/dev\/input\/mouse0" >$tmp/mouse2
+    mv -f $tmp/mouse2 $root/etc/conf.d/mouse
+    rm -f $tmp/mouse1
+    chmod +r $root/etc/conf.d/mouse
+}
+
+function serial_mouse() {
+local smbutton=0 smsel=0 mousedev
+$dialog --backtitle "$version" --title " Mouse Configuration " \
+--cancel-label "Back" --menu "\nThe mouse you selected is connected \
+to a serial port. Which port would you like to use?\n\n" 0 0 0 \
+"/dev/ttyS0" "(COM1: under DOS)" \
+"/dev/ttyS1" "(COM2: under DOS)" \
+"/dev/ttyS2" "(COM3: under DOS)" \
+"/dev/ttyS3" "(COM4: under DOS)" 2> $tmp/mouse.port
+smbutton=$?
+smsel=`cat $tmp/mouse.port`
+rm $tmp/mouse.port
+[ $smbutton -eq 0 ] && {
+    mousedev=`basename $smsel`
+    save_mouse $1 $mousedev
+  } || mouse_configuration
+}
+
+function mouse_configuration() {
+local mcbutton mcsel
+$dialog --backtitle "$version" \
+--title " Mouse Configuration " --cancel-label "Back" --menu \
+"\nWhat kind of mouse do you have?\n\n" 0 0 0 \
+"ps2" "PS/2 port mouse (most desktops and laptops)" \
+"imps2" "Microsoft PS/2 Intellimouse" \
+"bare" "2 button Microsoft compatible serial mouse" \
+"ms" "3 button Microsoft compatible serial mouse" \
+"mman" "Logitech serial MouseMan and similar devices" \
+"msc" "MouseSystems serial (most 3 button serial mice)" \
+"pnp" "Plug and Play (serial mice that do not work with ms)" \
+"usb" "USB connected mouse" \
+"ms3" "Microsoft serial Intellimouse" \
+"netmouse" "Genius Netmouse on PS/2 port" \
+"logi" "Some serial Logitech devices" \
+"logim" "Make serial Logitech behave like msc" \
+"atibm" "ATI XL busmouse (mouse card)" \
+"inportbm" "Microsoft busmouse (mouse card)" \
+"logibm" "Logitech busmouse (mouse card)" \
+"ncr" "A pointing pen (NCR3125) on some laptops" \
+"twid" "Twiddler keyboard, by HandyKey Corp" \
+"genitizer" "Genitizer tablet (relative mode)" \
+"js" "Use a joystick as a mouse" \
+"wacom" "Wacom serial graphics tablet" 2> $tmp/mouse.type
+mcbutton=$?
+mcsel=`cat $tmp/mouse.type`
+rm -f $tmp/mouse.type
+[ $mcbutton -eq 0 ] && \
+case "$mcsel" in
+    'ps2')
+    save_mouse ps2 psaux
+    ;;
+    'imps2')
+    save_mouse imps2 psaux
+    ;;
+    'bare')
+    serial_mouse $mcsel
+    ;;
+    'ms')
+    serial_mouse $mcsel
+    ;;
+    'mman')
+    serial_mouse $mcsel
+    ;;
+    'msc')
+    serial_mouse $mcsel
+    ;;
+    'pnp')
+    serial_mouse $mcsel
+    ;;
+    'usb')
+    rm -f /dev/mouse
+    ln -s input/mice $root/dev/mouse
+    cat $root/etc/conf.d/mouse|replace "MOUSE_TYPE=" "MOUSE_TYPE=usb" >$tmp/mouse1
+    cat $tmp/mouse1|replace "MOUSE_DEVICE=" "MOUSE_DEVICE=\/dev\/mouse" >$tmp/mouse2
+    mv -f $tmp/mouse2 $root/etc/conf.d/mouse
+    rm -f $tmp/mouse1
+    chmod +r $root/etc/conf.d/mouse
+    ;;
+    'ms3')
+    serial_mouse $mcsel
+    ;;
+    'netmouse')
+    save_mouse netmouse psaux
+    ;;
+    'logi')
+    serial_mouse $mcsel
+    ;;
+    'logim')
+    serial_mouse $mcsel
+    ;;
+    'atibm')
+    save_mouse atibm atibm
+    ;;
+    'inportbm')
+    save_mouse inportbm inportbm
+    ;;
+    'logibm')
+    save_mouse logibm logibm
+    ;;
+    'ncr')
+    save_mouse ncr psaux
+    ;;
+    'twid')
+    serial_mouse $mcsel
+    ;;
+    'genitizer')
+    serial_mouse $mcsel
+    ;;
+    'js')
+    save_mouse js js0
+    ;;
+    'wacom')
+    serial_mouse $mcsel
+    ;;
+    esac
+}
+
+
+function configure_mountpoints()
+# ask the user to create several mountpoints in /etc/fstab
+{
+local cm_but=0 cm_sel=""
+touch $tmp/fstab
+
+# check if we have a root partition
+#if [ "$root_partition" = "none" ] &&
+#then
+#  $dialog --backtitle "$version" --title " ERROR " --msgbox \
+#  "\nYou havent selected a root partition.
+#  return
+#fi
+
+until [ $cm_but -eq 1 ]
+do
+  $dialog --backtitle "$version" --title " Configure Mountpoints " \
+  --default-item "$cm_sel" --cancel-label "Back" \
+  --menu "\nWhat mountpoint do you want to add to /etc/fstab.\n\n" 0 0 0 \
+  "Linux" "Add a Linux mountpoint" \
+  "Windows" "Add a MS Windows mountpoint" \
+  2>$tmp/cm_sel
+  cm_but=$?
+  cm_sel=`cat $tmp/cm_sel`
+  rm -f $tmp/cm_sel
+
+  case $cm_but in
+  0)
+    case "$cm_sel" in
+      "Linux") add_linux_partition ;;
+      "Windows") add_win_partition ;;
+    esac
+  ;;
+  esac
+
+done
+}
+
+
+function make_fstab()
+{
+local j
+# maybe the file exist, lets empty it
+cat /dev/null >$tmp/fstab
+
+# dont need to check for $root_filesystem since default is ext3 (look at the begining of the script)
+
+# make the $root directory. here will be all of the mountpoints created
+mkdir -p $root 2>/dev/null
+
+# add root partition to fstab
+echo -e "$root_partition\t/\t\t$root_filesystem\tdefaults\t\t1 1" >>$tmp/fstab
+
+# add swap partitions to fstab (if there is/are any)
+[ "$swap_partition" != "none" ] && \
+for i in $swap_partition
+do
+  j=`echo $i|tr -d "\""`
+  echo -e "$j\tswap\t\tswap\tdefaults\t\t0 0" >>$tmp/fstab
+done
+
+# if there are windows partitions configured from the main menu, add them to fstab
+touch $tmp/win_fstab
+cat $tmp/win_fstab >>$tmp/fstab
+
+# if there are linux partitions configured (mountpoints), add them to fstab
+touch $tmp/lin_fstab
+cat $tmp/lin_fstab >>$tmp/fstab
+
+# add floppy, proc, tmpfs .... to fstab
+echo -e "/dev/cdrom\t/media/cdrom\tiso9660\tro,user,noauto,unhide\t0 0" >>$tmp/fstab
+echo -e "/dev/dvd\t/media/dvd\tiso9660\tro,user,noauto,unhide\t0 0" >>$tmp/fstab
+echo -e "/dev/cdrw\t/media/cdrw\tiso9660\tro,user,noauto,unhide\t0 0" >>$tmp/fstab
+echo -e "/dev/fd0\t/media/floppy\tauto\tnoauto,user\t\t0 0" >>$tmp/fstab
+echo -e "devpts\t\t/dev/pts\tdevpts\tgid=5,mode=620\t\t0 0" >>$tmp/fstab
+echo -e "proc\t\t/proc\t\tproc\tdefaults\t\t0 0" >>$tmp/fstab
+echo -e "tmpfs\t\t/dev/shm\ttmpfs\tdefaults\t\t0 0" >>$tmp/fstab
+echo -e "sysfs\t\t/sys\t\tsysfs\tdefaults\t\t0 0" >>$tmp/fstab
+}
+
+
+function mount_mountpoints()
+# mount all linux mountpoints, so that the instalation will
+# install the packages in the user desired directories
+# i.e.
+# if the user selected /usr to be mounted in /mnt/hdb1
+# then, /mnt/hdb1 needs to be mounted in $root/usr, prior to the instalation
+# of the packages
+#
+# also, creates those directories
+{
+local partition directory filesystem line
+
+# FIRST thing to do, mount the $root_partition
+case $root_filesystem in
+  "jfs"|"xfs"|"ext3"|"ext2") mount $root_partition $root -t $root_filesystem;;
+  "reiser") mount $root_partition $root -t reiserfs;;
+  *) mount $root_partition $root;;
+esac
+
+# we dont care about the windows mountpoints, mount only the linux mountpoints
+[ -s $tmp/lin_fstab ] &&
+  {
+  while read line
+  do
+    partition=`echo "$line"|awk '{print $1}'`
+    directory=`echo "$line"|awk '{print $2}'`
+    filesystem=`echo "$line"|awk '{print $3}'`
+    mkdir -p ${root}/${directory} 2>/dev/null
+    infobox "Mounting $partition ($directory) with $filesystem filesystem"
+    if [ "$filesystem" = "reiser" ];
+    then
+      mount $partition ${root}/${directory} -t reiserfs
+    else
+      mount $partition ${root}/${directory} -t $filesystem
+    fi
+  done <$tmp/lin_fstab
+  }
+
+# mkdir only (not mount) the windows mountpoints
+[ -s $tmp/win_fstab ] &&
+  {
+  while read line
+  do
+    directory=`echo "$line"|awk '{print $2}'`
+    mkdir -p ${root}/${directory} 2>/dev/null
+  done <$tmp/win_fstab
+  }
+
+}
+
+function make_lilo()
+{
+local i winpartitions
+cat <<EOF>$tmp/lilo.conf
+#
+# Decebal Linux 0.9.0 instalation generated lilo.conf 
+# - type 'man lilo.conf' to get some help
+#
+boot=${root_partition:0:8}
+prompt
+timeout=150
+lba32
+#compact
+vga=extended
+menu-scheme=Wb
+
+# Normal VGA console
+# vga = normal
+# VESA framebuffer console @ 1024x768x64k
+# vga=791
+# VESA framebuffer console @ 1024x768x32k
+# vga=790
+# VESA framebuffer console @ 1024x768x256
+# vga=773
+# VESA framebuffer console @ 800x600x64k
+# vga=788
+# VESA framebuffer console @ 800x600x32k
+# vga=787
+# VESA framebuffer console @ 800x600x256
+# vga=771
+# VESA framebuffer console @ 640x480x64k
+# vga=785
+# VESA framebuffer console @ 640x480x32k
+# vga=784
+# VESA framebuffer console @ 640x480x256
+# vga=769
+
+read-only
+default=Decebal
+menu-title=" DECEBAL "
+
+image=/boot/vmlinuz-`echo $kernel|cut -f 2-3 -d "-"-1`
+    label=Decebal
+    root=$root_partition
+    read-only
+    
+EOF
+
+# add windows partitions, so that lilo can boot windows...
+# couldnt test this since i dont have any windows partitions
+# could work only for <=win98 ...`man lilo.conf` gave me some help
+# i'm blindly following their examples
+# aint sure about the "boot-as=0x80" line, drop me a line at trog@decebal.org
+# if you can help, please
+
+winpartitions=`fdisk -l|grep "FAT32
+NTFS" |cut -f 1 -d " "`
+
+if [ ! -z "$winpartitions" ]
+then
+  local j=0
+  echo "# Windows partitions" >>$tmp/lilo.conf
+  echo >>$tmp/lilo.conf
+  for i in $winpartitions
+  do
+    let j=$j+1
+    cat <<EOF>>$tmp/lilo.conf
+other=$i
+    label=Windows${j}
+    boot-as=0x80
+
+EOF
+  done
+fi
+
+cp $tmp/lilo.conf $root/etc/lilo.conf
+$dialog --backtitle "$version" --title " LILO " --yesno \
+"\nIts about time to configure LILO. LILO is the LInux LOader and \
+is needed to boot up Linux.\nIf you have already a boot manager \
+installed, then its probably a bad ideea to overwrite it (MBR).\n\
+If you have M\$ Windows partitions installed, they will be detected \
+and you will be able to boot M\$ Windows.\n\
+If you answer 'No' here, you wont be able to boot Decebal Linux\n\
+Do you want to install lilo ?\n\n" 0 0
+if [ $? -eq 0 ];
+then
+  infobox "Installing LILO"
+# for some reason i removed makedev...and lilo wont install
+# if there are no devices...ugly, TODO
+#  cp /dev/hd* $root/dev/
+#  cp /dev/sd* $root/dev/
+
+# we need to have the devices in /dev
+chroot $root mount /proc &>/dev/null
+chroot $root mount /sys &>/dev/null
+chroot $root decebal start udev &>/dev/null
+
+  local lilo_err=0
+# if $root_partition="/dev/hda5"
+#${root_partition:0:8}="/dev/hda"
+#${root_partition:8}="5"
+#
+#lilo -M /dev/hda (make a mbr, needed if the root partition>4)
+  echo "[+] Running : lilo -M ${root_partition:0:8}" >$tmp/lilo_output
+  chroot $root lilo -M ${root_partition:0:8} 1>&2 2>>$tmp/lilo_output
+  lilo_err=$(( $lilo_err + $? ))
+  echo >>$tmp/lilo_output
+
+[ ${root_partition:8} -le 4 ] && \
+  {
+#lilo -A /dev/hda 3  (make the third partition active)
+  echo "[+] Running : lilo -A ${root_partition:0:8} ${root_partition:8}" >>$tmp/lilo_output
+  chroot $root lilo -A ${root_partition:0:8} ${root_partition:8} 1>&2 2>>$tmp/lilo_output
+  lilo_err=$(( $lilo_err + $? ))
+  echo >>$tmp/lilo_output
+  }
+#lilo -b /dev/hda -C /etc/lilo.conf
+  echo "[+] Running : lilo -b ${root_partition:0:8} -C /etc/lilo.conf" >>$tmp/lilo_output
+  chroot $root lilo -b ${root_partition:0:8} -C /etc/lilo.conf 1>&2 2>>$tmp/lilo_output
+  lilo_err=$(( $lilo_err + $? ))
+  echo >>$tmp/lilo_output
+
+# do this so we can umount the partition
+chroot $root umount /proc 1>/dev/null 2>/dev/null
+chroot $root umount /sys 1>/dev/null 2>/dev/null
+chroot $root decebal stop udev 1>/dev/null 2>/dev/null
+
+  [ $lilo_err -ne 0 ] && \
+    {
+    cat <<EOF>>$tmp/lilo.err
+
+
+!!! DONT CLOSE THIS WINDOW UNTIL YOU READ EVERYTHING !!!
+
+Some error occured while trying to install LILO (LInux LOader).
+
+There is a possibility that lilo is installed (a minor error
+occured) but this could also mean serious trouble.
+
+If so, your system wont be able to boot Decebal Linux.
+
+You can switch to tty2 (ALT+F2), activate the console and try
+to fix things manually. To do this, you have to chroot in the
+newly installed system (/tmp/setup/root) by running :
+
+chroot /tmp/setup/root
+
+After that, you have to mount the proc filesystem by running :
+
+mount /proc
+
+Then, run 'lilo' with no parameters. If no error messages
+appear, everything is ok, Decebal will boot.
+If not, you're on your own.
+
+You can edit /etc/lilo.conf by running 'nano /etc/lilo.conf'.
+Use Ctrl+O to save and CTRL+X to leave the editor.
+You can also read the manual by runnin 'man lilo.conf' and
+'man lilo'. Feedback is welcomed.
+
+When you leave chroot, dont forget to umount /proc (IMPORTANT).
+Type 'exit' to leave chroot.
+
+Below you can see the error messages and the commands which
+caused the error.
+
+--------------------------------------------------------------
+
+EOF
+    cat $tmp/lilo.err $tmp/lilo_output >$tmp/lilo.message
+    rm -f $tmp/{lilo.err,lilo_output}
+    $dialog --backtitle "$version" --title " LILO ERROR " \
+    --textbox $tmp/lilo.message 0 0
+    }
+fi
+}
+
+function make_cd_list()
+# remakes $install_list according to the $pkg_cd[] array so that
+# packages from the second cd are into the list after the packages from
+# the first cd, the packages from the third cd are after the ones on the
+# second cd...
+# TODO : when decebal grows to be on more than 3 cd's, modify the function
+# to have more than 3 sub-lists. or use arrays...
+{
+local install_list1="" install_list2="" install_list3="" install_list4="" i
+for i in $install_list
+do
+  case ${pkg_cd[$i]} in
+    1) install_list1="$install_list1 $i" ;;
+    2) install_list2="$install_list2 $i" ;;
+    3) install_list3="$install_list3 $i" ;;
+    4) install_list4="$install_list4 $i" ;;
+  esac
+done
+install_list="$install_list1 $install_list2 $install_list3 $install_list4"
+}
+
+
+function install_packages_bin()
+# install the selected packages and prints out the result (in $tmp/syslog)
+{
+local installed_size_mb remaining_size_mb
+
+# compute the unpacked size of the selected packages
+# $install_size represents the size of the instalation (all selected packages)
+local i=-1
+local install_size=0
+until [ $i -gt $pkg_num ]
+do
+  let i=$i+1
+  [ "${selected[$i]}" = "on" ] && let install_size=$install_size+${pkg_usize[$i]}
+done
+install_size=$(( $install_size / 1024 )) # from B to K
+
+local install_size_mb=$(( $install_size / 1024 )) # from K to M
+local installed_size=0
+local installed_size_mb=0
+local remaining_size=$install_size
+local remaining_size_mb=$(( $remaining_size / 1024 ))
+local percent_completed=0
+local dpack_err
+local date_eta date_passwd seconds_eta seconds_passed
+
+[ "$install_medium" = "Internet" ] && mkdir -p $root/tmp/decebal-binaries/ 2>/dev/null
+
+[ "$conf_wget_log" = "yes" ] && local wget_opts="--append-output $tmp/syslog" || local wget_opts="-q -o $tmp/wget-log"
+
+echo "==> Starting the instalation of the packages." > $tmp/syslog
+echo "$i packages will be installed, a total of $install_size_mb MB" >>$tmp/syslog
+echo >>$tmp/syslog
+
+# this must be here, just before the 'for' in order to have a realistic ETA
+date_start=`date +%s`
+
+#TODO vezi sa pui sa opreasca timpu si cand afiseaza mesajele de eroare
+for i in $install_list
+do
+  if [ "${installed[$i]}" = "off" ]
+  then
+
+    seconds_passed=$(( `date +%s` - $date_start ))
+    [ $percent_completed -gt 0 ] && seconds_eta=$(( ( 100 - $percent_completed ) * $seconds_passed / $percent_completed )) || seconds_eta=0
+    date_eta=`make_date $seconds_eta`
+    date_passed=`make_date $seconds_passed`
+
+    # if we install from a cd, we must check if its the right one
+    [ "$install_medium" = "CD" ] && \
+    [ $current_cd -ne ${pkg_cd[$i]} ] && \
+      {
+      # keep the date so it wont screw the ETA and time passed
+      date_stop=`date +%s`
+      eject $cd_device
+      ask_cd_bin ${pkg_cd[$i]}
+      local dif_date=$(( $date_stop - $date_start ))
+      date_start=$(( `date +%s` - $dif_date ))
+      }
+
+    pkg_size=$(( ${pkg_usize[$i]} / 1024 ))
+    [ $pkg_size -ge 1024 ] && pkg_size_m="$(( $pkg_size / 1024 )) MB" || pkg_size_m="$pkg_size KB"
+
+    echo "[+] Installing ${pkg_name[$i]}-${pkg_ver[$i]} ($pkg_size_m)" >>$tmp/syslog
+    [ -z "${pkg_desc[$i]}" ] && echo "(no description)" >>$tmp/syslog || echo "${pkg_desc[$i]}" >>$tmp/syslog
+
+    [ "$install_medium" = "Internet" ] && \
+      {
+      echo " - Downloading ${pkg_file[$i]} (${pkg_csize[$i]}K)" >>$tmp/syslog
+      echo "   (from $setup_mirror/${pkg_group[$i]})" >>$tmp/syslog
+      }
+
+    $dialog --begin 13 3 --keep-window --backtitle "$version - $install_type instalation" --tailboxbg $tmp/syslog 20 70 \
+    --and-widget --begin 8 3 --keep-window --infobox "$installed_size_mb MB installed. $remaining_size_mb MB remaining" 3 70 \
+    --and-widget --begin 3 3 --keep-window --infobox "Instalation $percent_completed% completed" 3 32 \
+    --and-widget --begin 3 38 --keep-window --infobox "$date_passed passed, ETA : $date_eta" 3 35
+
+# download the package to $root/tmp/decebal-binaries
+    [ "$install_medium" = "Internet" ] && \
+      {
+      wget -c -t0 $setup_mirror/${pkg_group[$i]}/${pkg_file[$i]} -P \
+        $root/tmp/decebal-binaries/${pkg_group[$i]} \
+        $wget_opts -b 1>$tmp/wget.pid
+
+      wget_pid=`cat $tmp/wget.pid|grep pid|cut -f 5 -d " "|cut -f 1 -d "."`
+      rm -f $tmp/wget.pid
+
+        [ "$conf_wget_log" = "no" -o $conf_refresh_interval -eq 0 ] && \
+	{
+	while [ ! -z "`ps $wget_pid|grep -v \"PID\"`" ]
+        do
+	  sleep 1
+        done
+        } || \
+      [ $conf_refresh_interval -gt 0 ] && \
+        {
+        while [ ! -z "`ps $wget_pid|grep -v \"PID\"`" ]
+        do
+	  sleep $conf_refresh_interval
+          seconds_passed=$(( `date +%s` - $date_start ))
+          [ $percent_completed -gt 0 ] && seconds_eta=$(( $seconds_eta - $conf_refresh_interval )) || seconds_eta=0
+          date_eta=`make_date $seconds_eta`
+          date_passed=`make_date $seconds_passed`
+
+          $dialog --begin 13 3 --keep-window --backtitle "$version - $install_type instalation" --tailboxbg $tmp/syslog 20 70 \
+          --and-widget --begin 8 3 --keep-window --infobox "$installed_size_mb MB installed. $remaining_size_mb MB remaining" 3 70 \
+          --and-widget --begin 3 3 --keep-window --infobox "Instalation ${percent_completed}% completed" 3 32 \
+          --and-widget --begin 3 38 --keep-window --infobox "$date_passed passed, ETA : $date_eta" 3 35
+        done
+        }
+	echo " - Finished downloading." >>$tmp/syslog
+	echo " - Installing..." >>$tmp/syslog
+      }
+
+
+    ($pkg_install -fd --root $root $prefix/${pkg_group[$i]}/${pkg_file[$i]} 1>$tmp/dpack.err 2>$tmp/dpack.err)
+    dpack_err=$?
+
+    [ "$install_medium" = "Internet" -a "$conf_keep_binaries" = "no" ] && \
+      rm -f $root/tmp/decebal-binaries/${pkg_group[$i]}/${pkg_file[$i]}
+
+    [ $dpack_err -ne 0 ] && \
+      {
+      date_stop=`date +%s`
+      $dialog --backtitle "$version" --title " ERROR " --msgbox \
+      "\nAn error occured. The instalation media may have some errors, \
+your instalation destination may have errors or something else may have \
+happened. This could mean serious trouble (if the package you're installing \
+is vital to the system), minor trouble (some programs may not work), or \
+no trouble at all.\nHere is the output of dpack :\n\n`cat $tmp/dpack.err`\n\n" 0 0
+      echo "  [-] Some error occured. Error message :" >>$tmp/syslog
+
+      local dif_date=$(( $date_stop - $date_start ))
+      date_start=$(( `date +%s` - $dif_date ))
+
+      cat $tmp/dpack.err >>$tmp/syslog
+      echo "  [-] End of the error message." >>$tmp/syslog
+      } || \
+      {
+      let installed_size=$installed_size+$pkg_size
+      let remaining_size=$install_size-$installed_size
+
+      installed_size_mb=$(( $installed_size / 1024 ))
+      remaining_size_mb=$(( $remaining_size / 1024 ))
+
+      [ $remaining_size -gt 0 ] && \
+        percent_completed=$(( $installed_size * 100 / $install_size )) || \
+          percent_completed=100
+      }
+    echo "[+] Finished" >>$tmp/syslog
+    echo >>$tmp/syslog
+
+    installed[$i]="on"
+  fi
+done
+
+    $dialog --begin 13 3 --keep-window --backtitle "$version - $install_type instalation" --tailboxbg $tmp/syslog 20 70 \
+    --and-widget --begin 8 3 --keep-window --infobox "$installed_size_mb MB installed. $remaining_size_mb MB remaining" 3 70 \
+    --and-widget --begin 3 3 --keep-window --infobox "Instalation 100% completed" 3 32 \
+    --and-widget --begin 35 3 --keep-window --infobox "Package instalation completed. Press <ENTER> to continue." 3 70 \
+    --and-widget --begin 3 38 --keep-window --infobox "$date_passed passed, ETA : 00:00:00" 3 35
+read
+}
+
+function detect_hardware()
+#writes to $tmp/module all the modules which the user selected
+#in the presented checklist
+#uses $hardware_list (taken from the kernel sources and modified a bit)
+{
+local card id class class_short class_name name fullname vendor device linenum
+local module PCIMAP
+
+# all the PCI devices present on the system
+cat /dev/null >$tmp/hardware.list
+
+# TODO ugly code, rewrite it
+infobox "Detecting PCI cards..."
+#PCIMAP=/lib/modules/`uname -r`/modules.pcimap
+PCIMAP=/lib/modules/`uname -r`/modules.pcimap
+for card in `lspci -n | tr " " "^"`; do
+    id=`echo $card | cut -f 1 -d "^"`
+    class=`echo $card | cut -f 3 -d "^" | cut -f 1 -d ":"`
+    class_short=`echo $class | cut -b 1-2`
+    class_name=`cat $hardware_list | grep "^C $class_short" | cut -f 4- -d " "`
+    name=`cat $hardware_list | grep $class | cut -f 3- -d " "`
+    fullname=`lspci | grep $id | cut -f 3- -d ":"`
+    fullname=`echo $fullname`
+    vendor=`lspci -n | grep $id|awk '{print $4}' | cut -f 1 -d ":"`
+    device=`lspci -n | grep $id|awk '{print $4}' | cut -f 2 -d ":"`
+    linenum=`cat $PCIMAP|awk '{print $2 $3}'|grep -n "0x0000${vendor}0x0000${device}"|cut -f 1 -d ":"`
+    if [ -z "$linenum" ];
+    then
+      module=""
+    else
+      module=`cat $PCIMAP|linenumber $linenum|awk '{print $1}'`
+    fi
+    test -z $module || echo "$module:$name:$fullname" >>$tmp/hardware.list
+done
+cat $tmp/hardware.list|sort|uniq >$tmp/hardware.list.1
+mv -f $tmp/hardware.list.1 $tmp/hardware.list
+
+# script which will show the checklist
+cat <<EOF>$tmp/HardWare.sh
+#!/bin/bash
+$dialog --backtitle "$version" --title " PCI Hardware Configuration " \\
+--item-help --separate-output \\
+--ok-label "Save" \\
+--cancel-label "Cancel" --checklist "\nYour system has the following PCI \\
+devices installed. In order to use them you must load the appropiate module. \\
+This menu gives you the chance to select which drivers should be loaded and \\
+which should not. In the left column, you can see the module name, in the \\
+right column, the class of the driver and the bottom line the vendor and device \\
+description.\n\nWe dont recomend the use of the unselected modules.\n\n" 0 0 0 \\
+EOF
+
+local line module class desc
+
+# throw in the data (modulename, classname, description....)
+
+while read line
+do
+  module=`echo $line|cut -f 1 -d ":"`
+  class=`echo $line|cut -f 2 -d ":"`
+  desc=`echo $line|cut -f 3 -d ":"`
+  if [ -z "`cat $setup_dir/database/hotplug.blacklist|grep ^$module`" ];
+  then
+    echo "\"$module\" \"$class\" \"on\" \"$desc\" \\" >>$tmp/HardWare.sh
+  else
+    echo "\"$module\" \"$class\" \"off\" \"$desc\" \\" >>$tmp/HardWare.sh
+  fi
+done <$tmp/hardware.list
+
+cat <<EOF>>$tmp/HardWare.sh
+2>$tmp/hardware.selected
+EOF
+
+# run the script
+sh $tmp/HardWare.sh
+
+cat /dev/null >$tmp/modules
+
+# and write the selected modules into $tmp/modules
+for module in `cat $tmp/hardware.selected`;
+do
+  name=`cat $tmp/hardware.list|grep "^$module:"|cut -f 2 -d ":"`
+  desc=`cat $tmp/hardware.list|grep "^$module:"|cut -f 3 -d ":"`
+  echo "# $name" >>$tmp/modules
+  echo "# $desc" >>$tmp/modules
+  echo "$module" >>$tmp/modules
+  echo >>$tmp/modules
+done
+
+rm -f $tmp/hardware.selected $tmp/hardware.list $tmp/HardWare.sh
+}
+
+function select_kernel()
+# takes from kernels.list the available kernels and gives the
+# user a menu from which he should select what kernel he wants to use
+{
+local sk_sel sk_button
+echo "$kernel" >$tmp/sk.sel
+
+# SelectKernel.sh - displays a menu list of available kernels
+cat <<EOF>$tmp/SelectKernel.sh
+#!/bin/bash
+touch $tmp/sk.sel
+$dialog --backtitle "$version" --title " Kernel Selection " \\
+--default-item "\`cat $tmp/sk.sel\`" \\
+--cancel-label "Back" --menu "\nSelect the kernel you wish to use. \\
+\n\n" 0 0 0 \\
+EOF
+
+for i in `cat $kernels_list|tr " " "_"`
+do
+  kernelname=`echo $i|cut -f 1 -d ":"`
+  kerneldesc=`echo $i|cut -f 2- -d ":"|tr "_" " "`
+  echo "$kernelname \"$kerneldesc\" \\">>$tmp/SelectKernel.sh
+done
+
+cat <<EOF>>$tmp/SelectKernel.sh
+2>$tmp/sk.sel
+echo \$?>$tmp/sk.but
+EOF
+
+# run the script
+sh $tmp/SelectKernel.sh
+
+sk_button=`cat $tmp/sk.but`
+sk_sel=`cat $tmp/sk.sel`
+rm -f $tmp/sk.sel $tmp/sk.but 
+
+[ $sk_button -eq 0 ] && kernel=$sk_sel
+rm -f $tmp/SelectKernel.sh
+}
+
+function set_xwm()
+# set the default window manager (if there are window managers installed)
+{
+local wmnum=`find $root/etc/X11/xinit/ -name xinitrc.??*|wc -l`
+[ $wmnum -gt 0 ] &&
+  {
+  local OPT="" short="" xwm
+  
+  # make a list ($OPT) of all window managers. will be used in the menu
+  for i in $root/etc/X11/xinit/xinitrc.*; do
+    [ ! -d $i ] &&
+    {
+    short=`basename $i|cut -f 2 -d "."`
+    [ "$short" != "default" ] && OPT="$OPT $short Window-Manager"
+    }
+  done
+  
+  # set the default window manager. if kde is not installed, xfce, else gnome
+  if [ -e $root/etc/X11/xinit/xinitrc.kde ]
+  then
+    xwm="kde"
+  elif [ -e $root/etc/X11/xinit/xinitrc.xfce ]
+  then
+    xwm="xfce"
+  elif [ -e $root/etc/X11/xinit/xinitrc.gnome ]
+  then
+    xwm="gnome"
+  fi
+  
+  # display the menu
+  $dialog --backtitle "$version" --title " X Window Manager Configuration " \
+  --ok-label "Set" --cancel-label "Cancel" --default-item "$xwm" \
+  --menu "\nThe following window managers are available on your \
+system. Select which one you want to set as default.\n\n" 0 0 0 \
+$OPT 2>$tmp/xwmconfig
+  [ $? -eq 0 ] && xwm=`cat $tmp/xwmconfig`
+  rm -f $tmp/xwmconfig
+  
+  # remove /etc/X11/xinit/xinitrc and make a symlink to the selected window
+  # manager. if the user pressed "Cancel", then use the "default" wm...
+  rm -f $root/etc/X11/xinit/xinitrc
+  ln -s xinitrc.$xwm $root/etc/X11/xinit/xinitrc
+  }
+}
+
+function set_boot_mode()
+# how will decebal linux boot ? in the console or some X display manager
+{
+$dialog --backtitle "$version" --title " Booting Mode " --menu \
+"\nHow do you want Decebal Linux to boot ? In a graphical enviroment \
+or in the console (text mode) ?\n\n" 0 0 0 \
+"Graphical" "Graphical environment" \
+"Console" "Text mode" \
+2>$tmp/boot.tmp
+local boot_but=$?
+local boot_sel=`cat $tmp/boot.tmp`
+rm -f $tmp/boot.tmp
+
+# no need to check if $boot_sel="Console" since /etc/inittab
+# has the default runlevel, multiuser
+if [ $boot_but -eq 0 -a "$boot_sel" = "Graphical" ];
+then
+  cat $root/etc/inittab|sed s/"id:3:initdefault:"/"id:4:initdefault:"/ >$tmp/runlevel.tmp
+  mv -f $tmp/runlevel.tmp $root/etc/inittab
+fi
+}
+
+add_user()
+# add an user to the system. groups:lp,cdrom,audio,video,slocate
+{
+local username="" realname="" groups="slocate,lp,cdrom,audio,video"
+#TODO a menu of additional groups
+  $dialog --backtitle "$version" --title " Useradd Help " --msgbox \
+  "\nLinux is a multiuser operating system. This means that several \
+users can exist and be simultanious connected to the system. There is a \
+super-user called root, which has all rights to alter and use the system. \
+The root user exists by default, should never be removed and used ONLY for \
+administrative tasks (i.e. configure services, starting/stoping daemons ...). \
+Starting X, using IRC, browsers... as root is a bad ideea. For all these \
+tasks a user with less priviledges is recomended, a normal user. If you choose \
+to add an user with the install program, you will be prompted for its username, \
+realname (or nickname), some groups the user should be part of, and a \
+password. Try to use upcase/lowcase alpha-numerical \
+words for passwords. Also, the newly created user will have the rights to \
+mount/unmount cdroms/dvds/..., access the sound system, printing system." 0 0
+
+local au_but=0
+until [ $au_but -eq 1 ]
+do
+$dialog --backtitle "$version" --title " New User " --yesno \
+"\nDo you want to add an user ? It is highly recomended to do so \
+and use this user to perform daily tasks. Also remember, that root user \
+should be ONLY used for administrative tasks (i.e. configure the \
+services...).\n\n" 0 0
+au_but=$?
+
+#FIXME compune aici tot stringu
+
+[ $au_but -eq 0 ] && \
+  {
+  $dialog --backtitle "$version" --title " Username " --inputbox \
+"\nEnter the username for the user you wish to create. Dont \
+use spaces, or special characters.\n\n" 0 0 2>$tmp/username && \
+  username=`cat $tmp/username`
+  rm -f $tmp/username
+
+  $dialog --backtitle "$version" --title " Realname " --inputbox \
+  "\nEnter the real name (or nickname) for the new user. This is \
+optional.\n\n" 0 0 2>$tmp/realname && realname=`cat $tmp/realname`
+  rm -f $tmp/realname
+
+  $dialog --backtitle "$version" --title " Groups " --inputbox \
+  "\nEnter the groups that $username should be part of. Each \
+group is separated from the next by a comma, with no intervening \
+whitespace. Use the default if unsure what this is.\n\n" 0 0 \
+  "$groups" 2>$tmp/groups && groups=`cat $tmp/groups`
+  rm -f $tmp/groups
+
+  chroot $root useradd -m -c "$realname" -g users -G $groups $username
+  chroot $root passwd $username
+
+  $dialog --backtitle "$version" --title " New User " --yesno \
+  "\nDo you want to add another user ?\n\n" 0 0 || au_but=1
+  }
+done
+}
+
+netconf_wlan()
+# configure a wireless card, named $1, with the local index $2
+# TODO add descriptions to all fields
+{
+local number=`$2` 
+local nw_but=3 nw_sel="" nw_item="" nw_value=""
+
+while [ $nw_but -eq 3 ];
+do
+
+$dialog --backtitle "$version" --cancel-label "Cancel" \
+--default-item "$nw_item" --extra-label "Edit" \
+--title " $1 configuration " --ok-label "Save" \
+--inputmenu "\nWhat you want to configure ? \n\n" 24 50 15 \
+"IP" "${IP_wlan[$number]}"  \
+"ESSID" "${ESSID_wlan[$number]}" \
+"NICK" "${NICK_wlan[$number]}" \
+"MODE" "${MODE_wlan[$number]}" \
+"RATE" "${RATE_wlan[$number]}" \
+2>$tmp/$1
+nw_but=$?
+nw_sel=`cat $tmp/$1`
+
+case $nw_but in
+  3)
+  nw_item=`echo $nw_sel|cut -f 2 -d " "`
+  nw_value=`echo $nw_sel|cut -f 3- -d " "`
+  case $nw_item in
+    "IP")
+    IP_wlan[$number]=$nw_value
+    ;;
+    "ESSID")
+    ESSID_wlan[$number]=$nw_value
+    ;;
+    "NICK")
+    NICK_wlan[$number]=$nw_value
+    ;;
+    "MODE")
+    MODE_wlan[$number]=$nw_value
+    ;;
+    "RATE")
+    RATE_wlan[$number]=$nw_value
+    ;;
+  esac
+  ;;
+  0)
+    
+# add the interface to $setup_inferfaces, check if its not already there
+    local setup_int_tmp=""
+    for i in $setup_interfaces;
+    do
+      [ "$i" != "$1" ] && setup_int_tmp="$setup_int_tmp $1" ]
+    done
+    setup_interfaces="$setup_int_tmp $1"
+  $dialog --backtitle "$version" --title " Confirmation " \
+  --yesno "\n\nDo you want to start $1 at boot-time ?\n\n" 0 0
+  [ $? -eq 0 ] && \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|sort|uniq >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+    
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+      interfaces="$interfaces $i"
+    done    
+    
+    } || \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|grep -v "$1" >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+    
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+      interfaces="$interfaces $i"
+    done
+    }
+  ;;
+esac
+done
+}
+
+
+netconf_eth()
+# configure an ethernet card, $1
+{
+local number=`echo $1|cut -f 2 -d "h"` 
+local ne_but=3 ne_sel="" ne_item="" ne_value=""
+
+while [ $ne_but -eq 3 ];
+do
+
+$dialog --backtitle "$version" --cancel-label "Cancel" \
+--default-item "$ne_item" --extra-label "Edit" \
+--title " $1 configuration " --ok-label "Save" \
+--inputmenu "\nWhat you want to configure ? \n\n\
+USE_DHCP      : set to 'yes' if you use DHCP else 'no' \n\
+DHCP_HOSTNAME : your DHCP hostname (optional) \n\
+IP            : your ip            (mandatory)\n\
+NETMASK_IP    : subclass netmask   (mandatory)\n\
+BROADCAST_IP  : broadcast ip       (mandatory)\n\
+IP6           : ipv6 ip            (optional)\n\
+PREFIXLEN     :                    (optional)\n\n" 37 60 21 \
+"USE_DHCP" "${USEDHCP_eth[$number]}"  \
+"DHCP_HOSTNAME" "${DHCPHOSTNAME_eth[$number]}" \
+"IP" "${IP_eth[$number]}" \
+"NETMASK_IP" "${NETMASK_eth[$number]}" \
+"BROADCAST_IP" "${BROADCAST_eth[$number]}" \
+"IP6" "${IP6_eth[$number]}" \
+"PREFIXLEN" "${PREFIXLEN_eth[$number]}" \
+2>$tmp/$1
+ne_but=$?
+ne_sel=`cat $tmp/$1`
+
+case $ne_but in
+  3)
+  ne_item=`echo $ne_sel|cut -f 2 -d " "`
+  ne_value=`echo $ne_sel|cut -f 3- -d " "`
+  case $ne_item in
+    "USE_DHCP")
+    USEDHCP_eth[$number]=$ne_value
+    ;;
+    "DHCP_HOSTNAME")
+    DHCPHOSTNAME_eth[$number]=$ne_value
+    ;;
+    "IP")
+    IP_eth[$number]=$ne_value
+    ;;
+    "NETMASK_IP")
+    NETMASK_eth[$number]=$ne_value
+    ;;
+    "BROADCAST_IP")
+    BROADCAST_eth[$number]=$ne_value
+    ;;
+    "IP6")
+    IP6_eth[$number]=$ne_value
+    ;;
+    "PREFIXLEN")
+    PREFIXLEN_eth[$number]=$ne_value
+    ;;
+  esac
+  ;;
+  0)
+# add the interface to $setup_inferfaces, check if its not already there
+    local setup_int_tmp=""
+    for i in $setup_interfaces;
+    do
+      [ "$i" != "$1" ] && setup_int_tmp="$setup_int_tmp $1" ]
+    done
+    setup_interfaces="$setup_int_tmp $1"
+  $dialog --backtitle "$version" --title " Confirmation " \
+  --yesno "\n\nDo you want to start $1 at boot-time ?\n\n" 0 0
+  [ $? -eq 0 ] && \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|sort|uniq >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+    
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+    interfaces="$interfaces $i"
+    done    
+
+    } || \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|grep -v "$1" >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+    
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+    interfaces="$interfaces $i"
+    done    
+
+    }
+  ;;
+esac
+done
+}
+
+function network_cards_menu()
+# displays a menu with ethernet and wireless cards. lets you configure them
+{
+eth_cards=`lspci 2>/dev/null|grep "Ethernet controller"|wc -l`
+
+local i=0 eth_cards_tmp=""
+# little trick to "compose" "eth0 eth1" from the information lspci gives
+while [ $i -lt $eth_cards ]
+do
+  eth_cards_tmp="$eth_cards_tmp eth$i"
+  let i=$i+1
+done
+eth_cards=$eth_cards_tmp
+
+wlan_cards=`iwconfig 2>/dev/null|grep IEEE|cut -f 1 -d " ">$tmp/wlan.cards`
+wlan_cards=`cat $tmp/wlan.cards`
+rm -f $tmp/wlan.cards
+
+local i=0 opt="" ncmsel=""
+
+# no cards at all ? ...
+if [ -z "$eth_cards" -a -z "$wlan_cards" ];
+then
+$dialog --backtitle "$version" --title " Network Configuration " \
+--msgbox "\nNo network cards found, leaving configuration.\n\n" 0 0
+return 1
+fi
+
+# set the default settings for ethernet cards
+local number=0
+[ ! -z "$eth_cards" ] && \
+  for i in $eth_cards;
+  do
+    local eth_tmp=`echo $i|cut -f 2 -d "h"`
+    USEDHCP_eth[$number]="no"
+    DHCPHOSTNAME_eth[$number]=""
+    IP_eth[$number]="192.168.$eth_tmp.1"
+    NETMASK_eth[$number]="255.255.255.0"
+    BROADCAST_eth[$number]="192.168.$eth_tmp.255"
+    IP6_eth[$number]=""
+    PREFIXLEN_eth[$number]=64
+    opt="$opt $i ethernet"
+    let number=$number+1
+  done
+
+# set the default settings for wireless cards
+local number=0
+[ ! -z "$wlan_cards" ] && \
+  for i in $wlan_cards;
+  do
+    IP_wlan[$number]=""
+    ESSID_wlan[$number]=""
+    NICK_wlan[$number]=""
+    MODE_wlan[$number]=""
+    RATE_wlan[$number]=""
+    opt="$opt $i wireless"
+    let number=$number+1
+  done
+# main loop
+local ncmbut=0
+while [ $ncmbut -ne 1 ];
+do
+$dialog --backtitle "$version" --cancel-label "Back" \
+--title " Network Configuration " --default-item "$ncmsel" \
+--menu "\nThe following network controllers were detected on your system. \
+Select the network controller you want to configure\n\n" 0 0 0 $opt \
+2> $tmp/network_card.select
+ncmbut=$?
+ncmsel=`cat $tmp/network_card.select`
+rm $tmp/network_card.select
+
+case $ncmbut in
+    1)
+    return
+    ;;
+    0)
+    [ -z "`echo $wlan_cards|grep -w $ncmsel`" ] || netconf_wlan $ncmsel && netconf_eth $ncmsel
+    ;;
+esac
+done
+}
+
+
+function network_save()
+# saves network settings
+# in $1/etc/network
+{
+  local ns_root=$1 i=0
+  
+  mkdir -p $ns_root/etc/conf.d 2>/dev/null
+  
+# save the nameservers
+  while [ $i -le $nameserver_num ]
+  do
+  let i=$i+1
+  [ ! -z "${nameserver[$i]}" ] && echo "nameserver ${nameserver[$i]}" >>$ns_root/etc/resolv.conf
+  done
+
+# hostname and domainname
+  echo "$setup_hostname" >$ns_root/etc/hostname
+  echo "127.0.0.1 $setup_domainname $setup_hostname" >>$ns_root/etc/hosts
+
+  [ "$root" = "$ns_root" ] && \
+    {
+    chroot $ns_root hostname $setup_hostname 2>/dev/null
+    chroot $ns_root domainname $setup_domainname 2>/dev/null
+    }
+
+  cat $ns_root/etc/conf.d/network|replace "HOSTNAME=" "HOSTNAME=$setup_hostname" >$tmp/network.tmp1
+  cat $tmp/network.tmp1|replace "DOMAINNAME=" "DOMAINNAME=$setup_domainname" >$tmp/network.tmp2
+  cat $tmp/network.tmp2|replace "DEFAULTGW=" "DEFAULTGW=$setup_gateway" >$tmp/network.tmp3
+  interfaces=`echo $interfaces`
+  cat $tmp/network.tmp3|replace "INTERFACES=" "INTERFACES=\"$interfaces\"" >$tmp/network.tmp4
+  mv -f $tmp/network.tmp4 $ns_root/etc/conf.d/network
+  rm -f $tmp/network.tmp{1,2}
+  
+# i have to check if its a wlan or eth card. but $eth_cards is an integer
+# so we look in $wlan_cards which is string
+  for i in $interfaces;
+  do
+  [ -z "`echo $wlan_cards|grep -w $i`" ] && \
+    {
+    echo >>$ns_root/etc/conf.d/network
+# this is an ehternet card....
+    local number=`echo $i|cut -f 2 -d "h"`
+cat <<EOF>>$ns_root/etc/conf.d/network
+# $i Configuration (ethernet) :
+$i() {
+   USEDHCP=${USEDHCP_eth[$number]}
+   DHCPHOSTNAME=${DHCPHOSTNAME_eth[$number]}
+   IP=${IP_eth[$number]}
+   NETMASK=${NETMASK_eth[$number]}
+   BROADCAST=${BROADCAST_eth[$number]}
+   IP6=${IP6_eth[$number]}
+   PREFIXLEN=${PREFIXLEN_eth[$number]}
+}
+
+EOF
+    } || \
+    {
+# this is a wireless card....
+    local number=`echo $i|cut -f 2 -d "n"`
+cat <<EOF>>$ns_root/etc/conf.d/network
+# $i Configuration (wireless) :
+$i() {
+   IP=${IP_wlan[$number]}
+   ESSID=${ESSID_wlan[$number]}
+   NICK=${NICK_wlan[$number]}
+   MODE=${MODE_wlan[$number]}
+   RATE=${RATE_wlan[$number]}
+}
+
+EOF
+    }
+  done
+  $dialog --backtitle "$version" --title " Save " --msgbox \
+  "\nNetwork configuration saved.\n\n" 0 0
+}
+
+function network_add_nameserver()
+# adds nameservers to the $nameserver[] array
+{
+local ans_but ans_sel=""
+$dialog --backtitle "$version" --title " Nameserver " --inputbox \
+"\nEnter the IP address of an nameserver (DNS server). Looks like \
+a.b.c.d where a,b,c,d are numbers between 0 and 255.\n\n" 0 0 2>$tmp/nameserver
+ans_but=$?
+[ $ans_but -eq 0 ] && \
+  {
+  ans_sel=`cat $tmp/nameserver`
+  rm -f $tmp/nameserver
+  let nameserver_num=$nameserver_num+1
+  nameserver[$nameserver_num]=$ans_sel
+
+  $dialog --backtitle "$version" --title " Nameserver " --yesno \
+  "\nDo you want to add another nameserver ?\n\n" 0 0 && network_add_nameserver
+  } || rm -f $tmp/nameserver
+rm -f $tmp/nameserver
+}
+
+
+function network_mainmenu()
+# network configuration main menu
+# has one parameter, for "Save" ...saves in $1/etc/network
+{
+local nmmbutton=0
+local nmmsel=""
+while [ $nmmbutton -ne 1 ];
+do
+# FIXME tell the user its recomended to configure everything
+$dialog --backtitle "$version" --title " Network Configuration " \
+--cancel-label "Back" --default-item "$nmmsel" --ok-label "Select" \
+--menu "\nWhat do you want to configure ?\n\n" 0 0 0 \
+"Hostname" "Set your hostname in the network" \
+"Domain" "Set the network domain" \
+"Gateway" "Set your default gateway" \
+"Cards" "Configure your network cards" \
+"Nameserver" "Add a nameserver" \
+"Save" "Save network configuration" \
+"Start" "Start the network" \
+2>$tmp/nmmsel
+nmmbutton=$?
+nmmsel=`cat $tmp/nmmsel`
+rm -f $tmp/nmmsel
+case $nmmbutton in
+0)
+  case $nmmsel in
+  "Hostname")
+    $dialog --backtitle "$version" --title " Host Name " --inputbox \
+"\nEnter the hostname for this machine. The hostname is used by many of the \
+networking programs to identify this machine. The hostname is a single
+word (no spaces or dots).\n\n" 0 0 "$setup_hostname" 2>$tmp/hostname.tmp
+    [ $? -eq 0 ] && setup_hostname=`cat $tmp/hostname.tmp`
+    rm -f $tmp/hostname.tmp
+  ;;
+  "Domain")
+    $dialog --backtitle "$version" --title " Domain Name " --inputbox \
+"\nEnter the domain name for this machine. The domainname is used by many of \
+the networking programs to identify this machine. The domainname may contain \
+dots but no spaces. It can also be an empty string \n\n" 0 0 "$setup_domainname" \
+    2>$tmp/domainname.tmp
+    [ $? -eq 0 ] && setup_domainname=`cat $tmp/domainname.tmp`
+    rm -f $tmp/domainname.tmp
+  ;;
+  "Gateway")
+    $dialog --backtitle "$version" --title " Gateway " --inputbox \
+    "\nEnter the if of the gateway for this machine if you have one. The gateway \
+is a server trough which the packages are routed.\n\n" \
+    0 0 "$setup_gateway" 2>$tmp/gateway.tmp
+    [ $? -eq 0 ] && setup_gateway=`cat $tmp/gateway.tmp`
+    rm -f $tmp/gateway.tmp
+  ;;
+  "Cards") network_cards_menu ;;
+  "Nameserver") network_add_nameserver;;
+  "Start") network_start_now;;
+  "Save")
+    network_saved=1
+    nmmbutton=1
+  ;;
+  esac
+;;
+esac
+done
+}
+
+function interface_start()
+# brings up a network interface ($1). used for netinstall
+{
+local returncode=0
+[ -z "`echo $wlan_cards|grep -w $1`" ] && \
+  {
+  # ethernet card
+  local number=`echo $1|cut -f 2- -d "h"`
+  if [ "${USEDHCP_eth[$number]}" = "yes" ]
+  then
+    if [ -n "${DHCPHOSTNAME_eth[$number]}" ]
+    then
+      dhcpcd -t 10 -h ${DHCPHOSTNAME_eth[$number]} -d $1 1>>$tmp/network.error 2>>$tmp/network.error
+      [ $? -eq 1 ] && returncode=1
+    else
+      dhcpcd -t 10 -d $1 1>>$tmp/network.error 2>>$tmp/network.error
+      [ $? -eq 1 ] && returncode=1
+    fi
+  else
+    ifconfig $1 ${IP_eth[$number]} netmask ${NETMASK_eth[$number]} broadcast ${BROADCAST_eth[$number]} 1>>$tmp/network.error 2>>$tmp/network.error
+    # Bring up ipv6 interface
+    if [ -n "${IP6_eth[$number]}" -a -n "${PREFIXLEN_eth[$number]}" ] 1>>$tmp/network.error 2>>$tmp/network.error
+    then
+      ifconfig $1 inet6 add ${IP6_eth[$number]}/${PREFIXLEN_eth[$number]} 1>>$tmp/network.error 2>>$tmp/network.error
+      [ $? -eq 1 ] && returncode=1
+    fi
+  fi
+  } || \
+  {
+  # wireless card
+  ifconfig $1 ${IP_wlan[$number]} 1>>$tmp/network.error 2>>$tmp/network.error
+  [ $? -eq 1 ] && returncode=1
+  iwconfig $1 essid ${ESSID_wlan[$number]} nick ${NICK_wlan[$number]} mode ${MODE_wlan[$number]} rate ${RATE_mode[$number]} 1>>$tmp/network.error 2>>$tmp/network.error
+  [ $? -eq 1 ] && returncode=1
+  }
+return $returncode
+}
+
+function network_start_now()
+# starts the configured interfaces (all in $interfaces), no host/domain/...
+# TODO maybe we should stop them first to act like a restart
+{
+$dialog --backtitle "$version" --title " Network " --yesno \
+"\nAre you sure you want to start the network ? Be advised that all \
+your running network interfaces will be shut down.\n\n" 0 0 || return
+network_start=1
+
+infobox "Starting the network"
+
+# stops the setup configured network
+route del gw
+for i in $setup_interfaces;
+do 
+  [ -z "`echo $wlan_cards|grep -w $i`" ] && ifconfig $i down || iwconfig $i down
+done
+
+for i in $setup_interfaces;
+do 
+  infobox "Starting $i"
+  cat /dev/null >$tmp/network.error
+  interface_start $i
+  [ $? -eq 1 ] && \
+    {
+    $dialog --backtitle "$version" --title " ERROR " --msgbox \
+    "\nThere was an error starting the interface ${i}. This doesent \
+necesarily mean that the interface isnt started nor that it is. \
+Press 'OK' to see the output of the program that caused the error.\n\n" 0 0
+    $dialog --backtitle "$version" --title " ERROR " --textbox \
+    $tmp/network.error 0 0
+    }
+
+# check if the interface is up
+  [ ! -z "`echo $i|grep \"eth\"`" ] && \
+    {
+# ethernet
+    [ -z "`ifconfig|grep $i`" ] && \
+    $dialog --backtitle "$version" --title " ERROR " --yesno \
+    "\nInterface $i isnt up. This means serious trouble for the \
+instalation process if you wish to install from the Internet. \
+Do you want to continue the instalation ?\n\n" 0 0 || abort_instalation
+    } || \
+    {
+# wireless
+    [ ! -z "`iwconfig|grep $i|grep \"no wireless extensions.\"`" ] && \
+    $dialog --backtitle "$version" --title " ERROR " --yesno \
+    "\nInterface $i isnt up. This means serious trouble for the \
+instalation process if you wish to install from the Internet. \
+Do you want to continue the instalation ?\n\n" 0 0 || abort_instalation
+    }
+done
+
+# do this after the network interfaces are started
+route add default gw $setup_gateway
+
+local i=0
+while [ $i -le $nameserver_num ]
+do
+  let i=$i+1
+  echo "nameserver ${nameserver[$i]}" >>/etc/resolv.conf
+done
+
+}
+
+function abort_instalation()
+{
+local umnt=""
+# umount all mounted partitions, in the reverse order of mounting
+[ ! -z "`mount|grep $root`" ] &&
+  {
+  for i in `mount|grep $root|cut -f 1 -d " "`;
+  do
+    umnt="$i $umnt"
+  done
+  }
+for i in $i;
+do
+  umount $i 1>/dev/null 2>/dev/null
+done
+
+
+#just in case somethings still mounted, dont erase it :)
+rm -f $tmp/* 2>/dev/null
+$dialog --clear
+cat <<EOF
+
+setup aborted
+
+Unless specified by setup, the cause for this abortion could be :
+a bug, no network, no Internet, no or bad media or even something
+else.
+
+If you suspect a bug, please contact $conf_maintainer_email
+and give as much report as you can. The steps you made to get
+here, decisions you made, your hardware, and/or everything you
+think might help.
+Thanks :)
+
+You can start everything over and try to resolve the problem by
+yourself, wish you luck.
+
+EOF
+}
+
+function post_installation()
+# stuff we do after we install all packages...
+# see is as an /etc/rc.d/local
+# also, its the last function executed. needs an "exit" at its end
+{
+rm -f $root/dev/null $root/dev/console
+mknod -m 0666 $root/dev/null c 1 3
+mknod -m 0600 $root/dev/console c 5 1
+
+# saving network settings
+infobox "Saving the network configuration"
+[ $network_saved -eq 1 ] && network_save $root
+
+# create lilo.conf and install lilo
+infobox "Configuring LILO"
+make_lilo
+
+# ask the user which kernel modules he should load, according to lspci
+infobox "Detecting hardware" 1
+detect_hardware
+
+mouse_configuration
+
+# set root's password
+chroot $root passwd root
+
+# shall we boot in gdm ? (ask only if installed)
+local gdm_tmp=`get_pkg_index gdm 1 $pkg_num`
+[ "${selected[$gdm_tmp]}" = "on" ] && set_boot_mode
+
+# set system default window manager
+local xorg_tmp=`get_pkg_index xorg 1 $pkg_num`
+[ "${selected[$xorg_tmp]}" = "on" ] && set_xwm
+
+# add an user
+add_user
+
+# dirty workarounds follow ...
+rm -rf $root/var/logs
+chmod 700 $root/root
+
+echo "/usr/X11R6/lib" >> $root/etc/ld.so.conf
+rm -rf $root/var/logs
+touch $root/var/log/{wtmp,utmp}
+
+touch $root/etc/conf.d/modules
+cat $tmp/modules >>$root/etc/conf.d/modules
+
+# some package modifies these permissions
+chmod 666 $root/dev/null
+chmod 1777 $root/tmp
+
+if ! grep -q /opt/gnome/lib $root/etc/ld.so.conf
+then
+ echo "/opt/gnome/lib" >> $root/etc/ld.so.conf
+fi
+
+if ! grep -q /opt/xfce/lib $root/etc/ld.so.conf
+then
+ echo "/opt/xfce/lib" >> $root/etc/ld.so.conf
+fi
+
+if ! grep -q /opt/fluxbox/lib $root/etc/ld.so.conf
+then
+ echo "/opt/fluxbox/lib" >> $root/etc/ld.so.conf
+fi
+
+if ! grep -q /opt/openbox/lib $root/etc/ld.so.conf
+then
+ echo "/opt/openbox/lib" >> $root/etc/ld.so.conf
+fi
+
+if ! grep -q /opt/fvwm/lib $root/etc/ld.so.conf
+then
+ echo "/opt/fvwm/lib" >> $root/etc/ld.so.conf
+fi
+
+if ! grep -q /opt/kde/lib $root/etc/ld.so.conf
+then
+ echo "/opt/kde/lib" >> $root/etc/ld.so.conf
+fi
+
+infobox "Running ldconfig ..."
+chroot $root /sbin/ldconfig &>/dev/null
+
+infobox "Running pango-querymodules ..."
+chroot $root /usr/bin/pango-querymodules 1>$root/etc/pango/pango.modules 2>/dev/null
+
+mkdir -p $root/etc/gtk-2.0 &>/dev/null
+infobox "Running gtk-query-immodules ..."
+chroot $root /usr/bin/gtk-query-immodules-2.0 1>$root/etc/gtk-2.0/gtk.immodules 2>/dev/null
+
+infobox "Running gdk-pixbuf-query-loaders ..."
+chroot $root /usr/bin/gdk-pixbuf-query-loaders 1>$root/etc/gtk-2.0/gdk-pixbuf.loaders 2>/dev/null
+
+infobox "Updating desktop database"
+chroot $root /usr/bin/update-desktop-database >/dev/null 2>&1
+
+$dialog --backtitle "$version" --title " sysconf " --msgbox \
+"\nYou're about to enter sysconf. Sysconf is a configuration tool \
+used to configure several aspects of your system (soundcards, graphical \
+interface and others).\n\n" 0 0
+(chroot $root /usr/bin/sysconf)
+
+clear
+
+# umount the partitions in reverse order of mounting
+local umnt=""
+[ ! -z "`mount|grep $root`" ] &&
+  {
+  for i in `mount|grep $root|cut -f 1 -d " "`;
+  do
+    umnt="$i $umnt"
+  done
+  }
+for i in $i;
+do
+  umount $i 1>/dev/null 2>/dev/null
+done
+
+[ "$install_medium" = "CD" ] && \
+  {
+  umount $cd_device 1>/dev/null 2>/dev/null
+  eject $cd_device
+  }
+
+rm -f $tmp/* 2>/dev/null
+
+echo
+echo "$version is now installed."
+echo "Reboot and enjoy it, have alot of freedom."
+echo
+echo "http://www.decebal.org"
+echo "http://forum.decebal.org"
+exit
+}
+
+
+function install_bin_start()
+# the packages should be installed under the $root directory
+# TODO change the name of the function
+{
+local sib_tmp i=0
+
+# dependencies are unchecked for all packages
+i=0
+#until [ $i -gt $pkg_num ]
+#do
+#  let i=$i+1
+#  deps_ok[$i]=1
+#done
+
+#touch $tmp/instalation_started
+# check for root partition
+if [ "$root_partition" = "none" ]
+then
+#  $dialog --backtitle "$version" --title " ERROR " --msgbox "\nYou havent \
+#selected a root partition. Select one.\n\n" 0 0
+#  return 1
+  $dialog --backtitle "$version" --title " root partition " --yesno \
+  "\nYou havent selected a root partition. This is vital do the \
+instalation. You can return to the main menu and configure the root \
+partition, or you can go on with the instalation and the setup script will \
+ask you about the root partition and will give you the possibility to \
+format it.\n\nAnswer 'Yes' if you want to go on with the instalation.\n\
+Answer 'No' if you want to go back to the main menu.\n\n" 0 0 && \
+  {
+  select_root_partition || return 1
+  } || return 1
+fi
+
+# the user must have a kernel selected
+# (not needed any more, since i define a default)
+#while [ "$kernel" = "none" ]
+#do
+#  select_kernel
+#done
+
+# configure eth and wlan network cards
+[ $network_saved -eq 0 ] && \
+$dialog --backtitle "$version" --title " Network " --yesno "\nDo you \
+want to configure the network ? If you already did that, you didnt saved \
+the settings, now its the right time to do it.\nDo you want to launch \
+netconf ?\n\n" 0 0 && network_mainmenu
+
+[ "$install_medium" = "Internet" ] && [ $network_start -eq 0 ] && \
+  {
+  $dialog --backtitle "$version" --title " Network " --yesno \
+  "\nYou didnt start the network. You need access to the internet if you \
+want to perform a net-install. If you already have a running configured \
+network, you do not need to start the network. However, if you dont, you \
+need to do it.\n\nDo you want to start the network ?\n\n" && network_start_now
+  }
+
+$dialog --backtitle "$version" --title " Dependencies " --yesno \
+"\nDo you want to check the dependencies ?\n\n" 0 0 && \
+  {
+  $dialog --backtitle "$version" --title " Dependencies " --yesno \
+  "\nDo you want to let the install script automatically resolve unsatisfied \
+dependencies ?\n\nSome packages depend on anothers. You might have deselected \
+some needed packages. It is strongly recomended to let the install script \
+automatically select each unsatisfied dependency. The size of the instalation \
+_might_ increase, but the system will be more stable. Its strongly \
+recomended to answer 'YES' here. However, you might want to see what \
+unsatisfied dependencies you have (if you have any). Answering 'No' will \
+make 'Setup' ask you wether or not you want to install that dependency. \
+If you have alot of them, this could get annoying. So... \n\n\
+Answer 'Yes' to automatically resolve unsatisfied dependencies (RECOMENDED)\
+\n\nAnswer 'No' to manually select which unsatisfied dependencies you want \
+to install.\n\nDo you want to resolve unsatisfied dependencies automatically ?\n\n" 0 0
+  [ $? -eq 0 ] && ask_deps=0 || ask_deps=1
+  make_depends
+  }
+
+install_list=""
+
+#TODO this i think can be removed, just to be sure, leave it here
+select_required
+
+i=0
+until [ $i -gt $pkg_num ]
+do
+  let i=$i+1
+  installed[$i]="off"
+done
+
+# the first cd is not mounted yet. just initrd is. look for it and mount it.
+if [ "$install_medium" = "CD" ]
+then
+  scan_cd_bin 1 || ask_cd_bin 1
+fi
+
+# install the base first (even if the user didnt select the packages)
+# these packages need to be installed in THIS order...
+# needed for chroot (see dpack)
+# very simmilar to select_required()
+for i in filesystem etc linux-libc-headers glibc ncurses gpm readline bash coreutils shadow sysvinit initscripts sysconf;
+do
+  sib_tmp=`get_pkg_index $i 1 $pkg_num`
+  selected[$sib_tmp]="on"
+  install_list="$install_list $sib_tmp"
+  installed[$sib_tmp]="on" # trick to make sure these packages dont get into $install_list twice
+done
+
+# put the kernel (index=0) after these packages
+# the kernel is on the first cd, so it needs to be installed now
+pkg_name[0]="$kernel"
+pkg_desc[0]="Linus Torvalds Linux kernel"
+pkg_file[0]="$kernel-i686-1.tbz2"
+pkg_ver[0]=`echo $kernel|cut -f 3 -d "-"`
+pkg_usize[0]="54000000"
+pkg_cd[0]=1
+pkg_depends[0]=""
+pkg_conflicts[0]=""
+pkg_group[0]=kernels
+pkg_types[0]=""
+selected[0]="on"
+installed[0]="off"
+
+# install the kernel just after the required packages
+install_list="$install_list 0"
+
+# and build the rest of $install_list
+i=0
+until [ $i -gt $pkg_num ]
+do
+  let i=$i+1
+  [ "${selected[$i]}" = "on" ] && [ "${installed[$i]}" = "off" ] && install_list="$install_list $i"
+done
+
+install_list="$install_list 0"
+
+i=0
+
+# $install_list is complete, set the installed flag for all packages to off
+until [ $i -gt $pkg_num ]
+do
+  let i=$i+1
+  installed[$i]="off"
+done
+
+make_fstab
+mount_mountpoints
+
+# fstab needs to be copied AFTER we mounted the root partition
+mkdir -p $root/etc 2>/dev/null
+mv $tmp/fstab $root/etc/
+
+[ "$install_medium" = "CD" ] && make_cd_list
+install_packages_bin
+
+# and all the rest (lilo, dirty stuff, ...)
+post_installation
+}
+
+function scan_cd_src()
+# scans for a source decebal cd
+# part of it ripped from slackware
+# if you have multiple drives, you can insert the next cd
+# in any drive...this function will detect the device in which
+# the required cd is inserted...
+{
+cd_device=""
+local device
+infobox "Scanning for a Decebal Linux 'sources' CD/DVD"
+for device in \
+  /dev/hdd /dev/hdc /dev/hdb /dev/hda \
+  /dev/hde /dev/hdf /dev/hdg /dev/hdh \
+  /dev/hdi /dev/hdj /dev/hdk /dev/hdl \
+  /dev/hdm /dev/hdn /dev/hdo /dev/hdp \
+  /dev/sr0 /dev/sr1 /dev/sr2 /dev/sr3 \
+  /dev/pcd0 /dev/pcd1 /dev/pcd2 /dev/pcd3 \
+  /dev/aztcd /dev/cdu535 /dev/gscd /dev/sonycd \
+  /dev/optcd /dev/sjcd /dev/mcdx0 /dev/mcdx1 \
+  /dev/sbpcd /dev/cm205cd /dev/cm206cd /dev/mcd \
+  /dev/sg0 /dev/sg1 /dev/sg2 /dev/sg3 \
+  /dev/sr0 /dev/sr1 /dev/sr2 /dev/sr3 \
+  ; do
+  mount -o ro -t iso9660 $device /media/cdrom 1> /dev/null 2> /dev/null
+  if [ $? = 0 ]; then
+    if [ -e /media/cdrom/Decebal-CD-sources ]
+    then
+      cd_device=$device
+      return 0
+      break
+    else
+      umount $device 1>/dev/null 2>/dev/null
+    fi
+  fi
+done
+[ ! -z "$cd_device" ] && return 0 || return 1
+}
+
+function ask_cd_src()
+{
+# checks if the mounted cd is the cd specified in a source cd, else
+# asks the user to insert one into the drive and tries to mount it
+local ac_button
+
+  umount /media/cdrom 1>/dev/null 2>/dev/null
+  [ ! -z "$cd_device" ] && eject $cd_device
+  $dialog --backtitle "$version" --title \
+  " Next CD " --yes-label "OK" --no-label "Skip" \
+  --yesno "\nPlease insert another Decebal Linux 'sources' CD/DVD into \
+any drive.\n\n" 0 0
+  ac_button=$?
+  if [ $ac_button -eq 1 ];
+  then
+# dirty workaround, if the user pressed "skip", we assume all packages
+# on cd $1 are installed
+#    for i in $install_list
+#    do
+#    [ ${pkg_cd[$i]} -eq $1 ] && installed[$i]="on"
+#    done
+     local dif_date=$(( $date_stop - $date_start ))
+     date_start=$(( `date +%s` - $dif_date ))
+  return 1
+  else
+    scan_cd_src
+    [ $? -eq 0 ] && \
+      {
+# used to check if we need to ask for a new cd, while we're installing the pkgs
+#      current_cd=$1
+
+# used for ETA and time passed
+      local dif_date=$(( $date_stop - $date_start ))
+      date_start=$(( `date +%s` - $dif_date ))
+      } || ask_cd_src
+  fi
+}
+
+function select_mirror()
+# displays a menu with possible mirrors to choose from.
+# puts the result in setup_mirror
+{
+local opts="" i sm_tmp
+for i in `cat $mirrors_list`;
+do
+  [ ! -z "`echo $i|grep \"^ftp\"`" ] && sm_tmp="FTP" || sm_tmp="HTTP"
+  opts="$opts $i $sm_tmp"
+done
+
+opts="$opts Custom URL"
+
+$dialog --backtitle "$version" --title " Select Mirror " \
+--extra-button --extra-label "Edit & Use" --cancel-label "Default" \
+--menu "\nSelect a mirror for downloading the Decebal Linux files. Note \
+that some mirrors may be down due some network or other problems, and that \
+this is still experimental.\n\n" 0 0 0 \
+$opts 2>$tmp/sm_sel
+local sm_but=$?
+local sm_sel=`cat $tmp/sm_sel`
+rm -f $tmp/sm_sel
+
+case $sm_but in
+  0)
+  case $sm_sel in
+    "Custom")
+    $dialog --backtitle "$version" --title " Mirror URL " \
+    --cancel-label "Default" --inputbox \
+    "\nWhich mirror do you want to use ? Enter the url, preceeded by 'http://' \
+or 'ftp://'.\n\ni.e.\n\nhttp://files.decebal.org/release/$decebal_version/\n\
+ftp://files.decebal.org/pub/release/$decebal_version/\n...\n\n" 0 0 \
+    "$setup_mirror" 2>$tmp/mirror
+    [ $? -eq 0 ] && setup_mirror=`cat $tmp/mirror`
+    rm -f $tmp/mirror
+    ;;
+    *) setup_mirror=$sm_sel ;;
+    esac
+    ;;
+  3)
+    [ "$sm_sel" = "Custom" ] && sm_sel=$setup_mirror
+    $dialog --backtitle "$version" --title " Mirror URL " \
+    --cancel-label "Default" --inputbox \
+    "\nWhich mirror do you want to use ? Enter the url, preceeded by 'http://' \
+or 'ftp://'.\n\ni.e.\n\nhttp://files.decebal.org/release/$decebal_version/\n\
+ftp://files.decebal.org/pub/release/$decebal_version/\n...\n\n" 0 0 \
+  "$sm_sel" 2>$tmp/mirror
+    [ $? -eq 0 ] && setup_mirror=`cat $tmp/mirror`
+    rm -f $tmp/mirror
+    ;;
+esac
+}
+
+
+function medium_binaries()
+# prints a menu, which presents 3 choices for source instalation
+# (internet, cd, local)
+{
+$dialog --backtitle "$version" --title " Binaries Medium " \
+--default-item "$install_medium" --menu \
+"\nSelect the binaries medium (where the precompiled packages are located). \
+Valid choices are :\n\n \
+* The Internet : configure your ethernet or wireless card to connect to \
+the Internet and download all binaries. Note that if \
+you have a slow connection this is a bad ideea since the instalation \
+program will have to download from several hundred MB up to a few GB.\n\n \
+* CD : Get the binaries from a CD/DVD.\n\n \
+* Local directory : Use a local directory to get the binaries from. \
+Be sure to check if you have the binaries there. Now its \
+a good time to do it. The \
+easyest way to do it, is to open another console (ALT+F2 ... ALT+F4), \
+mount the partition with the binaries (this cant be the root partition) \
+in /mnt (for example : mount /dev/hda5 /mnt), press ALT+F1 to return to \
+setup and type the directory where the sources are (/mnt/your/path) when \
+you'll be asked for it. Then, unmount /mnt (umount /mnt).\n\n" 0 0 0 \
+"Internet" "Get the binaries from the Internet" \
+"CD" "Get the binaries from CD/DVD" \
+"Local" "Get the binaries from a local directory" 2>$tmp/medium
+[ $? -eq 0 ] && {
+install_medium=`cat $tmp/medium`
+rm -f $tmp/medium
+case $install_medium in
+  "Internet")
+    #select_mirror puts the result in $setup_mirror
+    select_mirror
+    prefix="$root/tmp/decebal-binaries"
+    ;;
+  "Local")
+  $dialog --backtitle "$version" --title " Local Directory " --inputbox \
+  "\nEnter the directory which contains the binary precompiled packages. \
+\n\nIf for some reason, some files arent there you will be given the choice \
+to pause the instalation and get them in place. \n\n\
+A good thing to do if \
+you're low on disk space and want to copy a CD at a time (in the selected \
+directory). \n\n\
+A bad idea would be to copy them in /tmp. /tmp is \
+stored in memory (RAM) and the compilation needs alot of memory.\n\n" \
+0 0 "$prefix" 2>$tmp/prefix && prefix=`cat $tmp/prefix`
+  rm -f $tmp/prefix
+  ;;
+  "CD") prefix="/media/cdrom/binaries";;
+esac
+}
+}
+
+
+function medium_sources()
+# prints a menu, which presents 3 choices for source instalation
+# (internet, cd, local)
+{
+$dialog --backtitle "$version" --title " Sources Medium " \
+--default-item "$install_medium" --menu \
+"\nSelect the sources medium (where the sources are located). \
+Valid choices are :\n\n \
+* The Internet : configure your ethernet or wireless card to connect to \
+the Internet and download all sources from their homepages. Note that if \
+you have a slow connection this is a bad ideea since the instalation \
+program will have to download from several hundred MB up to a few GB. \
+Also note, that some packages change their hosting page and that some \
+server are always available. If this happens, the instalation of some \
+packages might become impossible.\nThis feature is still in early \
+development.\n\n \
+* CD : Get the sources from a CD/DVD. Note that the instalation \
+program might use a CD several times, this will be hopefully fixed in some \
+future release.\n\n \
+* Local directory : Use a local directory to get the sources from. \
+Be sure to copy the sources there if you dont have them already. Now its \
+a good time to do it. The \
+easyest way to do it, is to open another console (ALT+F2 ... ALT+F4), \
+mount the partition with the sources (this cant be the root partition) \
+in /mnt (for example : mount /dev/hda5 /mnt), press ALT+F1 to return to \
+setup and type the directory where the sources are (/mnt/your/path) when \
+you'll be asked for it. Then, unmount /mnt (umount /mnt).\n\n" 0 0 0 \
+"Internet" "Get the sources from the Internet" \
+"CD" "Get the sources from CD/DVD" \
+"Local" "Get the sources from a local directory" 2>$tmp/medium
+[ $? -eq 0 ] && \
+  {
+  install_medium=`cat $tmp/medium`
+  rm -f $tmp/medium
+  [ $install_medium = "Internet" ] && select_mirror
+  }
+#TODO checks for "CD" and "Local" ...
+}
+
+
+function start_install_src()
+# source instalation of the packages
+{
+local i j
+# check for root partition
+if [ "$root_partition" = "none" ]
+then
+  $dialog --backtitle "$version" --title " ERROR " --msgbox "\nYou havent \
+selected a root partition. Select one.\n\n" 0 0
+  return 1
+fi
+
+# dependencies are unchecked for all packages
+i=0
+until [ $i -gt $pkg_num ]
+do
+  let i=$i+1
+  deps_ok[$i]=1
+  installed[$i]="off"
+done
+
+#touch $tmp/instalation_started
+
+# the first cd is not mounted yet. just initrd. look for it and mount it.
+scan_cd_src 1 || ask_cd_src 1
+
+# first we install the packages needed for source compilation (gcc, glibc...)
+for i in filesystem etc linux-libc-headers glibc libssp ncurses gpm\
+         readline bash coreutils shadow sysvinit initscripts \
+	 bzip2 gzip cpio dialog diffutils pcre grep mktemp \
+	 less m4 make iptables net-tools wireless-tools inetutils \
+	 openssl patch popt sed sysutils tar tcp-wrappers texinfo \
+	 util-linux wget which zlib decebal-builds \
+	 dpack sysconf gcc automake autoconf bin86 binutils db perl \
+	 procinfo procps psmisc reiserfsprogs rsync kernel-$kernel;
+do
+  $dialog --backtitle "$version" --title " Installing packages " \
+  --infobox "\nInstalling $i from binary for now..." 5 60
+
+  j=`get_pkg_index $i 1 $pkg_num`
+
+  # mark the package as installed
+  installed[$j]="on"
+
+  # with the dependencies checked so we dont do that in the future
+  deps_ok[$j]=0
+
+  # and put it in $install_src_list so the dependencies dont screw up
+  exists $j $install_src_list || install_src_list="$install_src_list $j"
+
+  # install it as binary for now, its used to compile the system
+#  ($pkg_install -f --root $root $prefix/${pkg_file[$j]} 1>$tmp/dpack.err 2>$tmp/dpack.err)
+  local dpack_err=$?
+
+  [ $dpack_err -ne 0 ] && \
+    $dialog --backtitle "$version" --title " ERROR " --msgbox \
+    "\nAn error occured while installing ${pkg_name[$j]}.\n\n\
+The instalation media may have some errors, \
+your instalation destination may have errors or something else may have \
+happened. In this stage of instalation, this means serious trouble.\
+Its very unlikely your instalation will be completed. Maybe the binary \
+instalation will work.\nHere is the output of dpack :\n\n`cat \
+$tmp/dpack.err`\n\n" 0 0
+done
+umount $cd_device 1>/dev/null 2>/dev/null
+eject $cd_device
+
+
+  # build the $tmp/fstab so we can mount the mountpoints properly
+  make_fstab
+  case $install_medium in
+  "Internet")
+  # mount the mountpoints so that the network configuration will save
+  # to the right file ($root/etc/conf.d/network) the settings
+  # cant be done later
+  make_fstab
+  mount_mountpoints
+  
+  # configure the network
+  $dialog --backtitle "$version" --title " Network Configuration " \
+--msgbox "\nYou can now configure your connection to the \
+Internet. Only ethernet and wireless cards are supported for now. \
+If you cant connect to the Internet, the \
+instalation wont be able to download the sources and compile them. \
+If you're having problems, please post a message on the Decebal Linux Forum \n
+http://forum.decebal.org \ndescribing the problem.\n\n\
+Do you want to configure your network ?\n\n" 0 0 && network_mainmenu
+  
+  network_start_now
+#still in start_install_src
+#TODO alot to do around here, did i ran select_mirror ? ...
+  ;;
+  "Local")
+  $dialog --backtitle "$version" --title " Local Directory " --inputbox \
+  "\nEnter the directory which contains the source files for the packages. \
+\n\nIf for some reason, some sources arent there you will be given the choice \
+to pause the instalation and get the sources in place. \n\n\
+A good thing to do if \
+you're low on disk space and want to copy a CD at a time (in the selected \
+directory). \n\n\
+A bad idea would be to copy them from the CD in /tmp. /tmp is \
+stored in memory (RAM) and the compilation needs alot of memory." \
+0 0 "$prefix" 2>$tmp/prefix
+  [ $0 -eq 0 ] && prefix=`cat $tmp/prefix`
+  rm -f $tmp/prefix
+
+  mount_mountpoints
+  # dpack takes its sources by default from /var/cache/dpack
+  # if we mount the $prefix directory there, everything's fine
+  # but if this is an update, that directory might exist, so we make a backup
+  # and link $prefix to /var/cache/dpack
+  [ -d $root/var/cache/dpack ] && mv $root/var/cache/dpack $root/var/cache/dpack.$setupstart
+  ln -s $prefix $root/var/cache/dpack
+  ;;
+  # end of "Local"
+  "CD")
+  prefix="/media/cdrom/sources"
+  mount_mountpoints
+  # same story as above here, its just that we link /media/cdrom/sources to
+  # $root/var/cache/dpack
+  [ -d $root/var/cache/dpack ] && mv $root/var/cache/dpack $root/var/cache/dpack.$setupstart
+  ln -s $prefix $root/var/cache/dpack
+  ;;
+  # end of "CD"
+  esac
+  
+
+#TODO
+#ask for dsrc flags, ask if verbose
+#then do dsrc_ops
+
+  local MODEL="$(grep '^model name' /proc/cpuinfo 2>/dev/null)"
+  local MODEL="${MODEL##*:}"
+  local CPU=""
+  if [ ! "`echo $MODEL | grep 'Athlon(tm)'`" = "" ]
+  then
+    CPU="athlon-xp"
+  elif [ ! "`echo $MODEL | grep 'Pentium(R) 4'`" = "" ]
+  then
+    CPU="pentium4"
+  elif [ ! "`echo $MODEL | grep 'Coppermine'`" = "" ]
+  then
+    CPU="pentium3"
+  elif [ ! "`echo $MODEL | grep 'Celeron(TM)'`" = "" ]
+  then
+    CPU="pentium3"
+  elif [ ! "`echo $MODEL | grep 'Celeron(R)'`" = "" ]
+  then
+    CPU="pentium4"
+  elif [ ! "`echo $MODEL | grep 'Duron(tm)'`" = "" ]
+  then
+    CPU="athlon"
+  elif [ ! "`echo $MODEL | grep 'Deschutes'`" = "" ]
+  then
+    CPU="pentium2"
+  elif [ ! "`echo $MODEL | grep 'Mendocino'`" = "" ]
+  then
+    CPU="pentium2"
+  elif [ ! "`echo $MODEL | grep 'Pentium III'`" = "" ]
+  then
+    CPU="pentium3"
+  elif [ ! "`echo $MODEL | grep 'AMD Duron(tm)'`" = "" ]
+  then
+    CPU="athlon-xp"
+  else
+    CPU="i686"
+  fi
+
+$dialog --backtitle "$version" --title " Architectures " \
+--default-item "$CPU" --menu \
+"\nSelect the architecture for which you want to compile Decebal Linux.\n\n\
+Selecting a different architecture instead of the selected one is usefull \
+only if you plan to install the harddrive on a different computer or \
+change the processor.\n\nNote that is you dont have at least an i686 \
+you wont be able to compile the system (this will change in a future \
+release)." 0 0 0 \
+"pentium4" "Pentium(R) 4" \
+"pentium4" "Celeron(R)" \
+"---" "---" \
+"pentium3" "Coppermine" \
+"pentium3" "Celeron(TM)" \
+"pentium3" "Pentium III" \
+"---" "---" \
+"pentium2" "Deschutes" \
+"pentium2" "Mendocino" \
+"--------" "-----------" \
+"ahtlon-xp" "Athlon(tm)" \
+"athlon-xp" "AMD Duron(tm)" \
+"---" "---" \
+"athlon" "Duron(tm)" \
+"--------" "-----------" \
+"i686" "Generic i686 architecture" 2>$tmp/arch
+arch_but=$?
+[ $arch_but -eq 0 ] && CPU=`cat $tmp/arch`
+rm -f $tmp/arch
+
+cat $root/etc/dpack/build|replace "CFLAGS=" "CFLAGS=\"-march=$CPU -O2 -pipe -fomit-frame-pointer\"" >$tmp/build
+cat $tmp/build|replace "CXXFLAGS=" "CXXFLAGS=\"-march=$CPU -O2 -pipe -fomit-frame-pointer\"" >$tmp/build1
+
+mv -f $tmp/build1 $root/etc/dpack/build
+rm -f $tmp/build
+
+$dialog --backtitle "$version" --title " Compilation " --yesno "\nThe \
+compilation will start right away. Do you want it to be verbose ?\n\n\
+If you answer 'Yes', you will see \
+all compilation output. This might be usefull if you want to see if there \
+are warnings or errors, or just want to animate your screen.\n\n\
+If you answer 'No', you will see just the output of dpack, which \
+packet is compiling, and some compilation history.\n\n" 0 0
+
+[ $? -eq 0 ] && dsrc_opts="-v" || dsrc_opts=""
+
+# the party is getting started
+chroot $root mount /proc
+
+#FIXME this surely has to be changed (why ?)
+chroot $root dsrc $dsrc_opts "$kernel"
+[ $? -eq 42 -a $install_medium = "CD" ] && ask_cd_src
+chroot $root dsrc $dsrc_opts gcc
+[ $? -eq 42 -a $install_medium = "CD" ] && ask_cd_src
+chroot $root dsrc $dsrc_opts glibc
+[ $? -eq 42 -a $install_medium = "CD" ] && ask_cd_src
+chroot $root dsrc $dsrc_opts binutils
+[ $? -eq 42 -a $install_medium = "CD" ] && ask_cd_src
+chroot $root dsrc $dsrc_opts lipssp
+[ $? -eq 42 -a $install_medium = "CD" ] && ask_cd_src
+
+# stripped packages that didnt have source (filesystem...)
+# and gcc is already compiled
+for i in linux-libc-headers ncurses gpm \
+         readline bash coreutils shadow sysvinit \
+	 bzip2 gzip cpio dialog e2fsprogs diffutils pcre grep mktemp \
+	 less m4 make iptables net-tools wireless-tools inetutils \
+	 openssl patch popt sed sysutils tar tcp-wrappers texinfo \
+	 util-linux wget which zlib \
+	 automake autoconf bin86 db perl \
+	 procinfo procps psmisc reiserfsprogs rsync;
+do
+j=`get_pkg_index $i 1 $pkg_num`
+chroot $root dsrc $dsrc_opts $i
+[ $? -eq 42 -a $install_medium = "CD" ] && ask_cd_src
+
+# just to be sure
+# mark the package as installed
+installed[$j]="on"
+
+# with the dependencies checked so we dont do that in the future
+deps_ok[$j]=0
+
+# and put it in $install_src_list so the dependencies dont screw up
+exists $j $install_src_list || install_src_list="$install_src_list $j"
+done
+
+# now check the dependencies and actually build $install_src_list
+i=0
+
+#somewhere up, i install the kernel with dsrc
+#pkg_name[0]="$kernel"
+#pkg_desc[0]="Linus Torvalds Linux kernel"
+#pkg_file[0]="$prefix/kernels/$kernel-i686-1.tbz2"
+#pkg_ver[0]=`echo $kernel|cut -f 3 -d "-"`
+#pkg_usize[0]="54000"
+#pkg_cd[0]=1
+#pkg_depends[0]=""
+#pkg_conflicts[0]=""
+#pkg_group[0]=kernels
+#pkg_types[0]=""
+#selected[0]="on"
+#installed[0]="off"
+#install_src_list="0 $install_src_list"
+
+# and install the packages
+#TODO make some dpack error checking
+for i in $install_src_list;
+do
+  [ "${installed[$i]}" = "off" ] && (chroot $root dsrc $dsrc_opts ${pkg_name[$i]})
+done
+
+# dont forget to restore the sources directory (usefull if the user updated
+# decebal)
+[ -d $root/var/cache/dpack.$setupstart ] && \
+  {
+  rm -rf $root/var/cache/dpack
+  mv $root/var/cache/dpack.$setupstart $root/var/cache/dpack
+  }
+
+chroot $root umount /proc 1>/dev/null 2>/dev/null
+
+# all the stuff we forgot goes here
+#post_installation
+}
+
+function fdisk_select_menu()
+# asks the user which drive he wants to partition
+{
+local fsm_but=0 fsm_sel i partition="" tmp_disk tmp_size
+
+fdisk -l|grep "^Disk /dev/" >$tmp/tmp_cfdisk
+
+# look at the output of fdisk -l|grep "^Disk" to see whats done by those cuts
+# Disk /dev/hda: 40.0 GB, 40020664320 bytes
+
+while read line
+do
+  tmp_disk=`echo $line|cut -f 1 -d ":"|cut -f 2 -d " "`
+  tmp_size=`echo $line|cut -f 2- -d ":"|cut -f 4 -d " "`
+  tmp_size=$(( ${tmp_size} / 1000000 )) # from bytes to mega-bytes. replace 1000000 with 1048576
+  partition="$partition ${tmp_disk} ${tmp_size}"
+done <$tmp/tmp_cfdisk
+
+rm -f $tmp/tmp_cfdisk
+unset tmp_disk tmp_size
+
+until [ $fsm_but -eq 1 ]
+do
+  $dialog --backtitle "$version" --title " Hard Disk Partition " \
+  --default-item "$fsm_sel" --cancel-label "Back" \
+  --menu "\nSelect which drive you want to partition.\nIn the right collumn
+you can see the size in MB of the hard drive.\n\n" 0 0 0 \
+  $partition 2>$tmp/fsm_sel
+  fsm_but=$?
+  fsm_sel=`cat $tmp/fsm_sel`
+  rm -f $tmp/fsm_sel
+
+  case $fsm_but in
+  0) cfdisk $fsm_sel ;;
+  esac
+  
+done
+
+}
+
+function update_database()
+
+{
+[ "$database_medium" = "Internet" ] && local db_text="$database_mirror"
+[ "$database_medium" = "Local" ] && local db_text="(${database_prefix})"
+[ "$database_medium" = "CD" ] && local db_text="$version"
+
+$dialog --backtitle "$version" --title " Update Packages Database " \
+--default-item "$database_medium" --menu \
+"\nThe packages from Decebal Linux are stored in a database. A newer \
+database means newer package versions, and probably more packages. \
+You can change the database and have access to other packages. \
+Select the source medium for the new database.\n\n\
+* The Internet : configure your ethernet or wireless card to connect to \
+the Internet and download the latest packages database.\n\n\
+* CD : Get the packages database from the CD/DVD.\n\n\
+* Local directory : Use a local directory to get the database from. \
+Be sure to check if you have the database there. Now its \
+a good time to do it.\n\n\
+You need the following files:\n\n
+ packages.list\n\
+ groups.list\n\
+ installtypes.list\n\
+ mirrors.list\n\n\
+The current selection is '${database_medium}' ${db_text}" 0 0 0 \
+"Internet" "Get the database from the Internet" \
+"Local" "Get the database from a local directory" \
+"CD" "Get the database from CD/DVD" 2>$tmp/database.medium
+[ $? -eq 0 ] && \
+  {
+  local database_medium_tmp=`cat $tmp/database.medium`
+  rm -f $tmp/database.medium
+
+  case $database_medium_tmp in
+    "Internet")
+      #select_mirror puts the result in $setup_mirror so we need to make a bkp
+      local dm_tmp=$setup_mirror
+      select_mirror
+      database_mirror=$setup_mirror
+      setup_mirror=$dm_tmp
+      unset dm_tmp
+      
+      rm -f $tmp/database/* $tmp/database.error
+      touch $tmp/wget.log
+      infobox "Fetching packages.list (file 1/4)"
+      wget $database_mirror/database/packages.list -P $tmp/database/ -o $tmp/wget.log
+      infobox "Fetching groups.list (file 2/4)"
+      wget $database_mirror/database/groups.list -P $tmp/database/ -o $tmp/wget.log
+      infobox "Fetching installtypes.list (file 3/4)"
+      wget $database_mirror/database/installtypes.list -P $tmp/database/ -o $tmp/wget.log
+      infobox "Fetching mirrors.list (file 4/4)"
+      wget $database_mirror/database/mirrors.list -P $tmp/database/ -o $tmp/wget.log
+
+      for i in packages.list groups.list installtypes.list mirrors.list;
+      do
+        [ ! -e $tmp/database/$i ] && echo $i >>$tmp/database.error
+      done
+      [ -s $tmp/database.error ] && \
+	{
+	$dialog --backtitle "$version" --title " ERROR " --msgbox \
+	"\nThe following file(s) could not be found on $database_mirror :\n\n\
+`cat $tmp/database.error`\n\n" 0 0
+	rm -f $tmp/database.error
+	return 1
+	}
+
+      packages_list="$tmp/database/packages.list"
+      groups_list="$tmp/database/groups.list"
+      types_list="$tmp/database/installtypes.list"
+      mirrors_list="$tmp/database/mirrors.list"
+      ;;
+    "Local")
+      $dialog --backtitle "$version" --title " Local Directory " --inputbox \
+      "\nEnter the directory which contains the database files.\n\n\
+You need the following files:\n\n\
+ packages.list\n\
+ groups.list\n\
+ installtypes.list\n\
+ mirrors.list\n\n" 0 0 "" 2>$tmp/database.prefix
+local dm_but=$?
+      if [ $dm_but = 0 ]; then
+	database_prefix=`cat $tmp/database.prefix`
+        rm -f $tmp/database.prefix
+	rm -f $tmp/database.error
+
+	for i in packages.list groups.list installtypes.list mirrors.list;
+	do
+	cp -f ${database_prefix}/${i} $tmp/database/${i} || echo $i >>$tmp/database.error
+	done
+	[ -s $tmp/database.error ] && \
+	  {
+	  $dialog --backtitle "$version" --title " ERROR " --msgbox \
+	  "\nThe following file(s) could not be found in $database_prefix :\n\n\
+`cat $tmp/database.error`\n\n" 0 0
+	  rm -f $tmp/database.error
+	  return 1
+	  }
+        packages_list="$tmp/database/packages.list"
+        groups_list="$tmp/database/groups.list"
+        types_list="$tmp/database/installtypes.list"
+        mirrors_list="$tmp/database/mirrors.list"
+
+      else
+	# the user pressed cancel
+	rm -f $tmp/database.prefix
+        return 1
+      fi
+    ;;
+    "CD")
+      packages_list="$setup_dir/database/packages.list"
+      groups_list="$setup_dir/database/groups.list"
+      types_list="$setup_dir/database/installtypes.list"
+      mirrors_list="$setup_dir/database/mirrors.list"
+    ;;
+  esac
+  } || return 1
+       #leave the function with returncode 1 if the user pressed cancel
+
+# if the user got here and avoided those returns, he really wants to
+# change the database
+
+unset pkg_name pkg_desc pkg_file pkg_ver pkg_usize pkg_cd pkg_depends
+unset pkg_conflicts pkg_group pkg_types selected
+. $packages_list
+pkg_num=${#pkg_name[*]} # number of packages found in the database
+
+local i=0
+until [ $i -eq $pkg_num ]
+do
+  let i=$i+1
+  deps_ok[$i]=1
+  selected[$i]="off"
+  installed[$i]="off"
+done
+
+# no need to erase the old files, since make_tmp_files does that
+make_tmp_files
+database_medium=$database_medium_tmp
+
+} #end of update_database
+
+function setup_mainmenu_bin()
+# this function displays the MAIN MENU-binary (of the setup script)
+{
+local smmb_but=0 smmb_sel i=0 interfaces_tmp swap_tmp medium_tmp
+
+until [ $smmb_but -eq 1 ]
+do
+# set some special menu entries
+  [ -z "$interfaces" ] && interfaces_tmp="none" || interfaces_tmp=`echo $interfaces`
+  swap_tmp=`echo $swap_partition|tr -d "\""`
+  [ -z "$formatted_partitions" ] && formatted_tmp="none" || formatted_tmp=`echo $formatted_partitions`
+
+  case $install_medium in
+    "Internet") medium_tmp=$setup_mirror;;
+    "Local") medium_tmp=$prefix;;
+    "CD") medium_tmp="";;
+  esac
+  medium_tmp=" $medium_tmp"
+
+  $dialog --backtitle "$version" --title " Setup Main Menu (binary) " \
+  --cancel-label "Exit" --default-item "$smmb_sel" \
+  --menu "" 0 0 0 \
+  "cfdisk" "partition your hard drives" \
+  "root" "select your root partition (current:$root_partition)" \
+  "format" "format a harddisk partition (formatted:$formatted_tmp)" \
+  "-" "" \
+  "swap" "select your swap partition (current:$swap_tmp)" \
+  "mountpoints" "configure mountpoints" \
+  "-" "" \
+  "kernel" "select your kernel (current:$kernel)" \
+  "network" "configure your interfaces (configured:$interfaces_tmp)" \
+  "medium" "where to get the binaries from (current:$install_medium)" \
+  "-" "$medium_tmp" \
+  "packages" "select the packages to be installed" \
+  "dependencies" "resolve package dependencies" \
+  "size" "calculate how much the selected packages occupy" \
+  "type" "instalation type (current:$install_type)" \
+  "update" "update the packages database" \
+  "-" "" \
+  "START" "Start the instalation, Final step" \
+  2>$tmp/smmb_sel
+  smmb_but=$?
+  smmb_sel=`cat $tmp/smmb_sel`
+  rm -f $tmp/smmb_sel
+  case $smmb_but in
+  0)
+    case $smmb_sel in
+    'cfdisk') fdisk_select_menu ;;
+    'root') select_root_partition;;
+    'swap') select_swap_partition;;
+    'mountpoints') configure_mountpoints;;
+    'kernel') select_kernel;;
+    'network') network_mainmenu;;
+    'update') update_database;;
+    'dependencies') make_depends;;
+    'packages') show_group_menu;;
+    'medium') medium_binaries;;
+    'type') install_type_menu;;
+    'size') instalation_size;;
+    'START') install_bin_start;;
+    'format') format_partition_menu;;
+    esac
+  ;;
+  2)
+    $dialog --backtitle "$version" --title " Help " \
+    --textbox $docs_dir/install-help.en 0 0
+  ;;
+  1) rm -f $tmp/* 2>/dev/null ;;
+  esac
+
+done
+}
+
+function make_depends()
+# resolve the dependencies of all packages
+# if sourcebased, also builds install_src_list
+{
+
+infobox "Checking dependencies ..."
+local i=0
+ask_deps=0
+case "$install_source" in
+  "bin")
+  until [ $i -gt $pkg_num ]
+  do
+    let i=$i+1
+    [ "${selected[$i]}" = "on" ] && check_depends_bin $i
+  done
+  ;;
+  "src")
+  install_src_list=""
+  until [ $i -gt $pkg_num ]
+  do
+    let i=$i+1
+    [ "${selected[$i]}" = "on" ] && check_depends_src $i
+  done
+  ;;
+esac
+}
+
+function setup_mainmenu_src()
+# this function displays the MAIN MENU-source (of the setup script)
+{
+local i=0
+local smms_but=0 smms_sel
+
+until [ $smms_but -eq 1 ]
+do
+# aint sure if to decoment it and remove it from src/bin install functions
+# since you have to pass trough here to go there, but then again, its
+# slowing the script down
+#  select_required
+  $dialog --backtitle "$version" --title " Setup Main Menu (source) " \
+  --help-button --cancel-label "Exit" --default-item "$smms_sel" \
+  --menu "\nIt is strongly recomended you select each option in \
+this order. Press 'Help' to see what each option does and what you \
+need.\n\n" 0 0 0 \
+  "cfdisk" "partition your hard drives" \
+  "root" "select & configure your root partition" \
+  "swap" "select your swap partition (optional)" \
+  "mountpoints" "sonfigure mountpoints" \
+  "kernel" "select your kernel" \
+  "------" "-----------------------" \
+  "update" "update the packages database" \
+  "medium" "where to get the sources from (currently:$install_medium)" \
+  "type" "instalation type (full, desktop...)" \
+  "------" "-----------------------" \
+  "packages" "select the packages to be installed" \
+  "dependencies" "resolve package dependencies" \
+  "size" "calculate how much the selected packages occupy" \
+  "------" "-----------------------" \
+  "START" "Start the instalation, Final step" \
+  2>$tmp/smms_sel
+  smms_but=$?
+  smms_sel=`cat $tmp/smms_sel`
+  rm -f $tmp/smms_sel
+  case $smms_but in
+  0)
+    case $smms_sel in
+    'cfdisk') fdisk_select_menu ;;
+    'root') setup_root_partition;;
+    'swap') select_swap_partition;;
+    'mountpoints') configure_mountpoints;;
+    'update') update_database;;
+    'kernel') select_kernel;;
+    'packages') show_group_menu;;
+    'type') install_type_menu;;
+    'medium') medium_sources;;
+    'size') instalation_size;;
+    'dependencies') make_depends;;
+    'START') start_install_src;;
+    esac
+  ;;
+  2)
+    $dialog --backtitle "$version" --title " Help " \
+    --textbox $docs_dir/install-help.en 0 0
+  ;;
+  esac
+
+done
+}
+
+function banner_menu()
+# displays a list of text files (authors, license, bugs, readme, ...) and START
+{
+local fm_but=0 fm_sel="START"
+until [ $fm_but -eq 1 ]
+do
+  $dialog --backtitle "$version" --title " Decebal Linux Instalation " \
+  --cancel-label "Exit" --default-item "$fm_sel" \
+  --menu "\nWelcome to the Decebal Linux instalation menu.\n\n\
+(english) You can read \
+here the license under which Decebal Linux is distributed (GPL). You must \
+agree to the license terms if you want to use Decebal Linux. If you dont \
+accept all of them, you are not allowed to use Decebal Linux (use the 'Exit' \
+button to cancel the instalation).\n\n\
+(romaneste) Aici puteti citi textul licentei sub care este distribuit \
+Decebal Linux. Pentru a putea folosi si instala Decebal Linux, trebuie \
+sa cititi textul licentei si sa fiti de acord cu toti termenii stipulati \
+in licenta. Daca nu sunteti de acord cu toti acesti termeni, nu aveti \
+dreptul sa folositi Decebal Linux (apasati butonul 'Exit' pentru a iesi \
+din programul de instalare).\n\n\
+Please take some time to read the THANKS text.\n\n\
+Use the 'START' menu entry to proceed with the instalation\n\n" 0 0 0 \
+  "README" "Overview of what Decebal Linux is" \
+  "License (english)" "The GPL license text" \
+  "Licenta (romana)" "Textul licentei GPL" \
+  "Thanks" "We would like to thank ..." \
+  "Authors" "Decebal Linux developers" \
+  "About Decebal Linux" "A few words about Decebal Linux" \
+  "Despre (romana)" "Cateva cuvinte despre Decebal Linux" \
+  "--------------" "---------------------------------" \
+  "START" "Install Decebal Linux" 2>$tmp/fm_sel
+  fm_but=$?
+  fm_sel=`cat $tmp/fm_sel`
+  rm -f $tmp/fm_sel
+
+  [ $fm_but -eq 0 ] &&
+  case $fm_sel in
+  "License (english)")
+    $dialog --backtitle "$version" --title " The GPL License " \
+    --textbox "$docs_dir/COPYING.en" 0 0
+  ;;
+  "Licenta (romana)")
+    $dialog --backtitle "$version" --title " Licenta GPL " \
+    --textbox "$docs_dir/COPYING.ro" 0 0
+  ;;
+  "README")
+    $dialog --backtitle "$version" --title " README " \
+    --textbox "$docs_dir/README" 0 0
+  ;;
+  "Thanks")
+    $dialog --backtitle "$version" --title " Thank you " \
+    --textbox "$docs_dir/THANKS" 0 0
+  ;;
+  "Authors")
+    $dialog --backtitle "d$version" --title " Authors " \
+    --textbox "$docs_dir/AUTHORS" 0 0
+  ;;
+  "About Decebal Linux")
+    $dialog --backtitle "$version" --title " About Decebal Linux " \
+    --textbox "$docs_dir/ABOUT.en" 0 0
+  ;;
+  "Despre (romana)")
+    $dialog --backtitle "$version" --title " Despre Decebal Linux " \
+    --textbox "$docs_dir/ABOUT.ro" 0 0
+  ;;
+  "START")
+#    $dialog --backtitle "$version" --title " Agreement/Accept " \
+#    --yes-label "Yes/Da" --no-label "No/Nu" --yesno \
+#    "\n(english) I have read the GPL license and I agree with all its \
+#terms.\n\n\
+#(romana) Am citit licenta GPL si sunt de acord cu toti termenii ei.\n\n" 0 0
+#    [ $? -eq 1 ] &&
+#      {
+#      rm -rf $tmp
+#      clear
+#      echo "You must read and agree with the terms of the GPL license"
+#      echo
+#      echo "Trebuie sa cititi si sa fiti de acord cu termenii stipulati de licenta GPL"
+#      echo
+#      exit 1
+#      }
+
+[ "$conf_show_source" = "yes" ] && \
+{
+local processor=`cat /proc/cpuinfo|grep "model name"|cut -f 2- -d ":"|cut -f 2- -d " "`
+$dialog --backtitle "$version" --title " Installation Type " \
+--menu "\nThere are two ways to install Decebal Linux.\n\n \
+- Binary : install precompiled packages optimised for i686. \n\n \
+- Source : install the base from precompiled packages, and compile from \
+source the kernel and the rest of the packages (according to your selection). \
+Depending on how many pachages you select, this will take several hours or \
+even days, but Decebal Linux will be optimised for $processor and will run \
+faster. \nNote that this is mainly for developers and probably wont work.\n\n\
+Select 'Binary' if unsure." 0 0 0 \
+"Binary" "Binary instalation" \
+"Source" "Source instalation" 2>$tmp/source.tmp
+    local source_tmp=$?
+    [ $source_tmp -eq 0 ] && 
+      {
+      [ "`cat $tmp/source.tmp`" = "Source" ] && install_source="src" || install_source="bin"
+      }
+    rm -f $tmp/source.tmp
+    unset source_tmp processor
+}
+
+    case $install_source in
+      "bin") setup_mainmenu_bin;;
+      "src") setup_mainmenu_src;;
+    esac
+
+    exit 0
+  ;;
+  esac || {
+  rm -rf $tmp
+  exit
+  }
+done
+
+}
+
+function debug()
+{
+echo $?
+echo $LINENO
+}
+
+
+function start()
+# stuff that needs to be done before anything else
+{
+#infobox "Starting things"
+
+local umnt=""
+# check if the partitions are mounted. this could happen becouse of an
+# interrupted instalation. umount them in reverse order of mounting
+[ ! -z "`mount|grep $root`" ] &&
+  {
+  for i in `mount|grep $root|cut -f 1 -d " "`;
+  do
+    umnt="$i $umnt"
+  done
+  }
+for i in $i;
+do
+  umount $i 1>/dev/null 2>/dev/null
+done
+
+mkdir $tmp 2>/dev/null
+rm -f $tmp/* 2>/dev/null
+cp $setup_dir/tmpfiles/* $tmp/
+mkdir $tmp/database 2>/dev/null
+mkdir -p $root 2>/dev/null
+
+#infobox "Creating temporary files"
+#make_tmp_files
+
+# SIGUSR1=10 SIGUSR2=12
+trap "usr1" SIGUSR1
+trap "usr2" SIGUSR2
+
+i=0
+install_src_list=""
+
+infobox "Loading package database"
+
+. $packages_list
+. $setup_dir/setup.conf
+
+pkg_num=${#pkg_name[*]} # number of packages in the database
+
+until [ $i -eq $pkg_num ]
+do
+  let i=$i+1
+  deps_ok[$i]=1
+  selected[$i]="on"
+  installed[$i]="off"
+done
+change_selection `locase $install_type`
+
+# no 2 instances of setup allowed
+touch $tmp/lock
+
+banner_menu
+}
+
+start
+#
+#   AGENOR (antrop.); AGE-NOR "din nor(i); apa; izvor; obarsie; de neam;
+#   nobil; innorat; umbros". Lat. genero "a da nastere, a zamisli, a odrasli;
+#   a produce, a crea"; gens "neam, familie; popor". Rom. gorun; garnet (reg.)
+#   "par mai gros facut de obicei din lemn de stejar"; garnita (bot.).
+#
+#   Agenor. Fiul lui Poseidon si al nimfei Libya. S-a casatorit cu
+#   Telephassa, cu care a avut patru copii: Cadmus, Cilix, Phoenix si Europa.
+#   Cand aceasta din urma a fost rapita de catre Zeus, Agenor si-a trimis fiii
+#   in cautarea ei.

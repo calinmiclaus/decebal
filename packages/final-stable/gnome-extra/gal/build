@@ -1,0 +1,25 @@
+NAME=gal
+VERSION=2.4.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="GNOME Application library."
+GROUP=gnome-extra
+LICENSE="LGPLv2.1"
+SIZE="1167K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gal-2.4.0.tar.bz2"
+
+RUNTIME="libgnomeui libgnomeprintui"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING.LIB ChangeLog INSTALL NEWS README \
+    MAINTAINERS
+}

@@ -1,0 +1,22 @@
+NAME=sysutils
+VERSION=0.1.0
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org/pub/linux/utils/kernel/hotplug/"
+DESC="SysFS file system uitilities."
+GROUP=base
+LICENSE="GPLv2 LPLv1"
+
+SOURCES="http://www.kernel.org/pub/linux/utils/kernel/hotplug/sysutils-0.1.0.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  make
+  
+  install -D -m 0755 cmd/systool $PKG/sbin/systool
+  install -m 0755 cmd/lsbus $PKG/sbin/lsbus
+  install -D -m 0644 lib/libsysfs.a $PKG/lib/libsysfs.a
+  
+  install_docs AUTHORS COPYING ChangeLog README TODO docs/libsysfs.txt
+}

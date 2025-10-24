@@ -1,0 +1,22 @@
+NAME=libcdaudio
+VERSION=0.99.12
+ARCH=i686
+RELEASE=1
+URL="http://libcdaudio.sourceforge.net/"
+DESC="A library for controling operationions of a CD-ROM when playing audio CDs."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE=""
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libcdaudio/libcdaudio-0.99.12.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

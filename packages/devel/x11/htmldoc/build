@@ -1,0 +1,24 @@
+NAME=htmldoc
+VERSION=1.8.24
+ARCH=i686
+RELEASE=1
+URL="http://www.easysw.com/htmldoc/"
+DESC="Convert HTML pages into a PDF document."
+GROUP="x11"
+LICENSE="GPLv2"
+SIZE="2516K"
+
+SOURCES="http://ftp.easysw.com/pub/htmldoc/1.8.24/htmldoc-1.8.24-source.tar.bz2"
+
+BUILDTIME="xorg"
+
+RUNTIME=">=openssl-0.9.7e
+         >=fltk-1.0.11"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure
+  make
+  make prefix=$PKG install
+}

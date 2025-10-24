@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 39 rsync 2>/dev/null
+  /usr/sbin/useradd -g 39 -u 39 -c "Rsync server" -d /dev/null -s/bin/false rsync 2>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 39 rsync 2>/dev/null
+  /usr/sbin/useradd -g 39 -u 39 -c "Rsync server" -d /dev/null -s/bin/false rsync 2>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel rsync 2>/dev/null
+  /usr/sbin/groupdel rsync 2>/dev/null
+}

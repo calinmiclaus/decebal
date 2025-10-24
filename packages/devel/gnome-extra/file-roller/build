@@ -1,0 +1,36 @@
+NAME=file-roller
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="An archive manager utility for the GNOME Environment."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="1280K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/file-roller-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="nautilus"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README \
+    MAINTAINERS HACKING TODO
+}

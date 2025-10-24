@@ -1,0 +1,28 @@
+NAME=epeg
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="An IMMENSELY FAST JPEG thumbnailer library API."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="1023K"
+HUSE="static "
+
+SOURCES="epeg-21052005.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README
+}

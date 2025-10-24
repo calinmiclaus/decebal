@@ -1,0 +1,41 @@
+NAME=mc
+VERSION=4.6.1_pre1
+ARCH=i686
+RELEASE=1
+URL="http://www.ibiblio.org/mc/"
+DESC="A user shell with text-mode full-screen interface."
+GROUP=system
+LICENSE=GPLv2
+SIZE="3794K"
+HUSE="x samba"
+
+SOURCES="http://www.ibiblio.org/pub/Linux/utils/file/managers/mc/mc-4.6.1-pre1.tar.gz
+         mc.ext"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME="glib glib2 gpm slang"
+
+use x && RUNTIME="$RUNTIME xorg"
+use samba && RUNTIME="$RUNTIME samba"
+
+build() {
+  cd $SRC/$NAME-4.6.1-pre1
+  
+  use x && OPTS="--with-x" || OPTS="--without-x"
+  use samba && OPTS="$OPTS --with-samba" || OPTS="$OPTS --without-samba"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-gpm-mouse \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../mc.ext $PKG/usr/share/mc/mc.ext
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog FAQ INSTALL* \
+    MAINTAINERS INSTALL.FAST NEWS README* HACKING TODO
+}

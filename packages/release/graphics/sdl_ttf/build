@@ -1,0 +1,27 @@
+NAME=sdl_ttf
+VERSION=2.0.7
+ARCH=i686
+RELEASE=1
+URL="http://www.libsdl.org/projects/SDL_ttf/"
+DESC="A sample library which allows you to use TrueType fonts in your SDL applications."
+GROUP=graphics
+LICENSE="LGPLv2"
+SIZE="1845K"
+HUSE="static"
+
+SOURCES="http://www.libsdl.org/projects/SDL_ttf/release/SDL_ttf-2.0.7.tar.gz"
+
+RUNTIME=">=libsdl-1.2.4 freetype"
+
+build() {
+  cd $SRC/SDL_ttf-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES COPYING README
+}

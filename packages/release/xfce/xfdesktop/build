@@ -1,0 +1,46 @@
+NAME=xfdesktop
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A desktop manager for the XFce Desktop Environment."
+GROUP=xfce
+LICENSE=GPLv2
+SIZE="2876K"
+HUSE="static debug profile"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/xfdesktop-4.2.2.tar.gz
+         xinitrc.xfce xfce.desktop"
+
+BACKUPS="etc/opt/xfce/xdg/xfce4/desktop/menu.xml
+         etc/opt/xfce/xdg/xfce4/desktop/xfce-registered-categories.xml"
+
+BUILDTIME="gettext >=pkgconfig-0.9.0"
+	   
+RUNTIME=">=xfce-mcs-manager-4.2.0 >=xfce4-panel-4.2.0 >=libxml2-2.4.0 xfce-utils >=libxfce4util-4.2.0
+         >=libxfcegui4-4.2.0"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+ 
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --mandir=/opt/xfce/share/man \
+	      --with-locales-dir=/usr/share/locale \
+	      --enable-libxml2 \
+	      --enable-final \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 ../xinitrc.xfce $PKG/etc/X11/xinit/xinitrc.xfce
+  install -D -m 0755 ../xfce.desktop $PKG/etc/X11/Sessions/xfce.desktop
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README \
+    NEWS TODO
+}
+  

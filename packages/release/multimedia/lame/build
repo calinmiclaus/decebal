@@ -1,0 +1,27 @@
+NAME=lame
+VERSION=3.96.1
+ARCH=i686
+RELEASE=1
+URL="http://lame.sourceforge.net"
+DESC="An MP3 encoder and graphical frame analyzer."
+GROUP=multimedia
+LICENSE="GPLv2"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/lame/lame-3.96.1.tar.gz"
+
+RUNTIME="ncurses libvorbis"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+              --with-vorbis
+
+  make
+  make prefix=$PKG/usr install
+
+  install_docs API COPYING ChangeLog DEFINES INSTALL* HACKING LICENSE README* \
+    TODO STYLEGUIDE TODO
+  mv -f $PKG/usr/share/doc/lame/html $PKG/usr/share/doc/$NAME-$VERSION/
+  rm -rf $PKG/usr/share/doc/lame
+}

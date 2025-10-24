@@ -1,0 +1,53 @@
+NAME=tetex
+VERSION=3.0
+ARCH=i686
+RELEASE=1
+URL="http://tug.org/teTeX/"
+DESC="A TeX distribution for Unix."
+GROUP=office
+LICENSE=OL
+SIZE="158409K"
+
+SOURCES="ftp://tug.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/tetex-src-3.0.tar.gz
+         ftp://tug.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/tetex-texmf-3.0.tar.gz
+	 ftp://tug.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/tetex-texmfsrc-3.0.tar.gz"
+
+RUNTIME=">=zlib-1.1.4
+         >=ncurses-5.3
+         libpng
+	 gd
+	 xorg
+	 t1lib
+	 espgs"
+
+build() {
+  cd $SRC
+  
+  # copy 
+  mkdir -p $PKG/usr/share/texmf
+  cp -r bibtex context doc dvipdfm dvips fonts makeindex metafont \
+    metapost mft omega scripts tex texdoctk web2c ChangeLog \
+    LICENSE.texmf aliases release-tetex-texmf.txt ls-R $PKG/usr/share/texmf
+  cp -r source LICENSE.texmfsrc release-tetex-texmfsrc.txt $PKG/usr/share/texmf
+  
+  cd $SRC/$NAME-src-$VERSION
+   
+  ./configure --prefix=/usr \
+              --datadir=/usr/share \
+              --disable-multiplatform \
+              --with-system-zlib \
+              --with-system-pnglib \
+              --with-system-ncurses \
+	      --with-system-t1lib \
+	      --with-system-gd \
+	      --with-ps=gs \
+              --enable-ipc \
+              --with-etex \
+	      --without-texinfo \
+	      --without-dialog
+  make
+  make prefix=$PKG/usr texmf=$PKG/usr/share/texmf install
+  
+  install_docs ANNOUNCE-3.0 CREDITS ChangeLog INSTALL* NEWS \
+    PROBLEMS* QuickInstall README
+}

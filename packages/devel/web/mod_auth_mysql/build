@@ -1,0 +1,27 @@
+NAME=mod_auth_mysql
+VERSION=2.9.0
+ARCH=i686
+RELEASE=1
+URL="http://modauthmysql.sourceforge.net/"
+DESC="An Apache module to authenticate users and authorize access through a MySQL database."
+GROUP=web
+LICENSE="PUBLIC"
+SIZE="17K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/modauthmysql/mod_auth_mysql-2.9.0.tar.gz
+         mod_auth_mysql.conf"
+
+BACKUPS="etc/httpd/mod.d/mod_auth_mysql.conf"
+
+RUNTIME="apache mysql"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  apxs -c -L/usr/lib/mysql -I/usr/include/mysql -lmysqlclient -lm -lz mod_auth_mysql.c    
+  
+  install -D -m 0755 .libs/mod_auth_mysql.so $PKG/usr/lib/httpd/modules/mod_auth_mysql.so
+  install -D -m 0644 ../mod_auth_mysql.conf $PKG/etc/httpd/mod.d/mod_auth_mysql.conf
+  
+  install_docs BUILD CHANGES CONFIGURE README
+}

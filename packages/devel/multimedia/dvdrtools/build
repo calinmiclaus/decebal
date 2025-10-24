@@ -1,0 +1,28 @@
+NAME=dvdrtools
+VERSION=0.2.1
+ARCH=i686
+RELEASE=1
+URL="www.freesoftware.fsf.org/dvdrtools/"
+DESC="DVD writing write record recording video mastering tools for Linux."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="1156K"
+
+SOURCES="http://savannah.nongnu.org/download/dvdrtools/dvdrtools-0.2.1.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  # remove files that conflict with cdrtools
+  rm -f $PKG/usr/bin/{cdda2wav,devdump,isodump,isoinfo,isovfy,mkisofs,readcd}
+  rm -f $PKG/usr/share/man/man1/{cdda2wav.1,readcd.1}
+  rm -f $PKG/usr/share/man/man8/{isoinfo.8,mkisofs.8}
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README 
+}

@@ -1,0 +1,26 @@
+NAME=mpg321
+VERSION=0.2.10
+ARCH=i686
+RELEASE=1
+URL="http://mpg321.sourceforge.net/"
+DESC="A fully free clone of mpg123, a command-line mp3 player."
+GROUP=multimedia
+LICENSE=GPLv2
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/mpg321/mpg321-0.2.10.tar.gz"
+
+RUNTIME="libao libid3tag"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --with-ao
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog HACKING INSTALL \
+    NEWS README* THANKS TODO
+}
+
+	       

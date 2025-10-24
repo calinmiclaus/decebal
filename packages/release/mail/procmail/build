@@ -1,0 +1,39 @@
+NAME=procmail
+VERSION=3.22
+ARCH=i686
+RELEASE=1
+URL="http://www.procmail.org/"
+DESC="Highly configurable auto mail processing."
+GROUP=mail
+LICENSE="GPLv2 Artistic"
+SIZE="221K"
+
+SOURCES="ftp://ftp.procmail.net/pub/procmail/procmail-3.22.tar.gz"
+
+RUNTIME=">=mailx-8.1.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  CFLAGS="$CFLAGS -fno-inline-functions"
+  
+  # set out cflags here
+  sed -i "s:GCC_WARNINGS = -O2 -pedantic:GCC_WARNINGS = -pedantic:" Makefile
+  sed -i "s:CFLAGS0 = -O #\$(GCC_WARNINGS):CFLAGS0 = $CFLAGS #\$(GCC_WARNINGS):" Makefile
+  
+  yes n | make LOCKINGTEST="/tmp ."
+
+  mkdir -p $PKG/usr/{bin,share/man/{man1,man5}}
+  install -m 4755 src/procmail $PKG/usr/bin/procmail
+  install -m 0755 src/formail $PKG/usr/bin/formail
+  install -m 0755 src/lockfile $PKG/usr/bin/lockfile
+  install -m 0644 man/formail.1 $PKG/usr/share/man/man1/formail.1
+  install -m 0644 man/lockfile.1 $PKG/usr/share/man/man1/lockfile.1
+  install -m 0644 man/procmail.1 $PKG/usr/share/man/man1/procmail.1
+  install -m 0644 man/procmailex.5 $PKG/usr/share/man/man5/procmailex.5
+  install -m 0644 man/procmailrc.5 $PKG/usr/share/man/man5/procmailrc.5
+  install -m 0644 man/procmailsc.5 $PKG/usr/share/man/man5/procmailsc.5
+
+  install_docs Artistic COPYING FAQ FEATURES HISTORY INSTALL \
+    KNOWN_BUGS README
+}

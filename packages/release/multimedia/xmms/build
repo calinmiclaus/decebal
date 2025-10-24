@@ -1,0 +1,42 @@
+NAME=xmms
+VERSION=1.2.10
+ARCH=i686
+RELEASE=1
+DESC="The X MultiMedia System"
+URL="http://www.xmms.org"
+GROUP=multimedia
+LICENSE="GPLv2"
+#SIZE="2361K"
+HUSE="nls ipv6"
+SIZE="1676K"
+
+SOURCES="http://www.xmms.org/files/1.2.x/$NAME-$VERSION.tar.bz2
+         xmms.desktop xmms.png"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME="xorg >=gtk-1.2.2 >=glib-1.2.2 libvorbis >=esound-0.2.8 alsa-lib >=libmikmod-3.1.5 libogg"
+
+use nls && BUILDTIME="$BUILDTIME gettext"
+
+build () { 
+  remove_flags -fstack-protector -fstack-protector-all -ffast-math
+
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+  
+  ./configure --prefix=/usr \
+	      --sysconfdir=/etc \
+              --libexecdir=/usr/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../xmms.png $PKG/usr/share/pixmaps/xmms.png
+  install -D -m 0644 ../xmms.desktop $PKG/usr/share/applications/xmms.desktop
+      
+  install_docs ABOUT-NLS AUTHORS COPYING FAQ ChangeLog INSTALL NEWS \
+    README TODO
+}

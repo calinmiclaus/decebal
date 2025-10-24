@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# /etc/rc.d/samba - control file for the SAMBA daemons
+#
+
+. /etc/rc.d/functions
+
+[ -r /etc/samba/smb.conf ] || exit 6
+
+case "$1" in
+  start)
+    msg "Starting the SMB/CIFS server"
+    pidfile="/var/run/samba/smbd.pid"
+    start_service /usr/sbin/smbd -D
+	
+    msg "Starting the NetBIOS name server"
+    pidfile="/var/run/samba/nmbd.pid"
+    start_service /usr/sbin/nmbd -D
+    ;;
+  stop)
+    msg "Stopping the SMB/CIFS server"
+    pidfile="/var/run/samba/smbd.pid"
+    stop_service /usr/sbin/smbd
+	
+    msg "Stopping the NetBIOS name server"
+    pidfile="/var/run/samba/nmbd.pid"
+    stop_service /usr/sbin/nmbd
+    ;;
+  reload)
+    msg "Reloading the SMB/CIFS server"
+    reload_service /usr/sbin/smbd
+	
+    msg "Reloading the NetBIOS name server"
+    reload_service /usr/sbin/nmbd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/smbd
+    status_service /usr/sbin/nmbd
+    ;;
+  *)
+    echo "usage: $0 {start||stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

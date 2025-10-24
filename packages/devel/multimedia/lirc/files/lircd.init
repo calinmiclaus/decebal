@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# /etc/rc.d/lircd - control file for the LIRC daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/lircd
+
+case "$1" in
+  start)
+    msg "Starting the LIRC daemon"
+    start_service /usr/sbin/lircd -d $DEVICE -p $PORT
+    ;;
+  stop)
+    msg "Stopping the LIRC daemon"
+    stop_service /usr/sbin/lircd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    statu_service /usr/sbin/lircd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

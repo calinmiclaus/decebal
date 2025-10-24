@@ -1,0 +1,26 @@
+NAME=xfwm4-themes
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A lot of XFCE (xfwm4) themes."
+GROUP=xfce
+LICENSE=GPLv2
+SIZE="859K"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/xfwm4-themes-4.2.2.tar.gz"
+
+RUNTIME=">=xfwm4-4.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL README \
+    NEWS TODO
+}
+

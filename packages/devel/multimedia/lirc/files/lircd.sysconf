@@ -1,0 +1,9 @@
+#
+# /etc/conf.d/lircd - configuration file for /etc/rc.d/lircd
+#
+
+# Device for the LIRC daemon.
+DEVICE=/etc/lirc0
+
+# Port for the LIRC daemon.
+PORT=666

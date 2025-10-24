@@ -1,0 +1,32 @@
+NAME=netkit-rsh
+VERSION=0.17
+ARCH=i686
+RELEASE=1
+DESC="This is netkit-rsh for Linux."
+URL="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit"
+GROUP=network
+LICENSE=PD
+SIZE="56K"
+
+SOURCES="tp://ftp.uk.linux.org/pub/linux/Networking/netkit/$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=netkit-base-0.17"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/{bin,sbin,man/man{1,8}}
+  
+  ./configure --prefix=$PKG/usr
+  make
+  make DESTDIR=$PKG install
+  
+  ln -sf in.rexecd $PKG/usr/sbin/rexecd
+  ln -sf in.rlogind $PKG/usr/sbin/rlogind
+  ln -sf in.rshd $PKG/usr/sbin/rshd
+  
+  rm -f $PKG/usr/bin/{rcp,rlogin,rsh}
+  rm -f $PKG/usr/man/man1/{rcp.1,rlogin.1,rsh.1}
+  
+  install_docs BUGS ChangeLog MRULES README
+}

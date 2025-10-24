@@ -1,0 +1,29 @@
+NAME=docbook-dtd-xml
+VERSION=4.3
+ARCH=noarch
+RELEASE=1
+URL="http://www.oasis-open.org/docbook/"
+DESC="Utilities useful for structuring books and software documentation."
+GROUP=doc-tools
+LICENSE=OL
+SIZE="81K"
+
+SOURCES="http://www.docbook.org/xml/4.3/docbook-xml-4.3.zip"
+
+BUILDTIME="unzip"
+
+RUNTIME=">=libxml2-2.6.10
+         >=bash-2.05b"
+
+build() {
+  cd $SRC
+  
+  chown -R root.root .
+    
+  mkdir -p $PKG/etc/xml
+  mkdir -p $PKG/usr/share/xml/docbook/xml-dtd-4.3
+  
+  cp -af docbook.cat *.dtd ent/ *.mod $PKG/usr/share/xml/docbook/xml-dtd-4.3/
+  
+  install_docs ChangeLog README
+}

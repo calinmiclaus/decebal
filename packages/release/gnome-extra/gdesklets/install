@@ -1,0 +1,23 @@
+post_install() {
+  GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-install-rule "/etc/opt/gnome/gconf/schemas/gdesklets-display-thumbnail.schemas" > /dev/null 2>&1
+  /bin/killall -HUP /opt/gnome/bin/gconfd-2 >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
+}
+
+post_upgrade() {
+  GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-install-rule "/etc/opt/gnome/gconf/schemas/gdesklets-display-thumbnail.schemas" > /dev/null 2>&1
+  killall -HUP /opt/gnome/bin/gconfd-2 >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
+}
+
+pre_remove() {
+  GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-uninstall-rule "/etc/opt/gnome/gconf/schemas/gdesklets-display-thumbnail.schemas" > /dev/null 2>&1
+  killall -HUP /opt/gnome/bin/gconfd-2 >/dev/null 2>&1
+}
+
+post_remove() {
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
+}

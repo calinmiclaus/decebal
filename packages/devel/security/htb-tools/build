@@ -1,0 +1,12 @@
+NAME=htb-tools
+VERSION=0.2.6t10
+ARCH=i686
+RELEASE=1
+URL=""
+DESC=""
+GROUP=security
+LICENSE=""
+SIZE=""
+
+SOURCES="http://htb-tools.arny.ro/htb_tools-0.2.6-test10.tar.gz"
+

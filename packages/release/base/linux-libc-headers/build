@@ -1,0 +1,30 @@
+NAME=linux-libc-headers
+VERSION=2.6.11.2
+ARCH=noarch
+RELEASE=1
+URL="http://ep09.pld-linux.org/~mmazur/linux-libc-headers/"
+DESC="Header files that export Linux ABI to user space."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="2470K"
+
+SOURCES="http://ep09.pld-linux.org/~mmazur/linux-libc-headers/linux-libc-headers-2.6.11.2.tar.bz2"
+
+# needs implementation
+CONFLICTS="kernel-headers-2.4"
+
+PROVIDES="kernel-headers"
+
+build() {
+    cd $SRC/$NAME-$VERSION
+    
+    mkdir -p $PKG/usr/include
+    cp -R include/asm-i386 $PKG/usr/include/asm
+    cp -R include/linux $PKG/usr/include
+    chown -R root $PKG/usr/include/{asm,linux}
+    find $PKG/usr/include/{asm,linux} -type d -exec chmod 755 {} \;
+    find $PKG/usr/include/{asm,linux} -type f -exec chmod 644 {} \;
+    rm -f $PKG/usr/include/linux/{config.h,autoconf.h}
+    mkdir -p $PKG/usr/share/doc/$NAME-$VERSION
+    cp -a doc/* $PKG/usr/share/doc/$NAME-$VERSION
+}

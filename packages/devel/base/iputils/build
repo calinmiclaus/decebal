@@ -1,0 +1,51 @@
+NAME=iputils
+VERSION=ss021109_try
+ARCH=i686
+RELEASE=1
+URL="ftp://ftp.inr.ac.ru/ip-routing/"
+DESC="IP Configuration Utilities (and Ping IPV6)."
+GROUP=base
+LICENSE="BSD"
+SIZE="418K"
+HUSE="ipv6"
+
+#SOURCES="http://www.tux.org/pub/net/ip-routing/iputils-ss020927.tar.gz"
+
+SOURCES="http://www.tux.org/pub/net/ip-routing/iputils-ss021109-try.tar.bz2
+	 iputils-ss021109-try.patch"
+
+#BUILDTIME="kernel-sources"
+
+build() {
+  cd $SRC/iputils
+  
+  patch -p1 < ../iputils-ss021109-try.patch
+
+  sed -i \
+    -e "/^CCOPT=/s:-O2:${CFLAGS}:" \
+    -e "/^CC=/s:.*::" \
+    -e '/^all:/s:check-kernel::' \
+    -e 's:-I$(KERNEL_INCLUDE)::' \
+    -e 's:-I/usr/src/linux/include::' \
+    Makefile
+  
+  use ipv6 || sed -i -e 's:IPV6_TARGETS=:#IPV6_TARGETS=:' Makefile
+  
+  make
+  
+  for i in arping clockdiff rarpd rdisc tracepath tracepath6 traceroute6
+  do
+    install -D -m 0755 $i $PKG/usr/sbin/$i 
+  done
+  
+  install -D -m 0755 ping6 $PKG/usr/bin/ping6
+  
+  cd doc  
+  for i in *.8
+  do
+        install -D -m644 $i $$PKG/usr/share/man/man8/$i
+  done
+  
+  cd ..
+  install_docs INSTALL RELNOTES
+}

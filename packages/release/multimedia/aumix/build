@@ -1,0 +1,31 @@
+NAME=aumix
+VERSION=2.8
+ARCH=i686
+RELEASE=1
+DESC="Console audio mixer"
+URL="http://jpj.net/~trevor/aumix.html"
+GROUP=multimedia
+LICENSE="GPLv2"
+
+SOURCES="http://jpj.net/~trevor/aumix/aumix-2.8.tar.bz2
+         aumix.desktop"
+
+RUNTIME="gtk2 >=ncurses-5.4 gpm alsa-lib"
+
+use nls && BUILDTIME="gettext"
+
+build(){
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+  
+  ./configure --prefix=/usr \
+              --without-gtk1
+  make
+  make prefix=$PKG/usr install
+
+  install -D -m 0644 ../aumix.desktop $PKG/usr/share/applications/aumix.desktop    
+  
+  install_docs ABOUT-NLS AUTHORS BUGS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

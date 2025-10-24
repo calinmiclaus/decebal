@@ -1,0 +1,35 @@
+NAME=fvwm-themes
+VERSION=0.7.0
+ARCH=i686
+RELEASE=1
+URL="http://fvwm-themes.sourceforge.net/"
+DESC="Themes for the FVWM window manager."
+GROUP=x11
+LICENSE="GPLv2 BSDL"
+SIZE="899K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/fvwm-themes/fvwm-themes-0.7.0.tar.bz2"
+
+BUILDTIME="gettext"
+
+RUNTIME="fvwm"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/opt/fvwm \
+              --sysconfdir=/etc/opt \
+              --localstatedir=/var/opt/fvwm \
+              --libexecdir=/opt/fvwm/lib \
+              --mandir=/opt/fvwm/share/man \
+	      --disable-menu-system \
+	      --disable-run-updatemenu \
+	      --with-fvwm-bindir=/opt/fvwm/bin \
+              --enable-extras
+
+#some errors here, need help. 
+  make -k -i
+  make -k -i DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL* NEWS README TODO
+}

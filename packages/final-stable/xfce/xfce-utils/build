@@ -1,0 +1,45 @@
+NAME=xfce-utils
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A lot of XFCE utilities."
+GROUP=xfce
+LICENSE="GPLv2 LGPLv2"
+SIZE="1007K"
+HUSE="gtkhtml static profile debug"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/xfce-utils-4.2.2.tar.gz
+         decebal"
+
+BUILDTIME="gettext >=pkgconfig-0.9.0"
+
+RUNTIME=">=xfce-mcs-manager-4.2.0 >=dbh-1.0 >=libxfcegui4-4.2.0"
+
+use gtkhtml && RUNTIME="$RUNTIME gtkhtml"
+use gdm && RUNTIME="$RUNTIME gdm"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkhtml && OPTS="$OPTS --enable-gtkhtml"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --with-locales-dir=/usr/share/locale \
+	      --with-browser=firefox \
+	      --with-vendor-info=../decebal \
+	      --enable-final \
+	      --enable-dbh \
+	      --with-browser=firefox \
+	      --enable-gdm --with-gdm-prefix=/etc/opt/gnome \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO
+}

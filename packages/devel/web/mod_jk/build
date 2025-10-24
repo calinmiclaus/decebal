@@ -1,0 +1,23 @@
+NAME=mod_jk
+VERSION=1.2.12
+ARCH=i686
+RELEASE=1
+URL="http://jakarta.apache.org/"
+DESC="Web-server connector for the Jakarta Tomcat servlet engine."
+GROUP=web
+LICENSE="APACHEv2.0"
+SIZE="709K"
+
+SOURCES="http://archive.apache.org/dist/jakarta/tomcat-connectors/jk/source/jk-1.2.12/jakarta-tomcat-connectors-1.2.12-src.tar.gz"
+
+RUNTIME="apache"
+
+build() {
+  cd $SRC/jakarta-tomcat-connectors-1.2.12-src/jk/native
+  
+  ./configure --with-apxs=/usr/sbin/apxs
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs BUILDING CHANGES NEWS README STATUS.txt
+}

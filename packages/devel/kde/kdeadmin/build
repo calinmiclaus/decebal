@@ -1,0 +1,35 @@
+NAME=kdeadmin
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="KDE Administration Programs."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="2049K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.5.0 libart_lgpl fam qt xorg freetype fontconfig libpng zlib
+expat >=kdelibs-3.5.0"
+
+function build() {
+  OPTS=""
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+  cd $SRC/$NAME-$VERSION
+
+  export PATH=$PATH:/opt/kde/bin
+
+  ./configure --prefix=/opt/kde \
+              --disable-debug \
+              --with-shadow \
+	      --enable-final \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+    
+  install_docs AUTHORS COPYING INSTALL README
+}

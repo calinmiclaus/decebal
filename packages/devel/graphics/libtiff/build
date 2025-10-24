@@ -1,0 +1,31 @@
+NAME=libtiff
+VERSION=3.7.2
+ARCH=i686
+RELEASE=1
+URL="http://www.libtiff.org/"
+DESC="Library for manipulation of TIFF images."
+GROUP=graphics
+LICENSE=BSDL
+SIZE="1231K"
+HUSE="static"
+
+SOURCES="ftp://ftp.remotesensing.org/pub/libtiff/tiff-3.7.2.tar.gz
+         config.site"
+
+RUNTIME=">=libjpeg-6b >=zlib-1.1.4"
+
+build() {
+  cd $SRC/tiff-$VERSION
+  
+  cp ../config.site ./
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --with-OPTIMIZER="$CFLAGS" \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYRIGHT README RELEASE-DATE TODO VERSION
+}

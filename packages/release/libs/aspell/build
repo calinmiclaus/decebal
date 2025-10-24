@@ -1,0 +1,31 @@
+NAME=aspell
+VERSION=0.60.2
+ARCH=i686
+RELEASE=1
+URL="http://aspell.net/"
+DESC="A spell checker designed to eventually replace Ispell."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="1527K"
+HUSE="nls"
+
+SOURCES="ftp://ftp.gnu.org/gnu/aspell/aspell-0.60.2.tar.gz"
+
+use nls && BUILDTIME="gettext"
+
+RUNTIME="gcc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS COPYING README TODO
+}

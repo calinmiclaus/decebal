@@ -1,0 +1,31 @@
+#!/bin/bash
+# v0.2.0
+
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+parse_opts() {
+#FIXME vezi ca nu mere, nu verifca de --help si alea alea, trebe revizuit tot
+case $# in
+0)
+  local first_opt="$0"
+  local parse_opts="main_menu"
+;;
+1)
+#FIXME check if module $1 exists
+  local first_opt=$1
+  shift
+  local parse_opts=$*
+  . $modules_dir/$first_opt
+  parse_opts
+  unset first_opt parse_opts
+;;
+esac    
+
+
+} # end of parse_opts()
+
+tmp=`make_tmp sysconf`
+show_menu Main
+rm -rf $tmp
+$dialog --clear

@@ -1,0 +1,14 @@
+post_install() {
+  XDG_DATA_DIRS="/usr/share" \
+  /usr/bin/update-desktop-database &>/dev/null
+}
+
+post_upgrade() {
+  XDG_DATA_DIRS="/usr/share" \
+  /usr/bin/update-desktop-database &>/dev/null
+}
+
+post_remove() {
+  XDG_DATA_DIRS="/usr/share" \
+  /usr/bin/update-desktop-database &>/dev/null
+}

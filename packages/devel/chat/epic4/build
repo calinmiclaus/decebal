@@ -1,0 +1,40 @@
+NAME=epic4
+VERSION=2.1.1
+ARCH=i686
+RELEASE=1
+DESC="Console based IRC client"
+URL="http://www.epicsol.org/"
+GROUP=chat
+LICENSE="OwnLicense"
+SIZE="606K"
+
+SOURCES="http://ftp.de.sinuspl.net/pub/mirrors/ftp.epicsol.org/pub/epic/EPIC4-BETA/epic4-2.1.1.tar.bz2"
+
+RUNTIME="glibc
+         >=openssl-0.9.7e
+	 >=ncurses-5.3
+	 tcl"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="$OPTS --with-ipv6" || OPTS="$OPTS --without-ipv6"
+  use socks && OPTS="$OPTS --with-socks" || OPTS="$OPTS --without-socks"
+  use socks5 && OPTS="$OPTS --with-socks5" || OPTS="$OPTS --without-socks5"
+  
+  
+  ./configure --prefix=/usr \
+	      --sysconfdir=/etc \
+	      --libexecdir=/usr/lib/epic \
+    	      --with-ssl \
+	      --with-tcl \
+	      --with-perl \
+	      $OPTS
+  make
+  make prefix=$PKG/usr libexecdir=$PKG/usr/lib/epic install
+
+  rm $PKG/usr/bin/epic
+  ln -s epic-EPIC4-2.1.1 $PKG/usr/bin/epic
+  
+  install_docs BUG_FORM COPYRIGHT INSTALL KNOWNBUGS README UPDATES VOTES
+}

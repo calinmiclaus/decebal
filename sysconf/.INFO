@@ -1,0 +1,12 @@
+NAME=sysconf
+VERSION=0.2.0
+ARCH=noarch
+RELEASE=1
+URL="http://people.decebal.org/~trog/projects/sysconf"
+DESC="Yet another system tool used to configure Decebal Linux."
+GROUP=base
+LICENSE="GPLv2"
+MAINTAINER="Calin Bogdan Miclaus <trog@decebal.org>"
+USEFLAGS=""
+SIZE="376K"
+BUILDDATE="Sun Sep 11 12:31:03 2005"

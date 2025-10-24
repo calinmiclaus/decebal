@@ -1,0 +1,35 @@
+NAME=gnupg
+VERSION=1.2.6
+ARCH=i686
+RELEASE=1
+URL="http://www.gnupg.org/"
+DESC="GNU Privacy Guard - a PGP replacement tool."
+GROUP=security
+LICENSE=GPLv2
+SIZE="2490K"
+HUSE="nls capabilities"
+
+SOURCES="ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-1.2.6.tar.bz2"
+
+RUNTIME=">=zlib-1.1.4 openldap bzip2"
+
+use nls && BUILDTIME="$BUILDTIME gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use capabilities && OPTS="$OPTS --with-capabilities" || OPTS="$OPTS --without-capabilities"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --libexecdir=/usr/lib \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS BUGS COPYING ChangeLog INSTALL \
+    NEWS PROJECTS README THANKS TODO VERSION
+}

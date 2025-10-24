@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# /etc/rc.d/mono - initialization script for mono
+#
+
+. /etc/rc.d/functions
+
+check_binfmt_misc() {
+  if [ ! -d /proc/sys/fs/binfmt_misc ]
+  then
+    if [ -r /lib/modules/`uname -r`/kernel/fs/binfmt_misc.ko ]
+    then
+      msg "Loading support for MISC binaries in the kernel"
+      run modprobe binfmt_misc
+    else
+      echo "You dont have support for MISC binaries compiled"
+      echo "in the kernel and the module could not be found."
+      echo "Please recompile your kernel and try again."
+      exit 1
+    fi
+  fi
+}
+
+case "$1" in
+  start)
+    check_binfmt_misc
+    msg "Registering .NET IL binaries with mono"
+    mount | grep -q binfmt_misc
+    if [ $? -ne 0 ]
+    then
+      run mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc
+    fi
+    if [ $RETVAL -eq 0 ]
+    then
+      echo ':CLR:M::MZ::/opt/mono/bin/mono:' > /proc/sys/fs/binfmt_misc/register
+      touch /var/lock/subsys/mono
+    fi
+    ;;
+  stop)
+    if [ -f /proc/sys/fs/binfmt_misc/CLR ]; then
+      msg "Unregistering .NET IL binaries"
+      run echo '-1' > /proc/sys/fs/binfmt_misc/CLR
+      rm -f /var/lock/subsys/mono
+    fi
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if grep -q 'mono' /proc/sys/fs/binfmt_misc/register
+    then
+      echo "mono is running (configured)"
+    else
+      echo "mono is not configured"
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

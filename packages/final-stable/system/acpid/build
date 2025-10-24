@@ -1,0 +1,31 @@
+NAME=acpid
+VERSION=1.0.4
+ARCH=i686
+RELEASE=1
+URL="http://acpid.sourceforge.net"
+DESC="A daemon for delivering ACPI events."
+GROUP=system
+LICENSE=GPLv2
+SIZE="22K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/acpid/acpid-1.0.4.tar.gz
+         acpid.init acpid.sysconf acpi_handler.sh shutdown sleep"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+      
+  make
+  make INSTPREFIX=$PKG MAN8DIR=$PKG/usr/share/man/man8 install
+
+  mv $PKG/usr/bin $PKG/acpi_listen
+  mkdir -p $PKG/usr/bin
+  mv $PKG/acpi_listen $PKG/usr/bin/
+    
+  install -D -m 0700 ../acpid.init $PKG/etc/rc.d/acpid
+  install -D -m 0644 ../acpid.sysconf $PKG/etc/conf.d/acpid
+  install -D -m 0755 ../acpi_handler.sh $PKG/etc/acpi/acpi_handler.sh
+  install -D -m 0755 ../shutdown $PKG/etc/acpi/events/shutdown
+  install -m 0755 ../sleep $PKG/etc/acpi/events/sleep
+    
+  install_docs COPYING README TODO
+}    

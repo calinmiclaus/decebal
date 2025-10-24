@@ -1,0 +1,11 @@
+#
+# /etc/default/useradd - configuration file for useradd
+#
+
+GROUP=100
+HOME=/home
+INACTIVE=-1
+EXPIRE=
+SHELL=/bin/bash
+SKEL=/etc/skel
+CREATE_MAIL_SPOOL=yes

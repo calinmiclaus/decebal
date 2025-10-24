@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=XSane
+Comment=Scanner Access Now Easy Frontend
+Exec=xsane
+Icon=xsane.png
+Type=Application
+Terminal=false
+StartupNotify=true
+Categories=Application;AudioVideo;
+Encoding=UTF-8

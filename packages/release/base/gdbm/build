@@ -1,0 +1,24 @@
+NAME=gdbm
+VERSION=1.8.3
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/gdbm/gdbm.html"
+DESC="GNU database library for C."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="223K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.8.3.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --localstatedir=/var/lib
+  make
+  make prefix=$PKG/usr install install-compat
+
+  install_docs COPYING ChangeLog INSTALL NEWS README
+}

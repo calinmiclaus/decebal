@@ -1,0 +1,34 @@
+NAME=dialog
+VERSION=1.0_20050306
+ARCH=i686
+RELEASE=1
+URL="http://hightek.org/dialog/"
+DESC="A tool to display dialog boxes from shell scripts."
+GROUP=base
+LICENSE=GPLv2
+SIZE="290K"
+
+SOURCES="ftp://ftp.us.debian.org/debian/pool/main/d/dialog/dialog_1.0-20050306.orig.tar.gz
+         ftp://ftp.us.debian.org/debian/pool/main/d/dialog/dialog_1.0-20050306-1.diff.gz"
+
+BUILDTIME="gettext"
+
+RUNTIME=">=ncurses-5.3"
+
+build() {
+  cd $SRC/$NAME-1.0-20050306
+  
+  patch -p1 < ../dialog_1.0-20050306-1.diff
+  
+  use static && LDFLAGS="-static"
+  
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-ncurses \
+	      --enable-nls
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES COPYING README VERSION
+}

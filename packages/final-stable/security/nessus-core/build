@@ -1,0 +1,44 @@
+NAME=nessus-core
+VERSION=2.3.0
+ARCH=i686
+RELEASE=2
+URL="http://www.nessus.com"
+DESC="A tool to audit your security/servers."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="981K"
+HUSE="x gtk debug"
+
+SOURCES="http://ftp.gwdg.de/pub/linux/misc/nessus/nessus-2.3.0/src/nessus-core-2.3.0.tar.gz
+         nessusd.init nessusd.sysconf"
+
+RUNTIME="nessus-libraries libnasl"
+
+build() {
+  cd $SRC/$NAME
+  
+  # exits un fisier in pachetu asta care ii si in nessus-libs !!!
+  
+   use x && OPTS="--with-x" || OPTS="--without-x"
+   use gtk && OPTS="$OPTS --enable-gtk" || OPTS="$OPTS --without-gtk"
+   use debug && OPTS="$OPTS --enable-debug"
+   
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --libexecdir=/usr/bin \
+              --infodir=/usr/share/info \
+              --mandir=/usr/share/man \
+	      --localstatedir=/var/lib \
+	      --sharedstatedir=/usr/share \
+	      --enable-syslog \
+	      --enable-client \
+	      --enable-tcpwrappers \
+	      $OPTS 
+  make
+  make prefix=$PKG/usr install
+
+  install -D -m 0700 ../nessusd.init $PKG/etc/rc.d/nessusd
+  install -D -m 0644 ../nessusd.sysconf $PKG/etc/conf.d/nessusd
+
+  install_docs CHANGES INSTALL README_SSL README_WINDOWS TODO UPGRADE_README UPGRADE_WINDOWS VERSION
+}

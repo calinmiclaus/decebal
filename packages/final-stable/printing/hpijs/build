@@ -1,0 +1,26 @@
+NAME=hpijs
+VERSION=1.7.1
+ARCH=i686
+RELEASE=1
+DESC="Drivers for HP printers."
+URL="http://www.linuxprinting.org/show_driver.cgi?driver=hpijs"
+GROUP=printing
+LICENSE=OL
+SIZE="825K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/hpinkjet/hpijs-1.7.1.tar.gz"
+
+BUILDTIME="cups"
+
+RUNTIME="perl gcc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  rm -f $PKG/usr/bin/foomatic-rip
+  rm -rf $PKG/usr/lib
+}

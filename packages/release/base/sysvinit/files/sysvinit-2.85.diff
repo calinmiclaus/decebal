@@ -1,0 +1,47 @@
+diff -Naur sysvinit-2.86/src/init.c sysvinit-2.86.new/src/init.c
+--- sysvinit-2.85/src/init.c	2003-04-15 14:16:41.000000000 +0300
++++ sysvinit-2.86.new/src/init.c	2004-10-03 13:37:55.000000000 +0300
+@@ -432,7 +432,7 @@
+ 	len = vsnprintf(buf, sizeof(buf), fmt, ap);
+ 	va_end(ap);
+ 
+-	memset(argv0, 0, maxproclen + 1);
++	memset(argv0, 0, maxproclen);
+ 	strncpy(argv0, buf, maxproclen - 1);
+ 
+ 	return len;
+diff -Naur sysvinit-2.86/src/Makefile sysvinit-2.86.new/src/Makefile
+--- sysvinit-2.86/src/Makefile	2001-11-06 13:58:16.000000000 +0200
++++ sysvinit-2.86.new/src/Makefile	2004-10-03 13:37:41.000000000 +0300
+@@ -62,7 +62,7 @@
+ 		$(CC) $(LDFLAGS) -o $@ dowall.o shutdown.o utmp.o
+ 
+ bootlogd:	bootlogd.o
+-		$(CC) $(LDFLAGS) -o $@ bootlogd.o
++		$(CC) $(LDFLAGS) -lutil -o $@ bootlogd.o
+ 
+ init.o:		init.c init.h set.h reboot.h
+ 		$(CC) -c $(CFLAGS) init.c
+diff -Naur sysvinit-2.86/src/paths.h sysvinit-2.86.new/src/paths.h
+--- sysvinit-2.86/src/paths.h	2003-04-14 14:37:01.000000000 +0300
++++ sysvinit-2.86.new/src/paths.h	2004-10-03 13:37:41.000000000 +0300
+@@ -24,7 +24,7 @@
+ #define FORCEFSCK	"/forcefsck"		/* Force fsck on boot */
+ #define SDPID		"/var/run/shutdown.pid"	/* PID of shutdown program */
+ #define SHELL		"/bin/sh"		/* Default shell */
+-#define INITSCRIPT	"/etc/initscript"	/* Initscript. */
++#define INITSCRIPT	"/sbin/initscript"	/* Initscript. */
+ #define PWRSTAT		"/etc/powerstatus"	/* COMPAT: SIGPWR reason (OK/BAD) */
+ 
+ #if 0
+@@ -32,8 +32,8 @@
+ #define INITLVL2	"/var/log/initrunlvl"	/* COMPAT: New runlevel */
+ 				/* Note: INITLVL2 definition needs INITLVL */
+ #define HALTSCRIPT1	"/etc/init.d/halt"	/* Called by "fast" shutdown */
+-#define HALTSCRIPT2	"/etc/rc.d/rc.0"	/* Called by "fast" shutdown */
++#define HALTSCRIPT2	"/etc/rc.d/halt"	/* Called by "fast" shutdown */
+ #define REBOOTSCRIPT1	"/etc/init.d/reboot"	/* Ditto. */
+-#define REBOOTSCRIPT2	"/etc/rc.d/rc.6"	/* Ditto. */
++#define REBOOTSCRIPT2	"/etc/rc.d/reboot"      /* Ditto. */
+ #endif
+ 

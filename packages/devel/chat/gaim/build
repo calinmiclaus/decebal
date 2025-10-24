@@ -1,0 +1,64 @@
+NAME=gaim
+VERSION=1.5.0
+ARCH=i686
+RELEASE=1
+URL="http://gaim.sourceforge.net"
+DESC="Gaim is an IM client (AIM, ICQ, MSN, IRC, and Jabber)."
+GROUP=chat
+LICENSE=GPLv2
+SIZE="5840K"
+HUSE="nls tcl nas tk evolution screensaver"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/$NAME/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=gtk2-2.4.7 >=glib2-2.4.2 >=audiofile-0.2.6 >=libao-0.8.5 >=startup-notification-0.6 perl"
+
+use nls && BUILDTIME="gettext"
+use tcl && RUNTIME="$RUNTIME tcl"
+use nas && RUNTIME="$RUNTIME nas"
+use tk && RUNTIME="$RUNTIME tk"
+use evolution && RUNTIME="$RUNTIME evolution"
+use screensaver && RUNTIME="$RUNTIME xscreensaver"
+use tls && RUNTIME="$RUNTIME >=gnutls-1.0.15"
+use nss && RUNTIME="$RUNTIME mozilla"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+  use tcl && OPTS="$OPTS --enable-tcl" || OPTS="$OPTS --disable-tcl"
+  use nas && OPTS="$OPTS --enable-nas" || OPTS="$OPTS --disable-nas"
+  use tk && OPTS="$OPTS --enable-tk" || OPTS="$OPTS --disable-tk"
+  use evolution && OPTS="$OPTS --enable-gevolution" || OPTS="$OPTS --disable-gevolution"
+  use screensaver && OPTS="$OPTS --enable-screensaver" || OPTS="$OPTS --disable-screensaver"
+  use debug && OPTS="$OPTS --enable-debug"
+  use tls && OPTS="$OPTS --enable-nss=no --with-gnutls-includes=/usr/include/gnutls --with-gnutls-libs=/usr/lib"
+  use nss && OPTS="$OPTS --enable-gnutls=no --with-nspr-includes=/usr/include/nspr --with-nss-includes=/usr/include/mozilla/nss \
+    --with-nspr-libs=/usr/lib/mozilla-1.7.5 --with-nss-libs=/usr/lib/mozilla-1.7.5"
+  
+#  ./configure --prefix=/usr \
+#              --sysconfdir=/etc \
+#	      --localstatedir=/var/lib \
+#	      --infodir=/usr/share/info \
+#	      --mandir=/usr/share/man \
+#	      --with-x \
+#	      --with-ao \
+#	      --with-audiofile \
+#	      --without-krb4 \
+#	      --without-zephyr \
+#	      $OPTS
+  ./configure --prefix=/usr \
+              --enable-gtkspell \
+	      --enable-gnutls=yes \
+	      --enable-nss=no \
+	      $OPTS
+
+  make
+  make DESTDIR=$PKG install
+  
+  rm -rf $PKG/usr/lib/perl5/5.8.6
+  rm -f $PKG/usr/lib/perl5/vendor_perl/5.8.6/i686-linux/auto/Gaim/.packlist
+  
+  install_docs ABOUT-NLS AUTHORS COPYING COPYRIGHT ChangeLog* HACKING \
+    INSTALL NEWS PROGRAMMING_NOTES README* VERSION
+}

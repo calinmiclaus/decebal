@@ -1,0 +1,15 @@
+#
+# ~/.bash_prompt - bash prompt (user defined)
+#
+
+[ $UID -eq 0 ] && PS1='[\u@\l:\w]\$ '                                                                                                                     
+[ $UID -ge 100 ] && PS1='[\u@\h:\W]\$ '                                                                                                                   
+                                                                                                                                                            
+# uncomment this if you wan't a color bash promt                                                                                                          
+#[ $UID -eq 0 ] && PS1='\[\033[0;32m\][\u@\l:\w]\$ '                                                                                                      
+#[ $UID -ge 100 ] && PS1='\[\033[0;36m\][\u@\h:\W]\$ '                                                                                                    
+                                                                                                                                                            
+                                                                                                                                                            
+PS2='> '                                                                                                                                                  
+                                                                                                                                                            
+export PS1 PS2                                                                                                                                            

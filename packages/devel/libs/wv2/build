@@ -1,0 +1,32 @@
+NAME=wv2
+VERSION=0.2.2
+ARCH=i686
+RELEASE=1
+DESC="The MSWord library"
+URL="http://sourceforge.net/projects/wvware/"
+GROUP=libs
+LICENSE="LGPLv2"
+SIZE="656K"
+
+BUILDTIME=">=libgsf-1.7.2"
+
+RUNTIME=">=libgsf-1.7.2"
+
+SOURCES="http://telia.dl.sourceforge.net/sourceforge/wvware/$NAME-$VERSION.tar.bz2"
+build() {
+    cd $NAME-$VERSION    
+
+    export PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig"
+    
+    ./configure --prefix=/usr \
+                --mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+                --disable-nls \
+		--disable-debug
+		
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs AUTHORS COPYING.LIB ChangeLog INSTALL README RELEASE THANKS \
+       TODO
+}

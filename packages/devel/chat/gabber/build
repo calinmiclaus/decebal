@@ -1,0 +1,30 @@
+NAME=gabber
+VERSION=0.8.8
+ARCH=i686
+RELEASE=1
+URL="http://gabber.sourceforge.net/"
+DESC="The GNOME Jabber Client."
+GROUP=chat
+LICENSE="GPLv2"
+SIZE="2154K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gabber/gabber-0.8.8.tar.gz"
+
+BUILDTIME="pkgconfig intltool gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib 
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README* TODO
+}

@@ -1,0 +1,96 @@
+--- Makefile.in.old	2003-10-21 02:32:25.000000000 +0000
++++ Makefile.in	2004-02-22 11:57:56.000000000 +0000
+@@ -8,6 +8,8 @@
+ # Makefile.  That will also create a "config.h" file which may require some
+ # tweaking.
+ 
++DESTDIR=
++
+ ################################################################################
+ # This is the name of the compiler, along with any flags that should be used
+ # both for compiling and for linking.  Typical values are "cc -g" or "cc -O".
+@@ -21,7 +23,7 @@
+ # Mostly, this means "-Llibdir" and "-llib" flags.  If you're compiling with
+ # X-windows support, then you'll have to add a "-lX11" and maybe a
+ # "-L/usr/X11/lib" flag or something similar.
+-LIBS=-ltermcap
++LIBS=-lncurses
+ 
+ ################################################################################
+ # This should be "unix" for all UNIX variants.  It causes the compiler to use
+@@ -420,45 +422,45 @@
+ 
+ install.unix: $(ALL) doc/elvtags.man
+ 	rm -f doc/*.bak
+-	[ -d $(BINDIR) ] || mkdir $(BINDIR)
+-	cp $(ALL) $(BINDIR)
+-	(cd $(BINDIR); chmod 0755 $(ALL))
+-	rm -rf $(DATADIR)
+-	mkdir -p $(DATADIR)
+-	cp data/*.* $(DATADIR)
+-	for i in icons scripts stubs themes; do mkdir $(DATADIR)/$$i; cp data/$$i/* $(DATADIR)/$$i/; done
+-	rm -rf $(DOCDIR)
+-	mkdir -p $(DOCDIR)
+-	cp doc/*.html $(DOCDIR)
+-	cp doc/*.man $(DOCDIR)
+-	cp doc/*.txt $(DOCDIR)
+-	cp doc/elvistrs.msg $(DOCDIR)
+-	cp doc/printdoc.bat $(DOCDIR)
+-	find $(DATADIR) -type f -exec chmod 0644 {} \;
+-	find $(DOCDIR) -type f -exec chmod 0644 {} \;
+-	(cd doc; for i in *.html; do sed 's/<title>Elvis[^ ]*/<title>Elvis-$(VERSION)/;s/ELVIS[^ <]*</ELVIS-$(VERSION)</' $$i >$(DOCDIR)/$$i; done)
+-	(cd doc; for i in *.man; do sed 's/Elvis 2\.[0-9x][0-9a-z-]*/Elvis $(VERSION)/' $$i >$(DOCDIR)/$$i; done)
+-	-(cd $(DATADIR); $(BINDIR)/elvtags -gitv stubs/*.c || ctags stubs/*.c)
+-	chmod 0755 $(DATADIR)/*/. $(DATADIR) $(DOCDIR)
+-	sh instman.sh -p$(PREFIX) $(ALL)
++	[ -d ${DESTDIR}$(BINDIR) ] || mkdir ${DESTDIR}$(BINDIR)
++	cp $(ALL) ${DESTDIR}$(BINDIR)
++	(cd ${DESTDIR}$(BINDIR); chmod 0755 $(ALL))
++	rm -rf ${DESTDIR}$(DATADIR)
++	mkdir -p ${DESTDIR}$(DATADIR)
++	cp data/*.* ${DESTDIR}$(DATADIR)
++	for i in icons scripts stubs themes; do mkdir ${DESTDIR}$(DATADIR)/$$i; cp data/$$i/* ${DESTDIR}$(DATADIR)/$$i/; done
++	rm -rf ${DESTDIR}$(DOCDIR)
++	mkdir -p ${DESTDIR}$(DOCDIR)
++	cp doc/*.html ${DESTDIR}$(DOCDIR)
++	cp doc/*.man ${DESTDIR}$(DOCDIR)
++	cp doc/*.txt ${DESTDIR}$(DOCDIR)
++	cp doc/elvistrs.msg ${DESTDIR}$(DOCDIR)
++	cp doc/printdoc.bat ${DESTDIR}$(DOCDIR)
++	find ${DESTDIR}$(DATADIR) -type f -exec chmod 0644 {} \;
++	find ${DESTDIR}$(DOCDIR) -type f -exec chmod 0644 {} \;
++	(cd doc; for i in *.html; do sed 's/<title>Elvis[^ ]*/<title>Elvis-$(VERSION)/;s/ELVIS[^ <]*</ELVIS-$(VERSION)</' $$i >${DESTDIR}$(DOCDIR)/$$i; done)
++	(cd doc; for i in *.man; do sed 's/Elvis 2\.[0-9x][0-9a-z-]*/Elvis $(VERSION)/' $$i >${DESTDIR}$(DOCDIR)/$$i; done)
++	-(cd ${DESTDIR}$(DATADIR); ${DESTDIR}$(BINDIR)/elvtags -gitv stubs/*.c || ctags stubs/*.c)
++	chmod 0755 ${DESTDIR}$(DATADIR)/*/. ${DESTDIR}$(DATADIR) ${DESTDIR}$(DOCDIR)
++	sh instman.sh -p${DESTDIR}$(PREFIX) $(ALL)
+ 	-[ -d /etc/elvis ] || mkdir /etc/elvis
+ 	-chmod 0755 /etc/elvis/
+ 	-@ : >/etc/elvis/README && ( \
+ 	  echo "This directory contains system-dependent versions of elvis' configuration" \
+-	  echo "files.  The standard versions are available in $(DATADIR)"  \
++	  echo "files.  The standard versions are available in ${DESTDIR}$(DATADIR)"  \
+ 	  echo "To customize any of these configuration files for this system,"  \
+ 	  echo "first copy the standard version of the file into /etc/elvis and" \
+ 	  echo "then edit the copy.  Leave the standard version unchanged." \
+ 	) >>/etc/elvis/README
+ 	-chmod 0644 /etc/elvis/README
+-	@echo "This directory contains the standard versions of elvis' configuration" >$(DATADIR)/README
+-	@echo "files.  DO NOT MODIFY THESE FILES!  To perform host-specific customization," >>$(DATADIR)/README
+-	@echo "copy files from this directory into /etc/elvis/, and then modify the copies." >>$(DATADIR)/README
+-	@echo "To make user-specific changes, create a ~/.elvis/ directory (if it doesn't" >>$(DATADIR)/README
+-	@echo "exist already) and copy files from this directory into ~/.elvis/ and then" >>$(DATADIR)/README
+-	@echo "modify the copies.  Any file that elvis finds in ~/.elvis/ or /etc/elvis/" >>$(DATADIR)/README
+-	@echo "overrides the similarly named file in this directory." >>$(DATADIR)/README
+-	chmod 0644 $(DATADIR)/README
++	@echo "This directory contains the standard versions of elvis' configuration" >${DESTDIR}$(DATADIR)/README
++	@echo "files.  DO NOT MODIFY THESE FILES!  To perform host-specific customization," >>${DESTDIR}$(DATADIR)/README
++	@echo "copy files from this directory into /etc/elvis/, and then modify the copies." >>${DESTDIR}$(DATADIR)/README
++	@echo "To make user-specific changes, create a ~/.elvis/ directory (if it doesn't" >>${DESTDIR}$(DATADIR)/README
++	@echo "exist already) and copy files from this directory into ~/.elvis/ and then" >>${DESTDIR}$(DATADIR)/README
++	@echo "modify the copies.  Any file that elvis finds in ~/.elvis/ or /etc/elvis/" >>${DESTDIR}$(DATADIR)/README
++	@echo "overrides the similarly named file in this directory." >>${DESTDIR}$(DATADIR)/README
++	chmod 0644 ${DESTDIR}$(DATADIR)/README
+ 
+ 
+ ###############################################################################

@@ -1,0 +1,5 @@
+md5: 4ce09b1dce09b6b9398af0daae9adf63 cups-1.1.23-source.tar.bz2
+md5: b784c21930f1f66c96fbe4a8abe23ff1 cupsd.init
+md5: 0f09c604c03d495acff0371bfbac1245 cupsd.sysconf
+md5: bddf7f1bea864bf1254dfa2f027ca43a cups.logrotate
+md5: 08a435e7def3d691820f2c08474d3f67 cups-1.2.3-nouser-1.diff

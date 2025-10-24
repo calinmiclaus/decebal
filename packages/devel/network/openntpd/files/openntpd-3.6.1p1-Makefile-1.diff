@@ -1,0 +1,22 @@
+diff -Naur openntpd-3.6.1p1/Makefile.in openntpd-3.6.1p1-Makefile/Makefile.in
+--- openntpd-3.6.1p1/Makefile.in	2004-12-09 06:30:12.000000000 -0600
++++ openntpd-3.6.1p1-Makefile/Makefile.in	2005-05-17 08:24:46.000000000 -0500
+@@ -67,14 +67,14 @@
+ 	@if [ ! -d $(DESTDIR)$(mandir)/$(mansubdir)8 ]; then \
+ 		$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/$(mansubdir)8; \
+ 	fi
+-	$(INSTALL) -m 0755 $(STRIP_OPT) ntpd $(DESTDIR)$(sbindir)/ntpd
+-	$(INSTALL) -m 644 ntpd.8 $(DESTDIR)$(mandir)/$(mansubdir)8/ntpd.8
+-	$(INSTALL) -m 644 ntpd.conf.5 $(DESTDIR)$(mandir)/$(mansubdir)5/ntpd.conf.5
++	$(INSTALL) -m 0755 $(STRIP_OPT) ntpd $(DESTDIR)$(sbindir)/openntpd
++	$(INSTALL) -m 644 ntpd.8 $(DESTDIR)$(mandir)/$(mansubdir)8/openntpd.8
++	$(INSTALL) -m 644 ntpd.conf.5 $(DESTDIR)$(mandir)/$(mansubdir)5/openntpd.conf.5
+ 	@if [ ! -d $(DESTDIR)$(sysconfdir) ]; then \
+ 		$(INSTALL) -m 755 -d $(DESTDIR)$(sysconfdir); \
+ 	fi
+ 	@if [ ! -f $(DESTDIR)$(sysconfdir)/ntpd.conf ]; then \
+-		$(INSTALL) -m 644 ntpd.conf $(DESTDIR)$(sysconfdir)/ntpd.conf; \
++		$(INSTALL) -m 644 ntpd.conf $(DESTDIR)$(sysconfdir)/openntpd.conf; \
+ 	else \
+ 		echo "$(DESTDIR)$(sysconfdir)/ntpd.conf already exists, install will not overwrite"; \
+ 	fi

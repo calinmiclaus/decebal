@@ -1,0 +1,16 @@
+#!/bin/bash
+
+install_docs() {
+  set +x  
+  [ "$DOCSINSTALL" = "no" ] && return 0
+  if [ ! -d $PKG/usr/share/doc/$NAME-$VERSION ]
+  then
+    mkdir -p $PKG/usr/share/doc/$NAME-$VERSION
+  fi
+  for FILE in $@
+  do
+    cp -af $FILE $PKG/usr/share/doc/$NAME-$VERSION/
+  done
+  chmod 644 $PKG/usr/share/doc/$NAME-$VERSION/* 2>/dev/null
+  set -e -x
+}

@@ -1,0 +1,35 @@
+NAME=xfc
+VERSION=4.3.0
+ARCH=i686
+RELEASE=1
+URL="http://xfc.xfce.org/index.xhtml"
+DESC="A set of integrated C++ classes for developing Xfce applications."
+GROUP=xfce-extra
+LICENSE="GLGPLv2.1"
+SIZE="4135K"
+HUSE="static debug"
+
+SOURCES="http://xfc.xfce.org/download/4.3.0/src/xfc-4.3.0.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=libsigc++-2.0.0 >=glib2-2.4.0 >=atk-1.6.0 >=pango-1.4.0 >=gtk2-2.4.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug || OPTS="$OPTS --disable-debug --disable-tests"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --disable-demos \
+	      --disable-docs  \
+	      --disable-examples \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

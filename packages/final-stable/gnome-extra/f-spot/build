@@ -1,0 +1,31 @@
+NAME=f-spot
+VERSION=0.0.13
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/projects/f-spot"
+DESC="An application designed to provide personal photo management to the GNOME desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="688K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/pub/gnome/sources/f-spot/0.0/f-spot-0.0.13.tar.bz2"
+
+BUILDTIME="pkgconfig >=intltool-0.21 gettext"
+
+RUNTIME=">=glib2-2.0.0 mono >=libgnome-2.2 >=libgnomeui-2.2 >=libexif-0.5.7 >=gtk-sharp-1.0.8
+         >=gtk2-2.4 >=lcms-1.12 sqlite"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL MAINTAINERS \
+    NEWS README TODO
+}

@@ -1,0 +1,79 @@
+NAME=kernel-mm-ide
+VERSION=2.6.12_rc4_mm2
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org/"
+DESC="The latest Linux Kernel"
+GROUP=kernels
+LICENSE="GPLv2"
+SIZE="36368K"
+HUSE="menuconfig xconfig"
+
+SOURCES="http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.11.tar.bz2
+         http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.12-rc4.bz2
+	 http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.12-rc4/2.6.12-rc4-mm2/2.6.12-rc4-mm2.bz2
+	 config-rc4-mm2-ide-$RELEASE"
+
+RUNTIME="module-init-tools bootloader"	 
+
+PROVIDES="kernel kernel-sources"
+	 
+build() {
+  cd $SRC/linux-2.6.11
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  patch -p1 < ../patch-2.6.12-rc4
+  patch -p1 < ../2.6.12-rc4-mm2    
+  
+  sed -i "s:EXTRAVERSION \= \-rc4-mm2:EXTRAVERSION \= \-rc4-mm2-$RELEASE:" Makefile
+  
+  mkdir -p $PKG/{boot,lib/modules}
+  
+  if use menuconfig
+  then
+    make menuconfig
+  elif use xconfig
+  then
+    make xconfig
+  else
+    cp ../config-rc4-mm2-ide-$RELEASE ./.config
+#    yes "" | make config
+  fi
+  
+#  make clean
+#  make
+#  make INSTALL_MOD_PATH=$PKG modules_install
+  
+  install -m 0644 System.map $PKG/boot/System.map-mm-ide-2.6.12-rc4-mm2-$RELEASE
+  install -m 0644 arch/i386/boot/bzImage $PKG/boot/vmlinuz-mm-ide-2.6.12-rc4-mm2-$RELEASE
+  install -m 0644 .config $PKG/boot/config-mm-ide-2.6.12-rc4-mm2-$RELEASE
+  
+  rdev -R $PKG/boot/vmlinuz-mm-ide-2.6.12-rc4-mm2-$RELEASE 0
+  rdev -v $PKG/boot/vmlinuz-mm-ide-2.6.12-rc4-mm2-$RELEASE -1
+  rdev -r $PKG/boot/vmlinuz-mm-ide-2.6.12-rc4-mm2-$RELEASE 0
+  
+  rm -f $PKG/lib/modules/2.6.12-rc4-mm2-$RELEASE/{build,sources}
+  ln -s /usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE $PKG/lib/modules/2.6.12-rc4-mm2-$RELEASE/build
+  ln -s /usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE $PKG/lib/modules/2.6.12-rc4-mm2-$RELEASE/source
+  
+  mkdir -p $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/{include,arch/i386/kernel,.tmp_versions}
+  for DIR in acpi asm-generic asm-i386 config linux math-emu media mtd net pcmcia rxrpc scsi sound
+  do
+    cp -a include/$DIR $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/include/$DIR
+  done
+  
+  cp -a scripts $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/
+  cp arch/i386/Makefile $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/arch/i386/
+  cp arch/i386/kernel/asm-offsets.s $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/arch/i386/kernel/
+  
+  for FILE in $(find ./ -type f -name "Kconfig*")
+  do
+    mkdir -p $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/${FILE%/*}
+    cp $FILE $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/$FILE
+  done
+  
+  ( cd $PKG/usr/src/linux-2.6.12-rc4-mm2-ide-$RELEASE/include; ln -s asm-i386 asm )
+  
+  install_docs COPYING CREDITS MAINTAINERS README REPORTING-BUGS
+}

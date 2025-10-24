@@ -1,0 +1,27 @@
+NAME=mcrypt
+VERSION=2.6.4
+ARCH=i686
+RELEASE=1
+URL="http://mcrypt.sourceforge.net/"
+DESC="A simple encryption program, intended to be replacement for the old crypt."
+GROUP=security
+LICENSE=GPLv2
+SIZE="374K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/mcrypt/mcrypt-2.6.4.tar.gz"
+
+RUNTIME="libmcrypt"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL* \
+    NEWS README THANKS TODO
+}

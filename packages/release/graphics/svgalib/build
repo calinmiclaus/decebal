@@ -1,0 +1,37 @@
+NAME=svgalib
+VERSION=1.4.3
+ARCH=i686
+RELEASE=1
+URL="http://www.svgalib.org/"
+DESC="A library that provides VGA and SVGA mode in console."
+GROUP=graphics
+LICENSE=PD
+
+SOURCES="http://www.svgalib.org/svgalib-1.4.3.tar.gz
+         svgalib-1.4.3.patch svgalib-gcc-33.patch mach32.diff s3.diff vga.diff"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  patch -p1 < ../svgalib-1.4.3.patch
+  patch -p1 < ../svgalib-gcc-33.patch
+
+  cd src
+  patch -p0 < ../../mach32.diff
+  patch -p0 < ../../s3.diff
+  patch -p0 < ../../vga.diff
+  cd ..
+  
+  make install dstdir="$PKG" \
+               prefix="/usr" \
+    	       INSTALL_PROGRAM="install -c -s -m 755" \
+    	       INSTALL_SHLIB="install -c -m 755" \
+    	       INSTALL_DATA="install -c -m 644" \
+	       INCLUDE_ATI_DRIVER_TEST=y \
+	       INCLUDE_ATI_DRIVER=y \
+	       INCLUDE_FBDEV_DRIVER_TEST=y \
+	       NO_ASM=y \
+	       INCLUDE_FBDEV_DRIVER=y || return 1
+  
+  install_docs 0-INSTALL 0-README LICENSE
+}

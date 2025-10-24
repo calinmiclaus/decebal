@@ -1,0 +1,28 @@
+NAME=libtasn1
+VERSION=0.2.13
+ARCH=1
+RELEASE=1
+URL="http://www.gnu.org/software/gnutls/"
+DESC="The ASN.1 library used in GNUTLS"
+GROUP=libs
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="855K"
+HUSE="gtkdoc static"
+
+SOURCES="ftp://ftp.gnupg.org/gcrypt/alpha/gnutls/libtasn1/libtasn1-0.2.13.tar.gz"
+
+use gtkdoc && BUILDTIME="gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+   
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+ 
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS \
+    README THANKS
+}

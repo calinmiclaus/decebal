@@ -1,0 +1,31 @@
+NAME=normalize
+VERSION=0.7.6
+ARCH=i686
+RELEASE=1
+URL="www.cs.columbia.edu/~cvaill/normalize/"
+DESC="An overly complicated tool for adjusting the volume of wave files to a standard level."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="292K"
+HUSE="static nls"
+
+SOURCES="http://www1.cs.columbia.edu/~cvaill/normalize/normalize-0.7.6.tar.bz2"
+
+RUNTIME="audiofile libmad"
+
+have xmms && RUNTIME="$RUNTIME xmms"
+
+build() {
+  cd $SRC/$NAME-$VERSION  
+
+  use static && OPTS="--enable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+  
+  have xmms && OPTS="$OPTS --enable-xmms" || OPTS="$OPTS --disable-xmms"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install  
+
+  install_docs COPYING INSTALL NEWS README THANKS TODO
+}

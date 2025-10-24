@@ -1,0 +1,195 @@
+#!/bin/bash
+
+CARDSDATABASE="database"
+PCIIDS=/usr/share/misc/pci.ids
+
+write_card_configuration() {
+  local CARD="`cat $TMP/card`" ; CARD="${CARD:3}"
+  local MEMORY="`cat $TMP/memory`" ; MEMORY="${MEMORY%K}"
+  [ -z "$CARDVENDOR" ] && CARDVENDOR="Vendor Name"
+  [ -z "$CARDNAME" ] && CARDNAME="Card Name"
+  
+  cat << EOF > $TMP/card_configuration
+Section "Device"
+  Identifier  "Card0"
+  Driver      "`cat $TMP/chipset`"
+  VendorName  "$CARDVENDOR"
+  BoardName   "$CARDNAME"
+  VideoRam    $MEMORY
+EndSection
+EOF
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --msgbox "`cat $TMP/card_configuration`" 0 0
+  if [ $? -eq 0 ]
+  then
+    main
+  else
+    hadle_exit "write_card_configuration()" "ESC pressed." "$LINENO" "1"
+  fi
+}
+
+get_memory_from_user() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --cancel-label "Exit" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --inputbox \
+"\n  How much memory has your video card (in KB)?" 0 0 2>$TMP/memory
+  local RETVAL=$?
+  case "$RETVAL" in
+    0) write_card_configuration ; read ;;
+    1) handle_exit "get_memory_from_user()" "Exit pressed." "$LINENO" "1" ;;
+    3) get_card_memory ;;
+   -1) handle_exit "get_memory_from_user()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}
+
+get_card_memory() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --ok-label "Select" \
+	 --cancel-label "Exit" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --menu \
+"\nPlease select how much memory has your video card:" 0 0 0 \
+"256K" "*" \
+"512K" "*" \
+"1024K" "*" \
+"2048K" "*" \
+"4096K" "*" \
+"8192K" "*" \
+"16384K" "*" \
+"32768K" "*" \
+"65536K" "*" \
+"131072K" "*" \
+"262144K" "*" \
+"other" "*" 2> $TMP/memory
+  local RETVAL=$?
+  local SELECTION=`cat $TMP/memory`
+  case "$RETVAL" in
+    0) 
+      if [ "$SELECTION" = "other" ]
+      then
+        get_memory_from_user
+      else
+        write_card_configuration
+      fi
+      ;;
+    1) handle_exit "get_card_memory()" "Exit pressed." "$LINENO" "1" ;;
+    3) select_card `cat $TMP/chipset` ;;
+   -1) handle_exit "get_card_memory()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}
+
+select_card() {
+  cat << EOF > $TMP/get_${1}_card
+select_${1}_card() {
+  dialog --backtitle "$BACKTITLE" \\
+         --title " $TITLE " \\
+	 --ok-label "Select" \\
+	 --cancel-label "Exit" \\
+	 --extra-button \\
+	 --extra-label "Back" \\
+	 --menu \\
+"\\n Select your specific model/chipset.\\n" 0 0 10 \\
+EOF
+  local LINES=`wc -l $CARDSDATABASE/$1 | awk '{print $1}'`
+  local COUNTER=0
+  while read line
+  do
+    COUNTER=$(($COUNTER + 1))
+    if [ $COUNTER -ne $LINES ]
+    then
+      echo "\"* $line\" \"*\" \\" >> $TMP/get_${1}_card
+    else
+      echo "\"* $line\" \"*\" 2>$TMP/card" >> $TMP/get_${1}_card
+    fi
+  done < $CARDSDATABASE/$1
+  cat << EOF >> $TMP/get_${1}_card
+  local RETVAL=\$?
+  local SELECTION=\`cat $TMP/card\`
+  case "\$RETVAL" in
+    0)
+      CARD="$SELECTION"
+      get_card_memory
+      ;;
+    1) handle_exit "select_${1}_card()" "Exit pressed." "\$LINENO" "1" ;;
+    3) configure_card ;;
+   -1) handle_exit "select_${1}_card()" "ESC pressed." "\$LINENO" "1" ;;
+  esac
+}
+EOF
+  . $TMP/get_${1}_card
+  select_${1}_card
+}
+
+configure_card() {
+  local DETECTEDCARD="`lspci 2>/dev/null | grep 'VGA compatible controller'`"
+  local PCISLOT="`echo $DETECTEDCARD | awk '{print $1}'`"
+  
+  DETECTEDCARD="`echo $DETECTEDCARD | cut -f 3- -d ':'`"
+  
+  local CARDVENDOR="`lspci -n | grep 'Class 0300:' | awk '{print $4}'`"
+  CARDVENDOR="`echo $CARDVENDOR | cut -f 1 -d ':'`"
+  CARDVENDOR="`grep ^$CARDVENDOR $PCIIDS`"
+  CARDVENDOR="${CARDVENDOR:6}"
+  
+  local CARDNAME="`lspci -n | grep 'Class 0300:' | awk '{print $4}'`"
+  CARDNAME="`echo $CARDNAME | cut -f 2 -d ':'`"
+  local LINECOUNTER="`grep -E \"^[[:blank:]]$CARDNAME\" $PCIIDS | wc -l`"
+  if [ ! "$LINECOUNTER" = "1" ]
+  then
+    grep -E "^[[:blank:]]$CARDNAME" $PCIIDS > $TMP/linecounter
+    while read LINE
+    do
+      for STRING in $DETECTEDCARD
+      do
+        if echo $LINE | grep '$STRING'
+	then
+	  CARDNAME="${$LINE:7}"
+	fi
+      done
+    done < $TMP/linecounter
+  else
+    CARDNAME="`grep -E \"^[[:blank:]]$CARDNAME\" $PCIIDS`"
+  fi      
+  
+  CARDNAME="${CARDNAME:7}"
+  
+  dialog --backtitle "$BACKTITLE" \
+         --title "$TITLE" \
+	 --ok-label "Select" \
+	 --cancel-label "Exit" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --help-button \
+	 --menu \
+"\n  Select one of the following drivers below.\n\n
+Your card: $DETECTEDCARD" 0 0 10 \
+"tdfx" "3Dfx Graphics Cards (Vodoo)." \
+"ati" "ATI Graphics Cards." \
+"chips" "Chips & Technologies Graphics Cards." \
+"cirrus" "Cirrus Logic Graphics Cards." \
+"mga" "Matrox Graphics Cards." \
+"neomagic" "NeoMagic Graphics Cards." \
+"nv" "NVIDIA Graphics Cards." \
+"s3" "S3 Graphics Cards." \
+"s3virge" "S3 ViRGE Graphics Cards." \
+"savage" "Savage Graphics Cards." \
+"siliconmotion" "Silicon Motion Graphics Cards." \
+"sis" "SiS Graphics Cards." \
+"trident" "Trident Graphics Cards." \
+"tseng" "Tseng Labs Graphics Cards." 2>$TMP/chipset
+  local RETVAL=$?
+  local SELECTION=`cat $TMP/chipset`
+  case "$RETVAL" in
+     0) select_card $SELECTION ;;
+     1) handle_exit "configure_card()" "Exit pressed." "$LINENO" "1" ;;
+     2) show_card_help ;;
+     3) main ;;
+    -1) handle_exit "configure_card()" "ESC pressed." "$LINENO" "1" ;;
+  esac			 
+}

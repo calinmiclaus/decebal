@@ -1,0 +1,26 @@
+NAME=desktop-file-utils
+VERSION=0.10
+ARCH=i686
+RELEASE=1
+URL="http://www.freedesktop.org/Software/desktop-file-utils"
+DESC="Utilities for manipulating desktop files."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="333K"
+
+SOURCES="http://www.freedesktop.org/software/desktop-file-utils/releases/desktop-file-utils-0.10.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=glib2-2.2.0 popt"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS ChangeLog COPYING INSTALL NEWS README 
+}  
+  

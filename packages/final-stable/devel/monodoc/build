@@ -1,0 +1,32 @@
+NAME=monodoc
+VERSION=1.0.6
+ARCH=i686
+RELEASE=1
+URL="http://www.mono-project.com/"
+DESC="The mono documentation browser and viewer."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="10283K"
+
+SOURCES="http://www.go-mono.com/archive/1.0.6/monodoc-1.0.6.tar.gz"
+
+RUNTIME=">=mono-1.0.1 >=gtk-sharp-1.0.1 desktop-file-utils"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  export PKG_CONFIG_PATH="/opt/mono/lib/pkgconfig"
+  export PATH="$PATH:/opt/mono/bin"
+  ./configure --prefix=/opt/mono \
+              --sysconfdir=/etc/opt
+  make
+  make GACUTIL="/opt/mono/bin/gacutil /root $PKG/opt/mono/lib" DESTDIR=$PKG install    
+  
+  mkdir -p $PKG/opt/gnome/share/{applications,pixmaps}
+  mv $PKG/opt/mono/share/applications/monodoc.desktop $PKG/opt/gnome/share/applications/
+  mv $PKG/opt/mono/share/pixmaps/monodoc.png $PKG/opt/gnome/share/pixmaps/
+  rm -rf $PKG/opt/mono/share/{applications,pixmaps}
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

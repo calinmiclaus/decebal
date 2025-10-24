@@ -1,0 +1,32 @@
+NAME=usbutils
+VERSION=0.11
+ARCH=i686
+RELEASE=1
+URL="http://usb.cs.tum.edu/"
+DESC="USB Device Utilities."
+GROUP=base
+LICENSE=GPLv2
+SIZE="223K"
+
+SOURCES="http://usb.cs.tum.edu/download/usbutils/usbutils-0.11.tar.gz
+         usbutils_decebal.diff"
+
+BUILDTIME="kernel-headers"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../usbutils_decebal.diff
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install
+  
+  # this is provided by libusb.
+  rm -rf $PKG/usr/{lib,include}
+  
+  mkdir -p $PKG/usr/share/misc
+  mv $PKG/usr/share/usb.ids $PKG/usr/share/misc/
+  
+  install_docs AUTHORS COPYING ChangeLog NEWS README
+}

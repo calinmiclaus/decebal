@@ -1,0 +1,473 @@
+#!/bin/bash
+#
+# /sbin/dsrc - handle package management from sources on Decebal Linux.
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+BASEDIR=$(pwd)
+
+FUNCTIONSDIR="/usr/share"
+CONFDIR="/etc/dpack/"
+
+source $CONFDIR/common
+source $CONFDIR/build
+source $FUNCTIONSDIR/dpack/tmp
+source $FUNCTIONSDIR/dpack/exit
+source $FUNCTIONSDIR/dpack/build/debug
+source $FUNCTIONSDIR/dpack/pkg
+source $FUNCTIONSDIR/dpack/msg
+source $FUNCTIONSDIR/dpack/depend
+source $FUNCTIONSDIR/dpack/log
+
+handle_signal() {
+  echo "user interrupt...all operations aborted."
+  [ "$PKG_NOCLEAN" = "1" ] || rm -rf $SRC $PKG
+  [ "$PKG_KEEP" = "1" ] || rm -rf $TARGET
+  rm -f $DPACKLOCK
+  rm -rf $TMP
+  pkg_exit "handle_signal()" "execute_these_comands_if_user_exits" "$LINENO" 1
+}
+	    
+trap "handle_signal" SIGHUP SIGINT SIGQUIT SIGTERM
+
+usage() {
+  cat << EOF
+usage: dsrc [options] <argument>
+options:
+  -b, --builddeps         - install missing dependencies from sources
+  -c, --noclean           - do not remove work files (SRC and PKG)
+  -C, --continue          - use sources from SRC (continue build) (dangerous)
+  -d, --nodeps            - skip dependencies checks
+  -D, --download          - only download sources, do not build packages
+  -e, --sysinfo           - print information about dsrc
+  -f, --force             - force package build
+  -g, --genmd5            - generate verify file
+  -i, --noinstall         - do not install package
+  -I, --info              - print information about a package
+  -k, --keep              - do not remove the package after a successfull build
+  -n, --nostrip           - do not strip libraries and binaries
+  -o, --optimize          - optimize build for current system
+  -p, --nossp             - do not use SSP (Smash Stack Protector)
+  -r, --rmdeps            - remove installed dependencies after a successfull build (dangerous)
+  -R, --rebuild           - rebuild/reinstall package (even if its already installed)
+  -s, --syncdeps          - install dependencies with dupdate
+  -S, --search <string>   - search the builds database for *string*
+  -w, --write <dir>       - save package in <dir> after a successfull build
+  -u, --upgrade           - upgrade installed packages (used for groups)
+  -v, --verbose           - be more verbose
+  -V, --version           - print name, version and license
+  -H, --howto             - print a short howto
+  -h, --help              - print this message and exit
+arguments:
+  <package>               - build/install a package
+  <group>                 - build/install all package in group <group>
+  <world>                 - rebuild/reinstall/upgrade world
+  <sync>                  - update the builds database
+
+For a detalied help see dsrc (8).    
+EOF
+}
+
+version() {
+  cat << EOF
+dsrc v0.1.6 (dpack v0.1.6)
+
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+PKG_BUILDDEPS=0
+PKG_NOCLEAN=0
+PKG_NODEPS=0
+PKG_DOWNLOAD=0
+PKG_FORCE=0
+PKG_GENMD5=0
+PKG_IGNOREMD5=0
+PKG_NOINSTALL=0
+PKG_INFO=0
+PKG_KEEP=0
+PKG_NOSTRIP=0
+PKG_OPTIMIZE=0
+PKG_NOSSP=0
+PKG_RMDEPS=0
+PKG_REBUILD=0
+PKG_SYNCDEPS=0
+PKG_SEARCH=0
+PKG_UPGRADE=0
+PKG_SYSINFO=0
+PKG_VERBOSE=0
+
+PKG_DIR=""
+PKGADD_OPTS=""
+DSRC_OPTS=""
+PKG_ARGS=""
+
+if [ $# -eq 0 ]
+then
+  echo "error: dsrc needs at least one argument." >&2
+  usage >&2
+  pkg_exit "main()" "check_if_we_have_arguments" "$LINENO" 1
+fi
+
+while [ $# -ne 0 ]
+do
+  case "$1" in
+    --builddeps)
+      if [ "$PKG_SYNCDEPS" = "1" ]
+      then
+        echo "you cannot use -b (--builddeps) and -s (--syncdeps) at the same time." >&2
+	usage >&2
+	pkg_exit "main()" "check_if_we_have_-s_and_-b_at_the_same_time" "$LINENO" 1
+      else
+        PKG_BUILDDEPS=1
+	DSRC_OPTS="$DSRC_OPTS -b"
+      fi
+      ;;
+    --noclean)
+      PKG_NOCLEAN=1
+      DSRC_OPTS="$DSRC_OPTS -c"
+      ;;
+    --continue) PKG_CONTINUE=1 ;;
+    --nodeps)
+      PKG_NODEPS=1
+      DSRC_OPTS="$DSRC_OPTS -d"
+      PKGADD_OPTS="$PKGADD_OPTS -d"
+      ;;
+    --download)
+      PKG_DOWNLOAD=1
+      DSRC_OPTS="$DSRC_OPTS -D"
+      ;;
+    --sysinfo) PKG_SYSINFO=1 ;;
+    --force)
+      PKG_FORCE=1
+      DSRC_OPTS="$DSRC_OPTS -f"
+      ;;
+    --genmd5)
+      PKG_GENMD5=1
+      DSRC_OPTS="$DSRC_OPTS -g" # will be removed when all rsync servers are up2date.
+      ;;
+    --noinstall)
+      PKG_NOINSTALL=1
+      DSRC_OPTS="$DSRC_OPTS -i"
+      ;;
+    --info)
+      PKG_INFO=1
+      DSRC_OPTS="$DSRC_OPTS -I"
+      ;;
+    --keep)
+      PKG_KEEP=1
+      DSRC_OPTS="$DSRC_OPTS -k"
+      ;;
+    --nostrip)
+      PKG_NOSTRIP=1
+      DSRC_OPTS="$DSRC_OPTS -n"
+      ;;
+    --optimize)
+      PKG_OPTIMIZE=1
+      DSRC_OPTS="$DSRC_OPTS -o"
+      ;;
+    --nossp)
+      PKG_NOSSP=1
+      DSRC_OPTS="$DSRC_OPTS -p"
+      ;;
+    --rmdeps)
+      PKG_RMDEPS=1
+      DSRC_OPTS="$DSRC_OPTS -r"
+      ;;
+    --rebuild)
+      PKG_REBUILD=1
+      DSRC_OPTS="$DSRC_IOTS -R"
+      ;;
+    --syncdeps)
+      if [ "$PKG_BUILDDEPS" = "1" ]
+      then
+        echo "you cannot use -b (--builddeps) and -s (--syncdeps) at the same time." >&2
+	usage >&2
+	pkg_exit "main()" "check_if_we_have_-s_and_-b_at_the_same_time" "$LINENO" 1
+      else
+        PKG_SYNCDEPS26=1
+	DSRC_OPTS="$DSRC_OPTS -s"
+      fi
+      ;;
+    --search)
+      PKG_SEARCH=1
+      DSRC_OPTS="$DSRC_OPTS -S"
+      ;;
+    --write) PKG_DIR="$2" ;;
+    --upgrade) PKG_UPGRADE=1 ;;
+    --verbose)
+      PKG_VERBOSE=1
+      DSRC_OPTS="$DSRC_OPTS -v"
+      PKGADD_OPTS="$PKGADD_OPTS -v"
+      ;;
+    --version)
+      version
+      exit 0
+      ;;
+    --howto)
+      howto
+      exit 0
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --*)
+      echo "error: unrecognized option." >&2
+      usage >&2
+      pkg_exit "main()" "get_arguments" "$LINENO" 1
+      ;;
+    -*)
+      while getopts "bcCdDefgiIknoprRsSuvVhHw:-" OPT
+      do
+        case "$OPT" in
+	  b)
+            if [ "$PKG_SYNCDEPS" = "1" ]
+            then
+              echo "you cannot use -b (--builddeps) and -s (--syncdeps) at the same time." >&2
+	      usage >&2
+	      pkg_exit "main()" "check_if_we_have_-s_and_-b_at_the_same_time" "$LINENO" 1
+            else
+              PKG_BUILDDEPS=1
+	      DSRC_OPTS="$DSRC_OPTS -b"
+            fi
+            ;;
+	  c)
+	    PKG_NOCLEAN=1
+	    DSRC_OPTS="$DSRC_OPTS -c"
+	    ;;
+          C) PKG_CONTINUE=1 ;;
+	  d)
+	    PKG_NODEPS=1
+	    DSRC_OPTS="$DSRC_OPTS -d"
+	    PKGADD_OPTS="$PKGADD_OPTS -d"
+	    ;;
+	  D)
+	    PKG_DOWNLOAD=1
+	    DSRC_OPTS="$DSRC_OPTS -D"
+	    ;;
+	  e) PKG_SYSINFO=1 ;;
+          f)
+	    PKG_FORCE=1
+	    DSRC_OPTS="$DSRC_OPTS -f"
+	    ;;
+          g)
+	    PKG_GENMD5=1
+	    DSRC_OPTS="$DSRC_OPTS -g"
+	    ;;
+	  i)
+	    PKG_NOINSTALL=1
+	    DSRC_OPTS="$DSRC_OPTS -i"
+	    ;;
+          I)
+	    PKG_INFO=1
+	    DSRC_OPTS="$DSRC_OPTS -I"
+	    ;;
+	  k)
+	    PKG_KEEP=1
+	    DSRC_OPTS="$DSRC_OPTS -k"
+	    ;;
+	  n)
+	    PKG_NOSTRIP=1
+	    DSRC_OPTS="$DSRC_OPTS -n"
+	    ;;
+	  o)
+	    PKG_OPTIMIZE=1
+	    DSRC_OPTS="$DSRC_OPTS -o"
+	    ;;
+	  p)
+	    PKG_NOSSP=1
+	    DSRC_OPTS="$DSRC_OPTS -p"
+	    ;;
+	  r)
+	    PKG_RMDEPS=1
+	    DSRC_OPTS="$DSRC_OPTS -r"
+	    ;;
+	  R)
+	    PKG_REBUILD=1
+	    DSRC_OPTS="$DSRC_OPTS -R"
+	    ;;
+	  s)
+            if [ "$PKG_BUILDDEPS" = "1" ]
+            then
+              echo "You cannot use -b (--builddeps) and -s (--syncdeps) at the same time." >&2
+	      usage >&2
+	      pkg_exit "main()" "check_if_we_have_-s_and_-b_at_the_same_time" "$LINENO" 1
+            else
+              PKG_SYNCDEPS26=1
+	      DSRC_OPTS="$DSRC_OPTS -s"
+            fi
+            ;;
+	  S)
+	    PKG_SEARCH=1
+	    DSC_OPTS="$DSRC_OPTS -S"
+	    ;;
+	  v)
+	    PKG_VERBOSE=1
+	    DSRC_OPTS="$DSRC_OPTS -v"
+	    PKGADD_OPTS="$PKGADD_OPTS -v"
+	    ;;
+	  u) PKG_UPGRADE=1 ;;
+	  V)
+	    version
+	    exit 0
+	    ;;
+	  h)
+	    usage
+	    exit 0
+	    ;;
+	  H)
+	    howto
+	    exit 0
+	    ;;
+	  w)
+	    PKG_DIR="$OPTARG"
+	    shift 1
+	    ;;
+	  -)
+	    OPTBIND=0
+	    break
+	    ;;
+	  *)
+	    usage >&2
+	    pkg_exit "main()" "unknown_option" "$LINENO" 1
+	    ;;
+	esac
+      done
+      ;;
+    *)
+      PKG_ARGS="$1"
+      shift 1
+      while [ -n "$1" ]
+      do
+        PKG_ARGS="$PKG_ARGS $1"
+	shift 1
+      done
+      [ -n "$PKG_DIR" ] && PKG_ARGS="${PKG_ARGS#* }"
+  esac
+  shift 1
+done
+
+pkg_arg_debug
+
+if [ "$PKG_ARGS" = "" -a "$(echo $PKG_ARGS | grep world)" = "" -a "$(echo $PKG_ARGS | grep sync)" = "" -a ! "$PKG_SYSINFO" = "1" ]
+then
+  echo "error: dsrc needs at least one argument." >&2
+  usage >&2
+  pkg_exit "main()" "we_need_one_argument" "$LINENO" 1
+fi
+
+if [ "$PKG_SYSINFO" = "1" ]
+then
+  source $FUNCTIONSDIR/dpack/build/sysinfo
+  pkg_sysinfo
+  RETVAL=$?
+  
+  cd $BASEDIR
+  
+  exit $RETVAL
+fi
+
+if echo $PKG_ARGS | grep -q ^sync
+then
+  source $FUNCTIONSDIR/dpack/build/sync
+  pkg_sync_db
+elif echo $PKG_ARGS | grep -q ^world
+then
+  if [ "$PKG_INFO" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/worldinfo
+    pkg_info_world
+  else
+    source $FUNCTIONSDIR/dpack/build/world
+    pkg_build_world ${PKG_ARGS:6}
+  fi
+elif [ "$PKG_SEARCH" = "1" ]
+then
+  source $FUNCTIONSDIR/dpack/build/search
+  pkg_search $PKG_ARGS
+elif [ "$PKG_INFO" = "1" ]
+then
+  if [ -n "$(find $PACKAGEDIR/ -maxdepth 1 -mindepth 1 -type d -name $PKG_ARGS)" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/groupinfo
+    pkg_info_group $PKG_ARGS
+  else
+    source $FUNCTIONSDIR/dpack/build/info
+    pkg_info $PKG_ARGS
+  fi
+else
+  for ARG in $PKG_ARGS
+  do
+    ARGISGROUP=$(find $PACKAGEDIR/ -type d -maxdepth 1 -name $ARG 2>/dev/null)
+    if [ -n "$ARGISGROUP" ]
+    then
+      source $FUNCTIONSDIR/dpack/build/group
+      pkg_build_group $ARG
+    else
+      ARGISPKG=$(find $PACKAGEDIR/ -type d -mindepth 2 -maxdepth 2 -name $ARG 2>/dev/null)
+      if [ -n "$ARGISPKG" ]
+      then
+        if pkg_is_installed $ARG && [ ! "$PKG_REBUILD" = "1" ]
+	then
+	  IPKG=$(get_installed_pkg $ARG)
+	  IVER=$(pkgversion $IPKG)
+	  IREL=$(pkgrelease $IPKG)
+	  
+	  source $ARGISPKG/build 2>/dev/null
+	  
+	  if [ "$VERSION" = "$IVER" -a "$RELEASE" = "$IREL" ]
+	  then
+	    echo "Package '$ARG' already installed (use --rebuild)."
+	    continue
+	  else
+	    source $FUNCTIONSDIR/dpack/build/build
+	    pkg_build $ARGISPKG
+	    RETVAL=$?
+	  fi
+	else
+	  source $FUNCTIONSDIR/dpack/build/build
+	  pkg_build $ARGISPKG
+	  RETVAL=$?
+	fi
+      else
+        echo "package '$ARG' not find in the build database (use: dsrc sync)."
+	pkg_exit "main()" "reached_the_point_of_no_return" "$LINENO" 1
+      fi
+    fi  
+  done
+fi
+
+cd $BASEDIR
+
+exit $RETVAL
+      	    

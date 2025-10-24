@@ -1,0 +1,46 @@
+NAME=gdm
+VERSION=2.6.0.8
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A re-implementation of the well known xdm program."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="3278"
+HUSE="ipv6 selinux static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/sources/gdm/2.6/gdm-2.6.0.8.tar.bz2
+         gdm.init"
+
+BACKUPS="etc/opt/gnome/gdm/gdm.conf"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomeui-2.8.0 >=librsvg-2.8.0 tcp-wrappers"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="--enable-ipv6=yes" || OPTS="--enable-ipv6=no"
+  use selinux && OPTS="$OPTS --with-selinux"
+  use static || OPTS="$OPTS --disable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --libexecdir=/opt/gnome/bin \
+	      --mandir=/opt/gnome/share/man \
+	      --with-tcp-wrappers=yes \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 ../gdm.init $PKG/etc/rc.d/gdm
+  
+  mkdir -p $PKG/etc/X11/Sessions $PKG/var/log/gdm
+  
+  cp -a $PKG/opt/gnome/share/xsessions/* $PKG/etc/X11/Sessions/
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README* TODO
+}

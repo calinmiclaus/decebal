@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# /etc/rc.d/icecast - control file for the Icecast streaming media server
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/icecast.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Icecast streaming media server"
+    start_service /usr/bin/icecast -b -c /etc/icecast/icecast.xml
+    ;;
+  stop)
+    msg "Stopping the Icecast streaming media server"
+    stop_service /usr/bin/icecast
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/icecast
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+
+		

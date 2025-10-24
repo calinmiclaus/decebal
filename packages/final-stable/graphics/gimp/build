@@ -1,0 +1,51 @@
+NAME=gimp
+VERSION=2.2.6
+ARCH=i686
+RELEASE=1
+URL="http://www.gimp.org"
+DESC="GNU Image Manipulation Program."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="13486K"
+HUSE="python aalib nls static debug profile"
+
+SOURCES="ftp://ftp.gimp.org/pub/gimp/v2.2/$NAME-$VERSION.tar.bz2"
+
+BACKUPS="etc/gimp/2.0/gimprc
+         etc/gimp/2.0/gtkrc
+	 etc/gimp/2.0/ps-menurc
+	 etc/gimp/2.0/sessionrc
+	 etc/gimp/2.0/templaterc
+	 etc/gimp/2.0/unitrc"
+
+BUILDTIME="gimp-print intltool"
+
+RUNTIME="gtk2 librsvg perl glib2 xorg libmng >=libjpeg-6b libpng libart_lgpl"
+
+use python && RUNTIME="$RUNTIME python >=pygtk-1.99.15"
+use aalib && RUNTIME="$RUNTIME aalib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use python && OPTS="$OPTS --enable-python" || OPTS="$OPTS --disable-python"
+  use aalib || OPTS="$OPTS --without-aa"
+  use static && OPTS="$OPTS --enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+    
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --mandir=/usr/share/man \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/share/{applications,mime-info}
+  mv $PKG/usr/share/gimp/2.0/misc/gimp.desktop $PKG/usr/share/applications/
+  mv $PKG/usr/share/gimp/2.0/misc/gimp.keys $PKG/usr/share/mime-info/
+  
+  install_docs AUTHORS COPYING ChangeLog* HACKING INSTALL LICENSE \
+    NEWS* README*
+}               

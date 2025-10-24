@@ -1,0 +1,52 @@
+NAME=ethereal
+VERSION=0.10.10
+ARCH=i686
+RELEASE=1
+URL="http://www.ethereal.com/"
+DESC="The world's most popular network protocol analyzer."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="5663K"
+HUSE="nogui notext gtk ipv6 snmp krb5"
+
+SOURCES="http://www.ethereal.com/distribution/ethereal-0.10.10.tar.bz2"
+
+RUNTIME="xorg openssl pcre libpcap bash"
+
+use nogtk || RUNTIME="$RUNTIME gtk2"
+use gtk && RUNTIME="$RUNTIME gtk"
+use snmp && RUNTIME="$RUNTIME net-snmp"
+use krb5 && RUNTIME="$RUNTIME heimdal"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nogui && OPTS="--disable-ethereal" || OPTS="--enable-tethereal"
+  use notext && OPTS="$OPTS --disable-tethereal"
+  use gtk && OPTS="$OPTS --disable-gtk2"
+  use ipv6 || OPTS="$OPTS --disable-ipv6"
+  use snmp && OPTS="$OPTS --with-net-snmp" || OPTS="$OPTS --without-net-snmp"
+  use krb5 && OPTS="$OPTS --with-krb5" || OPTS="$OPTS --without-krb5"
+        
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --mandir=/usr/share/man \
+              --enable-pcap \
+	      --enable-zlib \
+              --enable-editcap \
+	      --enable-mergecap \
+	      --enable-text2cap \
+	      --enable-gtk2 \
+	      --with-ssl \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  use nogui || {
+    install -D -m 0644 ethereal.desktop $PKG/usr/share/applications/ethereal.desktop
+    install -D -m 0644 image/hi48-app-ethereal.png $PKG/usr/share/pixmaps/ethereal.png
+  }
+  
+  install_docs AUTHORS COPYING ChangeLog FAQ INSTALL* NEWS \
+    README* TODO
+}

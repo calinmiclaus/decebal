@@ -1,0 +1,22 @@
+NAME=procinfo
+VERSION=18
+ARCH=i686
+RELEASE=1
+URL="ftp://ftp.cistron.nl/pub/people/svm"
+DESC="Allows you to get useful information from /proc."
+GROUP=base
+LICENSE=PD
+SIZE="23K"
+
+SOURCES="ftp://ftp.cistron.nl/pub/people/svm/procinfo-18.tar.gz"
+
+RUNTIME=">=perl-5.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs CHANGES README
+}

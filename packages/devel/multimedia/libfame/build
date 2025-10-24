@@ -1,0 +1,31 @@
+NAME=libfame
+VERSION=0.9.1
+ARCH=i686
+RELEASE=1
+URL="http://fame.sourceforge.net"
+DESC="A library for fast (real-time) MPEG video encoding."
+GROUP=multimedia
+LICENSE="LGPLv2"
+SIZE="289K"
+HUSE="sse static debug profile"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/fame/libfame-0.9.1.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+  use sse && OPTS="$OPTS --enable-sse"
+
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS CHANGES COPYING INSTALL README TODO    
+}
+
+    

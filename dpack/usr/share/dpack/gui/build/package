@@ -1,0 +1,223 @@
+#!/bin/bash
+
+print_status() {
+  if pkg_is_installed $1
+  then
+    local IPKG=$(get_installed_pkg $1)
+    local IVER=$(pkgversion $IPKG)
+    local IREL=$(pkgrelease $IPKG)
+    if [ ! "$VERSION" = "$IVER" -o ! "$RELEASE" = "$IREL" ]
+    then
+      echo "[upgrade]"
+    else
+      echo "[installed]"
+    fi
+  else
+    echo "[not installed]"
+  fi
+}
+
+start_building_packages() {
+  local TOTAL=0
+  local SUCCESS=0
+  local FAILURE=0
+  local FAILEDPKGS=""
+
+  local STARTTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  
+  for PKG in $(cat $TMP/packages)
+  do
+    local PKGNAME=$(pkgname $PKG)
+    if pkg_is_installed $PKGNAME
+    then
+      local IPKG=$(get_installed_pkg $PKGNAME)
+      local IVER=$(pkgversion $IPKG)
+      local IREL=$(pkgrelease $IPKG)
+      local BUILD=$(find $PACKAGEDIR/ -type d -name "$PKGNAME" 2>/dev/null
+      if [ -n "$BUILD" ]
+      then
+        source $BUILD/build 2>/dev/null
+	if [ ! "$VERSION" = "$IVER" -o ! "$RELEASE" = "$IREL" ]
+	then
+	  dsrc -vb $PKGNAME    
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1)
+          else
+            FAILURE=$((FAILURE + 1))
+	    FAILEDPKGS="$FAILEDPKGS $PKG"
+          fi
+        else
+	  dsrc -vbR $PKGNAME    
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1)
+          else
+            FAILURE=$((FAILURE + 1))
+	    FAILEDPKGS="$FAILEDPKGS $PKG"
+          fi
+	fi  
+      else
+        FAILURE=$(($FAILURE + 1))
+	FAILEDPKGS="$FAILEDPKGS $PKG"  
+      fi
+    else
+      dsrc -vb $PKGNAME
+      if [ $? -eq 0 ]
+      then
+        SUCCESS=$(($SUCCESS + 1)
+      else
+        FAILURE=$((FAILURE + 1))
+	FAILEDPKGS="$FAILEDPKGS $PKG"
+      fi
+    fi
+    TOTA=$(($TOTAL + 1))
+  done
+  
+  local ENDTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  
+  echo "Total of packages build/installed   : $TOTAL" >> $TMP/build_report
+  echo "Packages built/installed successfuly: $SUCCESS" >> $TMP/build_report
+  echo "Packages build/installation failed  : $FAILURE" >> $TMP/build_report
+  if [ -n "$FAILEDPKGS" ]
+  then
+    echo "Packages that didnt build/install :" >> $TMP/build_report
+    for PKG in $FAILEDPKGS
+    do
+      echo "   $PKG" >> $TMP/build_report
+    done
+  fi
+  echo >> $TMP/build_report
+  echo "Start time: $STARTTIME" >> $TMP/build_report
+  echo "End time  : $ENDTIME" >> $TMP/build_report
+}
+
+build_packages_now() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " Select Action " \
+	 --ok-label "Select" \
+	 --cancel-label "Exit" \
+	 --help-button \
+	 --menu \
+"\n Please select an action to perform:\n\n" 0 0 0 \
+"build" "build selected packages now" \
+"select" "select more packages and ask again" 2>$TMP/build_answer
+  local RETVAL=$?
+  local ANSWER=$(cat $TMP/build_answer)
+  case "$RETVAL" in
+    0)
+      case "$ANSWER" in
+        build) start_building_packages ;;
+        select) build_package_gui ;;
+      esac
+      ;;
+    1) pkg_exit "build_packages_now()" "exit_pressed" "$LINENO" 1 ;;
+    2) show_build_packages_now_help ;;
+   -1) pkg_exit "build_packages_now()" "esc_pressed" "$LINENO" 1 ;;
+  esac
+}
+	
+get_packages_gui() {
+  cat << EOF > $TMP/get_packages_gui
+select_packages_gui() {
+  dialog --backtitle "$BACKTITLE" \\
+         --title " SELECT PACKAGES " \\
+	 --cancel-label "Exit" \\
+	 --ok-label "Select" \\
+	 --extra-button \\
+	 --extra-label "Back" \\
+	 --help-button \\
+	 --item-help \\
+	 --checklist \\
+"\n Select packages that you want to build/install: \n\n" 25 50 16 \\
+EOF
+  
+  dialog --backtitle "$BACKTITLE" \
+         --title " GENERATING PACKAGE DATABASE " \
+	 --infobox \
+"\n Generating package database...\n\n" 0 0
+  
+  for PKG in $(find $PACKAGEDIR/$1/ -maxdepth 1 -mindepth 1 -type d 2>/dev/null)
+  do
+    source $PKG/build 2>/dev/null
+    if [ -n "$NAME" -a -n "$VERSION" -a -n "$ARCH" -a -n "$RELEASE" -a -n "$DESC" ]
+    then
+      echo "\"$NAME-$VERSION-$ARCH-$RELEASE\" \"$(print_status $NAME)\" \"off\" \"$DESC\" \\" >> $TMP/get_packages_gui
+    fi
+    unset NAME VERSION ARCH RELEASE URL DESC GROUP LICENSE SIZE SOURCES \
+      BUILDTIME RUNTIME CONFLICTS REPLACES PROVIDES BACKUPS
+    unset -f build
+  done
+  cat << EOF >> $TMP/get_packages_gui
+2> $TMP/package_selection
+local RETVAL=\$?
+case "\$RETVAL" in
+  0)
+    cat $TMP/package_selection >> $TMP/packages
+    build_packages_now
+    ;;
+  1) pkg_exit "select_packages_gui()" "exit_pressed" "$LINENO" 1 ;;
+  2) show_select_packages_help ;;
+  3) build_package_gui ;;
+ -1) pkg_exit "select_packages_gui()" "esc_pressed" "$LINENO" 1 ;;
+esac
+}
+EOF
+  source $TMP/get_packages_gui
+  select_packages_gui
+  read
+}
+
+build_package_gui() {
+   source /etc/dpack/common 2>/dev/null
+   source /etc/dpack/build 2>/dev/null
+   source /usr/share/dpack/pkg 2>/dev/null
+   
+   dialog --backtitle "$BACKTITLE" \
+          --title " SELECT PACKAGES " \
+	  --cancel-label "Exit" \
+	  --ok-label "Select" \
+	  --extra-button \
+	  --extra-label "Back" \
+	  --help-button \
+	  --menu \
+"\n Select packages that you want to build/install: \n\n" 25 70 16 \
+"base" "This needs to be installed." \
+"chat" "Communications programs (irc,p2p,jabber,imc)." \
+"devel" "Developent tools (compilers, libs, ide)." \
+"doc-tools" "Utilities needed for creating software documentation." \
+"documentation" "Packages containing documentation." \
+"editors" "Text editors (console and gui)." \
+"games" "Free games (arcade, fps, rts, rpg, rtg)." \
+"gnome" "The Gnome Desktop Enviroment." \
+"gnome-extra" "Additional packages for GNOME." \
+"graphics" "Graphical software (editors, libs, 2D, 3D, icons)." \
+"kde" "The K Desktop Enviroment." \
+"kde-apps" "Additional packages for KDE." \
+"kernels" "The Linux Kernel (desktop, vanilla, server)." \
+"libs" "Libraries (basic libraries and header files)." \
+"mail" "Mail software (clients, servers and utilities)." \
+"multimedia" "Multimedia programs (audio, video, cd, dvd, libs)." \
+"network" "Networking tools and daemons (dns, nfs, ntp, ftp)." \
+"office" "Office tools (editors, libraries)." \
+"perl-modules" "Additional modules for Perl." \
+"printing" "Printing programs (drivers, servers, libs)." \
+"security" "Security related software (daemons, libs, ids)." \
+"system" "Usefull system tools (archivers, acpi, apm)." \
+"web" "World Wide Web related software (browsers, servers, modules)." \
+"x11" "X Servers and additional programs (xorg, blackbox, fluxbox)." \
+"xfce" "The XFCE Desktop Enviroment." \
+"xfce-extra" "Additional packages for XFCE." 2>$TMP/package_answer
+  local RETVAL=$?
+  local ANSWER=$(cat $TMP/package_answer)
+  case "$RETVAL" in
+    0) get_packages_gui $ANSWER ;;
+    1) pkg_exit "build_package_gui()" "exit_button_pressed" "$LINENO" 1 ;;
+    2) 
+      source /usr/share/dpack/gui/package/help/package_help
+      build_packages_gui_help
+      ;;
+    3) main ;;
+   -1) pkg_exit "build_package_gui()" "esc_pressed" "$LINENO" 1 ;;
+  esac
+}

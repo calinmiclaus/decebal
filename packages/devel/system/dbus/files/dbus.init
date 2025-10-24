@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# /etc/rc.d/messagebus - a daemon which broadcasts notifications 
+#                        of system events and other messages
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/messagebus.pid"
+
+check_libdir() {
+  if [ -d /var/lib/dbus ]
+  then
+    chown messagebus.messagebus /var/lib/dbus
+  else
+    mkdir -p /var/lib/dbus
+    chown messagebus.messagebus /var/lib/dus
+  fi
+}
+
+case "$1" in
+  start)
+    check_libdir
+    msg "Starting the system message bus daemon (messagebus)"
+    start_service /usr/bin/dbus-daemon-1 --system
+    ;;
+  stop)
+    msg "Stopping the system message bus daemon (messagebus)"
+    stop_service /usr/bin/dbus-daemon-1
+    ;;
+  restart|foce-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/dbus-daemon-1
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

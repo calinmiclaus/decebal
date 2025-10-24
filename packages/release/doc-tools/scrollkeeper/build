@@ -1,0 +1,39 @@
+NAME=scrollkeeper
+VERSION=0.3.14
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="An Open Documentation Cataloging System."
+GROUP=doc-tools
+LICENSE="LGPLv2.1 GFDLv1.1"
+SIZE="533K"
+HUSE="nls static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/sources/scrollkeeper/0.3/scrollkeeper-0.3.14.tar.bz2"
+
+BACKUPS="var/log/scrollkeeper.log
+         etc/scrollkeeper.conf"
+
+BUILDTIME="intltool gettext"
+
+RUNTIME="libxml2 libxslt docbook-xml"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use nls || OPTS="--disable-nls"
+  use static || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --mandir=/usr/share/man \
+	      --with-omfdirs=/usr/share/omf:/opt/gnome/share/omf \
+	      --localstatedir=/var $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/var/lib/scrollkeeper
+    
+  install_docs ABOUT-NLS AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

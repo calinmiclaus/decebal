@@ -1,0 +1,47 @@
+NAME=evolution
+VERSION=2.2.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Integrated mail, calendar and address book suite from the Evolution Team."
+GROUP=mail
+LICENSE="GPLv2 FDLv1.1"
+SIZE="13031K"
+HUSE="ipv6"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/evolution-2.2.0.tar.bz2"
+
+BUILDTIME="intltool gstreamer"
+
+RUNTIME="evolution-data-server >=gtkhtml-3.6.0 gal openldap >=mozilla-1.7 gnome-spell"
+
+use gtk-doc && BUILDTIME="$BUILDTIME gtk-doc"
+use pilot && RUNTIME="$RUNTIME gnome-pilot-conduits"
+use mono && RUNTIME="$RUNTIME mono"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use ipv6 && OPTS="$OPTS --enable-ipv6=yes" || OPTS="$OPTS --enable-ipv6=no"
+  use gtk-doc && OPTS="$OPTS --enable-gtk-doc" || OPTS="$OPTS --disable-gtk-doc"
+  use pilot && OPTS="$OPTS --enable-pilot-conduits=yes" || OPTS="$OPTS --enable-pilot-conduits=no"
+  use mono && OPTS="$OPTS --enable-mono=yes" || OPTS="$OPTS --enable-mono=no"
+  use static && OPTS="$OPTS --enable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/lib \
+	      --localstatedir=/var/lib \
+	      --with-openldap=yes \
+	      --enable-nss=yes \
+	      --enable-smime=yes \
+	      --enable-plugins=all \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  ln -s evolution-2.2 $PKG/opt/gnome/bin/evolution
+  
+  install_docs AUTHORS COPYING* ChangeLog* INSTALL \
+    HACKING MAINTAINERS NEWS* README
+}

@@ -1,0 +1,65 @@
+#!/bin/bash
+
+pkg_compress_info() {
+  [ "$COMPRESSINFO" = "no" ] && return 0
+  msg_verbose_nnl "compressing info files..."
+  
+  if [ -d $PKG/usr/info ] && [ ! "$NAME" = "filesystem" ]
+  then
+    mkdir -p $PKG/usr/share/info
+    mv $PKG/usr/info/* $PKG/usr/share/info/ 2>/dev/null
+    chmod 0644 $PKG/usr/share/info/* 2>/dev/null
+    rm -rf $PKG/usr/info
+  fi
+  
+  for FILE in `find $PKG -path "*/info/*" -type f -name '*.info*' 2>/dev/null`
+  do
+    local EXT=${FILE##*.}
+    if [ ! "$EXT" = "gz" ]
+    then
+      gzip -f -9 $FILE
+    fi
+  done
+
+  rm -f $PKG/usr/share/info/{startdards.info,startdards.info.gz,dir}
+  msg_done_verbose
+}
+
+pkg_compress_man() {
+  [ "$COMPRESSMAN" = "no" ] && return 0
+  msg_verbose_nnl "compressing man pages..."
+  
+  if [ -d $PKG/usr/man ] && [ ! "$NAME" = "filesystem" ]
+  then
+    mkdir -p $PKG/usr/share/man
+    for DIR in `find $PKG/usr/man -type d`
+    do
+      if [ "${DIR##*/}" != "man" ]
+      then
+        mkdir -p $PKG/usr/share/man/${DIR##*/}
+        mv $DIR/* $PKG/usr/share/man/${DIR##*/} 2>/dev/null
+	chmod 0644 $PKG/usr/share/man/${DIR##*/}/* 2>/dev/null
+      fi
+    done
+    rm -rf $PKG/usr/man
+  fi
+  
+  for FILE in `find $PKG -path "*/man?/*" -type f 2>/dev/null`
+  do
+    local NAME=${FILE##*/}
+    local EXT=${FILE##*.}
+    local NAME=${NAME%%.gz}
+
+    if [ ! "$EXT" = "gz" ]
+    then
+      for LN in `find $PKG -path "*/man?/*" -lname $NAME 2>/dev/null`
+      do
+        rm -f $LN
+        ln -sf ${NAME}.gz $LN
+      done
+
+      gzip -f -9 $FILE
+    fi
+  done
+  msg_done_verbose
+}

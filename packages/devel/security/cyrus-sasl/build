@@ -1,0 +1,50 @@
+NAME=cyrus-sasl
+VERSION=2.1.20
+ARCH=i686
+RELEASE=1
+URL="http://asg.web.cmu.edu/sasl/"
+DESC="An implemention of the SASL API, useful for authentication, authorization, and security."
+GROUP=security
+LICENSE="BSDL"
+SIZE="1733K"
+HUSE="static mysql pgsql ldap"
+
+SOURCES="http://ftp.andrew.cmu.edu/pub/cyrus-mail/cyrus-sasl-2.1.20.tar.gz
+         saslauthd.init saslauthd.sysconf"
+
+BACKUPS="etc/conf.d/saslauthd"
+
+RUNTIME=">=openssl-0.9.7e db gdbm"
+
+use mysql && RUNTIME="$RUNTIME mysql"
+use pgsql && RUNTIME="$RUNTIME postgresql"
+use ldap && RUNTIME="$RUNTIME openldap"
+have sqlite && RUNTIME="$RUNTIME sqlite"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use mysql && OPTS="$OPTS --with-mysql" || OPTS="$OPTS --without-mysql"
+  use pgsql && OPTS="$OPTS --with-pgsql" || OPTS="$OPTS --without-pgsql"
+  use ldap && OPTS="$OPTS --with-ldap" || OPTS="$OPTS --without-ldap"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --mandir=/usr/share/man \
+	      --with-dbpath=/var/lib/sasl/sasldb2 \
+	      --with-saslauthd=/var/run \
+	      --enable-krb4=no \
+	      --with-pam=no \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -m 0644 saslauthd/saslauthd.mdoc $PKG/usr/share/man/man8/saslauthd.8
+  
+  install -D -m 0700 ../saslauthd.init $PKG/etc/rc.d/saslauthd
+  install -D -m 0644 ../saslauthd.sysconf $PKG/etc/conf.d/saslauthd
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README*
+}

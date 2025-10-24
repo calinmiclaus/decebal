@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# /etc/rc.d/sshd - Control file for the OpenBSD SSH Daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/sshd
+
+[ -r /etc/ssh/sshd_config ] || return 1
+
+depends=""
+conflicts="ssh-comercial"
+pidfile="/var/run/sshd.pid"
+
+generate_ssh_keys() {
+  if [ ! -r /etc/ssh/ssh_host_key ]
+  then
+    /usr/bin/ssh-keygen -t rsa1 -f /etc/ssh/ssh_host_key -N "" &>/dev/null
+  fi
+  if [ ! -r /etc/ssh/ssh_host_dsa_key ]
+  then
+    /usr/bin/ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N "" &>/dev/null
+  fi
+  if [ ! -r /etc/ssh/ssh_host_rsa_key ]
+  then
+    /usr/bin/ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N "" &>/dev/null
+  fi
+}
+
+case "$1" in
+  start)
+    msg "Starting the OpenSSH daemon"
+    generate_ssh_keys
+    start_service /usr/sbin/sshd $SSHD_OPTS
+    ;;
+  stop)
+    msg "Stopping the OpenSSH daemon"  
+    stop_service /usr/sbin/sshd
+    ;;
+  reload)
+    msg "Reloading the OpenSSH daemon"
+    reload_service /usr/sbin/sshd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/sshd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

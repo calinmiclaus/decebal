@@ -1,0 +1,28 @@
+NAME=libgringotts
+VERSION=1.2.1
+ARCH=i686
+RELEASE=1
+URL="http://devel.pluto.linux.it/projects/libGringotts/index.php"
+DESC="A small, easy-to-use, thread-safe C library originally developed for Gringotts."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="163K"
+HUSE="static"
+
+SOURCES="http://devel.pluto.linux.it/projects/libGringotts/current/libgringotts-1.2.1.tar.bz2"
+
+RUNTIME="libmcrypt mhash zlib bzip2 xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --with-x $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

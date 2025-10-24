@@ -1,0 +1,12 @@
+md5: 93d9c51850e0513aa4846ac0ddcef639 glibc-2.3.5.tar.bz2
+md5: 77011b0898393c56b799bc011a0f37bf glibc-linuxthreads-2.3.5.tar.bz2
+md5: 86ae1273e22af8766297ec21c0232743 glibc-libidn-2.3.5.tar.bz2
+md5: c344b8657bfde990f802ea8d2cc61e9f glibc-2.3.5-headers.diff
+md5: 72e7067ce1d6d0ccae5d63f1fcdeeb52 glibc-2.3.5-pax.diff
+md5: 486cbc62f4489e4eaeac692e39c07c5c glibc-2.3.5-pax-support.diff
+md5: 0e27dbd2a3b85a0e14625294296fad9a glibc-2.3.2-propolice-guard-functions-v3.patch
+md5: f603b84e6ec61dd002ab8bcf80fd493f glibc-2.3.5-frandom.diff
+md5: ae9425cd4199cccd69c6d22633583dc1 ssp.c
+md5: 0dacadd500abe70ed7875e83f8ef7574 nscd.conf
+md5: 1dc8a05cf3952f51ce7fb45d0f2f440c nscd.init
+md5: 4ee23e54a8b5f16b1ac27974fa2ea84f ld.so.conf

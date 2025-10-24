@@ -1,0 +1,36 @@
+NAME=pan
+VERSION=0.14.2.91
+ARCH=i686
+RELEASE=1
+URL="http://pan.rebelbase.com/"
+DESC="A Newsreader for GNOME."
+GROUP=network
+LICENSE="GPLv2"
+SIZE="1874K"
+
+SOURCES="http://pan.rebelbase.com/download/releases/0.14.2.91/SOURCE/pan-0.14.2.91.tar.bz2"
+
+BUILDTIME=">=intltool-0.21 gettext"
+
+RUNTIME=">=glib2-2.2.0 >=gtk2-2.2.0 >=libxml2-2.4.22 >=pcre-4.0 >=gnet-2.0.4 >=gtkspell-2.0.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  export PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig"
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 $PKG/usr/share/gnome/apps/Internet/pan.desktop \
+    $PKG/usr/share/applications/pan.desktop
+  
+  echo "Categories=Application;Network;" >> $PKG/usr/share/applications/pan.desktop
+    
+  rm -rf $PKG/usr/share/gnome
+  
+  install_docs ANNOUNCE.html AUTHORS COPYING CREDITS ChangeLog \
+    INSTALL NEWS README* TODO
+}
+

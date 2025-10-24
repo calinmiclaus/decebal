@@ -1,0 +1,45 @@
+#
+# ~/.xsession - Xorg session configuration file
+#
+
+# This is the Window Manager that will be used.
+# Possible values:
+#
+# xfce
+# gnome
+# kde
+# blackbox
+# fluxbox
+# windowmaker
+
+WINDOWMANAGER=
+
+error() {
+  echo
+  echo "Could not find the $MESSAGE. Please check"
+  echo "root rights and location ($FILE)."
+  echo
+  echo "Sleeping 5 seconds..."
+  echo
+  exit 1
+}
+
+case "$WINDOWMANAGER" in
+  kdm|kde|KDM|KDE)
+    MESSAGE="KDE Window Manager"
+    FILE=/etc/X11/xinit/xinitrc.kde
+    [ -x $FILE ] || error
+    ;;
+  gdm|gnome|GDM|GMNOME)
+    MESSAGE="GNOME Window Manager"
+    FILE=/etc/X11/xinit/xinitrc.gnome
+    [ -x $FILE ] || error
+    ;;
+  xfce|XFCE)
+    MESSAGE="XFCE Window Manager"
+    FILE=/etc/X11/xinit/xinitrc.xfce
+    [ -x $FILE ] || error
+    ;;
+esac
+
+startx ${FILE##*.}

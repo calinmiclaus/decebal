@@ -1,0 +1,12 @@
+prefix=/usr
+exec_prefix=\${prefix}
+includedir=\${prefix}/include
+libdir=\${exec_prefix}/lib
+interpreter=\${exec_prefix}/bin/lua
+compiler=\${exec_prefix}/bin/luac
+
+Name: Lua
+Description: An extension programming language
+Version: ${PV}
+Cflags: -I\${includedir}
+Libs: -L\${libdir} -llua -llualib -ldl -lm

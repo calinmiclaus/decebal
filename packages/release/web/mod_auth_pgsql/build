@@ -1,0 +1,27 @@
+NAME=mod_auth_pgsql
+VERSION=2.0.2b1
+ARCH=i686
+RELEASE=1
+URL="http://www.giuseppetanzilli.it/mod_auth_pgsql2"
+DESC="Allows Apache authentication against information stored in a PostgreSQL database."
+GROUP=web
+LICENSE="PUBLIC"
+SIZE="15K"
+
+SOURCES="http://www.giuseppetanzilli.it/mod_auth_pgsql2/dist/mod_auth_pgsql-2.0.2b1.tar.gz
+         mod_auth_pgsql.conf"
+
+BACKUPS="etc/httpd/mod.d/mod_auth_pgsql.conf"
+
+RUNTIME="postgresql apache"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  /usr/sbin/apxs -c -I /usr/include/postgresql -L /usr/lib/postgresql -lpq mod_auth_pgsql.c
+  
+  install -D -m 0755 .libs/mod_auth_pgsql.so $PKG/usr/lib/modules/httpd/mod_auth_pgsql.so
+  install -D -m 0644 ../mod_auth_pgsql.conf $PKG/etc/httpd/mod.d/mod_auth_pgsql.conf
+  
+  install_docs INSTALL README TODO mod_auth_pgsql.html
+}

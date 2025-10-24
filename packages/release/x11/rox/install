@@ -1,0 +1,14 @@
+post_install() {
+  /ust/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
+}
+
+post_upgrade() {
+  /ust/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
+}
+
+post_remove() {
+  /ust/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
+}

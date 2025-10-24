@@ -1,0 +1,26 @@
+NAME=f4lm
+VERSION=0.1
+ARCH=i686
+RELEASE=1
+URL="http://f4l.sourceforge.net/"
+DESC="Flash For Linux (F4L)."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="560K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/f4l/f4lm-0.1.tar.gz"
+
+RUNTIME="qt"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+	
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    README TODO
+}
+
+	      

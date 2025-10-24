@@ -1,0 +1,31 @@
+NAME=bootsplash
+VERSION=3.2
+ARCH=i686
+RELEASE=1
+URL="http://www.bootsplash.org/"
+DESC="a"
+GROUP=graphics
+LICENSE=GPLv2
+
+SOURCES="http://www.bootsplash.de/files/splashutils/bootsplash-3.2.tar.bz2
+         Makefile.diff"
+
+RUNTIME="libmng lcms"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../Makefile.diff
+  
+  cd Utilities
+
+  make
+ 
+  install -D -m 0755 fbmngplay $PKG/sbin/fbmngplay
+  install -m 0755 fbresolution $PKG/sbin/fbresolution
+  install -m 0755 fbtruetype $PKG/sbin/fbtruetype
+  install -m 0755 splash $PKG/sbin/splash
+  install -m 0755 splashpbm $PKG/sbin/splashpbm
+ 
+  install_docs COPYING README*
+}

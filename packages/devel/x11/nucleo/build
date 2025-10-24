@@ -1,0 +1,26 @@
+NAME=nucleo
+VERSION=0.1_20041216
+ARCH=i686
+RELEASE=1
+URL="http://insitu.lri.fr/~chapuis/metisse/"
+DESC="A toolking for exploring new uses of video and new human-computer interaction techniques."
+GROUP=x11
+LICENSE="LGPLv2.1 BSDL"
+SIZE="687K"
+
+SOURCES="http://insitu.lri.fr/~chapuis/software/metisse/nucleo-0.1-20041216.tar.bz2
+         nucleo.sh"
+
+RUNTIME="xorg"
+
+build() {
+  cd $SRC/$NAME-0.1
+  
+  ./configure --prefix=/opt/metisse
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../nucleo.sh $PKG/etc/profile.d/nucleo.sh
+  
+  install_docs AUTHORS COPYING.LESSER ChangeLog INSTALL LICENSE NEWS README
+}

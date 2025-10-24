@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# /etc/rc.d/famd
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/famd
+
+pidfile="/var/run/famd.pid"
+
+case "$1" in
+  start)
+    depend portmap
+    msg "Starting the FAM daemon"
+    start_service /usr/sbin/famd -T 0 $FAMD_OPTS
+    ;;
+  stop)
+    msg "Stopping the FAM daemon"
+    stop_service /usr/sbin/famd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/famd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

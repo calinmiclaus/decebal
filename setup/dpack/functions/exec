@@ -1,0 +1,44 @@
+#!/bin/bash
+
+pkg_exec() {
+ if ! declare -f $1 >/dev/null 2>&1
+ then
+   # Function $1 is not defined.
+   return 1
+ fi
+ 
+ msg_verbose_nnl "executing ${1}..."
+ 
+ if [ "$PKG_ROOT" = "" ]
+ then
+   $1 >/dev/null 2>&1
+   if [ $? -eq 0 ]
+   then
+     msg_ok_verbose
+   else
+     msg_failed_verbose
+   fi
+ else
+   [ -d $PKG_ROOT/tmp ] && local CREATED=0 || local CREATED=1
+   CHROOT_TMP=/tmp/${1}.$$
+   mkdir -p ${PKG_ROOT}${CHROOT_TMP}
+   
+   # Create a script that will be executed in chroot.
+   echo '#!/bin/bash' > ${PKG_ROOT}${CHROOT_TMP}/script
+   echo "source /etc/profile >/dev/null 2>&1" >> ${PKG_ROOT}${CHROOT_TMP}/script
+   declare -f $1 >> ${PKG_ROOT}${CHROOT_TMP}/script
+   echo "$1 >/dev/null 2>&1" >> ${PKG_ROOT}${CHROOT_TMP}/script
+   
+   chmod 700 ${PKG_ROOT}${CHROOT_TMP}/script
+   
+   chroot $PKG_ROOT $CHROOT_TMP/script >/dev/null 2>&1
+   if [ $? -eq 0 ]
+   then
+     msg_ok_verbose
+   else
+     msg_failed_verbose
+   fi
+   
+   [ "$CREATED" = "0" ] && rm -rf ${PKG_ROOT}${CHROOT_TMP} || rm -rf $PKG_ROOT/tmp
+ fi
+}

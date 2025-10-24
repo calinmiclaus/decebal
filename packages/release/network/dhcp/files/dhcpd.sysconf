@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/dhcpd - configuration file for /etc/rc.d/dhcpd
+#
+
+# Additional dhcpd arguments.
+DHCP_OPTS="-q"

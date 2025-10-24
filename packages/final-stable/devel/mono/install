@@ -1,0 +1,24 @@
+post_install() {
+  if ! grep -q '/opt/mono/lib' /etc/ld.so.conf
+  then
+    echo "/opt/mono/lib" >> /etc/ld.so.conf
+  fi
+  /sbin/ldconfig &>/dev/null
+}
+
+post_upgrade() {
+  if ! grep -q '/opt/mono/lib' /etc/ld.so.conf
+  then
+    echo "/opt/mono/lib" >> /etc/ld.so.conf
+  fi
+  /sbin/ldconfig &>/dev/null
+}
+
+post_remove() {
+  if grep -q '/opt/mono/lib' /etc/ld.so.conf
+  then
+    grep -v '/opt/mono/lib' /etc/ld.so.conf > /tmp/ld.so.conf
+    mv /tmp/ld.so.conf /etc/ld.so.conf
+  fi
+  /sbin/ldconfig &>/dev/null
+}

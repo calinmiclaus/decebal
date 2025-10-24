@@ -1,0 +1,28 @@
+NAME=libgtkhtml
+VERSION=2.6.3
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A HTML library for GTK and GNOME."
+GROUP=gnome
+LICENSE="LGPLv2.1"
+SIZE="382K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/libgtkhtml-2.6.3.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="gnome-vfs gail"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome $OPTS
+  make 
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING.LIB ChangeLog INSTALL NEWS README TODO
+}

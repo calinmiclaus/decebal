@@ -1,0 +1,28 @@
+NAME=at-spi
+VERSION=1.6.3
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="Gnome Accessibility Project."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="484K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/at-spi-1.6.3.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="gail libbonobo"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --localstatedir=/var/lib
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

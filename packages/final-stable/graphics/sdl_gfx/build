@@ -1,0 +1,29 @@
+NAME=sdl_gfx
+VERSION=2.0.13
+ARCH=i686
+RELEASE=1
+URL="http://www.ferzkopp.net/~aschiffler/Software/SDL_gfx-2.0/"
+DESC="SDL graphics drawing primitives and other support functions."
+GROUP=graphics
+LICENSE="GLGPLv2.1"
+SIZE="584K"
+HUSE="static"
+
+SOURCES="http://www.ferzkopp.net/~aschiffler/Software/SDL_gfx-2.0/SDL_gfx-2.0.13.tar.gz"
+
+RUNTIME="libsdl"
+
+build() {
+  cd $SRC/SDL_gfx-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --enable-mmx \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL LICENSE \
+    NEWS README*
+}

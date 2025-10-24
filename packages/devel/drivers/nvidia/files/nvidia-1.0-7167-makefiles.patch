@@ -1,0 +1,55 @@
+diff -urN NVIDIA-Linux-x86-1.0-7167-pkg0.orig/Makefile NVIDIA-Linux-x86-1.0-7167-pkg0/Makefile
+--- NVIDIA-Linux-x86-1.0-7167-pkg0.orig/Makefile	2005-02-25 11:37:03.000000000 -0600
++++ NVIDIA-Linux-x86-1.0-7167-pkg0/Makefile	2005-03-11 15:45:00.845755920 -0600
+@@ -95,4 +95,4 @@
+ 	@echo -n "      "
+ 	cp -r usr/share/doc/* ${DOCDIR}
+ 	@echo -n "      "
+-	/sbin/ldconfig
++	#/sbin/ldconfig
+diff -urN NVIDIA-Linux-x86-1.0-7167-pkg0.orig/usr/src/nv/Makefile.kbuild NVIDIA-Linux-x86-1.0-7167-pkg0/usr/src/nv/Makefile.kbuild
+--- NVIDIA-Linux-x86-1.0-7167-pkg0.orig/usr/src/nv/Makefile.kbuild	2005-02-25 11:37:02.000000000 -0600
++++ NVIDIA-Linux-x86-1.0-7167-pkg0/usr/src/nv/Makefile.kbuild	2005-03-11 15:46:51.443942440 -0600
+@@ -259,10 +259,12 @@
+ #
+ 
+ suser-sanity-check:
+-	@if ! $(CONFTEST) suser_sanity_check; then exit 1; fi
++	@echo "Skipped..."
++	#@if ! $(CONFTEST) suser_sanity_check; then exit 1; fi
+ 
+ rmmod-sanity-check:
+-	@if ! $(CONFTEST) rmmod_sanity_check; then exit 1; fi
++	@echo "Skipped..."
++	#@if ! $(CONFTEST) rmmod_sanity_check; then exit 1; fi
+ 
+ gcc-sanity-check:
+ 	@if ! $(CONFTEST) cc_sanity_check full_output; then exit 1; fi
+@@ -297,9 +299,10 @@
+ #
+ 
+ module-install: suser-sanity-check module
+-	@mkdir -p $(MODULE_ROOT)/video; \
+-	install -m 0664 -o root -g root $(MODULE_OBJECT) $(MODULE_ROOT)/video; \
+-	PATH="$(PATH):/bin:/sbin" depmod -ae;
++	@echo "Skipped..."
++	#@mkdir -p $(MODULE_ROOT)/video; \
++	#install -m 0664 -o root -g root $(MODULE_OBJECT) $(MODULE_ROOT)/video; \
++	#PATH="$(PATH):/bin:/sbin" depmod -ae;
+ 
+ #
+ # This target builds, then installs, then creates device nodes and inserts
+@@ -307,9 +310,10 @@
+ #
+ 
+ package-install: module-install rmmod-sanity-check
+-	@sh makedevices.sh; \
+-	PATH="$(PATH):/bin:/sbin" modprobe $(MODULE_NAME) && \
+-	echo "$(MODULE_OBJECT) installed successfully.";
++	@echo "Skipped..."
++	#@sh makedevices.sh; \
++	#PATH="$(PATH):/bin:/sbin" modprobe $(MODULE_NAME) && \
++	#echo "$(MODULE_OBJECT) installed successfully.";
+ 
+ #
+ # Build an object file suitable for further processing by the installer and

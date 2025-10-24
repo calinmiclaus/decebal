@@ -1,0 +1,22 @@
+NAME=ccache
+VERSION=2.4
+ARCH=i686
+RELEASE=1
+URL="http://ccache.samba.org/"
+DESC="A C compiler cache system."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="84K"
+
+SOURCES="http://ccache.samba.org/ftp/ccache/ccache-2.4.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING README
+}

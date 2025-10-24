@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/squid - configuration file for /etc/rc.d/squid
+#
+
+# Additional squid opts.
+SQUID_OPTS="-D -sYC"

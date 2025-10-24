@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Comment=High quality TV player
+Icon=/usr/share/pixmaps/xawtv.png
+Exec=xawtv
+Name=TVtime Television Viewer
+GenericName=Television Viewer
+Terminal=false
+Type=Application
+Categories=Application;AudioVideo;

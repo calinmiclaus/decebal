@@ -1,0 +1,96 @@
+diff -u -r xc.orig/lib/Xaw3d/Imakefile xc/lib/Xaw3d/Imakefile
+--- xc.orig/lib/Xaw3d/Imakefile	Tue Oct 15 07:41:19 1996
++++ xc/lib/Xaw3d/Imakefile	Mon Feb 25 17:03:05 2002
+@@ -1,5 +1,6 @@
+ XCOMM $XConsortium: Imakefile,v 1.78 91/09/18 14:28:23 rws Exp $
+-
++#undef ForceNormalLib
++#define ForceNormalLib YES
+ #define DoNormalLib NormalLibXaw
+ #define DoSharedLib SharedLibXaw
+ #define DoDebugLib DebugLibXaw 
+diff -u -r xc.orig/lib/Xaw3d/List.c xc/lib/Xaw3d/List.c
+--- xc.orig/lib/Xaw3d/List.c	Tue Oct 15 07:41:20 1996
++++ xc/lib/Xaw3d/List.c	Mon Feb 25 17:03:24 2002
+@@ -37,6 +37,7 @@
+  */
+ 
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <ctype.h>
+ 
+ #include <X11/IntrinsicP.h>
+diff -u -r xc.orig/lib/Xaw3d/MultiSink.c xc/lib/Xaw3d/MultiSink.c
+--- xc.orig/lib/Xaw3d/MultiSink.c	Tue Oct 15 07:41:20 1996
++++ xc/lib/Xaw3d/MultiSink.c	Mon Feb 25 17:03:24 2002
+@@ -81,6 +81,7 @@
+ #include <X11/Xaw3d/TextP.h>
+ #include "XawI18n.h"
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <ctype.h>
+ 
+ #ifdef GETLASTPOS
+diff -u -r xc.orig/lib/Xaw3d/Scrollbar.c xc/lib/Xaw3d/Scrollbar.c
+--- xc.orig/lib/Xaw3d/Scrollbar.c	Tue Oct 15 07:41:21 1996
++++ xc/lib/Xaw3d/Scrollbar.c	Mon Feb 25 17:02:46 2002
+@@ -1178,7 +1178,11 @@
+     Cardinal *num_params;	/* unused */
+ {
+     register ScrollbarWidget sbw = (ScrollbarWidget) w;
+-    float top = sbw->scrollbar.top;
++    union {
++	XtPointer pt;
++	float	  top;
++    } foo;
++    foo.top = sbw->scrollbar.top;
+ 
+ #ifndef ARROW_SCROLLBAR
+     if (sbw->scrollbar.direction == 0) return; /* if no StartScroll */
+@@ -1204,10 +1208,10 @@
+        there is no problem since in this case there is always a constant
+        integer number of pixels the thumb must be moved in order to scroll
+        to the next line/column. */
+-    top += 0.0001;
++    foo.top += 0.0001;
+ #endif
+-    XtCallCallbacks (w, XtNthumbProc, *(XtPointer*)&top);
+-    XtCallCallbacks (w, XtNjumpProc, (XtPointer)&top);
++    XtCallCallbacks (w, XtNthumbProc, foo.pt);
++    XtCallCallbacks (w, XtNjumpProc, (XtPointer)&sbw->scrollbar.top);
+ }
+ 
+ 
+diff -u -r xc.orig/lib/Xaw3d/Text.c xc/lib/Xaw3d/Text.c
+--- xc.orig/lib/Xaw3d/Text.c	Thu May 14 12:03:24 1998
++++ xc/lib/Xaw3d/Text.c	Mon Feb 25 17:03:24 2002
+@@ -71,6 +71,7 @@
+ 
+ #include <X11/Xfuncs.h>
+ #include <ctype.h>		/* for isprint() */
++#include <stdlib.h>		/* for abs() */
+ 
+ #ifndef MAX_LEN_CT
+ #define MAX_LEN_CT 6		/* for sequence: ESC $ ( A \xx \xx */
+diff -u -r xc.orig/lib/Xaw3d/XawI18n.h xc/lib/Xaw3d/XawI18n.h
+--- xc.orig/lib/Xaw3d/XawI18n.h	Tue Oct 15 07:41:26 1996
++++ xc/lib/Xaw3d/XawI18n.h	Mon Feb 25 17:02:05 2002
+@@ -27,12 +27,18 @@
+ 
+ ********************************************************/
+ 
++#if 0
+ #ifdef HAS_WCTYPE_H
+ #include <wctype.h>
++#if !defined(__linux__)
+ #include <widec.h>
++#endif
++#endif
+ #define wcslen(c) wslen(c)
+ #define wcscpy(d,s) wscpy(d,s)
+ #define wcsncpy(d,s,l) wsncpy(d,s,l)
++#if 0
++#endif
+ #endif
+ 
+ #ifdef HAS_WCHAR_H

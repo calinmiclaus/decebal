@@ -1,0 +1,41 @@
+NAME=gnome-session
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="The GNOME Session Manager."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2.1 FDLv1.1"
+SIZE="1186K"
+HUSE="ipv6 x static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-session-2.10.0.tar.bz2
+	 gnome-splash.png"
+
+BUILDTIME="intltool"
+
+RUNTIME="libgnomeui tcp-wrappers"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6"
+  use x && OPTS="$OPTS --with-x"
+  use static || OPTS="$OPTS --disable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      --with-window-manager=gnome \
+	      --with-reboot-command="reboot" \
+	      --with-halt-command="halt" \
+	      --with-rsh-command="ssh" $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  cp -f $SRC/gnome-splash.png $PKG/opt/gnome/share/pixmaps/splash/
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL HACKING \
+    NEWS README
+}

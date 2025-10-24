@@ -1,0 +1,40 @@
+NAME=pingus
+VERSION=0.6.0
+ARCH=i686
+RELEASE=1
+URL="http://pingus.seul.org/"
+DESC="A free Lemmings clone for GNU/Linux."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="9360K"
+HUSE="nls"
+
+SOURCES="http://pingus.seul.org/files/pingus-0.6.0.tar.bz2
+         pingus-0.6.0-gcc3.patch
+	 pingus-0.6.0-gcc34.patch"
+
+RUNTIME="=clanlib-0.6.5 libxml2 >=hermes-1.3.2"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../pingus-0.6.0-gcc3.patch
+  patch -p0 < ../pingus-0.6.0-gcc34.patch
+  
+  use nls || OPTS="--disable-nls"
+  
+  ./configure --bindir=/usr/games/bin \
+	      --datadir=/usr/games/share \
+	      --mandir=/usr/games/share/man \
+              --with-clanGL $OPTS
+	      
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 $PKG/usr/games/pingus $PKG/usr/games/bin/pingus
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL* \
+    NEWS README* TODO
+}

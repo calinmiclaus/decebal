@@ -1,0 +1,6 @@
+md5: 3aff94e92186e99ed5fd6dcee2db7c74 acpid-1.0.4.tar.gz
+md5: 73d7994e62cb104a40058b4e26e1e84e acpid.init
+md5: 18928eb57a27f1c380fedef447c54c87 acpid.sysconf
+md5: 8f19e6501239502405a6eb49695ef4be acpi_handler.sh
+md5: 9c3da3ee5943df7b32f684d2d74a22ef shutdown
+md5: aad3600089f8a61b010d36e0e3f7da17 sleep

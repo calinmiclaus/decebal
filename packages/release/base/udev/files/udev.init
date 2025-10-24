@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# /etc/rc.d/udev - create initial needed device files in /dev
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    export ACTION=add
+    export DEVPATH=/sys
+    export UDEV_NO_SLEEP=1
+		
+    msg "Creating initial device nodes"
+    [ -f /dev/.udev.tdb ] && rm -f /dev/.udev.tdb
+	
+    # This is needed if something else populated /dev (makdev..)
+    mount -n -t ramfs ramfs /dev
+	
+    run udevstart
+        
+    # Create extra nodes that are not handled by udev.
+    ln -snf /proc/self/fd /dev/fd
+    ln -snf /proc/self/fd/0 /dev/stdin
+    ln -snf /proc/self/fd/1 /dev/stdout
+    ln -snf /proc/self/fd/2 /dev/stderr
+    ln -snf /proc/kcore /dev/core
+
+    mkdir -p /dev/{pts,shm}
+
+    mknod -m 660 /dev/nvidia0 c 195 0
+    mknod -m 660 /dev/nvidia1 c 195 1
+    mknod -m 660 /dev/nvidiactl c 195 255
+    chown root.video /dev/nvidia*
+
+    mknod -m 660 /dev/ppp c 108 0
+    ;;
+  stop)
+    export ACTION=remove
+    export DEVPATH=/sys
+	
+    msg "Removing device nodes"
+    run udevstart
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    [ -e /dev/.udev.tdb ] && return 0 || return 1
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

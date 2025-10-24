@@ -1,0 +1,9 @@
+[Desktop Entry]
+Exec=gkrellm
+Icon=/usr/share/icons/gkrellm.ico
+Terminal=false
+Type=Application
+Categories=Application;System;
+StartupNotify=true
+Encoding=UTF-8
+Name=Gkrellm

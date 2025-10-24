@@ -1,0 +1,36 @@
+NAME=xfce4-taskmanager
+VERSION=0.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A small taskmanager based on the Xfce 4 libraries."
+GROUP=xfce-extra
+LICENSE="GPLv2"
+SIZE="313K"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-taskmanager-0.2.1.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=gtk2-2.4 >=glib2-2.4 >=libxfcegui4-4.1 procps"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+   
+  aclocal
+  autoconf
+  automake --add-missing --gnu 
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+  	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+

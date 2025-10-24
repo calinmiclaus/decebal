@@ -1,0 +1,53 @@
+#
+# /etc/conf.d/modules
+#
+# This file contains a list of modules, uncommeting one module
+# will make it load at boot time. If you want to add options to one
+# module, just add them as you normally would do when manually loading
+# that module. If you need any other modules that are not in this list
+# and the kernel doesnt load them automatically then add them here.
+#
+# NOTE: hotplug will detect almost all your PCI and USB hardware.
+#
+
+# Advanced Power Management (APM) support:
+# apm
+
+# Real Time Clock (RTC) driver support:
+rtc
+
+# Mouse support:
+psmouse
+# atixlmouse
+# busmouse
+# msbusmouse
+# qpmouse
+# pc110pad
+
+# Serial port support:
+8250
+
+# Floppy drive support:
+floppy
+
+# CD Rom support:
+ide_cd
+
+# CD Rw support:
+# ide_scsi
+
+# Parallel port support:
+parport_pc
+
+# Parallel printer support:
+# lp
+
+# Parallel port IP support:
+# plip
+
+# Serial linux IP support:
+# slip
+
+# Quota support:
+# quota_v1
+# quota_v2

@@ -1,0 +1,41 @@
+diff -Naur iproute2-2.6.11-050330/Makefile iproute2-2.6.11-050330.new/Makefile
+--- iproute2-2.6.11-050330/Makefile	2005-04-01 13:58:11.000000000 -0600
++++ iproute2-2.6.11-050330.new/Makefile	2005-04-15 15:38:00.000000000 -0500
+@@ -1,5 +1,5 @@
+ DESTDIR=
+-SBINDIR=/usr/sbin
++SBINDIR=/sbin
+ CONFDIR=/etc/iproute2
+ DOCDIR=/usr/share/doc/iproute2
+ MANDIR=/usr/share/man
+diff -Naur iproute2-2.6.11-050330/netem/Makefile iproute2-2.6.11-050330.new/netem/Makefile
+--- iproute2-2.6.11-050330/netem/Makefile	2005-04-01 13:58:11.000000000 -0600
++++ iproute2-2.6.11-050330.new/netem/Makefile	2005-04-15 15:50:16.000000000 -0500
+@@ -13,9 +13,9 @@
+ all: $(DISTGEN) $(DISTDATA)
+ 
+ install: all
+-	mkdir -p $(DESTDIR)/usr/lib/tc
++	mkdir -p $(DESTDIR)/lib/tc
+ 	for i in $(DISTDATA); \
+-	do install -m 755 $$i $(DESTDIR)/usr/lib/tc; \
++	do install -m 755 $$i $(DESTDIR)/lib/tc; \
+ 	done
+ 
+ clean:
+diff -Naur iproute2-2.6.11-050330/tc/Makefile iproute2-2.6.11-050330.new/tc/Makefile
+--- iproute2-2.6.11-050330/tc/Makefile	2005-04-01 13:58:11.000000000 -0600
++++ iproute2-2.6.11-050330.new/tc/Makefile	2005-04-15 15:49:57.000000000 -0500
+@@ -60,10 +60,10 @@
+ 	$(AR) rcs $@ $(TCLIB)
+ 
+ install: all
+-	mkdir -p $(DESTDIR)/usr/lib/tc
++	mkdir -p $(DESTDIR)/lib/tc
+ 	install -m 0755 -s tc $(DESTDIR)$(SBINDIR)
+ 	for i in $(TCSO); \
+-	do install -m 755 -s $$i $(DESTDIR)/usr/lib/tc; \
++	do install -m 755 -s $$i $(DESTDIR)/lib/tc; \
+ 	done
+ 
+ clean:

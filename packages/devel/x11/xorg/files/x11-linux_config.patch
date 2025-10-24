@@ -1,0 +1,11 @@
+diff -ru xc/programs/Xserver/hw/xfree86/os-support/shared/drm/kernel/drm.h xc-new/programs/Xserver/hw/xfree86/os-support/shared/drm/kernel/drm.h
+--- xc/extras/drm/shared/drm.h.orig	2003-12-06 14:24:28.000000000 +0100
++++ xc/extras/drm/shared/drm.h	2004-04-12 10:20:59.247907648 +0200
+@@ -38,7 +38,6 @@
+ #define _DRM_H_
+ 
+ #if defined(__linux__)
+-#include <linux/config.h>
+ #include <asm/ioctl.h>		/* For _IO* macros */
+ #define DRM_IOCTL_NR(n)		_IOC_NR(n)
+ #define DRM_IOC_VOID		_IOC_NONE

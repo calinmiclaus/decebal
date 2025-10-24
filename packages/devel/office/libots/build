@@ -1,0 +1,30 @@
+NAME=libots
+VERSION=0.4.2
+ARCH=i686
+RELEASE=1
+URL="http://libots.sourceforge.net/"
+DESC="An open source tool for summarizing texts."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="268K"
+HUSE="static gtkdoc"
+
+SOURCES="http://easynews.dl.sourceforge.net/sourceforge/libots/ots-0.4.2.tar.gz"
+
+use gtkdoc && BUILDTIME="gtkdoc"
+
+build() {
+  cd $SRC/ots-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc" || OPTS="$OPTS --disable-gtk-doc"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog HACKING INSTALL \
+    NEWS README TODO
+}
+
+

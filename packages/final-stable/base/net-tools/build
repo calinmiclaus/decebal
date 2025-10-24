@@ -1,0 +1,30 @@
+NAME=net-tools
+VERSION=1.60
+ARCH=i686
+RELEASE=1
+URL="http://www.tazenda.demon.co.uk/phil/net-tools/"
+DESC="The base set of the NET-3 networking distribution for Linux."
+GROUP=base
+LICENSE=GPLv2
+SIZE="259K"
+
+SOURCES="http://ftp.debian.org/debian/pool/main/n/net-tools/net-tools_1.60.orig.tar.gz
+         net-tools.diff net-tools-1.60-config.patch"
+
+BUILDTIME="kernel-headers"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../net-tools.diff
+  patch -p1 < ../net-tools-1.60-config.patch
+  
+  make COPTS="$CFLAGS -D_GNU_SOURCE -Wall" 
+ 
+  make BASEDIR=$PKG mandir=/usr/share/man install
+  
+  install_docs ABOUT-NLS COPYING INSTALLING README README.ipv6 TODO
+}
+  

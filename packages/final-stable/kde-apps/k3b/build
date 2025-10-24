@@ -1,0 +1,24 @@
+NAME=k3b
+VERSION=0.12.2
+ARCH=i686
+RELEASE=1
+DESC="Cd burning interface very simillar to nero."
+URL="http://www.k3b.org/"
+GROUP=kde-apps
+LICENSE="GPLv2"
+SIZE="3682K"
+
+SOURCES="http://puzzle.dl.sourceforge.net/sourceforge/k3b/k3b-0.12.2.tar.bz2"
+
+RUNTIME="kdelibs qt cdrtools cdrdao"
+
+build () { 
+  cd $SRC/$NAME-$VERSION;
+
+  ./configure --prefix=/opt/kde \
+              --enable-final
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog FAQ INSTALL README TODO
+}

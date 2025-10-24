@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# /etc/rc.d/mouse - control file for the GPM daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/mouse
+
+pidfile="/var/run/gpm.pid"
+
+case "$1" in
+  start)
+    if [ -z "$MOUSE_DEVICE" -o -z "$MOUSE_TYPE" ]
+    then
+      echo "Please specify your mouse type and device you want"
+      echo "to use in /etc/conf.d/mouse."
+      exit 1
+    fi
+    msg "Starting the General Purpose Mouse server"
+    start_service /usr/sbin/gpm -m $MOUSE_DEVICE -t $MOUSE_TYPE $GPM_OPTS
+    ;;
+  stop)
+    msg "Stopping the General Purpose Mouse server"
+    stop_service /usr/sbin/gpm
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/gpm
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

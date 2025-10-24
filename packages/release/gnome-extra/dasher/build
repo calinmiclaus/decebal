@@ -1,0 +1,38 @@
+NAME=dasher
+VERSION=3.2.15
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A zooming predictive text entry system, designed for situations where keyboard input is impractical."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="8770K"
+HUSE="qte gpe"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/dasher-3.2.15.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="at-spi libgnomeui gnome-speech libwnck"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  use qte && OPTS="--with-qte"
+  use gpe && OPTS="$OPTS --with-gpe"
+  	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README MAINTAINERS ABOUT-NLS
+}

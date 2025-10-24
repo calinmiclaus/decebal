@@ -1,0 +1,34 @@
+NAME=curl
+VERSION=7.13.2
+ARCH=i686
+RELEASE=1
+URL="http://curl.haxx.se"
+DESC="A command line tool for transfering data specified with URL syntax."
+GROUP=network
+LICENSE=BSDL
+SIZE="1847K"
+HUSE="ipv6 ldap ibdn"
+
+SOURCES="http://curl.haxx.se/download/curl-7.13.2.tar.bz2"
+
+RUNTIME=">=openssl-0.9.7e >=zlib-1.1.4"
+
+use ldap && RUNTIME="$RUNTIME openldap"
+use ibdn && RUNTIME="$RUNTIME libibdn"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+  use ldap && OPTS="$OPTS --enable-ldap" || OPTS="$OPTS --disable-ldap"
+  use ibdn && OPTS="$OPTS --with-libidn" || OPTS="$OPTS --without-libidn"
+  
+  ./configure --prefix=/usr \
+              --with-ssl \
+	      --with-zlib \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES COPYING README RELEASE-NOTES
+}	   

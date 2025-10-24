@@ -1,0 +1,28 @@
+NAME=glitz
+VERSION=0.4.0
+ARCH=i686
+RELEASE=1
+URL="http://cairographics.org/"
+DESC="OpenGL image compositing library."
+GROUP=graphics
+LICENSE="BSDL"
+SIZE="382K"
+HUSE="static"
+
+SOURCES="http://cairographics.org/snapshots/glitz-0.4.0.tar.gz"
+
+RUNTIME="xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

@@ -1,0 +1,38 @@
+NAME=xfce4-panel
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="The XFCE panel."
+GROUP=xfce
+LICENSE=GPLv2
+SIZE="1156K"
+HUSE="nls static debug profile"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/xfce4-panel-4.2.2.tar.gz"
+
+BUILDTIME="gettext >=pkgconfig-0.9.0"
+
+RUNTIME=">=libxml2-2.6.10 >=xfce-mcs-manager-4.2.0 >=startup-notification-0.5 >=libxfcegui4-4.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --localstatedir=/var/opt/xfce \
+	      --with-locales-dir=/usr/share/locale \
+	      --enable-startup-notification \
+	      --enable-final \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO
+}

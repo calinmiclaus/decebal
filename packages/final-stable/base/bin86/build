@@ -1,0 +1,24 @@
+NAME=bin86
+VERSION=0.16.17
+ARCH=i686
+RELEASE=1
+URL="http://www.cix.co.uk/~mayday"
+DESC="A simple assember and linker for 8086 - 80386 machine code."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="148K"
+
+SOURCES="http://www.cix.co.uk/~mayday/dev86/bin86-0.16.17.tar.gz"
+
+RUNTIME="libc"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/{bin,man/man1}
+  
+  make CFLAGS="$CFLAGS -D_POSIX_SOURCE" PREFIX=/usr
+  make PREFIX=$PKG/usr install
+  
+  install_docs ChangeLog README README-0.4 as/COPYING
+}

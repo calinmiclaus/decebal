@@ -1,0 +1,19 @@
+#!/bin/bash
+
+pkg_search() {
+  local INDEX=0  
+ 
+  for PKG in $(find $DATABASEDIR/update/ -type f -name "*$1*" 2>/dev/null)
+  do
+    . $PKG 2>/dev/null
+    echo -e "$UNAME [$UVERSION] \t- $UDESC"
+    INDEX=$(($INDEX + 1))
+    unset UNAME UVERSION UARCH URELEASE UDESC UDEPENDS UMD5SUM
+  done
+  
+  if [ $INDEX -eq 0 ]
+  then
+    echo "No package containing string '$1' could be found. Use 'dupdate sync'"
+    echo "to sync the package update database."
+  fi
+}

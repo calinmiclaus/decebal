@@ -1,0 +1,29 @@
+NAME=mod_python
+VERSION=3.1.4
+ARCH=i686
+RELEASE=1
+URL="http://www.modpython.org/"
+DESC="An Apache module that embeds the Python interpreter within the server."
+GROUP=web
+LICENSE="APACHEv2.0"
+SIZE="301K"
+
+SOURCES="http://apache.iasi.roedu.net/httpd/modpython/mod_python-3.1.4.tgz
+         mod_python.conf"
+
+BACKUPS="etc/httpd/mod.d/mod_python.conf"
+
+RUNTIME="apache python"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --with-apxs=/usr/sbin/apxs
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../mod_python.conf $PKG/etc/httpd/mod.d/mod_python.conf
+  
+  install_docs COPYRIGHT CREDITS LICENSE NEWS \
+    NOTICE README
+}

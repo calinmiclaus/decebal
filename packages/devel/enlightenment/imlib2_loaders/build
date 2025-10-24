@@ -1,0 +1,30 @@
+NAME=imlib2_loaders
+VERSION=1.2.1.004
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="Additional loaders for Imlib2."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="302K"
+HUSE="static nls"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=imlib2_loaders-1.2.1.004.tar.gz
+SOURCES="$NAME-$VERSION.tar.gz"
+
+RUNTIME="=eet-0.9.10.013 >=edb-1.0.5.004 imlib2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README
+}

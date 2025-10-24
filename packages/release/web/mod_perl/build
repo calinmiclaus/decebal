@@ -1,0 +1,32 @@
+NAME=mod_perl
+VERSION=2.0.0RC5
+ARCH=i686
+RELEASE=1
+URL="http://perl.apache.org/"
+DESC="Brings together the full power of the Perl programming language and the Apache HTTP server."
+GROUP=web
+LICENSE="APACHEv2.0"
+SIZE="1397K"
+
+SOURCES="http://perl.apache.org/dist/mod_perl-2.0-current.tar.gz
+         mod_perl.conf"
+
+BACKUPS="etc/httpd/mod.d/mod_perl.conf"
+
+RUNTIME="apache perl"
+
+build() {
+  cd $SRC/$NAME-2.0.0-RC5
+  
+  perl Makefile.PL MP_APXS=/usr/sbin/apxs
+  make
+  make DESTDIR=$PKG install
+  
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \; 
+  
+  install -D -m 0644 ../mod_perl.conf $PKG/etc/httpd/mod.d/mod_perl.conf
+  
+  install_docs INSTALL LICENSE MANIFEST README* \
+    STATUS SVN-MOVE
+}

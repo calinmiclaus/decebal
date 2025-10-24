@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# /etc/rc.d/clock - set or save the system clock from/to the 
+#		           hardware clock	
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    TYPE=`grep "UTC" /var/lib/hwclock/adjtime 2>/dev/null`
+    if [ -n "$TYPE" ]; then
+      msg "Setting system time from the hardware clock"
+      CLOCK="--utc"
+    else
+      msg "Setting system time from the hardware clock"
+      CLOCK="--localtime"
+    fi
+    run hwclock $CLOCK --hctosys
+    ;;
+  stop)
+    TYPE=`grep "UTC" /var/lib/hwclock/adjtime 2>/dev/null`
+    if [ -n "$TYPE" ]; then
+      msg "Saving system time to hardware clock"
+      CLOCK="--utc"
+    else
+      msg "Saving system time to hardware clock"
+      CLOCK="--localtime"
+    fi
+    run hwclock $CLOCK --systohc
+    ;;
+  *)
+    echo "usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac

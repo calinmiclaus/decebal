@@ -1,0 +1,28 @@
+NAME=psmisc
+VERSION=21.6
+ARCH=i686
+RELEASE=1
+URL="http://psmisc.sourceforge.net/"
+DESC="Miscellaneous procfs tools."
+GROUP=base
+LICENSE=GPLv2
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/psmisc/psmisc-21.6.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --exec-prefix=/
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/bin
+  
+  mv $PKG/bin/pstree* $PKG/usr/bin/
+  ln -sf pstree $PKG/usr/bin/pstree.x11
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

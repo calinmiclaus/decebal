@@ -1,0 +1,43 @@
+NAME=gamin
+VERSION=0.1.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/~veillard/gamin/"
+DESC="A file and directory monitoring system defined to be a subset of the FAM system."
+GROUP=gnome
+LICENSE="LGPLv2.1"
+SIZE="486K"
+HUSE="gtkdoc static debug"
+
+SOURCES="http://www.gnome.org/~veillard/gamin/sources/gamin-0.1.0.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME="glib2 python"
+
+CONFLICTS="fam"
+
+REPLACES="fam"
+
+PROVIDES="fam"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc" || OPTS="--disable-gtk-doc"
+  use debug && OPTS="$OPTS --enable-debug --enable-debug-api"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/usr/lib
+  mv $PKG/opt/gnome/lib/python2.4 $PKG/usr/lib/
+  
+  install_docs AUTHORS COPYING ChangeLog Copyright INSTALL \
+    NEWS README TODO
+}

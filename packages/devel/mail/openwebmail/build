@@ -1,0 +1,47 @@
+NAME=openwebmail
+VERSION=2.51
+ARCH=noarch
+RELEASE=1
+URL="http://www.openwebmail.org/"
+DESC="A webmail system based on the Neomail version 1.14."
+GROUP=mail
+LICENSE=GPLv2
+
+SOURCES="http://www.openwebmail.org/openwebmail/download/release/openwebmail-2.51.tar.gz
+         http://www.openwebmail.org/openwebmail/doc/readme.txt
+         auth_unix.conf dbm.conf openwebmail.conf"
+
+RUNTIME="io-socket-ssl-perl
+	 text-iconv-perl
+	 mime-base64-perl
+	 libnet-perl
+	 digest-md5-perl
+	 compress-zlib-perl
+	 perl"
+
+use viruscheck && RUNTIME="$RUNTIME clamav"
+use spamcheck && RUNTIME="$RUNTIME mail-spamassasin"
+
+build() {
+  if [ ! -x /usr/bin/suidperl ]
+  then
+    echo "You dont seem to have suidperl support."
+    echo "FIX: recompile perl with suidperl support (USE="suidperl" dsrc -vR perl"
+    exit 1
+  fi
+  
+  cd $SRC
+  
+  mkdir -p $PKG/srv/www/{cgi-bin,htdocs}
+  
+  cp -a cgi-bin/openwebmail $PKG/srv/www/cgi-bin
+  cp -a data/openwebmail $PKG/srv/www/htdocs
+  
+  rm -f $PKG/src/www/cgi-bin/openwebmail/{dbm.conf,auth_unix.conf openwebmail.conf}
+  
+  install -m 0644 auth_unix.conf $PKG/srv/www/cgi-bin/openwebmail/auth_unix.conf
+  install -m 0644 dbm.conf $PKG/srv/www/cgi-bin/openwebmail/dbm.conf
+  install -m 0644 openwebmail.conf $PKG/srv/www/cgi-bin/openwebmail/openwebmail.conf
+  
+  install -D -m 0644 readme.txt $PKG/usr/share/doc/$NAME-$VERSION
+}

@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/clamd - configuration file for /etc/rc.d/clamd
+#
+
+# Do you want to start freshclam?
+STARTFRESHCLAM=yes

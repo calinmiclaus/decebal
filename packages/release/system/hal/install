@@ -1,0 +1,19 @@
+post_install() {
+  /usr/sbin/groupadd -g 82 haldaemon &>/dev/null
+  /usr/sbin/useradd -u 82 -g 82 -s /bin/false -d /dev/null haldaemon &>/dev/null
+  /bin/chown haldaemon.haldaemon /var/run/hal &>/dev/null
+  /usr/bin/update-desktop-database &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 82 haldaemon &>/dev/null
+  /usr/sbin/useradd -u 82 -g 82 -s /bin/false -d /dev/null haldaemon &>/dev/null
+  chown haldaemon.haldaemon /var/run/hal &>/dev/null
+  /usr/bin/update-desktop-database &>/dev/null
+}
+
+post_install() {
+  /usr/sbin/userdel haldaemon &>/dev/null
+  /usr/sbin/groupdel haldaemon &>/dev/null
+  /usr/bin/update-desktop-database &>/dev/null
+}

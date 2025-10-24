@@ -1,0 +1,27 @@
+NAME=kmplayer
+VERSION=0.8.4_rc3
+ARCH=i686
+RELEASE=1
+DESC="mplayer frontend for KDE"
+URL="http://www.xs4all.nl/~jjvrieze/"
+GROUP=kde-apps
+LICENSE="GPLv2 LGPLv2"
+
+SOURCES="http://www.xs4all.nl/~jjvrieze/$NAME-0.8.4-rc3.tar.bz2"
+
+RUNTIME=">=kdebase-3.3.2
+	 mplayer
+         xine-lib"
+
+build() {
+    cd $SRC/$NAME-0.8.4-rc3
+    ./configure --prefix=/opt/kde \
+                --localstatedir=/var/opt/kde \
+                --disable-debug \
+		--with-xinerama \
+		--enable-final
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS README TODO
+}

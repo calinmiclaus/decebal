@@ -1,0 +1,48 @@
+NAME=clisp
+VERSION=2.35
+ARCH=i686
+RELEASE=1
+DESC="GNU CLISP, an ANSI Common Lisp implementation"
+URL="http://www.gnu.org/software/clisp/"
+GROUP=devel
+LICENSE="GPLv2"
+SIZE="7717K"
+
+SOURCES="ftp://ftp.gnu.org/pub/gnu/clisp/release/$VERSION/$NAME-$VERSION.tar.bz2"
+
+BUILDTIME="libsigsegv"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+
+  export CFLAGS="$CFLAGS -falign-functions=4"
+#  chpax -permsx src/callback/trampoline_r/conftest
+
+  ./configure --prefix=/usr --with-threads=POSIX_THREADS
+
+  cd src
+ 
+  ./makemake --prefix=/usr \
+             --with-readline \
+	     --with-gettext \
+	     --with-dynamic-ffi \
+	     --with-threads=POSIX_THREADS > Makefile
+
+  echo "CFLAGS=$CFLAGS -falign-functions=4" >>Makefile
+
+#  read
+  # some pax related problems here...quick ad-hoc fix.
+  sed -i "s:./test1$:paxctl -persmx test1; ./test1:" $SRC/clisp-2.33.2/src/callback/trampoline_r/Makefile
+  sed -i "s:./test2$:paxctl -persmx test2; ./test2:" $SRC/clisp-2.33.2/src/callback/trampoline_r/Makefile
+  sed -i "s:./minitests >:paxctl -permsx minitests;./minitests >:" $SRC/clisp-2.33.2/src/callback/Makefile
+  
+#  read      
+  make config.lisp
+  make
+  make DESTDIR=$PKG install
+  
+  cd $SRC/${NAME}-${VERSION}
+  install_docs ANNOUNCE COPYRIGHT INSTALL GNU-GPL SUMMARY
+  
+  mv $PKG/usr/share/doc/clisp $PKG/usr/share/doc/$NAME-$VERSION/
+}

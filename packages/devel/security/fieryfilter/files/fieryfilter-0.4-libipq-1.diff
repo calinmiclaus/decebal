@@ -1,0 +1,72 @@
+diff -Naur fieryfilter-0.4/client/connection.h fieryfilter-0.4-libipq/client/connection.h
+--- fieryfilter-0.4/client/connection.h	2003-02-14 18:19:03.000000000 +0200
++++ fieryfilter-0.4-libipq/client/connection.h	2005-05-22 13:21:29.000000000 +0300
+@@ -3,7 +3,7 @@
+ 
+ #include <glib.h>
+ #include <linux/netfilter.h>
+-#include <libipq/libipq.h>
++#include <libipq.h>
+ #include <gtk/gtk.h>
+ 
+ #include "../daemon/common.h"
+diff -Naur fieryfilter-0.4/client/daemon.h fieryfilter-0.4-libipq/client/daemon.h
+--- fieryfilter-0.4/client/daemon.h	2003-01-17 22:36:42.000000000 +0200
++++ fieryfilter-0.4-libipq/client/daemon.h	2005-05-22 13:21:40.000000000 +0300
+@@ -3,7 +3,7 @@
+ 
+ #include <glib.h>
+ #include <linux/netfilter.h>
+-#include <libipq/libipq.h>
++#include <libipq.h>
+ 
+ int daemon_init();
+ void daemon_done();
+diff -Naur fieryfilter-0.4/daemon/common.h fieryfilter-0.4-libipq/daemon/common.h
+--- fieryfilter-0.4/daemon/common.h	2003-01-30 00:49:32.000000000 +0200
++++ fieryfilter-0.4-libipq/daemon/common.h	2005-05-22 13:22:14.000000000 +0300
+@@ -3,7 +3,7 @@
+ 
+ #include <sys/types.h>
+ #include <glib.h>
+-#include <libipq/libipq.h>
++#include <libipq.h>
+ 
+ #define SOCKET_PATH "/tmp/fieryfilter"
+ 
+diff -Naur fieryfilter-0.4/daemon/icmp.h fieryfilter-0.4-libipq/daemon/icmp.h
+--- fieryfilter-0.4/daemon/icmp.h	2003-01-30 01:11:06.000000000 +0200
++++ fieryfilter-0.4-libipq/daemon/icmp.h	2005-05-22 13:22:23.000000000 +0300
+@@ -2,7 +2,7 @@
+ #define fooipsumhfoo
+ 
+ #include <glib.h>
+-#include <libipq/libipq.h>
++#include <libipq.h>
+ 
+ int reply_icmp_error(ipq_packet_msg_t *m, int code);
+ int icmp_init();
+diff -Naur fieryfilter-0.4/daemon/ipqapi.h fieryfilter-0.4-libipq/daemon/ipqapi.h
+--- fieryfilter-0.4/daemon/ipqapi.h	2003-01-30 01:10:50.000000000 +0200
++++ fieryfilter-0.4-libipq/daemon/ipqapi.h	2005-05-22 13:22:05.000000000 +0300
+@@ -2,7 +2,7 @@
+ #define fooipqapihfoo
+ 
+ #include <linux/netfilter.h>
+-#include <libipq/libipq.h>
++#include <libipq.h>
+ #include <glib.h>
+ 
+ int ipqapi_verdict(ipq_packet_msg_t *m, guint32 resp);
+diff -Naur fieryfilter-0.4/daemon/packet.h fieryfilter-0.4-libipq/daemon/packet.h
+--- fieryfilter-0.4/daemon/packet.h	2003-01-30 01:16:42.000000000 +0200
++++ fieryfilter-0.4-libipq/daemon/packet.h	2005-05-22 13:21:55.000000000 +0300
+@@ -1,7 +1,7 @@
+ #ifndef foopackethfoo
+ #define foopackethfoo
+ 
+-#include <libipq/libipq.h>
++#include <libipq.h>
+ #include <glib.h>
+ 
+ void packet_new(ipq_packet_msg_t *m);

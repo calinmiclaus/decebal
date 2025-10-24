@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# /etc/rc.d/sysctl
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    msg "Configuring kernel parameters"
+    run sysctl -e -p /etc/sysctl.conf
+    ;;
+  *)
+    echo "usage: $0 {start}"
+    exit 1
+    ;;
+esac
+
+exit 0

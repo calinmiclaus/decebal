@@ -1,0 +1,37 @@
+NAME=util-linux
+VERSION=2.12q
+ARCH=i686
+RELEASE=2
+URL="http://ftp.cwi.nl/aeb/util-linux/"
+DESC="Util-linux is a suite of essential utilities for any Linux system."
+GROUP=base
+LICENSE="GPLv2 BSD"
+SIZE="1338K"
+
+SOURCES="http://www.kernel.org/pub/linux/utils/util-linux/util-linux-2.12q.tar.bz2
+         http://loop-aes.sourceforge.net/updates/util-linux-2.12p.diff.bz2
+	 util-linux-2.12p-cramfs-1.patch clock.init"
+
+BUILDTIME="kernel-headers"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../util-linux-2.12p.diff
+  patch -p1 < ../util-linux-2.12p-cramfs-1.patch
+  
+  sed -i "s:etc/adjtime:var/lib/hwclock/adjtime:" hwclock/hwclock.c
+  
+  ./configure
+  make HAVE_SLN=yes
+  make HAVE_SLN=yes DESTDIR=$PKG install
+  
+  install -D -m 0700 ../clock.init $PKG/etc/rc.d/clock
+  
+  mkdir -p $PKG/var/lib/hwclock
+  touch $PKG/var/lib/hwclock/adjtime
+  
+  install_docs HISTORY INSTALL MAINTAINER MCONFIG README VERSION
+}

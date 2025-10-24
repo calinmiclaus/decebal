@@ -1,0 +1,11 @@
+post_install() {
+  /usr/sbin/groupadd -g 28 slocate 2>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 28 slocate 2>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/groupdel slocate 2>/dev/null
+}

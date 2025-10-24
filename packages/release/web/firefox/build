@@ -1,0 +1,115 @@
+NAME=firefox
+VERSION=1.0.6
+ARCH=i686
+RELEASE=1
+URL="http://www.mozilla.org"
+DESC="A very powerfull web browser."
+GROUP=web
+LICENSE=MPLv1.1
+SIZE="31905K"
+HUSE="static ipv6 svg gnomevfs"
+
+SOURCES="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/1.0.4/source/firefox-1.0.6-source.tar.bz2
+         firefox.desktop firefox.png firefox.sh
+	 http://mirror.hamakor.org.il/pub/mirrors/gentoo-portage/www-client/mozilla-firefox/files/mozilla-firefox-1.0.6-gcc4.patch
+	 http://mirror.hamakor.org.il/pub/mirrors/gentoo-portage/www-client/mozilla-firefox/files/securebrowserui-iirq.patch
+	 http://mirror.hamakor.org.il/pub/mirrors/gentoo-portage/www-client/mozilla-firefox/files/gtk-tooltips.patch
+	 http://mirror.hamakor.org.il/pub/mirrors/gentoo-portage/www-client/mozilla-firefox/files/gtk-prompt-service.patch
+	 http://mirror.hamakor.org.il/pub/mirrors/gentoo-portage/www-client/mozilla-firefox/files/embedprompter-modal.patch
+	 http://mirror.hamakor.org.il/pub/mirrors/gentoo-portage/www-client/mozilla-firefox/files/mozilla-rpath-1.patch
+	 http://mirror.hamakor.org.il/pub/mirrors/gentoo-portage/www-client/mozilla-firefox/files/svg-cairo-0.3.0-fix.patch"
+
+BUILDTIME=">=zip-2.3"
+
+RUNTIME=">=glib-1.2.10 >=libjpeg-6b >=libpng-1.2.5 >=zlib-1.2.1 xorg >=freetype2-2.1.9 >=gtk2-2.4.7 >=libidl-0.8.0 desktop-file-utils"
+
+use svg && RUNTIME="$RUNTIME librsvg"
+use gnomevfs && RUNTIME="$RUNTIME gnomevfs"
+
+build() {
+    cd $SRC/mozilla
+
+# shamelessly ripped from gentoo
+    patch -p1 <../mozilla-firefox-1.0.6-gcc4.patch
+    patch -p0 <../securebrowserui-iirq.patch
+    patch -p0 <../gtk-tooltips.patch
+    patch -p0 <../gtk-prompt-service.patch
+    patch -p0 <../embedprompter-modal.patch
+#    patch -p0 <../mozilla-rpath-1.patch
+    patch -p1 <../svg-cairo-0.3.0-fix.patch
+        
+    remove_flags -fstack-protector-all
+    
+    export MOZILLA_OFFICIAL="1"
+    export BUILD_OFFICIAL="1"
+    export MOZ_PHOENIX="1"
+    
+    use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+    use svg && OPTS="$OPTS --enable-svg" || OPTS="$OPTS --disable-svg"
+    use gnomevfs && OPTS="$OPTS --enable-gnomevfs" || OPTS="$OPTS --disable-gnomevfs"
+    use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"    
+    ./configure --prefix=/opt/firefox \
+                --with-default-mozilla-five-home=/opt/firefox/lib/firefox \
+                --enable-toolkit-gtk2 \
+                --enable-default-toolkit=gtk2 \
+                --enable-application=browser \
+                --with-system-jpeg \
+                --with-system-mng \
+                --with-system-png \
+                --with-system-zlib \
+                --enable-xft \
+                --enable-xinerama \
+                --enable-reorder \
+                --enable-strip \
+                --enable-strip-libs \
+                --enable-cpp-rtti \
+                --enable-calendar \
+                --enable-xsl \
+                --enable-crypto \
+                --disable-freetype2 \
+                --disable-toolkit-qt \
+                --disable-toolkit-xlib \
+                --disable-toolkit-gtk \
+		--disable-mailnews \
+		--disable-ldap \
+		--disable-calendar \
+		--disable-composer \
+                --disable-debug \
+                --disable-tests \
+                --disable-xprint \
+                --disable-logging \
+                --disable-pedantic \
+                --disable-installer \
+                --without-system-nspr \
+                --enable-nspr-autoconf \
+                --with-pthreads \
+                --enable-single-profile \
+	        --disable-profilesharing \
+                --enable-extensions="all" \
+                --enable-optimize="$CFLAGS" \
+		--disable-profilesharing \
+		--enable-ctl \
+                $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/opt/firefox/include/$NAME-$VERSION/nss
+  cp -Lf dist/private/nss/*.h dist/public/nss/*.h  $PKG/opt/firefox/include/$NAME-$VERSION/nss/
+
+  cd $PKG/opt/firefox/lib/$NAME-$VERSION
+  export LD_LIBRARY_PATH="$PWD"
+  export MOZILLA_FIVE_HOME="$PWD"
+  ./regxpcom
+  ./regchrome
+  touch `find . -name *.rdf`      
+  
+  cd $SRC/mozilla
+  
+  install -D -m 0644 ../firefox.desktop $PKG/usr/share/applications/firefox.desktop
+  install -D -m 0644 ../firefox.png $PKG/usr/share/pixmaps/firefox.png
+  install -D -m 0644 ../firefox.sh $PKG/etc/profile.d/firefox.sh
+
+  ln -s firefox-$VERSION $PKG/opt/firefox/lib/firefox
+  
+  install_docs LEGAL LICENSE README.txt
+}

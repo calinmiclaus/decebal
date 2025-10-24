@@ -1,0 +1,60 @@
+NAME=postfix
+VERSION=2.2.3
+ARCH=i686
+RELEASE=1
+URL="http://www.postfix.org/"
+DESC="Secure, fast, easy to administer replacement for Sendmail."
+GROUP=mail
+LICENSE="IBMPLv1.0"
+SIZE="2353K"
+
+SOURCES="http://postfix.it-austria.net/releases/official/postfix-2.2.3.tar.gz
+         postfix.init main.cf"
+	 
+BACKUPS="etc/postfix/main.cf
+         etc/postfix/master.cf
+	 etc/aliases"
+
+CONFLICTS="sendmail netqmail qmail exim smail"
+
+PROVIDES="smtp-server"
+
+RUNTIME=">=db-4.2.52 >=procmail-3.22 >=pcre-4.5 >=openssl-0.9.7e"
+
+use mysql && RUNTIME="$RUNTIME mysql"
+use pgsql && RUNTIME="$RUNTIME postgresql"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  CCARGS_OPTS="-DUSE_TLS -I/usr/include/openssl"
+  AUXLIBS_OPTS="-lssl -lcrypto"
+  
+  use mysql && {
+    CCARGS_OPTS="$CCARGS_OPTS -DHAS_MYSQL -I/usr/include/mysql"
+    AUXLIBS_OPTS="$AUXLIBS_OPTS -L/usr/lib/mysql -lmysqlclient -lz -lm"
+  }
+  
+  use pgsql && {
+    CCARGS_OPTS="$CCARGS_OPTS -DHAS_PGSQL -I/usr/include/postgresql"
+    AUXLIBS_OPTS="$AUXLIBS_OPTS -L/usr/lib/postgresql -lpq"
+  }
+    
+  make CCARGS="${CFLAGS} $CCARGS_OPTS" \
+    AUXLIBS="$AUXLIBS_OPTS"
+  
+  sh postfix-install -non-interactive \
+    install_root="$PKG" \
+    config_directory="/etc/$NAME" \
+    daemon_directory="/usr/sbin" \
+    sample_directory="/usr/share/$NAME/sample" \
+    manpage_directory="/usr/share/man"
+  
+  cp $PKG/etc/postfix/aliases $PKG/etc/aliases
+    
+  install -D -m 0700 ../postfix.init $PKG/etc/rc.d/postfix
+  install -m 0644 ../main.cf $PKG/etc/postfix/main.cf
+  
+  install_docs AAAREADME COMPATIBILITY COPYRIGHT HISTORY INSTALL \
+    IPv6-ChangeLog LICENSE PORTING RELEASE_NOTES* TLS_* US_PATENT_6321267 README_FILES/*
+}

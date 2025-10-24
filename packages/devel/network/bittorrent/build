@@ -1,0 +1,23 @@
+NAME=bittorrent
+VERSION=4.1.0
+ARCH=i686
+RELEASE=1
+URL="http://www.bittorrent.com"
+DESC="A P2P program for *NIX."
+GROUP=network
+LICENSE="GPLv2"
+SIZE="177K"
+
+SOURCES="http://citkit.dl.sourceforge.net/sourceforge/bittorrent/BitTorrent-4.1.0.tar.gz"
+
+RUNTIME="python pygtk gtk2"
+
+build() {
+  cd $SRC/BitTorrent-4.1.0
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  python setup.py build install --root=$PKG
+  
+  install_docs README.txt INSTALL.unix.txt PKG-INFO
+}

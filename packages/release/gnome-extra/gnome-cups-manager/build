@@ -1,0 +1,28 @@
+NAME=gnome-cups-manager
+VERSION=0.30
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A printer manager for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE=GPLv2
+SIZE="481K"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/gnome-cups-manager/0.30/gnome-cups-manager-0.30.tar.bz2"
+
+BUILDTIME="intltool gettext pkgconfig"
+
+RUNTIME=">=libgnomeui-2.0.0 >=libgnomecups-0.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+

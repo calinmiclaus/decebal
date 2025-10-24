@@ -1,0 +1,33 @@
+NAME=openssl
+VERSION=0.9.8
+ARCH=i686
+RELEASE=1
+URL="http://www.openssl.org/"
+DESC="Free implementation of SSL v2/v3 and TLS v1."3
+GROUP=base
+LICENSE=BSD
+SIZE="3183K"
+
+SOURCES="http://www.openssl.org/source/$NAME-$VERSION.tar.gz"
+
+BUILDTIME=">=mktemp-1.5 perl"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./config --prefix=/usr \
+           --openssldir=/etc/ssl \
+	   shared
+
+  sed -i "s:\-m486::" Makefile
+
+  make
+  make INSTALL_PREFIX=$PKG MANDIR=/usr/share/man MANSUFFIX=openssl install
+  
+  install_docs CHANGES* FAQ INSTALL* LICENSE NEWS \
+    PROBLEMS README* doc/HOWTO/* doc/openssl-shared.txt doc/openssl.txt \
+    doc/ssleay.txt doc/standards.txt
+}
+

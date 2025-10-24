@@ -1,0 +1,28 @@
+NAME=openmortal
+VERSION=0.7
+ARCH=i686
+RELEASE=1
+URL="http://openmortal.sourceforge.net/"
+DESC="A spoof of the original Mortal Kombat fighting game."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="49997K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/openmortal/openmortal-0.7.tar.bz2
+         openmortal.desktop openmortal.png"
+
+RUNTIME=">=libsdl-1.2.0 sdl_image sdl_mixer sdl_net >=freetype2-2.1.0 xorg perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr/games
+  make
+  make DESTDIR=$PKG install
+
+  install -D -m 0644 ../openmortal.desktop $PKG/usr/share/applications/openmortal.desktop
+  install -D -m 0644 ../openmortal.png $PKG/usr/share/pixmaps/openmortal.png              
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    PACKAGERS README TODO
+}

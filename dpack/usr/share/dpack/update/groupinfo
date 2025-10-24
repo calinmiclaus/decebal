@@ -1,0 +1,85 @@
+#!/bin/bash
+
+pkg_group_info() {
+  echo -n "Getting information [takes some time]..."
+  
+  pkg_create_tmp
+  
+  for PKG in $(grep ^GROUP=$1$ $DATABASEDIR/db/* 2>/dev/null)
+  do
+    PKG="${PKG%:*}"
+    PKG="${PKG##*/}"
+    local PKGNAME=$(pkgname $PKG)
+    if [ ! -f $DATABASEDIR/update/$PKGNAME ]
+    then
+      echo && echo
+      echo "Your package update database is out of date, this means that"
+      echo "some installed packages do not hava a update database entry."
+      echo "Run: 'dupdate sync' to sync the package update database."
+      pkg_exit "pkg_info_group()" "check_if_db_is_synced" "$LINENO" 1
+    fi
+    unset PKG PKGNAME
+  done
+  
+  local TOTAL=0
+  local UPGRADE=0
+  local INSTALLED=0
+  local INSTALL=0
+  for PKG in $(grep ^GROUP=$1$ $DATABASEDIR/update/* 2>/dev/null)
+  do
+    PKGNAME="${PKG%:*}"
+    PKGNAME="${PKG##*/}"
+    if pkg_is_installed $PKGNAME && [ "$PKG_UPGRADE" = "1" ]
+    then
+      local IPKG=$(get_installed_pkg $PKGNAME)
+      local IVER=$(pkgversion $IPKG)
+      local IREL=$(pkgrelease $IPKG)  
+      source $PKG 2>/dev/null
+      if [ ! "$UVERSION" = "$IVER" -o ! "$URELEASE" = "$IREL" ]
+      then
+        echo -e "\t $IPKG -> $UNAME-$UVERSION-i686-$URELEASE [upgrading]" >> $TMP/packages
+	UPGRADE=$(($UPGRADE + 1))
+      else
+        echo -e "\t $IPKG [already installed]" >> $TMP/packages
+        INSTALLED=$(($INSTALLED + 1))
+      fi
+      TOTAL=$(($TOTAL + 1))
+      unset UNAME UVERSION URELEASE UURL UDESC UDEPEDS UMD5SUM IPKG IVER IREL
+    else
+      if pkg_is_installed $PKG
+      then
+        local IPKG=$(get_installed_pkg $PKGNAME)
+        local IVER=$(pkgversion $IPKG)
+        local IREL=$(pkgrelease $IPKG)  
+        source $PKG 2>/dev/null
+        if [ ! "$UVERSION" = "$IVER" -o ! "$URELEASE" = "$IREL" ]
+        then
+          echo -e "\t $IPKG -> $UNAME-$UVERSION-i686-$URELEASE [upgrading]" >> $TMP/packages
+	  UPGRADE=$(($UPGRADE + 1))
+        else
+          echo -e "\t $IPKG [already installed]" >> $TMP/packages
+          INSTALLED=$(($INSTALLED + 1))
+        fi
+	unset UNAME UVERSION URELEASE UURL UDESC UDEPEDS UMD5SUM IPKG IVER IREL
+      else
+        echo -e "\t $UNAME-$UVERSION-i686-$URELEASE - [not installed]" >> $TMP/packages    
+        INSTALL=$(($INSTALL + 1))
+      fi
+      TOTAL=$(($TOTAL + 1))
+    fi
+  done
+  
+  echo "[ DONE ]"
+  
+  echo "Available packages: $TOTAL"
+  echo "Installed packages: $INSTALLED"
+  echo "Packages that will be upgraded: $UPGRADE"
+  [ "$PKG_UPGRADE" = "1" ] || echo "Packages that will be installed: $INSTALL"
+  if [ -f $TMP/packages ]
+  then
+    echo "Package information:"
+    cat $TMP/packages
+  fi
+  
+  pkg_remove_tmp      	       
+}

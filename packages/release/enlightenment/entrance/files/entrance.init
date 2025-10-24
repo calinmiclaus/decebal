@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/entrance - control file for the Entrance (Enlightenment 17) Display Manager
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/entranced.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Entrance Display Manager daemon"
+    start_service /opt/enlightenment/sbin/entranced
+    ;;
+  stop)
+    msg "Stopping the Entrance Display Manager daemon"
+    stop_service /opt/enlightenment/sbin/entranced
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /opt/enlightenment/sbin/entranced
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+

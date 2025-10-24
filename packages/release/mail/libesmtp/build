@@ -1,0 +1,29 @@
+NAME=libesmtp
+VERSION=1.0.3r1
+ARCH=i686
+RELEASE=1
+URL="http://www.stafford.uklinux.net/libesmtp/"
+DESC="Library for Posting Electronic Mail."
+GROUP=mail
+LICENSE="GPLv2"
+SIZE="263K"
+HUSE="static debug"
+
+SOURCES="http://www.stafford.uklinux.net/libesmtp/libesmtp-1.0.3r1.tar.bz2"
+
+RUNTIME=">=openssl-0.9.7e"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS Notes README TODO
+}

@@ -1,0 +1,19 @@
+#
+# These files will never be be upgraded.
+#
+
+NOUPGRADE="etc/passwd
+           etc/shadow
+	   etc/group
+	   etc/gshadow
+	   etc/fstab
+	   etc/raidtab
+	   etc/rc.d/rc.local
+	   etc/modprobe.conf
+	   etc/modules.conf
+	   etc/modeprove.devfs
+	   etc/modules.devfs
+	   etc/lilo.conf
+	   boot/grub/menu.lst"
+
+	   

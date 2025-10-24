@@ -1,0 +1,44 @@
+NAME=mail-spamassasin
+VERSION=3.0.2
+ARCH=i686
+RELEASE=1
+URL="http://spamassassin.apache.org/"
+DESC="A mail filter system."
+GROUP=mail
+LICENSE=APACHEv2
+SIZE="826K"
+
+SOURCES="http://apache.iasi.roedu.net/spamassassin/Mail-SpamAssassin-3.0.2.tar.bz2
+         spamd.init spamassasin.sysconf"
+
+RUNTIME="digest-sha1-perl
+         html-parser-perl
+	 net-dns-perl
+	 mail-spf-query-perl
+	 ip-country-perl
+	 net-ident-perl
+	 io-socket-ssl-perl"
+	 
+build() {
+  cd $SRC/Mail-SpamAssassin-$VERSION
+  
+  # we use a SSL enabled spamassasin.
+  #export CFLAGS="$CFLAGS -DSPAMC_SSL"
+  #export LDFLAGS="$LDFLAGS -lssl"
+    
+  perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+  
+  # we want spamd in /usr/sbin
+  (mkdir -p $PKG/usr/sbin ; mv $PKG/usr/bin/spamd $PKG/usr/sbin/spamd)
+  
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+  
+  install -D -m 0700 ../spamd.init $PKG/etc/rc.d/spamd
+  install -D -m 0644 ../spamassasin.sysconf $PKG/etc/conf.d/spamassasin
+  
+  install_docs BUGS CREDITS Changes INSTALL* LICENSE MANIFEST* \
+    NOTICE PACKAGING README STATUS TRADEMARK UPGRADE USAGE
+}

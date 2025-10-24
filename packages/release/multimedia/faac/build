@@ -1,0 +1,31 @@
+NAME=faac
+VERSION=1.24
+ARCH=i686
+RELEASE=1
+URL="freshmeat.net/projects/faac/"
+DESC="FAAC is an AAC audio encoder."
+GROUP=multimedia
+LICENSE=GPLv2
+SIZE="275K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/faac/faac-1.24.tar.gz"
+
+build() {
+  cd $SRC/$NAME
+  
+  chmod +x bootstrap
+  ./bootstrap
+  ./configure --prefix=/usr/
+#  --includedir=/usr/include/
+#FAAC IS STUPID, STUPID STUPID, --includedir DOESENT WORK
+  
+  make
+  make prefix=$PKG install
+  mkdir -p $PKG/usr/include
+  
+  mv $PKG/include/*.h $PKG/usr/include/  
+  rm -rf $PKG/include
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README \
+    TODO 
+}

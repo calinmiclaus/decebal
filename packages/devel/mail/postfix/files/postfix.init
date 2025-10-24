@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# /etc/rc.d/postfix - control file for the Postfix mail system
+#
+
+. /etc/rc.d/functions
+
+[ -r /etc/postfix/main.cf ] || exit 6
+[ -r /etc/postfix/master.cf ] || exit 6
+
+conflict sendmail exim qmail smail
+pidfile="/var/run/postfix.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Postfix MTA"
+    if ! check_proc /usr/sbin/master
+    then
+      run /usr/sbin/postfix start
+      if [ $? -eq 0 ]
+      then
+        write_pidfile /usr/sbin/master /var/run/postfix.pid
+        touch /var/run/services/postfix
+      fi
+    else
+      already_running
+    fi
+    ;;
+  stop)
+    msg "Stopping the Postfix MTA"
+    if check_proc /usr/sbin/master
+    then
+      run /usr/sbin/postfix stop
+      if [ $? -eq 0 ]
+      then
+        rm -f /var/run/services/postfix /var/run/postfix.pid
+      fi
+    else
+      not_running
+    fi
+    ;;
+  reload)
+    msg "Reloading the Postfix MTA"
+    if check_proc /usr/sbin/master
+    then
+      run /usr/sbin/postfix reload
+      if [ $? -eq 0 ]
+      then
+        write_pidfile /usr/sbin/master /var/run/postfix.pid
+        touch /var/run/services/postfix
+      fi
+    else
+      not_running
+    fi
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/master
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

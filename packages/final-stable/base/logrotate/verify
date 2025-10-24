@@ -1,0 +1,5 @@
+md5: bf0de3a495294300f32e71f136119c41 logrotate_3.7.orig.tar.gz
+md5: 0d680d8d6026331a52411662b686f57a logrotate_3.7-2.diff.gz
+md5: 0de8bbf6512e4bc4cd7208a76de72282 logrotate_decebal.diff
+md5: f4e41829676b40d3e56dddc00f1d7ba7 logrotate.cron
+md5: 361653a1c4e8a860ed77d8cbccbae01a logrotate.conf

@@ -1,0 +1,20 @@
+post_install() {
+  install-catalog --add /etc/sgml/OpenSP-1.5.1.cat \
+    /usr/share/sgml/OpenSP-1.5.1/catalog &>/dev/null
+  install-catalog --add /etc/sgml/sgml-docbook.cat \
+    /etc/sgml/OpenSP-1.5.1.cat &>/dev/null
+}
+
+post_upgrade() {
+  install-catalog --add /etc/sgml/OpenSP-1.5.1.cat \
+    /usr/share/sgml/OpenSP-1.5.1/catalog &>/dev/null
+  install-catalog --add /etc/sgml/sgml-docbook.cat \
+    /etc/sgml/OpenSP-1.5.1.cat &>/dev/null
+}
+
+post_remove() {
+  install-catalog --remove /etc/sgml/OpenSP-1.5.1.cat \
+    /usr/share/sgml/OpenSP-1.5.1/catalog &&
+  install-catalog --remove /etc/sgml/sgml-docbook.cat \
+    /etc/sgml/OpenSP-1.5.1.cat
+}

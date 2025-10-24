@@ -1,0 +1,39 @@
+NAME=sudo
+VERSION=1.6.8p9
+ARCH=i686
+RELEASE=1
+URL="http://www.sudo.ws/sudo/"
+DESC="Allows a system administrator to give certain users the ability to run commands as root."
+GROUP=system
+LICENSE=BSDL
+SIZE="571K"
+HUSE="ldap path"
+
+SOURCES="http://probsd.org/sudoftp/$NAME-$VERSION.tar.gz"
+
+BACKUPS="etc/sudoers"
+
+RUNTIME="libc"
+
+use ldap && RUNTIME="$RUNTIME openldap"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use ldap && OPTS="$OPTS --with-ldap" || OPTS="$OPTS --without-ldap"
+  use path && OPTS="$OPTS --with-secure-path"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --libexecdir=/usr/lib \
+	      --mandir=/usr/share/man \
+	      --with-insults --with-all-insults \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  rm -f $PKG/usr/bin/sudoedit && ln -s sudo $PKG/usr/bin/sudoedit
+  
+  install_docs BUGS CHANGES HISTORY INSTALL* LICENSE PORTING \
+    README RUNSON TODO TROUBLESHOOTING UPGRADE
+}    

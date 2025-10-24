@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# /etc/rc.d/firewall - control file for /sbin/shorewall
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    msg "Starting the system firewall"
+    run /sbin/shorewall -f start
+    ;;
+  stop)
+    msg "Stopping the system firewall"
+    run /sbin/shorewall stop
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    /sbin/shorewall status
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+esac

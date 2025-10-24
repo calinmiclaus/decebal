@@ -1,0 +1,36 @@
+NAME=gparted
+VERSION=0.0.8
+ARCH=i686
+RELEASE=1
+URL="http://gparted.sourceforge.net/"
+DESC="GParted stands for Gnome Partition Editor."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="365K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gparted/gparted-0.0.8.tar.bz2
+         gparted.png"
+
+RUNTIME=">=gtkmm2-2.4 ntfsprogs xfsprogs reiserfsprogs e2fsprogs jfsutils"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../gparted.png $PKG/opt/gnome/share/pixmaps/gparted.png
+  
+  echo "Icon=gparted.png" >> $PKG/opt/gnome/share/applications/gparted.desktop
+  
+  install_docs AUTHORS COPYING ChangeLog HACKING INSTALL \
+    NEWS README
+}

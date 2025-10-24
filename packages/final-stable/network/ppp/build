@@ -1,0 +1,49 @@
+NAME=ppp
+VERSION=2.4.3
+ARCH=i686
+RELEASE=1
+URL="http://www.samba.org/ppp/"
+DESC="Implmentation for Point-to-Point Protocol of serial lines."
+GROUP=network
+LICENSE="GPL PD"
+SIZE="671K"
+
+SOURCES="ftp://ftp.samba.org/pub/ppp/ppp-2.4.3.tar.gz
+         fixes-from-upstream-cvs.patch ppp_flags.patch
+         ip-down ip-up options ppp-off ppp-on ppp.init"
+
+BACKUPS=""
+
+RUNTIME="libpcap"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../fixes-from-upstream-cvs.patch
+  patch -p1 < ../ppp_flags.patch
+  
+  # enable ipv6
+  sed -i "s:#HAVE_INET6:HAVE_INET6:" pppd/Makefile.linux
+  sed -i "s:^#CBCP=y:CBCP=y:" pppd/Makefile.linux
+  
+#  export LDFLAGS="$LDFLAGS -Wl,-z,now"
+  
+  ./configure
+  make
+  make DESTDIR=$PKG/usr install
+  
+  install -D -m 0700 ../ppp.init $PKG/etc/rc.d/ppp
+  install -D -m 0755 ../ip-up $PKG/etc/ppp/ip-up
+  install -m 0755 ../ip-down $PKG/etc/ppp/ip-down
+  install -m 0644 ../options $PKG/etc/ppp/options
+  install -D -m 0755 ../ppp-on $PKG/usr/sbin/ppp-on
+  install -m 0755 ../ppp-off $PKG/usr/sbin/ppp-off
+  install -d $PKG/etc/ppp/peers
+  
+  ln -s ppp-on $PKG/usr/sbin/ppp-go
+  ln -s ppp-on $PKG/usr/sbin/ppp-start
+  ln -s ppp-off $PKG/usr/sbin/ppp-stop
+  
+  install_docs Changes-2.3 FAQ PLUGINS README* SETUP
+}
+

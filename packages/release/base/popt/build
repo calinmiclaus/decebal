@@ -1,0 +1,27 @@
+NAME=popt
+VERSION=1.7
+ARCH=i686
+RELEASE=1
+URL="http://www.rpm.org"
+DESC="A commandline option parser."
+GROUP=base
+LICENSE=RH
+SIZE="561K"
+
+SOURCES="ftp://ftp.rpm.org/pub/rpm/dist/rpm-4.1.x/popt-1.7.tar.gz"
+
+BUILDTIME="bison gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+	      --infodir=/usr/share/info
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS CHANGES COPYING README
+}

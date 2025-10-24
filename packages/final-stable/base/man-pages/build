@@ -1,0 +1,35 @@
+NAME=man-pages
+VERSION=2.07
+ARCH=noarch
+RELEASE=1
+URL="http://www.win.tue.nl/~aeb/linux/man/"
+DESC="The Linux man pages for all chapters except 1, 6 and 8."
+GROUP=base
+LICENSE=OS
+SIZE="2390K"
+
+SOURCES="ftp://ftp.win.tue.nl/pub/linux-local/manpages/$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=man-1.5"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  cd man1
+  rm -f README time.1 chown.1 cp.1 dd.1 dircolors.1 \
+    dir.1 du.1 install.1 ln.1 ls.1 mkfifo.1 mknod.1 mv.1 rm.1 \
+    touch.1 vdir.1 chgrp.1 chmod.1 df.1 mkdir.1 rmdir.1 diff.1
+  
+  cd ../man3
+  rm -f getspnam.3
+  
+  cd ../man5
+  rm passwd.5
+  
+  cd ..  
+
+  make gz
+  make MANDIR=$PKG/usr/share/man install
+  
+  install_docs README
+}

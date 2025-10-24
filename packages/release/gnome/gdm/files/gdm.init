@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/gdm - control file for the GNOME Display Manager (gdm)
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/gdm.pid"
+
+case "$1" in
+  start)
+    msg "Starting the GNOME Display Manager"
+    start_service /opt/gnome/bin/gdm
+    ;;
+  stop)
+    msg "Stopping the GNOME Display Manager"
+    run /opt/gnome/bin/gdm-stop
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /opt/gnome/bin/gdm
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+    

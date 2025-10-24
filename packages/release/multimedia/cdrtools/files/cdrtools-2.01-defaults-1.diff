@@ -1,0 +1,136 @@
+diff -Naur cdrtools-2.01/DEFAULTS/Defaults.linux cdrtools-2.01-defaults/DEFAULTS/Defaults.linux
+--- cdrtools-2.01/DEFAULTS/Defaults.linux	2003-02-16 00:01:48.000000000 +0000
++++ cdrtools-2.01-defaults/DEFAULTS/Defaults.linux	2005-05-18 20:54:04.000000000 +0000
+@@ -18,21 +18,21 @@
+ ###########################################################################
+ CWARNOPTS=
+ 
+-DEFINCDIRS=	$(SRCROOT)/include /usr/src/linux/include
+-LDPATH=		-L/opt/schily/lib
+-RUNPATH=	-R $(INS_BASE)/lib -R /opt/schily/lib -R $(OLIBSDIR)
++DEFINCDIRS=	$(SRCROOT)/include
++LDPATH=		-L/usr/lib
++RUNPATH=	-R $(INS_BASE)/lib -R /usr/lib -R $(OLIBSDIR)
+ 
+ ###########################################################################
+ #
+ # Installation config stuff
+ #
+ ###########################################################################
+-INS_BASE=	/opt/schily
++INS_BASE=	/usr
+ INS_KBASE=	/
+ #
+ DEFUMASK=	002
+ #
+ DEFINSMODEF=	444
+ DEFINSMODEX=	755
+-DEFINSUSR=	bin
+-DEFINSGRP=	bin
++DEFINSUSR=	root
++DEFINSGRP=	root
+diff -Naur cdrtools-2.01/incs/pentium4-linux-cc/config.log cdrtools-2.01-defaults/incs/pentium4-linux-cc/config.log
+--- cdrtools-2.01/incs/pentium4-linux-cc/config.log	1970-01-01 00:00:00.000000000 +0000
++++ cdrtools-2.01-defaults/incs/pentium4-linux-cc/config.log	2005-05-18 20:49:01.000000000 +0000
+@@ -0,0 +1,84 @@
++This file contains any messages produced by compilers while
++running configure, to aid debugging if configure makes a mistake.
++
++configure:726: checking host system type
++configure:748: checking for Cygwin environment
++configure:764: cc -c   -O    conftest.c 1>&5
++configure: In function `main':
++configure:760: error: `__CYGWIN32__' undeclared (first use in this function)
++configure:760: error: (Each undeclared identifier is reported only once
++configure:760: error: for each function it appears in.)
++configure: failed program was:
++#line 753 "configure"
++#include "confdefs.h"
++
++int main() {
++
++#ifndef __CYGWIN__
++#define __CYGWIN__ __CYGWIN32__
++#endif
++return __CYGWIN__;
++; return 0; }
++configure:781: checking for mingw32 environment
++configure:793: cc -c   -O    conftest.c 1>&5
++configure: In function `main':
++configure:789: error: `__MINGW32__' undeclared (first use in this function)
++configure:789: error: (Each undeclared identifier is reported only once
++configure:789: error: for each function it appears in.)
++configure: failed program was:
++#line 786 "configure"
++#include "confdefs.h"
++
++int main() {
++return __MINGW32__;
++; return 0; }
++configure:810: checking for EMX/OS2 environment
++configure:822: cc -c   -O    conftest.c 1>&5
++configure: In function `main':
++configure:818: error: `__EMX__' undeclared (first use in this function)
++configure:818: error: (Each undeclared identifier is reported only once
++configure:818: error: for each function it appears in.)
++configure: failed program was:
++#line 815 "configure"
++#include "confdefs.h"
++
++int main() {
++return __EMX__;
++; return 0; }
++configure:853: checking for executable suffix
++configure:863: cc -o conftest   -O     conftest.c  1>&5
++configure:884: checking how to run the C preprocessor
++configure:905: cc -E  conftest.c >/dev/null 2>conftest.out
++configure:966: checking for ranlib
++configure:994: checking whether make sets ${MAKE}
++configure:1022: checking for ANSI C header files
++configure:1035: cc -E  conftest.c >/dev/null 2>conftest.out
++configure:1102: cc -o conftest   -O     conftest.c  1>&5
++configure:1126: checking for UNIX-98 compliant inttypes.h
++configure:1140: cc -c   -O    conftest.c 1>&5
++configure:1164: checking for dirent.h that defines DIR
++configure:1177: cc -c   -O    conftest.c 1>&5
++configure:1202: checking for opendir in -ldir
++configure:1221: cc -o conftest   -O     conftest.c -ldir   1>&5
++/usr/bin/ld: cannot find -ldir
++collect2: ld returned 1 exit status
++configure: failed program was:
++#line 1210 "configure"
++#include "confdefs.h"
++/* Override any gcc2 internal prototype to avoid an error.  */
++/* We use char because int might match the return type of a gcc2
++    builtin and then its argument prototype would still apply.  */
++char opendir();
++
++int main() {
++opendir()
++; return 0; }
++configure:1285: checking whether stat file-mode macros are broken
++configure:1341: checking whether time.h and sys/time.h may both be included
++configure:1355: cc -c   -O    conftest.c 1>&5
++configure:1376: checking for sys/wait.h that is POSIX.1 compatible
++configure:1397: cc -c   -O    conftest.c 1>&5
++configure:1418: checking if select needs nonstd include files
++configure:1431: cc -c   -O    conftest.c 1>&5
++configure:1451: checking if sys/select.h is needed for select
++configure:1468: cc -c   -O    conftest.c 1>&5
+diff -Naur cdrtools-2.01/incs/pentium4-linux-cc/Inull cdrtools-2.01-defaults/incs/pentium4-linux-cc/Inull
+--- cdrtools-2.01/incs/pentium4-linux-cc/Inull	1970-01-01 00:00:00.000000000 +0000
++++ cdrtools-2.01-defaults/incs/pentium4-linux-cc/Inull	2005-05-18 20:49:01.000000000 +0000
+@@ -0,0 +1 @@
++
+diff -Naur cdrtools-2.01/librscg/scsi-remote.c cdrtools-2.01-defaults/librscg/scsi-remote.c
+--- cdrtools-2.01/librscg/scsi-remote.c	2004-08-23 22:11:42.000000000 +0000
++++ cdrtools-2.01-defaults/librscg/scsi-remote.c	2005-05-18 20:56:09.000000000 +0000
+@@ -551,7 +551,7 @@
+ 	rscsipeer = host;
+ 
+ 	if ((rscsi = getenv("RSCSI")) == NULL)
+-		rscsi = "/opt/schily/sbin/rscsi";
++		rscsi = "/usr/sbin/rscsi";
+ 	rsh = getenv("RSH");
+ 
+ #ifdef	USE_RCMD_RSH

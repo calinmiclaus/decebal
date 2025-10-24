@@ -1,0 +1,6 @@
+#
+# /etc/shells - system shells
+#
+
+/bin/sh
+/bin/bash

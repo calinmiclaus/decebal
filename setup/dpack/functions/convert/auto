@@ -1,0 +1,63 @@
+#!/bin/bash
+
+msg_pkgtype_verbose() {
+  case "$PKGTYPE" in
+    rpm) echo -e "[ ${GREEN}RPM${NORMAL} ]" ;;
+    deb) echo -e "[ ${GREEN}DEB${NORMAL} ]" ;;
+    arch) echo -e "[ ${GREEN}ARCH${NORMAL} ]" ;;
+    crux) echo -e "[ ${GREEN}CRUX${NORMAL} ]" ;;
+    slackware) echo -e "[ ${GREEN}SLACKWARE${NORMAL} ]" ;;
+  esac
+}
+
+pkg_convert_auto() {
+  msg_start_nnl "auto converting ${1}..."
+   
+  msg_verbose_nnl "detecting package type..."
+  local PACKAGETYPE="$(file -b $1)"
+  if echo $PACKAGETYPE | grep -q ^RPM
+  then 
+    PKGTYPE="rpm"
+    msg_pkgtype_verbose
+    source $FUNCTIONSDIR/dpack/convert/rpm
+    pkg_convert_rpm $1
+  elif echo $PACKAGETYPE | grep -q ^Debian
+  then
+    PKGTYPE="deb"
+    msg_pkgtype_verbose
+    source $FUNCTIONSDIR/dpack/convert/deb
+    pkg_convert_deb $1
+  elif echo $PACKAGETYPE | grep -q ^gzip
+  then
+    if echo $1 | grep -q .tgz$
+    then
+      PKGTYPE="slackware"
+      msg_pkgtype_verbose
+      source $FUNCTIONSDIR/dpack/convert/tgz
+      pkg_convert_tgz $1
+    elif tar -zxf $1 .PKGINFO 2>/dev/null
+    then
+      rm -f .PKGINFO
+      PKGTYPE="arch"
+      msg_pkgtype_verbose
+      source $FUNCTIONSDIR/dpack/convert/arch
+      pkg_convert_arch $1
+    elif echo $1 | grep -q '#'
+    then
+      PKGTYPE="crux"
+      msg_pkgtype_verbose
+      source $FUNCTIONSDIR/dpack/convert/crux
+      pkg_convert_crux $1
+    else
+      msg_failed_verbose
+      msg_failed
+      msg_error "could not detect package type."
+      pkg_exit "pkg_convert_auto()" "get_the_package_type" "$LINENO" 1
+    fi
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "could not detect package type."
+    pkg_exit "pkg_convert_auto()" "get_the_package_type" "$LINENO" 1
+  fi 	 
+}

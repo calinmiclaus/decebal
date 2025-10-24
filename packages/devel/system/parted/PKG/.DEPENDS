@@ -1,0 +1,2 @@
+DEPENDS[0]="ncurses"
+DEPENDS[1]="readline"

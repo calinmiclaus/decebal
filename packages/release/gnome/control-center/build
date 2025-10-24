@@ -1,0 +1,38 @@
+NAME=control-center
+VERSION=2.10.1
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="The GNOME Control Center."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="2556K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/control-center-2.10.1.tar.bz2
+         control-center.diff"
+
+BUILDTIME="intltool"
+
+RUNTIME="gnome-menus >=libxklavier-1.14 metacity nautilus gnome-icon-theme alsa-lib gst-plugins xscreensaver"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+#  patch -p1 < ../control-center.diff
+
+  use static || OPTS="--disable-static"  
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --localstatedir=/var/lib \
+	      --disable-schemas-install \
+	      --enable-gstreamer \
+	      --enable-alsa $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

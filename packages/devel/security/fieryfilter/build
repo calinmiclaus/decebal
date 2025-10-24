@@ -1,0 +1,33 @@
+NAME=fieryfilter
+VERSION=0.4
+ARCH=i686
+RELEASE=1
+URL="http://www.stud.uni-hamburg.de/users/lennart/projects/fieryfilter/"
+DESC="A Desktop Firewall for Linux."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="153K"
+
+SOURCES="http://www.stud.uni-hamburg.de/users/lennart/projects/fieryfilter/fieryfilter-0.4.tar.gz
+         http://www.stud.uni-hamburg.de/users/lennart/projects/fieryfilter/fieryfilter.png
+	 fieryfilter-0.4-libipq-1.diff"
+
+BUILDTIME="gettext pkgconfig"
+
+RUNTIME=">=gtk2-2.2.1 >=libxml2-2.0 iptables"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../fieryfilter-0.4-libipq-1.diff
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../fieryfilter.png $PKG/usr/share/pixmaps/fieryfilter.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

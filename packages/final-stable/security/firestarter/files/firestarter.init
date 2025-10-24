@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# /etc/rc.d/firestarter - init file for the Firestarter firewall
+#
+
+. /etc/rc.d/functions
+
+[ -x /etc/firestarter/firestarter.sh ] || exit 5
+[ -x /etc/firestarter/configuration ] || exit 6
+
+case "$1" in
+  start)
+    msg "Starting the Firestarter firewall"
+    run /etc/firestarter/firestarter.sh start
+    ;;
+  stop)
+    msg "Stopping the Firestarter firewall"
+    run /etc/firestarter/firestarter.sh stop
+    ;;
+  lock)
+    msg "Locking the Firestarter firewall"
+    run /etc/firestarter/firestarter.sh lock
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if [ -e /var/lock/subsys/firestarter -o -e /var/lock/firestarter ]
+    then
+      echo "firestarter is running"
+    else
+      echo "firestarter is not running"
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|lock|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

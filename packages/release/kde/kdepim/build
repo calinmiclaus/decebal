@@ -1,0 +1,26 @@
+NAME=kdepim
+VERSION=3.4.2
+ARCH=i686
+RELEASE=1
+DESC="KDE PIM Utilities."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="11102K"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.4.2 arts"
+
+function build() {
+    cd $SRC/$NAME-$VERSION
+    export PATH=$PATH:/opt/kde/bin
+    
+    ./configure --prefix=/opt/kde \
+                --disable-debug
+
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs MAINTAINERS README README.libical
+}

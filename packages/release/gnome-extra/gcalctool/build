@@ -1,0 +1,32 @@
+NAME=gcalctool
+VERSION=5.5.41
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A scientific calculator GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="1018K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gcalctool-5.5.41.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="libgnomeui"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+ 	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL \
+    NEWS README TODO MAINTAINERS
+}

@@ -1,0 +1,4 @@
+Un:%echo "3 comenzi cu ;";echo "press enter";read:menu 3 item 1
+Dos:%echo "3 comenzi cu ;";echo "press enter";read:menu 3 item 2
+Tres:%echo "3 comenzi cu ;";echo "press enter";read:menu 3 item 3
+Quadros:%echo "3 comenzi cu ;";echo "press enter";read:menu 3 item 4

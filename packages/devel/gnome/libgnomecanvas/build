@@ -1,0 +1,29 @@
+NAME=libgnomecanvas
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="An engine for structured graphics."
+GROUP=gnome
+LICENSE="LGPLv2"
+SIZE="562K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/libgnomecanvas-2.10.0.tar.bz2"
+
+RUNTIME=">=libglade-2.4.0 >=libart_lgpl-2.3.16 gnome-common"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING.LIB ChangeLog INSTALL \
+    NEWS README
+}

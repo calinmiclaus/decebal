@@ -1,0 +1,26 @@
+NAME=qcadesigner
+VERSION=1.4.1
+ARCH=i686
+RELEASE=1
+URL="http://qcadesigner.ca/"
+DESC="A design and simulation tool for Quantum Dot Cellular Automata (QCA)."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="1200K"
+
+SOURCES="http://qcadesigner.ca/dl/releases/1.4.1/QCADesigner-1.4.1-src.tar.gz"
+
+BUILDTIME="pkgconfig gettext"
+
+RUNTIME=">=gtk2-2.0.0 xorg"
+
+build() {
+  cd $SRC/QCADesigner-$VERSION
+  
+  ./autogen.sh --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING *ChangeLog INSTALL \
+    NEWS README* TODO
+}

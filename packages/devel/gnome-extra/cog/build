@@ -1,0 +1,30 @@
+NAME=cog
+VERSION=0.8.0
+ARCH=i686
+RELEASE=1
+URL="http://www.krakoa.dk/linux-software.html#COG"
+DESC="A program for editing advanced GNOME settings in an easy way."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="172K"
+HUSE="debug"
+
+SOURCES="http://www.krakoa.dk/progs/cog/cog-0.8.0.tar.gz"
+
+BUILDTIME="pkgconfig intltool gettext"
+
+RUNTIME=">=libgnomeui-2.6.0 >=gtk2-2.4.0 >=libglade-2.3.0 >=gconf-2.6.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug-output"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO*
+}

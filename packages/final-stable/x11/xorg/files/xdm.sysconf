@@ -1,0 +1,20 @@
+#
+# /etc/conf.d/xdm - configuration file for /etc/rc.d/xdm
+#
+
+# This is the display manager that you will use when the system
+# is going into runlevel 4 (xession).
+#
+# You must have the binary installed in order to use it.
+#
+#   Name                    Binary  
+#
+# kdm or kde           /opt/kde/bin/kdm
+# gdm or gnome         /opt/gnome/bin/gdm
+# wdm                  /usr/X11R6/bin/wdm
+# xdm                  /usr/X11R6/bin/xdm
+# 
+# Or set this to "console" or "tty" if you dont want a display manager.
+#
+
+DISPLAYMANAGER="gdm"

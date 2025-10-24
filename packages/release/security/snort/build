@@ -1,0 +1,32 @@
+NAME=snort
+VERSION=2.4.0
+ARCH=i686
+RELEASE=1
+URL="http://www.snort.org/"
+DESC="An advanced open source network intrusion detection system."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="2076K"
+HUSE="debug profile mysql pgsql"
+
+SOURCES="http://www.snort.org/dl/current/snort-2.4.0.tar.gz"
+
+RUNTIME="libpcap >=openssl-0.9.7e pcre"
+
+use mysql && RUNTIME="$RUNTIME mysql"
+use pgsql && RUNTIME="$RUNTIME postgresql"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+  use mysql && OPTS="$OPTS --with-mysql=/usr" || OPTS="$OPTS --without-mysql"
+  use pgsql && OPTS="$OPTS --with-postgresql=/usr" || OPTS="$OPTS --without-postgresql"
+  
+  ./configure --prefix=/usr \
+              --with-openssl=/usr \
+              $OPTS
+    
+  install_docs COPYING ChangeLog LICENSE RELEASE.NOTES
+}

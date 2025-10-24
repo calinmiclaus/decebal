@@ -1,0 +1,40 @@
+NAME=portmap
+VERSION=5beta
+ARCH=i686
+RELEASE=1
+URL="ftp://ftp.porcupine.org/pub/security/index.html"
+DESC="Manages RPC connections."
+GROUP=network
+LICENSE=OL
+SIZE="18K"
+
+SOURCES="ftp://ftp.win.tue.nl/pub/security/${NAME}_$VERSION.tar.gz 
+         http://ftp.debian.org/debian/pool/main/p/portmap/portmap_5-2.diff.gz
+         gcc3-errno_h.patch portmap.init"
+
+RUNTIME=">=tcp-wrappers-7.6"
+	 	 
+build() {
+  cd $SRC/${NAME}_$VERSION
+
+  patch -p1 < ../gcc3-errno_h.patch
+  patch -p1 < ../portmap_5-2.diff  
+  
+  # set out cflags here
+  sed -i "s:-Wall \$(COPT) -O2:-Wall \$(COPT) $CFLAGS:" Makefile
+        
+  mkdir -p $PKG/sbin $PKG/usr/share/{man/man8,doc/$NAME}  
+
+  make
+  make BASEDIR=$PKG install
+    
+  mv $PKG/sbin $PKG/usr/sbin
+    
+  ln -sf portmap $PKG/usr/sbin/rpc.portmap
+    
+  install -D -m 0700 ../portmap.init $PKG/etc/rc.d/portmap
+  
+  rm -rf $PKG/usr/share/doc/$NAME
+  
+  install_docs BLURB CHANGES README    
+}

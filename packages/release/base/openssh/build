@@ -1,0 +1,44 @@
+NAME=openssh
+VERSION=4.0p1
+ARCH=i686
+RELEASE=1
+URL="http://www.openssh.org/"
+DESC="OpenBSD's excellent OpenSSHD for Linux."
+GROUP=base
+LICENSE=BSD
+SIZE="834K"
+
+SOURCES="http://openbsd.md5.com.ar/pub/OpenBSD/OpenSSH/portable/openssh-4.0p1.tar.gz
+         sshd.init sshd.sysconf sshd_config"
+
+BACKUPS="etc/ssh/ssh_config
+         etc/ssh/sshd_config
+	 etc/conf.d/sshd"
+
+RUNTIME=">=openssl-0.9.7e >=zlib-1.2.1 tcp-wrappers"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  add_flags -fpie -pie
+  
+  ./configure --prefix=/usr \
+    --libexecdir=/usr/sbin \
+    --sysconfdir=/etc/ssh \
+    --with-tcp-wrappers \
+    --with-privsep-user=sshd \
+    --with-md5-passwords \
+    --with-privsep-path=/var/lib/ssh/empty
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../sshd.init $PKG/etc/rc.d/sshd
+  install -D -m 0644 ../sshd.sysconf $PKG/etc/conf.d/sshd
+  install -m 0600 ../sshd_config $PKG/etc/ssh/sshd_config
+  
+  mkdir -p $PKG/{var/lib/ssh/empty,usr/share/misc}
+  mv $PKG/usr/share/Ssh.bin $PKG/usr/share/misc/
+  
+  install_docs CREDITS ChangeLog INSTALL OVERVIEW LICENCE README* \
+    WARNING.RNG
+}

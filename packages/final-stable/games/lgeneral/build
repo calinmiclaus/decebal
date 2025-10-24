@@ -1,0 +1,29 @@
+NAME=lgeneral
+VERSION=1.2beta2
+ARCH=i686
+RELEASE=1
+URL="http://lgames.sourceforge.net/"
+DESC="A turn-based strategy engine heavily inspired by Panzer General."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="858K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/lgeneral/lgeneral-1.2beta-2.tar.gz
+         lgeneral.desktop"
+
+RUNTIME=">=libsdl-1.1.4 sdl_mixer"
+
+build() {
+  cd $SRC/$NAME-1.2beta-2
+  
+  ./configure --prefix=/usr/games \
+              --mandir=/usr/games/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../lgeneral.desktop $PKG/usr/share/applications/lgeneral.desktop
+  install -D -m 0644 lgeneral48.png $PKG/usr/share/pixmaps/lgeneral.png    
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README* TODO
+}

@@ -1,0 +1,34 @@
+NAME=evas
+VERSION=0.9.9.013
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="A clean display canvas API for several target display systems."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="1371K"
+HUSE="static"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=evas-0.9.9.013.tar.gz
+
+SOURCES="$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=freetype2-2.1.7 xorg directfb libpng libjpeg eet edb"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL NEWS README
+}
+
+	       
+  

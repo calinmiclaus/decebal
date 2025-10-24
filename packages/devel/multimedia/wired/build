@@ -1,0 +1,19 @@
+NAME=wired
+VERSION=0.11
+ARCH=i686
+RELEASE=1
+URL="http://bloodshed.net/wired/"
+DESC="Aims to be a professional music production and creation software running on the Linux operating system."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="2176K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wired/wired-0.11.tar.gz"
+
+build() {
+  cd $SRC/$NAME
+  
+  install_docs AUTHORS ChangeLog INSTALL LICENSE \
+    NEWS README TODO
+}
+

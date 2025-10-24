@@ -1,0 +1,31 @@
+NAME=sqlite3
+VERSION=3.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.sqlite.org/"
+DESC="C library that implements a self-contained, embeddable, zero-configuration SQL database engine."
+GROUP=database
+LICENSE="GPLv2"
+SIZE="1320K"
+HUSE="static debug"
+
+SOURCES="http://www.sqlite.org/sqlite-3.2.1.tar.gz"
+
+RUNTIME="tcl"
+
+build() {
+  cd $SRC/sqlite-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  mkdir -p build
+  cd build
+  ../configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  cd ..
+    
+  install_docs README VERSION
+}

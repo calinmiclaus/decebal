@@ -1,0 +1,4 @@
+md5: 0f8fabe87cf54f409b57c6283f0c0c3d ntp-4.2.0.tar.gz
+md5: db3d21fc05bfe132d7f7360aaf1c4090 ntpd.init
+md5: 814b3221a2b3e74de0136b61192ebf3f ntpd.logrotate
+md5: 9fdc62b70441e1916a38bafcb148d906 ntpd.sysconf

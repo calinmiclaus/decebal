@@ -1,0 +1,26 @@
+NAME=libogg
+VERSION=1.1
+ARCH=i686
+RELEASE=1
+URL="http://www.xiph.org/ogg/vorbis/download"
+DESC="Ogg bitstream and framing library."
+GROUP=multimedia
+LICENSE=BSDL
+SIZE="276K"
+HUSE="static"
+
+SOURCES="http://www.vorbis.com/files/1.0.1/unix/libogg-1.1.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS CHANGES COPYING README
+}

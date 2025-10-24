@@ -1,0 +1,20 @@
+post_install() {
+  if ! grep -q "^/usr/bin/zsh" /etc/shells
+  then
+    echo "/usr/bin/zsh" >> /etc/shells
+  fi
+}
+
+post_upgrade() {
+  if ! grep -q "^/usr/bin/zsh" /etc/shells
+  then
+    echo "/usr/bin/zsh" >> /etc/shells
+  fi
+}
+
+post_remove() {
+  if grep -q "^/usr/bin/zsh" /etc/shells
+  then
+    sed -i "s:/usr/bin/zsh::" /etc/shells
+  fi
+}

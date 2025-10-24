@@ -1,0 +1,53 @@
+NAME=svgalib
+VERSION=1.9.21
+ARCH=i686
+RELEASE=1
+URL="http://www.svgalib.org/"
+DESC="A library that provides VGA and SVGA mode in console."
+GROUP=graphics
+LICENSE=PD
+SIZE="928K"
+
+SOURCES="http://www.arava.co.il/matan/svgalib/svgalib-1.9.21.tar.gz
+         svgalib-1.9.21-decebal-1.diff"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # patch is from gentoo (merged some patches)
+  patch -p1 < ../svgalib-1.9.21-decebal-1.diff  
+
+  sed -i -e 's:devfs_mk_symlink:DEVFS_MK_SYMLINK:' kernel/svgalib_helper/main.c
+  sed -i '/^INSTALL_PROGRAM/s: -s : :' Makefile.cfg
+
+# damn thing wong work...too tired to think straight
+#  cd kernel/svgalib_helper
+#  make
+#  cd ../..
+  
+  make OPTIMIZE="${CFLAGS}" static
+  rm -f src/svgalib_helper.h
+
+  make OPTIMIZE="${CFLAGS}" shared
+  ln -s libvga.so.1.9.21 sharedlib/libvga.so
+
+  make OPTIMIZE="${CFLAGS}" LDFLAGS="-L../sharedlib" textutils lrmi utils
+  make OPTIMIZE="${CFLAGS}" -C gl
+  make OPTIMIZE="${CFLAGS}" -C gl libvgagl.so.1.9.21
+
+  ln -s libvgagl.so.1.9.21 sharedlib/libvgagl.so
+
+  rm -f src/svgalib_helper.h
+  make OPTIMIZE="${CFLAGS}" -C src libvga.so.1.9.21
+
+  cp -a src/libvga.so.1.9.21 sharedlib/
+  make OPTIMIZE="${CFLAGS}" LDFLAGS='-L../sharedlib' -C threeDKit lib3dkit.a
+  make OPTIMIZE="${CFLAGS} -I../gl" LDFLAGS='-L../sharedlib' demoprogs
+
+  mkdir -p $PKG/etc/vga $PKG/usr/{include,lib,bin,share/man}
+  make TOPDIR="$PKG" OPTIMIZE="${CFLAGS}" INSTALLMODULE="" install
+  
+  install_docs 0-README LICENSE 
+}

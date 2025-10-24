@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/ntpd - control file for the NTP daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/ntpd
+
+pidfile="$PIDFILE"
+
+case "$1" in
+  start)
+    msg "Starting the Network Time Protocol daemon"
+    start_service /usr/sbin/ntpd -p $PIDFILE -l $LOGFILE $NPTD_OPTS
+    ;;
+  stop)
+    msg "Stopping the Network Time Protocol daemon"
+    stop_service /usr/sbin/ntpd
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/ntpd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

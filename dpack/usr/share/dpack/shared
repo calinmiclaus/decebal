@@ -1,0 +1,406 @@
+#!/bin/bash
+
+pkg_check_syntax() {
+  local PACKAGES="${1##*/}"
+  local COUNTER=$(echo $PACKAGE | tr '-' "\n" | wc -l)
+  
+  COUNTER=$(($COUNTER + 1))
+  
+  if [ "$COUNTER" -lt "3" ]
+  then
+    msg_error "package $1 is not a Decebal Linux compatbile package." >&2
+    pkg_exit "pkg_check_syntax()" "check_package_syntax" "$LINENO" 1
+  fi
+}
+
+pkg_check_tbz2() {
+  if [ ! -r ${1}.tbz2 ]
+  then
+    msg_error "package $1 does not end in tbz2." >&2
+    pkg_exit "pkg_check_tbz2()" "check_if_package_ends_in_tbz2" "$LINENO" 1
+  fi
+}
+
+pkg_check_regular() {
+  if [ ! -f $1 ]
+  then
+    msg_error "package $1 is not a regular file." >&2
+    pkg_exit "pkg_check_regular()" "check_if_package_is_a_regular_file" "$LINENO" 1
+  fi
+}
+
+pkg_check_integrity() {
+  msg_verbose_nnl "checking package integrity..."
+  bzip2 -t $1 2>/dev/null
+  if [ $? -ne 0 ]
+  then
+    msg_failed
+    msg_failed_verbose
+    msg_error "package is corrupt (bzip2 -t $1 failed)." >&2
+    pkg_exit "pkg_check_integrity()" "check_if_package_unpacks correctly." "$LINENO" 1
+  fi
+  msg_ok_verbose
+}
+    			      
+pkg_extract_info() {
+  msg_verbose_nnl "extracting meta info..."
+
+  tar -C $TMP -jxf $1 .INFO .FILES .DEPENDS .BACKUPS .INSTALL \
+    .CONFLICTS .PROVIDES .REPLACES 2>/dev/null
+  if [ ! -f $TMP/.INFO -o ! -f $TMP/.FILES ]
+  then
+    msg_failed
+    msg_error "could not extract package meta info files (.INFO or .FILES)." >&2
+    pkg_exit "pkg_extract_info()" "extract_meta_info_file" "$LINENO" 1
+  fi
+  
+  [ -f $TMP/.DEPENDS ] && PKG_HAS_DEPENDS="1"
+  [ -f $TMP/.BACKUPS ] && PKG_HAS_BACKUPS="1"
+  [ -f $TMP/.INSTALL ] && PKG_HAS_INSTALL="1"
+  [ -f $TMP/.CONFLICTS ] && PKG_HAS_CONFLICTS="1"
+  [ -f $TMP/.PROVIDES ] && PKG_HAS_PROVIDES="1"
+  [ -f $TMP/.REPLACES ] && PKG_HAS_REPLACES="1"
+   
+  msg_done_verbose
+}
+
+pkg_check_depends() {
+  if [ ! "$PKG_NODEPS" = "1" -a "$PKG_HAS_DEPENDS" = "1" ]
+  then
+     msg_verbose_nnl "checking package dependencies..."  
+     
+     local MISSINGDEPENDENCIES=""
+     
+     . $TMP/.DEPENDS
+     
+     for DEP in ${DEPENDS[@]}
+     do
+       if ! check_depend $(echo -e $DEP)
+       then
+         MISSINGDEPENDENCIES="$MISSINGDEPENDENCIES $DEP"
+       fi
+     done
+     
+     if [ -n "$MISSINGDEPENDENCIES" ]
+     then
+       msg_failed_verbose
+       msg_failed
+       msg_error "missing dependencies: " >&2
+       for DEP in $MISSINGDEPENDENCIES
+       do
+         echo -e "\t $DEP"
+       done
+       pkg_exit "pkg_check_depends()" "check_package_dependencies" "$LINENO" 1
+     fi  				 
+     msg_ok_verbose  
+  fi
+}
+
+pkg_check_files() {
+  if [ ! "$PKG_FORCE" = "1" -a ! "$ACTION" = "upgrade" ]
+  then
+    msg_verbose_nnl "checking for existing files..."
+    
+    local EXISTINGFILES=""
+    
+    . $TMP/.FILES
+    
+    for FILE in ${FILES[@]}
+    do
+      if [ "$PKG_HAS_BACKUPS" = "1" ]
+      then
+        . $TMP/.BACKUPS
+	if ! echo ${BACKUPS[@]} | grep -q "$FILE"
+	then
+          if [ ! -d $PKG_ROOT/$FILE -a -e $PKG_ROOT/$FILE ]
+          then
+	    EXISTINGFILES="$EXISTINGFILES $FILE"
+          fi
+	fi
+      else
+        if [ ! -d $PKG_ROOT/$FILE -a -e $PKG_ROOT/$FILE ]
+        then
+	  EXISTINGFILES="$EXISTINGFILES $FILE"
+        fi
+      fi
+    done
+    
+    unset FILES BACKUPS
+    
+    if [ -n "$EXISTINGFILES" ]
+    then
+       msg_failed_verbose
+       msg_failed
+       msg_error "existing files: "
+       for FILE in $EXISTINGFILES
+       do
+         echo -e "\t \\$FILE"
+       done
+       pkg_exit "pkg_check_files()" "check_for_existing_files" "$LINENO" 1
+    fi    
+    msg_ok_verbose
+  fi
+}
+
+pkg_is_virtual() {
+  if [ -h ${PKG_ROOT}${DATABASEDIR}/virtual/$1 ]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+pkg_check_conflicts() {
+  if [ "$PKG_HAS_CONFLICTS" = "1" ]
+  then
+    msg_verbose_nnl "checking for package conflicts..."
+    
+    local INSTALLEDPACKAGES=""
+    
+    . $TMP/.CONFLICTS 2>/dev/null
+    
+    for PKG in ${CONFLICTS[@]}
+    do
+      if pkg_is_installed $PKG && ! pkg_is_virtual $PKG
+      then
+        INSTALLEDPACKAGES="$INSTALLEDPACKAGES $PKG"
+      fi
+    done
+    
+    # Replace old packages with new ones, dont ask...just
+    # do the action atomatically...takes some time...but its
+    # very usefull is some cases.
+    if [ -n "$INSTALLEDPACKAGES" ]
+    then
+      if [ -f $TMP/.REPLACES ]
+      then
+        msg_replace_verbose
+        . $TMP/.REPLACES 2>/dev/null
+	. $TMP/.INFO 2>/dev/null
+        for REPLACE in ${REPLACES[@]}
+        do
+          msg_verbose_nnl "replacing '$REPLACE' with '$NAME'..."
+          pkg_remove -d $REPLACE >/dev/null 2>&1
+	  if [ $? -ne 0 ]
+	  then
+	    msg_failed_verbose
+	    msg_failed
+	    msg_error "There was an unknown error while replacing '$REPLACE' with '$NAME'."
+	    pkg_exit "pkg_check_conflicts()" "error_when_replacing" "$LINENO" 1
+	  else
+	    msg_done_verbose
+	  fi
+        done
+      else
+        msg_failed_verbose
+        msg_failed
+        msg_error "conflicting packages (remove them and try again):" >&2
+        for PKG in $INSTALLEDPACKAGES
+        do
+          echo -e "\t $(get_installed_pkg $PKG)" >&2
+        done
+        pkg_exit "pkg_check_conflicts()" "check_for_package_conflicts" "$LINENO" 1
+      fi
+    else
+      msg_ok_verbose
+    fi    
+  fi
+}
+
+pkg_create_db() {
+   msg_verbose_nnl "creating database entry..."
+   
+   local INSTALLDATE=$(date -u "+%a %b %e %H:%M:%S %Y")
+   local CSIZE="$(du -cbh $PACKAGE | tail -n 1 | awk '{print $1}')"
+   
+   [ -d ${PKG_ROOT}${DATABASEDIR}/db ] && mkdir -p ${PKG_ROOT}${DATABASEDIR}/db
+   [ -d ${PKG_ROOT}${DATABASEDIR}/virtual ] && mkdir -p ${PKG_ROOT}${DATABASEDIR}/virtual
+   
+   unset NAME VERSION ARCH RELEASE URL DESC GROUP LICENSE MAINTAINER \
+     SIZE BUILDDATE DEPENDS FILES CONFLICTS PROVIDES REPLACES BACKUPS
+
+   . $TMP/.INFO
+   
+   local DBENTRY=${PKG_ROOT}${DATABASEDIR}/db/$NAME-$VERSION-$ARCH-$RELEASE
+   
+   cat << EOF > $DBENTRY
+NAME=$NAME
+VERSION=$VERSION
+ARCH=$ARCH
+RELEASE=$RELEASE
+URL="$URL"
+DESC="$DESC"
+GROUP=$GROUP
+LICENSE="$LICENSE"
+MAINTAINER="$MAINTAINER"
+USIZE="$SIZE"
+CSIZE="$CSIZE"
+BUILDDATE="$BUILDDATE"
+INSTALLDATE="$INSTALLDATE"
+EOF
+
+  echo >> $DBENTRY
+  cat $TMP/.FILES >> $DBENTRY
+    
+  [ -f $TMP/.DEPENDS ] && ( echo >> $DBENTRY ; cat $TMP/.DEPENDS >> $DBENTRY )
+  [ -f $TMP/.BACKUPS ] && ( echo >> $DBENTRY ; cat $TMP/.BACKUPS >> $DBENTRY )
+  [ -f $TMP/.CONFLICTS ] &&  ( echo >> $DBENTRY ; cat $TMP/.CONFLICTS >> $DBENTRY )
+  [ -f $TMP/.REPLACES ] &&  ( echo >> $DBENTRY ; cat $TMP/.REPLACES >> $DBENTRY )
+  [ -f $TMP/.INSTALL ] && ( echo >> $DBENTRY ; cat $TMP/.INSTALL >> $DBENTRY )
+  [ -f $TMP/.PROVIDES ] && ( echo >> $DBENTRY ; cat $TMP/.PROVIDES >> $DBENTRY )
+      
+  if [ -f $TMP/.PROVIDES ]
+  then
+    . $TMP/.PROVIDES
+    
+    for PROVIDE in ${PROVIDES[@]}
+    do
+      if [ ! -h ${PKG_ROOT}${DATABASEDIR}/virtual/$PROVIDE ]
+      then
+        ln -sf ../db/$NAME-$VERSION-$ARCH-$RELEASE ${PKG_ROOT}${DATABASEDIR}/virtual/$PROVIDE
+      fi
+    done
+  fi
+  
+  echo >> $DBENTRY
+  
+  local RNAME="$NAME"
+  
+  # We need a REQUIRED field for each package that has dependencies (this will help not
+  # break the database when removing a package), so we write it here.
+  if [ -f $TMP/.DEPENDS ]
+  then
+    . $TMP/.DEPENDS
+    for DEP in ${DEPENDS[@]}
+    do
+      if [ -f ${PKG_ROOT}${DATABASEDIR}/virtual/$DEP ]
+      then
+        continue
+      fi
+
+      local DNAME=$(get_dep_name $DEP)
+      if [ -n "$DNAME" ]
+      then
+        if pkg_is_installed $DNAME
+        then
+	  local IPKG=$(get_installed_pkg $DNAME)
+	  
+	  . ${PKG_ROOT}${DATABASEDIR}/db/$IPKG 2>/dev/null
+	
+	  local INDEX=${#REQUIRED[*]}
+	  
+	  [ "$INDEX" = "" ] && INDEX=0
+        
+	  if ! echo ${REQUIRED[@]} | grep -q $RNAME
+	  then
+	    echo "REQUIRED[$INDEX]=\"$RNAME\"" 1>> ${PKG_ROOT}${DATABASEDIR}/db/$IPKG 2>/dev/null
+	  fi
+	  unset IPKG REQUIRED DNAME DEP
+        fi
+      fi
+    done
+  fi    
+  
+  # Lets say the user removes a package using the -d (--nodeps) option, then
+  # the package database will break, so we check here if we havae packages
+  # that depend on the package that we install now.
+  local ISREQUIRED=$(grep -H "^DEPENDS\[[[:digit:]]*\]=\"*$RNAME*\"" ${PKG_ROOT}${DATABASEDIR}/db/* 2>/dev/null)
+  if [ -n "$ISREQUIRED" ]
+  then
+    local INDEX=0
+    for RPKG in $ISREQUIRED
+    do
+      RPKG="${RPKG%:*}"
+      RPKG="${RPKG##*/}"
+      echo "REQUIRED[$INDEX]=\"$(pkgname $RPKG)\"" >> $DBENTRY
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  msg_ok_verbose    	
+}
+
+pkg_exclude() {
+  for FILE in .INFO .FILES .DEPENDS .CONFLICTS .REPLACES .PROVIDES .INSTALL .DESCRIPTION .BACKUPS
+  do
+    echo "$FILE" >> $1
+  done
+}
+
+pkg_unpack() {
+  if [ "$PKG_HAS_INSTALL" ]
+  then
+    . $TMP/.INSTALL
+    if [ "$ACTION" = "install" ]
+    then
+      pkg_exec pre_install
+    elif [ "$ACTION" = "upgrade" ]
+    then
+      pkg_exec pre_remove
+      pkg_exec pre_upgrade
+    fi
+  fi
+  
+  msg_verbose "${ACTION}ing files..." && echo
+  
+  [ "$PKG_VERBOSE" = "1" ] && TAROPTS="-jxpv" || TAROPTS="-jxp"
+  
+  if [ ! "$PKG_HAS_BACKUPS" = "1" ]
+  then
+    pkg_exclude $TMP/EXCLUDE
+    for LINE in $(tar -C $PKG_ROOT/ $TAROPTS --exclude-from $TMP/EXCLUDE -f $1)
+    do
+      LINELENGTH="${#LINE}"
+      if [ ! "${LINE:$(($LINELENGTH - 1))}" = "/" ]
+      then
+        echo "        $PKG_ROOT/$LINE"
+      fi
+    done
+  else
+    . $TMP/.BACKUPS
+    > $TMP/BACKUPS
+    for BACKUP in ${BACKUPS[@]}
+    do
+      echo $BACKUP >> $TMP/BACKUPS
+    done
+    pkg_exclude $TMP/BACKUPS
+    for LINE in $(tar -C $PKG_ROOT/ $TAROPTS --exclude-from $TMP/BACKUPS -f $1)
+    do
+      LINELENGTH="${#LINE}"
+      if [ ! "${LINE:$(($LINELENGTH - 1))}" = "/" ]
+      then
+        echo "        $PKG_ROOT/$LINE"
+      fi
+    done
+    tar -C $TMP -jxf $1 $(cat $TMP/BACKUPS) 2>/dev/null
+    for BACKUP in ${BACKUPS[@]}
+    do
+      if [ -f $TMP/$BACKUP ]
+      then
+        if [ -f $PKG_ROOT/$BACKUP ]
+        then
+          mv $TMP/$BACKUP $PKG_ROOT/${BACKUP}.pkgnew
+        else
+          mv $TMP/$BACKUP $PKG_ROOT/$BACKUP
+        fi
+      fi
+    done
+  fi
+  
+  if [ "$ACTION" = "install" ]
+  then
+    pkg_exec post_install
+  elif [ "$ACTION" = "upgrade" ]
+  then
+    pkg_exec post_remove
+    pkg_exec post_upgrade
+  fi
+
+  unset NAME VERSION ARCH RELEASE URL DESC GROUP LICENSE USIZE \
+    CSIZE MAINTAINER FILES DEPENDS CONFLICTS PROVIDES REPLACES \
+    FILES REQUIRED USEFLAGS BUILDDATE INSTALLDATE SIZE BACKUPS \
+    PKG_HAS_DEPENDS PKG_HAS_BACKUPS PKG_HAS_CONFLICTS \
+    PKG_HAS_INSTALL PKG_HAS_PROVIDES INSTALLEDPACKAGES \
+    EXISTINGFILES	    
+}

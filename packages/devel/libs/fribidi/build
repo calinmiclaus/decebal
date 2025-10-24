@@ -1,0 +1,28 @@
+NAME=fribidi
+VERSION=0.10.4
+ARCH=i686
+RELEASE=1
+URL="http://fribidi.sourceforge.net/"
+DESC="A Free Implementation of Unicode Bidirectional Algorith."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="327K"
+HUSE="static debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/fribidi/fribidi-0.10.4.tar.bz2"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ANNOUNCE AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README THANKS TODO
+}

@@ -1,0 +1,32 @@
+NAME=zoo
+VERSION=2.10
+ARCH=i686
+RELEASE=1
+DESC="The zoo archiver."
+URL="http://ftp.jg555.com/linux/archivers/"
+GROUP=system
+LICENSE="OL"
+SIZE="169K"
+
+SOURCES="zoo-2.10-gcc33-1.patch.gz zoo-2.10.linux.diff.gz
+         http://devel.decebal.org/sources/zoo-2.10.tar.gz"
+
+build() {
+#  cd $SRC/$NAME-$VERSION
+  cd $SRC 
+  patch -p1 < zoo-2.10.linux.diff
+  patch -p1 < zoo-2.10-gcc33-1.patch
+  
+  # put our cflags here.
+  sed -i "s:OPTIM \= \-O3:OPTIM \= $CFLAGS:" makefile
+      
+  make DESTDIR=/usr/bin linux
+  mkdir -p $PKG/usr/{bin,share/man/man1}
+  make DESTDIR=$PKG/usr/bin inst_prod
+    
+  install -m 0644 fiz.1 $PKG/usr/share/man/man1/fiz.1
+  install -m 0644 zoo.1 $PKG/usr/share/man/man1/zoo.1
+    
+  install_docs Checksums Copyright Install List
+}
+

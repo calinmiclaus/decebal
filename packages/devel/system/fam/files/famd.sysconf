@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/famd - configuration file for /etc/rc.d/famd
+#
+
+# Additional arguments for the FAM daemon.
+FAMD_OPTS=""

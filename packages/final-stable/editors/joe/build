@@ -1,0 +1,30 @@
+NAME=joe
+VERSION=3.1
+ARCH=i686
+RELEASE=1
+URL="http://sourceforge.net/projects/joe-editor"
+DESC="A Free ASCII-Text Screen Editor for UNIX."
+GROUP=editors
+LICENSE="GPLv1"
+SIZE="372K"
+
+SOURCES="http://belnet.dl.sourceforge.net/sourceforge/joe-editor/$NAME-$VERSION.tar.gz"
+
+BACKUPS="etc/joe/jmacsrc
+         etc/joe/joerc
+         etc/joe/jpicorc
+         etc/joe/jstarrc
+         etc/joe/rjoerc"
+
+RUNTIME="ncurses"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING ChangeLog INFO LIST NEWS README* TODO
+}

@@ -1,0 +1,31 @@
+NAME=xchm
+VERSION=0.9.8
+ARCH=i686
+RELEASE=1
+URL="http://xchm.sourceforge.net/"
+DESC="A .chm viewer for *NIX."
+GROUP=doc-tools
+LICENSE="GPLv2"
+SIZE="318K"
+HUSE="nls debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/xchm/xchm-0.9.8.tar.gz
+         xchm.desktop"
+
+RUNTIME=">=wxwidgets-2.4.0 gtk2 chmlib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls || OPTS="--disable-nls"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../xchm.desktop $PKG/usr/share/applications/xchm.desktop
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog \
+    NEWS README 
+}

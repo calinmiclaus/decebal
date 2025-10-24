@@ -1,0 +1,31 @@
+NAME=xfce4-battery-plugin
+VERSION=0.2.0
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="Battery monitor panel plugin for XFce4."
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="331K"
+HUSE="static debug profile"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-battery-plugin-0.2.0.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=xfce4-panel-3.99.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README
+}

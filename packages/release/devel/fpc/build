@@ -1,0 +1,20 @@
+NAME=fpc
+VERSION=2.0.0
+ARCH=i686
+RELEASE=1
+URL="http://www.freepascal.org/"
+DESC="A free Pascal compiler."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="20860K"
+
+SOURCES="ftp://ftp.nl.freepascal.org/pub/fpc/dist/i386-linux-2.0.0/fpc-2.0.0.i386-linux.tar
+	 inst"
+
+build() {
+  cd $SRC
+
+  mkdir -p $PKG/usr
+
+  sh inst $PKG
+}

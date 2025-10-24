@@ -1,0 +1,30 @@
+NAME=ncftp
+VERSION=3.1.9
+ARCH=i686
+RELEASE=1
+DESC="A set of free application programs implementing FTP"
+URL="http://www.ncftp.com/"
+GROUP=network
+LICENSE=TCAL
+SIZE="392K"
+HUSE="socks5"
+
+SOURCES="ftp://ftp.ncftp.com/ncftp/ncftp-3.1.9-src.tar.bz2"
+
+RUNTIME=">=ncurses-5.3"
+
+use socks5 && RUNTIME="$RUNTIME socks5"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  use socks5 && OPTS="--with-socks5"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc $OPTS
+  make
+  make prefix=$PKG/usr mandir=$PKG/usr/man install
+
+  install_docs README.txt doc/CHANGELOG.txt doc/LICENSE.txt \
+    doc/READLINE.txt doc/FIREWALLS_AND_PROXIES.txt
+}

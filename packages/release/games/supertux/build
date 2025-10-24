@@ -1,0 +1,28 @@
+NAME=supertux
+VERSION=0.1.2
+ARCH=i686
+RELEASE=1
+URL="http://super-tux.sf.net/"
+DESC="SuperTux is a classic 2D jumpn run sidescroller game."
+GROUP=games
+LICENSE=GPLv2
+SIZE="5391K"
+
+SOURCES="http://games.linux.sk/files/supertux-0.1.2.tar.bz2
+         supertux.desktop supertux.png"
+
+RUNTIME=">=libsdl-1.2.4 sdl_mixer sdl_image xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr/games
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../supertux.desktop $PKG/usr/share/applications/supertux.desktop
+  install -D -m 0644 ../supertux.png $PKG/usr/share/pixmaps/supertux.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL LEVELDESIGN \
+    NEWS README TODO
+}

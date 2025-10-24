@@ -1,0 +1,25 @@
+NAME=fluxconf
+VERSION=0.9.8
+ARCH=i686
+RELEASE=1
+URL="http://devaux.fabien.free.fr/flux/"
+DESC="A GTK configuration program for fluxbox"
+GROUP="x11"
+LICENSE=BSDL
+SIZE="229K"
+
+SOURCES="http://devaux.fabien.free.fr/flux/$NAME-$VERSION.tar.gz"
+
+RUNTIME="gtk2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/fluxbox \
+              --sysconfdir=/etc/opt/fluxbox
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README
+}

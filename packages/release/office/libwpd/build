@@ -1,0 +1,25 @@
+NAME=libwpd
+VERSION=0.8.0
+ARCH=i686
+RELEASE=1
+URL="http://libwpd.sourceforge.net/"
+DESC="A library for importing WordPerfect (tm) documents."
+GROUP=office
+LICENSE="LGPLv2.1"
+SIZE="438K"
+HUSE="static debug"
+
+SOURCES="http://puzzle.dl.sourceforge.net/sourceforge/libwpd/libwpd-0.8.0.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES COPYING INSTALL README TODO
+}

@@ -1,0 +1,24 @@
+NAME=gfax
+VERSION=0.7.3
+ARCH=i686
+RELEASE=1
+URL="http://gfax.cowlug.org/"
+DESC="A FAX program for then GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="732K"
+
+SOURCES="http://gfax.cowlug.org/gfax-0.7.3-1.tar.gz"
+
+build() {
+  cd $SRC/$NAME
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog FAQ INSTALL \
+    NEWS README TODO
+}
+

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+pkg_info() {
+  local PKG="$1"
+  
+  if [ ! -f $DATABASEDIR/update/$1 ]
+  then
+    echo "Package '$1' not found in database. Use 'dupdate sync' to sync the package update database." >&2
+    return 1
+  fi
+  
+  . $DATABASEDIR/update/$1 2>/dev/null
+  
+  LATESTPKG="$UNAME-$UVERSION-i686-$URELEASE"
+  if pkg_is_installed $UNAME
+  then
+    INSTALLEDPKG="`get_installed_pkg $UNAME`"
+    if [ ! "$LATESTPKG" = "$INSTALLEDPKG" ]
+    then
+      echo "LATEST       : $LATESTPKG [ NEW ]"
+      echo "INSTALLED    : $INSTALLEDPKG"
+    else
+      echo "LATEST       : $LATESTPKG [ SAME ]"
+      echo "INSTALLED    : $INSTALLEDPKG"
+    fi
+  else
+     echo "LATEST       : $LATESTPKG"
+     echo "INSTALLED    : not installed"
+  fi							     
+  echo "HOMEPAGE     : $UURL"
+  echo "DESCRIPTION  : $UDESC"
+  echo "DOWNLOAD     : http://$UPDATEMIRROR/$UNAME-$UVERSION-i686-$URELEASE.tbz2"
+  echo "SIZE         : $USIZE"
+  echo "DEPENDENCIES : ${UDEPENDS[@]}"
+  echo "MD5SUM       : $UMD5SUM"
+  
+  # Future developement...
+  if [ ! "${AVERSION[@]}" = "" ]
+  then
+    echo
+    echo "ALTERNATIVE VERSIONS:"
+    for NR in `seq 0 ${#AVERSION[@]}`
+    do
+      [ $NR -gt 0 ] && NR=$(($NR -1 ))
+      
+      echo "$NAME [${AVERSION[$NR]} ${ARELEASE[$NR]}]"
+    done
+  fi
+  
+  unset NAME VERSION RELEASE URL DESC SIZE DEPENDS \
+    MD5SUM AVERSION ARELEASE AMD5SUM
+}

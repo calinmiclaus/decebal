@@ -1,0 +1,28 @@
+NAME=netkit-rwall
+VERSION=0.17
+ARCH=i686
+RELEASE=1
+DESC="This is netkit-rwall for Linux."
+URL="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/"
+GROUP=network
+LICENSE=PD
+SIZE="11K"
+
+SOURCES="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-rwall-0.17.tar.gz"
+
+RUNTIME=">=netkit-base-0.17
+         portmap"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/{bin,sbin,man/man{1,8}}
+  
+  ./configure --prefix=$PKG/usr
+  make
+  make DESTDIR=$PKG install
+
+  ln -sf rpc.rwalld $PKG/usr/sbin/rwalld
+  
+  install_docs BUGS MRULES README
+}

@@ -1,0 +1,43 @@
+NAME=dvdrip
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://www.exit1.org/dvdrip/"
+DESC="A full featured DVD copy program written in Perl."
+GROUP=multimedia
+LICENSE=""
+SIZE=""
+
+SOURCES="http://www.exit1.org/dvdrip/dist/Video-DVDRip-0.52.3.tar.gz"
+
+build() {
+
+  install_docs 
+}
+
+# $Id$
+# Description: Perl-gtk frontend for transcode
+# URL: http://www.exit1.org/dvdrip
+# Maintainer: Han Boetes <han@mijncomputer.nl>
+# Packager: Han Boetes <han@mijncomputer.nl>
+# Depends on: transcode gtk-perl
+
+name=dvdrip
+version=0.50.18
+release=1
+source=(http://www.exit1.org/$name/dist/Video-DVDRip-$version.tar.gz)
+
+build()
+{
+    cd Video-DVDRip-$version
+        perl Makefile.PL
+	    make
+	        make install DESTDIR=$PKG
+		    find $PKG \
+		            -name perllocal.pod \
+			            -o -name "*.bs" \
+					-o -name "*LocaleData*" \
+					        -o -name .packlist | xargs rm -rf
+						    find $PKG -depth -empty -exec rm -rf {} \;
+						    }
+						    

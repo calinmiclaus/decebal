@@ -1,0 +1,51 @@
+NAME=hal
+VERSION=0.4.7
+ARCH=i686
+RELEASE=1
+URL="http://www.freedesktop.org/Software/hal"
+DESC="Hardware Abstraction Layer"
+GROUP=system
+LICENSE="GPLv2 AFLv2.0"
+SIZE="1317K"
+HUSE="selinux"
+
+SOURCES="http://freedesktop.org/~david/dist/hal-0.4.7.tar.gz
+         hald.init hal-device-manager.desktop"
+
+BUILDTIME="pkgconfig
+           linux-libc-headers
+	   gettext"
+
+RUNTIME=">=glib2-2.4 >=dbus-0.22 expat udev hotplug libcap util-linux python gnome-python"
+
+use selinux && RUNTIME="$RUNTIME selinux"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use selinux && OPTS="--enable-selinux" || OPTS="--disable-selinux"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var \
+	      --mandir=/usr/share/man \
+	      --enable-fstab-sync \
+	      --enable-hotplug-map \
+	      --disable-doxygen-docs \
+	      --disable-docbook-docs \
+	      --libexecdir=/usr/sbin \
+	      --with-pid-file=/var/run/hal/hald.pid \
+	      --with-hal-user=haldaemon \
+	      --with-hal-group=haldaemon \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/var/run/hal
+  
+  install -D -m 0755 ../hald.init $PKG/etc/rc.d/hald
+  install -D -m 0644 ../hal-device-manager.desktop $PKG/usr/share/applications/hal-device-manager.desktop
+  
+  install_docs AUTHORS COPYING ChangeLog HACKING INSTALL NEWS \
+    README
+}

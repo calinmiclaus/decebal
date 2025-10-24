@@ -1,0 +1,35 @@
+NAME=mono
+VERSION=1.0.6
+ARCH=i686
+RELEASE=1
+URL="http://www.mono-project.com/Main_Page"
+DESC="A platform for running and developing modern applications, based on the ECMA/ISO Standards."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="18053K"
+HUSE="icu"
+
+SOURCES="http://www.go-mono.com/archive/1.0.6/mono-1.0.6.tar.gz
+         mono.init mono.sh"
+
+RUNTIME=">=glib2-1.3.11"
+
+# Now what the heck...mono wants icu for internationalization, but icu
+# isnt available for download...or i cant find it. :/
+use icu && RUNTIME="$RUNTIME icu"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/mono \
+              --sysconfdir=/etc/opt \
+              --mandir=/opt/mono/share/man \
+	      --with-tls=pthread
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 ../mono.init $PKG/etc/rc.d/mono
+  install -D -m 0644 ../mono.sh $PKG/etc/profile.d/mono.sh
+  
+  install_docs AUTHORS ChangeLog NEWS README
+}

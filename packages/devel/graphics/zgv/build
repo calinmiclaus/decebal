@@ -1,0 +1,28 @@
+NAME=zgv
+VERSION=5.8
+ARCH=i686
+RELEASE=1
+DESC="zgv is a picture viewer for Linux systems with VGA/SVGA."
+URL="http://freshmeat.net/projects/zgv/"
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="382K"
+
+SOURCES="http://www.svgalib.org/rus/zgv/zgv-5.8.tar.gz 
+config.mk"
+
+BUILDTIME="svgalib libjpeg libpng zlib libtiff "
+
+build () 
+{ 
+    cd $SRC/$NAME-$VERSION/;
+    cp -f $SRC/config.mk $SRC/$NAME-$VERSION;
+    make || return 1;
+    mkdir -p $PKG/usr/bin $PKG/usr/share/info $PKG/usr/man/man1;
+    mkdir -p $PKG/etc;
+    make BINDIR=$PKG/usr/bin INFODIR=$PKG/usr/share/info MANDIR=$PKG/usr/man/man1 install;
+    mkdir -p $PKG/usr/share/doc/$NAME-$VERSION;
+    cd $SRC/$NAME-$VERSION;
+    install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README README.fonts SECURITY TODO
+    cp $SRC/$NAME-$VERSION/doc/sample.zgvrc $PKG/etc/zgv.conf
+}

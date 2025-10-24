@@ -1,0 +1,12 @@
+diff -ru xc/programs/xterm/Imakefile xc-new/programs/xterm/Imakefile
+--- xc/programs/xterm/Imakefile	2004-04-02 23:47:39.000000000 +0200
++++ xc-new/programs/xterm/Imakefile	2004-04-12 10:34:35.000000000 +0200
+@@ -94,7 +94,7 @@
+ #endif
+ 
+ #ifdef UTF8support
+-    UTF8_OPTION = -DOPT_WIDE_CHARS -DOPT_LUIT_PROG
++    UTF8_OPTION = -DOPT_WIDE_CHARS -DOPT_LUIT_PROG -DOPT_256_COLORS
+         UTF8SRC = charclass.c precompose.c wcwidth.c xutf8.c
+         UTF8OBJ = charclass.o precompose.o wcwidth.o xutf8.o
+ #endif

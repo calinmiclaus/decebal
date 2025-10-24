@@ -1,0 +1,96 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="usage.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="rpackages.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Installing packages</h1>
+<p>To install packages you use <b><code>pkg_install</code></b>.<br><br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_install -h<br>
+usage: pkg_install [options] &lt;package&gt;<br>
+options:<br>
+&nbsp;&nbsp;-d, --nodeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- skip all dependencies checks (dangerous)<br>
+&nbsp;&nbsp;-f, --force &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- force installation, overwrite existing files<br>
+&nbsp;&nbsp;-r, --root &lt;path&gt;&nbsp;&nbsp;- use an alternative installation path<br>
+&nbsp;&nbsp;-v, --verbose &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- be more verbose<br>
+&nbsp;&nbsp;-V, --version &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- print name, version and license<br> 
+&nbsp;&nbsp;-h, --help &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- print this message and exit<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+The detailed explanation of the options is here:<br><br>
+<b><code>-d,--nodeps</code></b><ul>normally <b><code>pkg_install</code></b> will check if all the packages needed by the package
+that is about<br> be installed, are present, if not it will print an error message and exit. Using
+this option will make <b><code>pkg_install</code></b> skip this step.<br></ul>
+<b><code>-f, --force</code></b><ul>force installation, overwrite existing files. If the package that
+is about to be installed files that are already installed, <b><code>pkg_install</code></b> will print an error
+message (with the existing files) and exit. Using this option will make <b><code>pkg_install</code></b> skip this step.</ul>
+<b><code>-r, --root &lt;path&gt;</code></b><ul>use an alternate &lt;<b>path</b>&gt; for installation. This option should be used if you want
+to install packages on another system (a amounted partition) and not for installing
+packages in another <b><code>prefix</code></b> (like <b><code>/usr</code></b> or <b><code>/usr/local</code></b>).</ul>
+<b><code>-v, --verbose</code></b><ul>be more verbose, use this option if you want <b><code>pkg_install</code></b> to print more
+information (without this option <b><code>pkg_install</code></b> will only print a one line message)</ul>
+Examples:<br><br>
+Installing a package:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_install ed-0.2-i686-1.tbz2<br>
+[+] installing ed...[OK]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br><br>
+Installing a package (verbose mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_install -v ed-0.2-i686-1.tbz2<br>
+[+] installing ed...<br>
+&nbsp;&nbsp;&nbsp;[-] checking package integrity...[ OK ]<br>
+&nbsp;&nbsp;&nbsp;[-] extracting meta info...[ DONE ]<br>
+&nbsp;&nbsp;&nbsp;[-] checking package dependencies...[ OK ]<br>
+&nbsp;&nbsp;&nbsp;[-] checking for existing files...[ OK ]<br>
+&nbsp;&nbsp;&nbsp;[-] installing files...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /bin/ed<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/bin/red<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/NEWS<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/TODO<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/POSIX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/README<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/THANKS<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/INSTALL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/ChangeLog<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/COPYING<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/man/man1/ed.1.gz<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/man/man1/red.1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/info/ed.info.gz<br>
+&nbsp;&nbsp;&nbsp;[-] creating database entry...[ OK ]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Installing a package (and printing dependencies errors):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_install irssi-0.0.10_rc5-i686-1.tbz2<br>
+[+] installing irssi...[FAILED]<br>
+[ERROR]: missing dependencies:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glib2<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Installing same package (with -d options):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_install -d irssi-0.0.10_rc5-i686-1.tbz2<br>
+[+] installing irssi...[OK]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+The package has beed installed, but this doesnt mean that it also works,
+if i run irssi now, it will exit with an error (it cant load <b><code>glib2</code></b>
+shared library).<br> This option should only be used for testing, or if you plan to install the
+missing dependencies after you installed the package.<br>
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="usage.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="rpackages.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Usage</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Removing packages</td></tr></table>
+</body>
+</html>

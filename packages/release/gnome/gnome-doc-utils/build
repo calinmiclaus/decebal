@@ -1,0 +1,32 @@
+NAME=gnome-doc-utils
+VERSION=0.1.3
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="GNOME documentation utilities."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="280K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-doc-utils-0.1.3.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="python"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+
+  ./configure --prefix=/opt/gnome \
+              --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib
+  make 
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

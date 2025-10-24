@@ -1,0 +1,39 @@
+NAME=hotplug
+VERSION=2004_09_23
+ARCH=noarch
+RELEASE=1
+URL="http://linux-hotplug.sourceforge.net/"
+DESC="Lets you plug in new USB and PCI devices and use them immediately."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="37K"
+
+SOURCES="http://www.kernel.org/pub/linux/utils/kernel/hotplug/hotplug-2004_09_23.tar.bz2
+         hotplug.init hotplug.diff hotplug.sysconf"
+
+BACKUPS="etc/hotplug/blacklist
+         etc/hotplug/usb.usermap
+	 etc/hotplug/usb.handmap
+	 etc/hotplug/usb.distmap"
+
+RUNTIME=">=bash-2.05b >=pciutils-2.1.11 >=usbutils-0.11 >=sysutils-0.1.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../hotplug.diff
+  
+  make
+  make INSTALL="/usr/bin/install" prefix=$PKG install
+  
+  rm -rf $PKG/etc/init.d
+  
+  install -D -m 0755 ../hotplug.init $PKG/etc/rc.d/hotplug
+  install -D -m 0644 ../hotplug.sysconf $PKG/etc/conf.d/hotplug
+  
+  touch $PKG/var/log/hotplug/events
+  
+  mkdir -p $PKG/var/lock/subsys
+  
+  install_docs README* ChangeLog
+}

@@ -1,0 +1,24 @@
+NAME=convert-uulib-perl
+VERSION=1.04
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~mlehmann/Convert-UUlib-1.04/"
+DESC="Perl interface to the uulib library."
+GROUP=perl-modules
+LICENSE="ARTISTIC GPLv1"
+SIZE="221K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/M/ML/MLEHMANN/Convert-UUlib-1.04.tar.gz"
+
+build() {
+  cd $SRC/Convert-UUlib-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs COPYING* Changes README MANIFEST
+}

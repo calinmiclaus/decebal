@@ -1,0 +1,105 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="rpackages.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="qpackages.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Upgrading packages</h1>
+<p>To upgrade packages you use <b><code>pkg_upgrade</code></b>.<br><br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_upgrade -h<br>
+usage: pkg_upgrade [options] &lt;package&gt;<br>
+options:<br>
+&nbsp;&nbsp;-b, --backup &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- backup old configuration files and use the new ones<br>
+&nbsp;&nbsp;-d, --nodeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- skip all dependencies checks (dangerous)<br>
+&nbsp;&nbsp;-f, --force &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- force installation, overwrite existing files<br>
+&nbsp;&nbsp;-r, --root &lt;path&gt;&nbsp;&nbsp;- use an alternative installation path<br>
+&nbsp;&nbsp;-R, --reinstall&nbsp;&nbsp;&nbsp; - reinstall a package (same version and release)<br>
+&nbsp;&nbsp;-v, --verbose &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- be more verbose<br>
+&nbsp;&nbsp;-V, --version &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- print name, version and license<br> 
+&nbsp;&nbsp;-h, --help &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- print this message and exit<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+The detailed explanation of the options is here:<br><br>
+<b><code>-b, --backup</code></b><ul>when you upgrade a package <b><code>pkg_upgrade</code></b> will install the <b><code>BACKUP</code></b> marked files
+as <b><code>FILE.pkgnew</code></b> and keep the old files (usually configuration files). Using
+this option will make <b><code>pkg_upgrade</code></b> to keep the installed <b><code>BACKUP</code></b> files as <b><code>FILE.pkgbackup</code></b>
+and use the new files instead</ul>
+<b><code>-r, --reinstall</code></b><ul>if you want to upgrade a package that is already install (the same version
+and release) then <b><code>pkg_upgrade</code></b> will exit with an error message (complaining about<br>the already installed package). Using this option will make <b><code>pkg_upgrade</code></b> to reinstall
+the package.</ul>
+The other options (<b><code>-d</code></b>,<b><code>-f</code></b>,<b><code>-r</code></b> and <b><code>-v</code></b>) are the as
+here <a href="ipackages.html">Installing packages</a>.<br><br>
+Examples:<br><br>
+Upgrading a package:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_upgrade mc-6.0pre1-i686-1.tbz2<br>
+[+] upgrading mc [6.0-1 -> 6.0pre1]...[OK]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Upgrading a package that is already installed:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_upgrade ed-0.2-i686-1.tbz2<br>
+package ed is already installed (use --reinstall to upgrade).<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Upgrading a package that is already installed (verbose mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_upgrade -rv ed-0.2-i686-1.tbz2<br>
+[+] upgrading ed [0.2-1 -> 0.2-1]...<br>
+&nbsp;&nbsp;&nbsp;[-] checking package integrity...[ OK ]<br>
+&nbsp;&nbsp;&nbsp;[-] extracting meta info...[ DONE ]<br>
+&nbsp;&nbsp;&nbsp;[-] checking package dependencies...[ OK ]<br>
+&nbsp;&nbsp;&nbsp;[-] upgradeing files...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /bin/ed<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/bin/red<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/NEWS<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/TODO<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/POSIX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/README<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/THANKS<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/INSTALL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/ChangeLog<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/COPYING<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/man/man1/ed.1.gz<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/man/man1/red.1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/info/ed.info.gz<br>
+&nbsp;&nbsp;&nbsp;    [-] removing old files...[ DONE ]<br>
+&nbsp;&nbsp;&nbsp;    [-] creating database entry...[ OK ]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Upgrading a package and keeping original configuration files:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_upgrade apache-2.0.53-i686-1.tbz2<br>
+[+] upgrading apache [2.0.52-1 -> 2.0.53-1]...[OK]<br>
+[root@localhost:~]# ls /etc/httpd<br>
+highperformance.conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>httpd.conf.pkgnew</b> &nbsp; mime.types &nbsp;&nbsp;&nbsp; <b>modules.conf.pkgnew</b> &nbsp; ssl-std.conf &nbsp; virtual.d<br>
+highperformance-std.conf &nbsp; httpd-std.conf &nbsp;&nbsp;&nbsp;&nbsp; mod.d &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ssl.conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virtual.conf<br>
+httpd.conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mime &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; modules.conf &nbsp; <b>ssl.conf.pkgnew</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>virtual.conf.pkgnew</b><br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Upgrading a package and using the new files:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_upgrade -b apache-2.0.53-i686-1.tbz2<br>
+[+] upgrading apache [2.0.52-1 -> 2.0.53-1]...[OK]<br>
+[root@localhost:~]# ls /etc/httpd<br>
+highperformance.conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>httpd.conf.pkgbackup</b> &nbsp; mime.types &nbsp; <b>modules.conf.pkgbackup</b> &nbsp; ssl-std.conf &nbsp; virtual.d<br>
+highperformance-std.conf &nbsp; httpd-std.conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mod.d &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ssl.conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virtual.conf<br>
+httpd.conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mime &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; modules.conf <b>ssl.conf.pkgbackup</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>virtual.conf.pkgbackup</b><br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+If you use this option then you will have to reconfigure the package (in this case <b><code>apache</code></b>).
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="rpackages.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="qpackages.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Upgrading packages</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Querying the package database</td></tr></table>
+</body>
+</html>

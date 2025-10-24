@@ -1,0 +1,6 @@
+md5: 2265fd2d4573dd3a8da45ce62519e48b heimdal-0.6.3.tar.gz
+md5: 3d0262aa218e1611500de735d3581e28 heimdal-0.6.3-fPIC.patch
+md5: f99421daa62e88f1e771fa94d81efbcb heimdal-0.6.3-fhs_compliance-1.patch
+md5: 224fd931dd3076d274036544983b5fdc kpasswd.init
+md5: 50b5dc2136f4b5bebe826c12afb220de kadmind.init
+md5: 6b2b9fb821a55dc612d78dd560df69d7 kdc.init

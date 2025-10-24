@@ -1,0 +1,31 @@
+NAME=gkrellm
+VERSION=2.2.7
+ARCH=i686
+RELEASE=1
+URL="http://gkrellm.net/"
+DESC="GNU (or Gtk) Krell Monitors (or Meters)."
+GROUP=x11
+LICENSE=GPLv2
+SIZE="657K"
+
+SOURCES="http://members.dslextreme.com/users/billw/gkrellm/$NAME-$VERSION.tar.bz2
+	 gkrellm.desktop"
+
+RUNTIME=">=openssl-0.9.7e gtk2"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls || sed -i "s:enable_nls=1:enable_nls=0:" Makefile
+  
+  LOCALEDIR=/usr/share/locale make
+  make INSTALLROOT=$PKG/usr install
+  
+  install -D -m 0644 gkrellm.ico $PKG/usr/share/icons/gkrellm.ico
+  install -D -m 0644 ../gkrellm.desktop $PKG/usr/share/applications/gkrellm.desktop
+  
+  install_docs COPYRIGHT CREDITS Changelog* INSTALL \
+    README Themes.html
+}

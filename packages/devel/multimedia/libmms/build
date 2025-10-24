@@ -1,0 +1,25 @@
+NAME=libmms
+VERSION=0.1
+ARCH=i686
+RELEASE=1
+URL="http://libmms.sourceforge.net/"
+DESC="A common library for parsing mms:// and mmsh:// type network streams."
+GROUP=multimedia
+LICENSE="LGPLv2.1"
+SIZE="309K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libmms/libmms-0.1.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING.LIB ChangeLog INSTALL \
+    NEWS README* TODO
+}

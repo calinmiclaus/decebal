@@ -1,0 +1,34 @@
+#
+# /etc/conf.d/console - default console settings
+#
+
+# Desired EGA/VGA console screen font.
+FONT=cp857.08.gz
+
+# Desired the keyboard translation tables file (keymap)
+KEYMAP=us.map
+
+# The keyboard repeat rate and delay time.
+KEYBOARD_RATE=30
+KEYBOARD_DELAY=250
+
+# The interval of inactivity, in  minutes,  after  which  the
+# screen  will  be automatically blanked (using APM if available).
+BLANK_DELAY=10
+
+# If the kernel supports APM or ACPI power management then you can
+# tune what your monitor should do when the BLANK_DELAY is reached
+# Available modes:
+# on|vsync  - Puts the monitor into VESA vsync suspend mode.
+# hsync     - Puts the monitor into VESA hsync suspend mode.
+# powerdown - Puts the monitor into VESA powerdown mode.
+# off       - urns off monitor VESA powersaving features.
+POWERSAVE_MODE=powerdown
+
+# After how much time should the monitor go in powerdown mode (use 0
+# to disable it, range between 1 and 60 minutes)
+POWERDOWN=20
+
+# Activate numlock ? (TTYS - the tty's where we will activate numlock).
+NUMLOCK=yes
+TTYS="1 2 3 4 5 6 7 8 9 10 11"

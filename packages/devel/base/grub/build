@@ -1,0 +1,36 @@
+NAME=grub
+VERSION=0.97
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/grub/grub.en.html"
+DESC="GRand Unified Bootloader."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="962K"
+
+SOURCES="ftp://alpha.gnu.org/gnu/grub/grub-0.97.tar.gz
+         menu.lst"
+
+PROVIDES="bootloader"
+
+RUNTIME="ncurses"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # grub doesn't like optimizations
+  export CFLAGS=""
+  
+  ./configure --prefix=/usr \
+              --sbindir=/sbin \
+	      --bindir=/sbin \
+	      --with-curses \
+	      --disable-auto-linux-mem-opt
+  make
+  make prefix=$PKG/usr sbindir=$PKG/sbin install
+  
+  install -D -m 0644 ../menu.lst $PKG/boot/grub/menu.lst
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog INSTALL MAINTENANCE \
+    NEWS README THANKS TODO
+}

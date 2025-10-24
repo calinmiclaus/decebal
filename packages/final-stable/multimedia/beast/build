@@ -1,0 +1,32 @@
+NAME=beast
+VERSION=0.6.5
+ARCH=i686
+RELEASE=1
+URL="http://beast.gtk.org/"
+DESC="A powerful music composition and modular synthesis application."
+GROUP=multimedia
+LICENSE="GPLV2 LGPLv2.1"
+SIZE="5792K"
+HUSE="static"
+
+SOURCES="ftp://beast.gtk.org/pub/beast/v0.6/beast-0.6.5.tar.gz"
+
+RUNTIME=">=gtk2-2.4.11 >=libart_lgpl-2.3.8 >=libgnomecanvas-2.4.0 libogg libvorbis >=libmad-0.15.1b"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --mandir=/opt/gnome/share/man \
+	      --with-gnu-ld $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

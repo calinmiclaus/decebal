@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/grpconv 2>/dev/null
+  /usr/sbin/pwconv 2>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/grpconv 2>/dev/null
+  /usr/sbin/pwconv 2>/dev/null
+}
+
+pre_remove() {
+  /usr/sbin/grpunconv 2>/dev/null
+  /usr/sbin/pwunconv 2>/dev/null
+}

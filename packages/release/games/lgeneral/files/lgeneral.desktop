@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=LGeneral
+GenericName=Turn Based Strategy Game
+Comment=A Turn Based Strategy Game inspired from Panzer General
+Icon=lgeneral.png
+FilePattern=lgeneral
+TryExec=lgeneral
+Exec=lgeneral
+Categories=Application;Game;StrategyGame;

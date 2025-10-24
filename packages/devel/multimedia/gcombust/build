@@ -1,0 +1,29 @@
+NAME=gcombust
+VERSION=0.1.55
+ARCH=i686
+RELEASE=1
+URL="http://www.abo.fi/~jmunsin/gcombust/"
+DESC="A GTK+ frontend for mkisofs, mkhybrid, cdrecord, and cdlabelgen."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="800K"
+HUSE="nls"
+
+SOURCES="http://www.abo.fi/~jmunsin/gcombust/gcombust-0.1.55.tar.gz"
+
+RUNTIME="=cdlabelgen-1.5.0 >=cdrtools-1.10 >=gtk-1.2.0"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog FAQ.shtml INSTALL \
+    NEWS README* THANKS TODO
+}

@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# ip-up script. is run after a ppp connection is established.
+#
+# ugly, but does the job. it takes the nameservers from
+# /var/log/messages and filters puts them into /etc/resolv.conf
+# the old /etc/resolv.conf is being saved as /etc/resolv.conf.backup
+# which is restored by ip-down
+#
+# bugs and comments to <trog@decebal.org> please
+# Calin Miclaus
+#
+
+if [ -e /etc/resolv.conf ];
+then
+  cp -f /etc/resolv.conf /etc/resolv.conf.backup
+else
+  touch /etc/resolv.conf
+fi
+
+dns=`tail -n 100 /var/log/messages|grep "DNS address"|awk '{print $9}'`
+
+cat /etc/resolv.conf|grep -v "^nameserver" >/etc/resolv.conf1
+
+mv -f /etc/resolv.conf1 /etc/resolv.conf
+
+chmod 644 /etc/resolv.conf
+
+for i in `echo $dns`;
+do
+  echo "nameserver $i" >>/etc/resolv.conf1
+done
+
+cat /etc/resolv.conf1|sort|uniq >/etc/resolv.conf2
+cat /etc/resolv.conf2 >>/etc/resolv.conf
+
+rm -f /etc/resolv.conf1 /etc/resolv.conf2
+
+chmod 644 /etc/resolv.conf
+
+# if you have a firewall then you can start the firewall here
+#
+#if [ -x /etc/rc.d/firewall ]; then
+#  /etc/rc.d/firewall start
+#fi

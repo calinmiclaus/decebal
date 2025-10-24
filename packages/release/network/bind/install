@@ -1,0 +1,16 @@
+post_install() {
+  /usr/sbin/groupadd -g 64 named 2>/dev/null
+  /usr/sbin/useradd -g 64 -u 64 -c "DNS daemon" -d /var/lib/named -s /bin/false named 2>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 64 named 2>/dev/null
+  /usr/sbin/useradd -g 64 -u 64 -c "DNS daemon" -d /var/lib/named -s /bin/false named 2>/dev/null
+}
+
+
+post_remove() {
+  /usr/sbin/userdel named 2>/dev/null
+  /usr/sbin/groupdel named 2>/dev/null
+}
+  

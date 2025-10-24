@@ -1,0 +1,65 @@
+NAME=bind
+VERSION=9.3.0
+ARCH=i686
+RELEASE=1
+URL="http://www.isc.org/products/BIND/"
+DESC="Domain Name Service daemon."
+GROUP=network
+LICENSE=BSDL
+SIZE="4619K"
+
+SOURCES="ftp://ftp.isc.org/isc/bind9/9.3.0/bind-9.3.0.tar.gz
+         named.init named.sysconf 127.0.0.1 bind.var.run.named.diff
+	 named.conf rndc.conf root.hints"
+
+BACKUPS="etc/named/named.conf
+         etc/rndc.conf
+         etc/conf.d/named"
+
+BUILDTIME="libtool"
+
+RUNTIME=">=openssl-0.9.7e"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../bind.var.run.named.diff
+  
+  use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+  use capabilities && OPTS="$OPTS --enable-linux-caps" || OPTS="$OPTS --disable-linux-caps"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/named \
+	      --localstatedir=/var \
+	      --with-libtool \
+	      --enable-shared \
+	      --with-openssl=yes \
+	      --disable-threads \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  chmod 0755 $PKG/usr/lib/libbind9.so.0.0.4
+  chmod 0755 $PKG/usr/lib/libdns.so.20.0.0
+  chmod 0755 $PKG/usr/lib/libisc.so.9.1.4
+  chmod 0755 $PKG/usr/lib/libisccc.so.0.2.1
+  chmod 0755 $PKG/usr/lib/libisccfg.so.1.0.4
+  chmod 0755 $PKG/usr/lib/liblwres.so.1.2.1
+      
+  install -D -m 0644 ../127.0.0.1 $PKG/var/lib/named/pz/127.0.0.1
+  install -m 0644 ../root.hints $PKG/var/lib/named/root.hints
+  
+  mkdir -p $PKG/var/run/named
+  
+  chown -R 64.64 $PKG/var/lib/named $PKG/var/run/named
+  
+  install -D -m 0700 ../named.init $PKG/etc/rc.d/named
+  install -D -m 0644 ../named.sysconf $PKG/etc/conf.d/named
+  install -D -m 0644 ../named.conf $PKG/etc/named/named.conf
+  install -m 0644 ../rndc.conf $PKG/etc/named/rndc.conf
+  
+  # the files are in bindutils.    
+  rm -rf $PKG/usr/bin/{dig,host,nslookup} $PKG/usr/man/man1
+  
+  install_docs CHANGES COPYRIGHT FAQ KNOWN_DEFECTS README
+}

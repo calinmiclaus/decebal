@@ -1,0 +1,39 @@
+NAME=etc
+VERSION=0.2 
+ARCH=noarch
+RELEASE=1
+URL="http://www.decebal.org/etc/"
+DESC="The core /etc configuration files."
+GROUP=base
+LICENSE=GPLv2
+SIZE="1K"
+
+SOURCES="http://www.decebal.org/sources/base/etc/etc-0.2.tar.bz2
+         http://www.sethwklein.net/projects/iana-etc/downloads/iana-etc-1.03.tar.bz2"
+
+BACKUPS="etc/passwd
+         etc/group
+	 etc/shadow
+	 etc/gshadow
+	 etc/host.conf
+	 etc/hosts
+	 etc/resolv.conf
+	 etc/networks
+	 etc/securetty"
+
+BUILDTIME="gawk"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  install -d $PKG/etc
+  
+  cp * $PKG/etc/
+  
+  chmod	-R 0644 $PKG/etc
+  chmod 600 $PKG/etc/shadow
+  
+  cd $SRC/iana-etc-1.03
+  
+  make PREFIX=$PKG install
+}

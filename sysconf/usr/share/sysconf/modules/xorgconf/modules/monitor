@@ -1,0 +1,145 @@
+#!/bin/bash
+
+TOOLSDIR="tools"
+
+write_monitor_configuration() {
+  [ -z "$HSYNC" ] && HSYNC=`cat $TMP/monitor`
+  [ -z "$VSYNC" ] && VSYNC=`cat $TMP/vert_sync`
+  
+  cat << EOF > $TMP/monitor_configuration
+Section "Monitor"
+  Identifier   "Monitor0"
+  VendorName   "$MONITORVENDOR"
+  ModelName    "$MONITORMODEL"
+  HorizSync    $HSYNC
+  VertRefresh  $VSYNC
+EndSection					
+EOF
+  [ -z "$MONITORVENDOR" ] && sed -i "s:\"\":\"Monitor Vendor\":" $TMP/monitor_configuration
+  [ -z "$MONITORMODEL" ] && sed -i "s:\"\":\"Monitor Name\":" $TMP/monitor_configuration
+  
+  dialog --backtitle "$BACKTITLE" \
+         --title "$TITLE" \
+	 --ok-label "Main" \
+	 --msgbox "`cat $TMP/monitor_configuration`" 0 0
+  local RETVAL=$?
+  case "$RETVAL" in
+    0) main ;;
+   -1) handle_exit "write_monitor_configuration()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}
+
+get_userdefined_monitor_sync() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+         --cancel-label "Exit" \
+         --extra-button \
+         --extra-label "Back" \
+         --inputbox \
+"\n\n  Enter your own vertical sync range here.\n" 0 0 2>$TMP/vert_sync
+  local RETVAL=$?
+  case "$RETVAL" in
+    0)
+      VSYNC=`cat $TMP/vert_sync`
+      write_monitor_configuration
+      ;;
+    1) handle_exit "get_userdefined_monitor_sync()" "Exit pressed." "$LINENO" "1" ;;
+    3) get_monitor_vsync ;;
+   -1) handle_exit "get_userdefined_monitor_sync()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}
+
+get_monitor_vsync() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --ok-label "Select" \
+	 --cancel-label "Exit" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --menu \
+"\n\nYou must indicate the vertical sync range of your monitor. You can either
+select one of the predefined ranges below that correspond to industry-
+standard monitor types, or give a specific range. For interlaced modes,
+the number that counts is the high one (e.g. 87 Hz rather than 43 Hz)." 0 0 0 \
+"50-70" "" \
+"50-90" "" \
+"50-100" "" \
+"40-150" "" \
+"userdefine" "Enter your own vertical sync range." 2>$TMP/vert_sync
+  local RETVAL=$?
+  local SELECTION=`cat $TMP/vert_sync`
+  case "$RETVAL" in
+    0)
+      if [ ! "$SELECTION" = "userdefine" ]
+      then
+        VSYNC=`cat $TMP/vert_sync`
+        write_monitor_configuration
+      else
+        get_userdefined_monitor_sync
+      fi
+      ;;
+    1) handle_exit "get_monitor_vsync()" "Exit pressed." "$LINENO" "1" ;;
+    3) configure_monitor ;;
+   -1) handle_exit "get_monitor_vsync()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}
+
+configure_monitor() {
+  local HSYNC="`$TOOLSDIR/ddcxinfo -hsync 2>/dev/null`"  
+  local VSYNC="`$TOOLSDIR/ddcxinfo -vsync 2>/dev/null`"
+  local MODES="`$TOOLSDIR/ddcxinfo -modelines 2>/dev/null | grep -v '#' | awk '{print $2}' | uniq`"
+  local MONITORVENDOR="`$TOOLSDIR/ddcprobe 2>/dev/null | grep ^ID`" ; MONITORVENDOR="${MONITORVENDOR:4}"
+  local MONITORMODEL="`$TOOLSDIR/ddcprobe 2>/dev/null | grep '^EISA ID:'`" ; MONITORMODEL="${MONITORMODEL:9}"
+
+  # write the modes
+  if [ -n "$MODES" ]
+  then
+    > $TMP/modes
+    for MODE in $MODES
+    do
+      echo $MODE >> $TMP/modes
+    done
+  fi  
+  
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --ok-label "Forward" \
+	 --cancel-label "Exit" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --help-button \
+	 --menu \
+"\nYou will need to select one of the following entries.\n
+Your monitor:\n
+  HSYNC: $HSYNC\n
+  VSYNC: $VSYNC\n
+  MODES: $MODES\n" 0 0 0 \
+"31.5" "Standard VGA, 640x480 @ 60 Hz" \
+"31.5 - 35.1" "Super VGA, 800x600 @ 56 Hz" \
+"31.5, 35.5" "8514 Compatible, 1024x768 @ 87 Hz interlaced (no 800x600)" \
+"31.5, 35.15, 35.5" "Super VGA, 1024x768 @ 87 Hz interlaced, 800x600 @ 56 Hz" \
+"31.5 - 37.9" "Extended Super VGA, 800x600 @ 60 Hz, 640x480 @ 72 Hz" \
+"31.5 - 48.5" "Non-Interlaced SVGA, 1024x768 @ 60 Hz, 800x600 @ 72 Hz" \
+"31.5 - 57.0" "High Frequency SVGA, 1024x768 @ 70 Hz" \
+"31.5 - 64.3" "Monitor that can do 1280x1024 @ 60 Hz" \
+"31.5 - 79.0" "Monitor that can do 1280x1024 @ 74 Hz" \
+"31.5 - 82.0" "Monitor that can do 1280x1024 @ 76 Hz" \
+"detected" "Use detected settings to create monitor configuration." 2>$TMP/monitor
+   local RETVAL=$?
+   local SELECTION=`cat $TMP/monitor`
+   case "$RETVAL" in
+     0) 
+       if [ ! "$SELECTION" = "detected" ]
+       then
+         HSYNC=`cat $TMP/monitor`
+         get_monitor_vsync
+       else
+         write_monitor_configuration
+       fi
+       ;;
+     1) handle_exit "configure_monitor()" "Exit pressed." "$LINENO" "1" ;;
+     2) show_monitor_help ;;
+     3) main ;;
+    -1) handle_exit "configure_monitor()" "ESC pressed." "$LINENO" "1" ;;
+   esac
+}

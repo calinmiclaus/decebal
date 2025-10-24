@@ -1,0 +1,158 @@
+#!/bin/bash
+#
+# Script for configuring your inetd.
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+function config_menu()
+{
+local numlines=`cat /etc/inetd.conf|wc -l` i long opt="" name enabled
+local char1 word1 word2 word3 prog progtmp word4
+$dialog --backtitle "$version" --title " Please wait " --infobox "\nLoading \
+inetd settings ...\n" 5 0
+
+for (( i=1;i<=$numlines;i=$i+1 ))
+do
+long=`lines /etc/inetd.conf $i $i`
+word1=`echo $long|awk '{print $1}'`
+word2=`echo $long|awk '{print $2}'`
+word3=`echo $long|awk '{print $3}'`
+word4=`echo $long|awk '{print $4}'`
+char1=`echo $word1|cut -b 1`
+
+if [ "$char1" = "#" ];
+then
+  if [ "$word1" = "#" ];
+  then
+    if [ "$word3" = "stream" -o "$word3" = "dgram" -o "$word3" = "raw" -o "$word3" = "rdm" -o "$word3" = "seqpacket" ];
+    then
+      name=$word2
+      progtmp=`echo $long|awk '{print $7}'`
+      [ "$progtmp" != "internal" ] && prog=`echo $long|awk '{print $8}'` || prog="$word4"
+      enabled=off
+    else
+      name=""
+    fi
+  else
+    name=`echo $word1|cut -b 2-`
+    progtmp=`echo $long|awk '{print $6}'`
+    [ "$progtmp" != "internal" ] && prog=`echo $long|awk '{print $7}'` || prog="$word3"
+    enabled=off
+  fi
+else
+    name=$word1
+    progtmp=`echo $long|awk '{print $6}'`
+    [ "$progtmp" != "internal" ] && prog=`echo $long|awk '{print $7}'` || prog="$word3"
+    enabled=on
+fi
+[ ! -z $name ] && \
+  {
+#have to do it this way since if there is some error, the whole thing wont work
+  basename $prog >$tmp/basenameprg 2>/dev/null
+  [ $? -eq 0 ] && opt="$opt ${name}-(`cat $tmp/basenameprg`) $prog $enabled"
+  }
+done
+
+$dialog --backtitle "$version" --title " inetd Configuration " \
+--separate-output --cancel-label "Back" --ok-label "Save" \
+--checklist "\nSelect the services you want to enable.\n\n" \
+0 0 0 $opt 2>$tmp/cmsel
+cmbutton=$?
+[ $cmbutton -eq 0 ] && {
+  $dialog --backtitle "$version" --title " Please wait " --infobox \
+  "\nUpdating /etc/inetd.conf ..." 5 0
+  cat /dev/null >$tmp/inetd.conf.tmp
+  for (( i=1;i<=$numlines;i=$i+1 ))
+  do
+    long=`lines /etc/inetd.conf $i $i`
+    word1=`echo $long|awk '{print $1}'`
+    word2=`echo $long|awk '{print $2}'`
+    word3=`echo $long|awk '{print $3}'`
+    char1=`echo $word1|cut -b 1`
+    if [ "$char1" = "#" ];
+    then
+      if [ "$word1" = "#" ];
+      then
+        if [ "$word3" = "stream" -o "$word3" = "dgram" -o "$word3" = "raw" -o "$word3" = "rdm" -o "$word3" = "seqpacket" ];
+        then
+	  modif=no
+          name=$word2
+          progtmp=`echo $long|awk '{print $7}'`
+          [ "$progtmp" != "internal" ] && prog=`echo $long|awk '{print $8}'` || prog="$word4"
+	  prog=`basename "$prog"`
+          [ ! -z "`cat $tmp/cmsel|grep \"^$name\"|grep \"($prog)\"`" ] && {
+          long=`echo $long|awk '{print gensub($1,"",1);}'`
+          long=`echo $long|awk '{print gensub($1,"",1);}'`
+          long="$name $long"
+	  modif=yes
+          }
+        else
+          name=""
+	  modif=no
+        fi
+      else
+        modif=no
+        name=`echo $word1|cut -b 2-`
+        progtmp=`echo $long|awk '{print $6}'`
+        [ "$progtmp" != "internal" ] && prog=`echo $long|awk '{print $7}'` || prog="$word3"
+	prog=`basename "$prog"`
+        [ ! -z "`cat $tmp/cmsel|grep \"^$name\"|grep \"($prog)\"`" ] && {
+	long=`echo $long|cut -b 2-`
+	modif=yes
+	}
+      fi
+    else
+        modif=no
+	name=$word1
+        progtmp=`echo $long|awk '{print $6}'`
+        [ "$progtmp" != "internal" ] && prog=`echo $long|awk '{print $7}'` || prog="$word3"
+	prog=`basename "$prog"`
+        [ ! -z "`cat $tmp/cmsel|grep \"^$name\"|grep \"($prog)\"`" ] || {
+	long="#_$long"
+	modif=yes
+	}
+    fi
+  [ "$modif" = "no" ] && echo $long >>$tmp/inetd.conf.tmp || echo $long|tr " " "\t"|tr "_" " " >>$tmp/inetd.conf.tmp
+  done
+  mv -f $tmp/inetd.conf.tmp /etc/inetd.conf
+  }
+}
+
+function main_menu()
+{
+local mmbutton=0 mmsel=""
+until [ $mmbutton -eq 1 ];
+do
+  $dialog --backtitle "$version" --title " inetd Configuration " \
+  --cancel-label "Back" --menu "\nChoose 'Config' to set which inetd \
+services should be enabled.\n\n" 0 0 0 \
+  "Config" "Configure inetd" \
+  "Start" "Start inetd" \
+  "Stop" "Stop inetd" \
+  "Restart" "Restart inetd" \
+  "Exit" "Exit inetd configuration" \
+  2>$tmp/mmsel
+  mmbutton=$?
+  mmsel=`cat $tmp/mmsel`
+  rm $tmp/mmsel
+  [ $mmbutton -eq 0 ] &&
+    {
+    case $mmsel in
+    "Config") config_menu;;
+    "Start") [ -x /etc/rc.d/init.d/inetd ] && /etc/rc.d/init.d/inetd start;;
+    "Stop") [ -x /etc/rc.d/init.d/inetd ] && /etc/rc.d/init.d/inetd stop;;
+    "Restart") [ -x /etc/rc.d/init.d/inetd ] && /etc/rc.d/init.d/inetd restart;;
+    "Exit") mmbutton=1 ;;
+    esac
+    }
+done
+}
+
+tmp=`make_tmp inetd`
+$1
+rm -rf $tmp

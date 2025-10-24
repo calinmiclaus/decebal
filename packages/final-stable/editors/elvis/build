@@ -1,0 +1,38 @@
+NAME=elvis
+VERSION=2.2.0
+ARCH=i686
+RELEASE=1
+DESC="An extended vi"
+URL="http://elvis.vi-editor.org/"
+GROUP=editors
+LICENSE="TCAL"
+SIZE="1405K"
+
+SOURCES="ftp://ftp.cs.pdx.edu/pub/elvis/elvis-2.2_0.tar.gz
+         elvis.destdir.patch"
+
+build () { 
+  cd $SRC/$NAME-2.2_0
+  
+  patch -p0 <../elvis.destdir.patch
+
+  mkdir -p $PKG/usr
+  
+  ./configure --prefix=/usr \
+              --without-x
+  make
+  make DESTDIR=$PKG install
+    
+#  mkdir -p $PKG/usr/share/doc
+    
+#  ln -s /usr/share/elvis/doc $PKG/usr/share/doc/$NAME-$VERSION
+
+  mkdir -p $PKG/usr/man/man1
+
+  mv -f $PKG/usr/share/elvis/doc/elvis.man $PKG/usr/man/man1/elvis.1
+  mv -f $PKG/usr/share/elvis/doc/ref.man $PKG/usr/man/man1/ref.1
+  mv -f $PKG/usr/share/elvis/doc/fmt.man $PKG/usr/man/man1/elvfmt.1
+  mv -f $PKG/usr/share/elvis/doc/ctags.man $PKG/usr/man/man1/elvtags.1
+  
+  install_docs BUGS COPYING INSTALL README.html
+}

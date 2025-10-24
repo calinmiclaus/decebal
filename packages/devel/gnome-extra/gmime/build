@@ -1,0 +1,33 @@
+NAME=gmime
+VERSION=2.1.9
+ARCH=i686
+RELEASE=1
+URL="http://spruce.sourceforge.net/gmime/"
+DESC="A core library and set of utilities which may be used for the creation and parsing of messages."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="766K"
+HUSE="static gtkdoc profile ipv6"
+
+SOURCES="http://spruce.sourceforge.net/gmime/sources/v2.1/gmime-2.1.9.tar.gz"
+
+RUNTIME=">=glib2-2.0.0 >=zlib-1.2.1"
+
+use gtkdoc && BUILDTIME="gtkdoc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  use profile && OPTS="$OPTS --enable-profile"
+  use ipv6 && OPTS="$OPTS --enable-ipv6=yes" || OPTS="$OPTS --enable-ipv6=no"
+  
+  ./configure --prefix=/opt/gnome \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS PORTING README TODO
+}

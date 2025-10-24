@@ -1,0 +1,23 @@
+NAME=net-cidr-lite-perl
+VERSION=0.18
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~dougw/Net-CIDR-Lite-0.18/"
+DESC="Provide Net CIDR functions."
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SOURCES="http://search.cpan.org/CPAN/authors/id/D/DO/DOUGW/Net-CIDR-Lite-0.18.tar.gz"
+SIZE="8K"
+
+build() {
+  cd $SRC/Net-CIDR-Lite-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs Changes README MANIFEST
+}

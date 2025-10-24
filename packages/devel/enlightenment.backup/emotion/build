@@ -1,0 +1,30 @@
+NAME=emotion
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="This is the Enlightenment Emotion."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="1131KK"
+HUSE="static"
+
+SOURCES="emotion-21052005.tar.bz2"
+
+RUNTIME="=evas-21052005 =eet-21052005 >=edb-21052005 =embryo-21052005 =edje-21052005 xine-lib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README TODO
+}

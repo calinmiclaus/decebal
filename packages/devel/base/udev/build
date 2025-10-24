@@ -1,0 +1,46 @@
+NAME=udev
+VERSION=068
+ARCH=i686
+RELEASE=1
+URL="http://udev.org/"
+DESC="Userspace implementation of devfs."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="437K"
+
+SOURCES="http://www.kernel.org/pub/linux/utils/kernel/hotplug/$NAME-$VERSION.tar.bz2
+         udev.init udev.rules udev.conf"
+
+RUNTIME=">=sysfsutils-0.1.0 hotplug"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  make
+  make prefix=$PKG install
+  
+  gcc $CFLAGS extras/cdsymlinks.c -o extras/cdsymlinks
+  install -m 0755 extras/cdsymlinks $PKG/sbin/cdsymlinks
+  install -D -m 0775 extras/cdsymlinks.sh $PKG/etc/udev/scripts.d/cdsymlinks.sh
+  install -m 0644 extras/cdsymlinks.conf $PKG/etc/udev/cdsymlinks.conf
+  install -m 0755 extras/inputdev.sh $PKG/etc/udev/scripts.d/inputdev.sh
+  install -m 0755 extras/dvb.sh $PKG/etc/udev/scripts.d/dvb.sh
+  
+  rm -f $PKG/etc/udev/{udev.conf,rules.d/50-udev.rules}
+  
+  install -m 0644 ../udev.conf $PKG/etc/udev/udev.conf
+  install -m 0644 ../udev.rules $PKG/etc/udev/rules.d/udev.rules
+  install -D -m 0700 ../udev.init $PKG/etc/rc.d/udev
+  
+  rm -f $PKG/etc/hotplug.d/default/10-udev.hotplug
+  mkdir -p $PKG/etc/hotplug.d/default
+  ln -s ../../../sbin/udevsend $PKG/etc/hotplug.d/default/10-udev.hotplug
+  
+  sed -i "s:#OUTPUT=\"CD CDRW:OUTPUT=\"CD CDRW:" $PKG/etc/udev/cdsymlinks.conf
+  sed -i "s:#NUMBERED_LINKS=1:NUMBERED_LINKS=1:" $PKG/etc/udev/cdsymlinks.conf
+  
+  # Remove the /udev directory
+  rm -rf $PKG/udev
+  
+  install_docs COPYING ChangeLog FAQ HOWTO-udev_for_dev README* TODO
+}

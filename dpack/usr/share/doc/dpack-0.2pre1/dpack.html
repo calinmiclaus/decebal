@@ -1,0 +1,68 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="qpackages.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="building.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Using dpack</h1>
+<p>This program (<b><code>dpack</code></b>) is actually a wrapper for <b><code>pkg_add</code></b>, <b><code>pkg_del</code></b>
+<b><code>pkg_info</code></b>, <b><code>dupdate</code></b> and <b><code>dsrc</code></b>.<br><br>
+A quick help for <b><code>dpack</code></b>:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dpack -h<br>
+usage: dpack &lt;action&gt; [options] &lt;argument&gt;<br>
+actions:<br>
+&nbsp;&nbsp;dpack {-B, --build} &nbsp; [options] &lt;argument&gt; &nbsp; - build/install packages from sources (dsrc)<br>
+&nbsp;&nbsp;dpack {-I, --install} [options] &lt;package&gt; &nbsp;&nbsp; - install a package (pkg_install)<br>
+&nbsp;&nbsp;dpack {-R, --remove} &nbsp;[options] &lt;package&gt; &nbsp;&nbsp; - remove a package (pkg_remove)<br>
+&nbsp;&nbsp;dpack {-S, --sync} &nbsp;&nbsp; [options] &lt;argument&gt; &nbsp; - update a package (dupdate)<br>
+&nbsp;&nbsp;dpack {-U, --upgrade} [options] &lt;package&gt; &nbsp;&nbsp; - upgrade a package (pkg_upgrade)<br>
+&nbsp;&nbsp;dpack {-Q, --query} &nbsp; [options] &lt;argument&gt; &nbsp; - query the package database (pk_query)<br>
+&nbsp;&nbsp;dpack {-V, --version} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- print name, version and license<br>
+&nbsp;&nbsp;dpack {-h, --help} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- print this message and exit<br>
+options: are the options corresponding to the respective tool.<br><br>
+NOTE: you can only use one option at a time.<br><br>
+For a detailed help see dpack (8).<br>
+[root@localhost:~]#<br>
+<br></code></font></td></tr></table><br>
+Some examples:<br><br>
+Installing a package with <b><code>dpack</code></b>:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dpack -I ed-0.2-i686-1.tbz2<br>
+[+] installing ed...[OK]<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Building and installing a package with <b><code>dpack</code></b>:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dpack -B ed<br>
+[+] building ed...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package ed-0.2-i686-1.tbz2...[OK]<br>
+[+] installing ed...[OK]<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+These are a few examples (you can read about <b><code>dsrc</code></b> in the next chapter), but i
+hope you got the idea.<br>
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="qpackages.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="building.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Querying the package database</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Building packages</td></tr></table>
+</body>
+</html>

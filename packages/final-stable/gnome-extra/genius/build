@@ -1,0 +1,37 @@
+NAME=genius
+VERSION=0.7.3
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A general purpose calculator and math tool for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="1697K"
+HUSE="static nognome nosourceview"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/genius/0.7/genius-0.7.3.tar.bz2"
+
+RUNTIME=">=gmp-4.1 flex bison glib2 >=gtk2-2.4 >=libgnomeui-2.0.0 >=gtksourceview-0.3.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use nognome && OPTS="$OPTS --disable-gnome"
+  use nosourceview && OPTS="$OPTS --disable-gtksourceview"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/bin \
+	      --localstatedir=/var/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  rm -f $PKG/opt/gnome/share/mime/{XMLnamespaces,aliases,globs,magic,subclasses}
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}
+
+  

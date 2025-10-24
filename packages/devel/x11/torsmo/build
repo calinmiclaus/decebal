@@ -1,0 +1,31 @@
+NAME=torsmo
+VERSION=0.18
+ARCH=i686
+RELEASE=1
+URL="http://torsmo.sourceforge.net/"
+DESC="Tyopoyta ORvelo System MOnitor."
+GROUP=x11
+LICENSE="BSDL"
+SIZE="82K"
+HUSE="nv seti"
+SIZE="82K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/torsmo/torsmo-0.18.tar.gz"
+
+RUNTIME="xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nv && OPTS="--enable-nvctrl"
+  use seti && OPTS="$OPTS --enable-seti"
+  
+  ./configure --prefix=/usr \
+              --enable-xft \
+	      --with-x $OPTS
+  make
+  make DESTDIR=$PKG install	      
+  
+  install_docs AUTHORS ChangeLog INSTALL COPYING \
+    NEWS README
+}

@@ -1,0 +1,25 @@
+NAME=fbpanel
+VERSION=4.3
+ARCH=i686
+RELEASE=1
+URL="http://fbpanel.sourceforge.net/"
+DESC="A lightweight GTK-2 desktop panel."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="93K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/fbpanel/$NAME-$VERSION.tgz"
+
+RUNTIME=">=gtk2-2.4"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --cpu=on
+  make
+  make PREFIX=$PKG/usr install
+  
+  install_docs CHANGELOG COPYING CREDITS INSTALL README
+}
+

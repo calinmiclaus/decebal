@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/sshd - configuration file for /etc/init.d/sshd
+#
+
+# Optional sshd arguments (man sshd for more information)
+SSHD_OPTS=""

@@ -1,0 +1,73 @@
+NAME=cups
+VERSION=1.1.23
+ARCH=i686
+RELEASE=1
+URL="http://www.cups.org/"
+DESC="The Common UNIX Printing System (CUPS)"
+GROUP=printing
+LICENSE=GPLv2
+SIZE="8501K"
+HUSE="gnutls sasl slp java python php debug"
+
+SOURCES="http://www.nu6.org/_/mirror/ftp.easysw.com/pub/cups/1.1.23/cups-1.1.23-source.tar.bz2
+         cupsd.init cupsd.sysconf cups.logrotate cups-1.2.3-nouser-1.diff"
+
+BACKUPS="etc/cups/printers.conf
+         etc/cups/client.conf
+	 etc/cups/cupsd.conf
+	 etc/cups/mime.types
+	 etc/cups/mime.convs
+	 etc/cups/classes.conf
+	 etc/conf.d/cupsd" 
+
+CONFLICTS="lprng"
+
+PROVIDES="print-server"
+
+RUNTIME=">=libjpeg-6b >=libpng-1.2.5 >=zlib-1.2.1 >=libtiff-3.7.1 perl"
+
+use gnutls && RUNTIME="$RUNTIME gnutls" || RUNTIME="$RUNTIME >=openssl-0.9.7e"
+use sasl && RUNTIME="$RUNTIME cyrus-sasl"
+use slp && RUNTIME="$RUNTIME openslp"
+use java && RUNTIME="$RUNTIME java"
+use python && RUNTIME="$RUNTIME python"
+use php && RUNTIME="$RUNTIME php"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gnutls && OPTS="--enable-ssl --enable-gnutls" || OPTS="--enable-ssl --enable-openssl"
+  use sasl || OPTS="$OPTS --disable-cdsassl"
+  use debug && OPTS="$OPTS --enable-debug"
+  use slp || OPTS="$OPTS --disable-slp"
+  use java && OPTS="$OPTS --with-java"
+  use python && OPTS="$OPTS --with-python"
+  use php && OPTS="$OPTS --with-php"
+    
+  patch -p1 < ../cups-1.2.3-nouser-1.diff
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var \
+	      --with-logdir=/var/log/cups \
+	      --with-docdir=/usr/share/cups/doc \
+	      --with-cups-user=cups \
+	      --with-cups-GROUP=cups \
+	      --with-perl \
+	      --disable-pam \
+	      --with-optim="$CFLAGS" \
+	      $OPTS
+  make
+  make BUILDROOT=$PKG install
+  
+  rm -rf $PKG/etc/rc.d
+  
+  install -D -m 0700 ../cupsd.init $PKG/etc/rc.d/cupsd
+  install -D -m 0644 ../cupsd.sysconf $PKG/etc/conf.d/cupsd
+  install -D -m 0755 ../cups.logrotate $PKG/etc/logrotate.d/cupsd
+  
+  mkdir -p $PKG/var/spool/cups/tmp $PKG/var/log/cups  
+  
+  install_docs CGI.txt CHANGES.txt CREDITS.txt ENCRYPTION.txt INSTALL.txt \
+    INSTALL_fr.txt LICENSE.html LICENSE.txt README.txt README_fr.txt
+}

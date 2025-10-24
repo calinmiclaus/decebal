@@ -1,0 +1,23 @@
+diff -Naur pciutils-2.1.11/Makefile pciutils-2.1.11.new/Makefile
+--- pciutils-2.1.11/Makefile	2003-01-04 14:53:01.000000000 +0200
++++ pciutils-2.1.11.new/Makefile	2004-03-21 12:13:10.000000000 +0200
+@@ -10,7 +10,7 @@
+ #SUFFIX=-pre2
+ DATE=2003-01-04
+ 
+-PREFIX=/usr/local
++PREFIX=/usr
+ SBINDIR=$(PREFIX)/sbin
+ SHAREDIR=$(PREFIX)/share
+ MANDIR=$(shell if [ -d $(PREFIX)/share/man ] ; then echo $(PREFIX)/share/man ; else echo $(PREFIX)/man ; fi)
+diff -Naur pciutils-2.1.11/lib/configure pciutils-2.1.11.new/lib/configure
+--- pciutils-2.1.11/lib/configure	2003-01-04 14:29:23.000000000 +0200
++++ pciutils-2.1.11.new/lib/configure	2004-03-21 12:13:36.000000000 +0200
+@@ -80,6 +80,6 @@
+ if [ -z "$ok" ] ; then
+ 	echo "WARNING: No real configuration access method is available."
+ fi
+-echo >>$c "#define PATH_PCI_IDS \"$sharedir/pci.ids\""
++echo >>$c "#define PATH_PCI_IDS \"$sharedir/misc/pci.ids\""
+ echo >>$c "#define PCILIB_VERSION \"$version\""
+ sed '/^#define [^ ]*$/!d;s/^#define \(.*\)/\1=1/' <$c >config.mk

@@ -1,0 +1,55 @@
+NAME=squid
+VERSION=2.5.STABLE10
+ARCH=i686
+RELEASE=1
+URL="http://www.squid-cache.org"
+DESC="A full-featured Web proxy cache server."
+GROUP=network
+LICENSE="GPLv2"
+SIZE="1032K"
+HUSE="icmp"
+
+SOURCES="ftp://ftp.iasi.roedu.net/pub/mirrors/ftp.squid-cache.org/squid-2/STABLE/squid-2.5.STABLE10.tar.bz2
+         squid.init squid.sysconf"
+
+BACKUPS="etc/squid/squid.conf
+         etc/squid/mime.conf
+         etc/conf.d/squid"
+
+RUNTIME="openssl dcron perl"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use icmp && OPTS="--enable-icmp"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/squid \
+              --libexecdir=/usr/sbin \
+              --localstatedir=/var \
+              --datadir=/usr/share/squid \
+              --enable-linux-netfilter \
+	      --enable-ident-lookups \
+              --enable-useragent-log \
+	      --enable-cache-digests \
+              --enable-referer-log \
+	      --enable-async-io \
+	      --enable-truncate \
+              --enable-arp-acl \
+	      --enable-delay-pools \
+	      --enable-ssl \
+	      --enable-htcp \
+	      --enable-carp \
+	      --enable-poll \
+              --enable-err-languages=English $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../squid.init $PKG/etc/rc.d/squid
+  install -D -m 0644 ../squid.sysconf $PKG/etc/conf.d/squid
+  
+  mkdir -p $PKG/var/{lib/squid,run/squid,log/squid}
+  
+  install_docs CONTRIBUTORS COPYING COPYRIGHT CREDITS ChangeLog INSTALL \
+    QUICKSTART README RELEASENOTES.html SPONSORS
+}

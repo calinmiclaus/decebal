@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Valknut
+Comment=Valknut DC++ Client
+Exec=valknut
+Icon=/usr/share/valknut/icons/appl/default/icon_48x48.png
+Terminal=false
+Type=Application
+Categories=Application;Network;

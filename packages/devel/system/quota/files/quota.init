@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# /etc/rc.d/quota - Activate and check filesystem quotas.
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    if grep -q quota /etc/fstab
+    then
+      msg "Checking filesystem quotas"
+      run quotacheck -avugm
+      
+      msg "Activating filesystem quotas"
+      run quotaon -avug
+      if [ $? -eq 0 ]
+      then
+        touch /var/lock/subsys/quota
+      fi
+    fi
+    ;;
+  stop)
+    if grep -q quota /etc/fstab
+    then
+      msg "Turning off filesystem quotas"
+      run quotaoff -a
+      if [ $? -eq 0 ]
+      then
+        rm -f /var/lock/subsys/quota
+      fi
+    fi
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if [ -f /var/lock/subsys/quota ]
+    then
+      echo "filesystem quotas activated"
+    else
+      echo "filesystem quotas not activated"
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+    

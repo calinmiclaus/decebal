@@ -1,0 +1,5 @@
+lock
+defaultroute
+noipdefault
+usepeerdns
+idle 1200

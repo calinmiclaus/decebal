@@ -1,0 +1,30 @@
+NAME=kdevelop
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="KDE General Utilities."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="7910K"
+HUSE="debug"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.5.0 qt"
+
+build () 
+{ 
+    use debug && OPTS="--enable-debug" || OPTS="--disable-debug"
+
+    cd $SRC/$NAME-$VERSION;
+
+    ./configure --prefix=/opt/kde \
+		--localstatedir=/var/opt/kde \
+		--with-xinerama \
+		$OPTS
+    make;
+    make DESTDIR=$PKG install;
+
+    install_docs AUTHORS COPYING COPYING.LIB ChangeLog HACKING HACKING.language INSTALL NEWS README TODO
+}

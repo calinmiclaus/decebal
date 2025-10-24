@@ -1,0 +1,34 @@
+NAME=xine-ui
+VERSION=0.99.3
+ARCH=i686
+RELEASE=1
+URL="http://xinehq.de/"
+DESC="A free video player for Unix."
+GROUP=multimedia
+LICENSE=GPLv
+SIZE="2548K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/xine/xine-ui-0.99.3.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=ncurses-5.3 >=xine-lib-1.0 >=openssl-0.9.7e libpng aalib freetype curl xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --with-curses \
+	      --with-x
+  make
+  make DESTDIR=$PKG install
+  
+  # lets create a desktop entry for xine
+  mkdir -p $PKG/usr/share/applications
+  cp $PKG/usr/share/xine/desktop/xine.desktop $PKG/usr/share/applications
+  echo "Categories=Application;AudioVideo;" >> $PKG/usr/share/applications/xine.desktop
+  echo "Encoding=UTF-8" >> $PKG/usr/share/applications/xine.desktop
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README
+}

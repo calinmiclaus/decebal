@@ -1,0 +1,6 @@
+#
+# This file parses options to /etc/acpi/acpi_handler.sh
+#
+
+event=button power.*
+action=/etc/acpi/acpi_handler.sh button power

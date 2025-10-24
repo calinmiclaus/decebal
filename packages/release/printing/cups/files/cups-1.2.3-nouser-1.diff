@@ -1,0 +1,12 @@
+diff -Naur cups-1.1.22/systemv/Makefile cups-1.1.22.new/systemv/Makefile
+--- cups-1.1.22/systemv/Makefile	2004-08-11 09:10:22.000000000 -0500
++++ cups-1.1.22.new/systemv/Makefile	2005-01-22 23:13:16.086234024 -0600
+@@ -77,7 +77,7 @@
+ 	$(INSTALL_BIN) lp $(BINDIR)
+ 	$(INSTALL_BIN) lpoptions $(BINDIR)
+ 	$(INSTALL_BIN) lpstat $(BINDIR)
+-	-$(INSTALL_BIN) -m 4755 -o $(CUPS_USER) -g $(CUPS_GROUP) lppasswd $(BINDIR)
++	-$(INSTALL_BIN) -m 4755 lppasswd $(BINDIR)
+ 	if test ! -x $(BINDIR)/lppasswd; then \
+ 		chmod 755 $(BINDIR)/lppasswd; \
+ 	fi

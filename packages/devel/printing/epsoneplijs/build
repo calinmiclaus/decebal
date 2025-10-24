@@ -1,0 +1,25 @@
+NAME=epsoneplijs
+VERSION=0.4.0
+ARCH=i686
+RELEASE=1
+URL="http://sourceforge.net/projects/epsonepl/"
+DESC="A tool that gives ghostscript (espgs) print with some EPSON laser printers."
+GROUP=printing
+LICENSE=OL
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/epsonepl/epsoneplijs-0.4.0.tgz"
+
+RUNTIME="espgs libusb"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/bin
+  
+  ./configure --prefix=/usr \
+              --with-libusb
+  make
+  make prefix=$PKG/usr install
+
+  install_docs ChangeLog FAQ LIMITATIONS README*
+}

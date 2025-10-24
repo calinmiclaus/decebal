@@ -1,0 +1,32 @@
+NAME=ewl
+VERSION=0.0.4.004
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="Provides a widget abstraction for creating GUI's using Evas and Edje."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="1193K"
+HUSE="static"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=ewl-0.0.4.004.tar.gz
+SOURCES="$NAME-$VERSION.tar.gz"
+
+RUNTIME="=evas-0.9.9.013 =ecore-0.9.9.013 =edb-1.0.5.004 =edje-0.5.0.013
+=emotion-0.0.1.004"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README
+}

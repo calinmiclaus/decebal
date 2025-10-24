@@ -1,0 +1,101 @@
+#!/bin/bash
+#
+# /etc/rc.d/hotplug - control file for the hotplug system
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/hotplug
+
+# If HOTPLUG is set to no then we exit here (speeds up the boot process)
+[ "$HOTPLUG" = "no" ] && exit 0
+
+case "$1" in
+  start)
+    echo "Starting the linux hotplugging system"
+    for RC in /etc/hotplug/*.rc
+    do
+      DEVICES=${RC##*/}
+      case "${DEVICES%%.*}" in
+       pci)
+         if [ "$pci" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;  
+       usb)
+         if [ "$usb" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;  
+       input)
+         if [ "$input" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;  
+       pnp)
+         if [ "$pnp" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;
+       esac
+    done
+    add_service hotplug
+    ;;
+  stop)
+    echo "Stopping the linux hotplugging system"
+    for RC in /etc/hotplug/*.rc
+    do
+      DEVICES=${RC##*/}
+      case "${DEVICES%%.*}" in
+       pci)
+         if [ "$pci" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;  
+       usb)
+         if [ "$usb" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;  
+       input)
+         if [ "$input" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;  
+       pnp)
+         if [ "$pnp" = "yes" ]
+	 then
+           vmsg "\t ${DEVICES%%.*} devices"
+           run $RC $1
+	 fi
+	 ;;
+       esac
+    done
+    del_service hotplug
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service hotplug
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

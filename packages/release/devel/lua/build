@@ -1,0 +1,48 @@
+NAME=lua
+VERSION=5.0.2
+ARCH=i686
+RELEASE=1
+URL="http://www.lua.org/"
+DESC="A powerful, light-weight programming language designed for extending applications."
+GROUP=devel
+LICENSE="MIT"
+SIZE="185K"
+
+SOURCES="http://www.lua.org/ftp/lua-5.0.2.tar.gz
+         lua.pc lua-5.0.2-pic.patch"
+
+RUNTIME="ncurses readline"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  patch -p1 < ../lua-5.0.2-pic.patch
+
+  sed -i config \
+    -e 's:^#\(LOADLIB= -DUSE_DLOPEN=1\):\1:' \
+    -e 's:^#\(DLLIB= -ldl\):\1:' \
+    -e 's:^#\(POPEN= -DUSE_POPEN=1\)$:\1:' \
+    -e "s:^\(MYCFLAGS= \)-O2:\1${CFLAGS}:" \
+    -e 's:^\(INSTALL_ROOT= \)/usr/local:\1/usr:' \
+    -e 's:^\(INSTALL_MAN= $(INSTALL_ROOT)\)/man/man1:\1/share/man/man1:'
+
+  sed -i doc/readme.html \
+    -e 's:\(/README\)\("\):\1.gz\2:g'
+
+  sed -i config \
+    -e "s:^#\(USERCONF=-DLUA_USERCONFIG='\"\$(LUA)/etc/saconfig.c\"' -DUSE_READLINE\):\1:" \
+    -e 's:^#\(EXTRA_LIBS= -lm -ldl -lreadline\) # \(-lhistory -lcurses -lncurses\):\1 \2:'
+
+  make INSTALL_ROOT="/usr"
+  make so INSTALL_ROOT="/usr"
+  make INSTALL_ROOT="$PKG/usr" install
+  
+  install -m 0755 lib/liblua.so.5.0 $PKG/usr/lib/liblua.so.5.0
+  ln -s liblua.so.5.0 $PKG/usr/lib/liblua.so
+  install -m 0755 lib/liblualib.so.5.0 $PKG/usr/lib/liblualib.so.5.0
+  ln -s liblualib.so.5.0 $PKG/usr/lib/liblualib.so
+  
+  install -D -m 0644 ../lua.pc $PKG/usr/lib/pkgconfig/lua.pc
+  
+  install_docs COPYRIGHT DIFFS HISTORY INSTALL MANIFEST README UPDATE
+}

@@ -1,0 +1,28 @@
+--- TODO ---
+
+   * Think about a mean to do more allocation bitmap saves 
+     when shrinking hfs+ -- not too hard, put allocation bitmap
+     save after relocation or half relocation is completly done -- (high)
+   * selective bitmap save					-- (high)
+   * make resize do nothing in case of new_geom == old_geom :)  -- (high)
+   * Continue to write regressions tests and try on 2.6 kernel  -- (high)
+   * write doc, website, ...					-- (high)
+   
+   * MAX_BUFF in bytes ? Adaptative allocation ?		-- (medium)
+   * In hfs(plus)_btree_search , use a static variable to detect
+     illegal recursion and abort in that case. (find the right
+     number of recursion before reporting bug) -- easy		-- (medium)
+   * Finish the HFS Extractor					-- (medium)
+     
+   * Integrate HFSX						-- (low)
+   * Write code to allow enlarging and moving HFS[+x]		-- (low)
+   * Cache hfs(plus)_get_empty_end result ?			-- (low)
+   * Continue to change the relocation algorithm
+     for a better one :)					-- (low)
+
+--- NOT todo ---
+
+   * debug HFS(+) Linux implementation (block allocation for HFS+,
+     hard and sym links for HFS+, filename length for HFS, ...)	-- (dont)
+	/// Linux 2.6 contains HFS(+) implementations with less bugs
+	/// Linux 2.4 should not be used anymore to access HFS(+)

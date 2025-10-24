@@ -1,0 +1,18 @@
+NAME=man-ro
+VERSION=0.0.1
+ARCH=i686
+RELEASE=1
+URL="http://www.adt.ro/projects/linux-ro/"
+DESC="Romanian manual pages"
+GROUP=system
+LICENSE=GPLv2
+SIZE="18K"
+
+SOURCES="http://www.adt.ro/projects/linux-ro/ro-man-pages.tgz"
+
+
+build() {
+  cd $SRC
+  mkdir -p $PKG/usr/man
+  cp -Rf ro $PKG/usr/man
+}

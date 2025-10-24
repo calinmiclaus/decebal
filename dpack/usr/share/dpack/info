@@ -1,0 +1,96 @@
+#!/bin/bash
+
+pkg_info() {
+  local PKGNAME=$(pkgname $1)
+  if pkg_is_installed $PKGNAME
+  then
+    if [ -h ${PKG_ROOT}${DATABASEDIR}/virtual/$PKGNAME ]
+    then
+      local REALPACKAGE=$(ls -la ${PKG_ROOT}${DATABASEDIR}/virtual/$PKGNAME 2>/dev/null | awk '{print $10}')
+      local REALPACKAGE=${REALPACKAGE##*/}
+      echo "Package '$PKGNAME' is a virtual package. The real package is '$REALPACKAGE'."
+    else
+      local IPKG=$(get_installed_pkg $1)
+    
+      if [ -n "$IPKG" ]
+      then
+        . ${PKG_ROOT}${DATABASEDIR}/db/$IPKG 2>/dev/null     
+        echo "NAME         : $NAME"
+        echo "VERSION      : $VERSION"
+        echo "ARCH         : $ARCH"
+        echo "RELEASE      : $RELEASE"
+        echo "LICENSE      : $LICENSE"
+        echo "GROUP        : $GROUP"
+        echo "PACKAGER     : $MAINTAINER"
+        echo "URL          : $URL"
+        echo "DESCRIPTION  : $DESC"
+        echo "BUILD DATE   : $BUILDDATE"
+        echo "INSTALL DATE : $INSTALLDATE"
+        echo "UNCOMPRESSED : $USIZE"
+        echo "COMPRESSED   : $CSIZE"
+      
+        if [ -n "$USE" ]
+        then
+          echo "USE FLAGS    : $USE"
+        fi
+      
+        echo -n "DEPENDS      :"
+        if [ -n "$DEPENDS" ]
+        then
+          for DEP in ${DEPENDS[@]}
+	  do
+	    echo -n " `basename $DEP`"
+          done
+          echo
+        else
+          echo " NONE"
+        fi
+      
+        echo -n "CONFLICTS    :"
+        if [ -n "$CONFLICTS" ]
+        then
+          for CONFLICT in ${CONFLICTS[@]}
+	  do
+	    echo -n " `basename $CONFLICT`"
+	  done
+	  echo
+        else
+          echo " NONE"
+        fi
+      
+        echo -n "PROVIDES     :"
+        if [ -n "$PROVIDES" ]
+        then
+          for PROVIDE in ${PROVIDES[@]}
+	  do
+	    echo -n " `basename $PROVIDE`"
+	  done
+	  echo
+        else
+          echo " NONE"
+        fi
+      
+        echo -n "REQUIRED     :"
+        if [ -n "$REQUIRED" ]
+        then
+          for REQ in ${REQUIRED[@]}
+	  do
+	    echo -n " `basename $REQ`"
+	  done
+	  echo
+        else
+          echo " NONE"
+        fi
+      
+        if [ -n "$DESCRIPTION" ]
+        then
+          echo "$DESCIRPTION"
+        fi
+      else
+        echo "There was an unknown error while reading package database entry (database error)."
+      fi
+    fi
+  else
+    echo "Package '$1' is not installed."
+  fi      
+}

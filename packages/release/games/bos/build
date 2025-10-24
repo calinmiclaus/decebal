@@ -1,0 +1,29 @@
+NAME=bos
+VERSION=1.1
+ARCH=i686
+RELEASE=1
+URL="http://bos.seul.org/"
+DESC="A real-time strategy game using the Stratagus game engine."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="21428K"
+
+SOURCES="http://bos.seul.org/files/bos_1_1.tar.gz
+         bos bos.desktop bos.png"
+
+RUNTIME="stratagus"
+
+build() {
+  cd $SRC/${NAME}_1_1
+  
+  mkdir -p $PKG/usr/games/share/bos
+  
+  cp -a data $PKG/usr/games/share/bos/
+  
+  install -D -m 755 ../bos $PKG/usr/games/bin/bos
+  
+  install -D -m 0644 ../bos.desktop $PKG/usr/share/applications/bos.desktop
+  install -D -m 0644 ../bos.png $PKG/usr/share/pixmaps/bos.png
+  
+  install_docs LICENSE.txt README.txt
+}

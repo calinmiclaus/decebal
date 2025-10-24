@@ -1,0 +1,48 @@
+NAME=vte
+VERSION=0.11.12
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A Virtual Terminal Emulator."
+GROUP=gnome
+LICENSE=GPLv2
+SIZE="925K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/sources/vte/0.11/vte-0.11.12.tar.bz2
+         01_vtemodule.patch 04_dsp_non_alias.patch 07_set_backspace_to_utf8.patch
+	 08_multiscreen_safe.patch 10_hide_pageup_behavior.patch configure.patch
+	 src_pty.c.patch vte-line-scroll.patch"
+
+BUILDTIME="pkgconfig gettext"
+
+RUNTIME=">=bash-2.05b >=gtk2-2.2 >=freetype2-2.1.7 >=python-2.2 >=glib2-2.2 xorg >=pygtk-2.0 gnome-common"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p0 < ../01_vtemodule.patch
+  patch -p0 < ../04_dsp_non_alias.patch
+  patch -p0 < ../07_set_backspace_to_utf8.patch
+  patch -p0 < ../08_multiscreen_safe.patch
+  patch -p0 < ../10_hide_pageup_behavior.patch
+  patch -p0 < ../configure.patch
+  patch -p0 < ../src_pty.c.patch
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debugging"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+              --disable-gtk-doc \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/usr/lib
+  mv $PKG/opt/gnome/lib/python2.4 $PKG/usr/lib/
+  
+  install_docs AUTHORS COPYING ChangeLog HACKING INSTALL \
+    MESSAGE-OF-DOOM NEWS README
+}

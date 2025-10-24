@@ -1,0 +1,49 @@
+NAME=wesnoth
+VERSION=0.9.1
+ARCH=i686
+RELEASE=1
+URL="http://www.wesnoth.org"
+DESC="A turn based strategy game."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="36362K"
+HUSE="debug static nls gnome kde"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wesnoth/wesnoth-0.9.1.tar.gz"
+
+use nls && BUILDTIME="gettext"
+
+RUNTIME="xorg >=libsdl-1.2.7 sdl_mixer sdl_image sdl_net"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  remove_flags -ftracer -fomit-frame-pointer
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  use debug && OPTS="--enable-debug"
+  use static && OPTS="$OPTS --enable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+  use gnome && OPTS="$OPTS --with-gnome"
+  use kde && OPTS="$OPTS --with-kde"
+  
+  ./configure --prefix=/usr/games \
+              --mandir=/usr/games/share/man \
+	      --with-localedir=/usr/share/locale \
+	      --with-fifodir=/var/run/wesnothd \
+	      --enable-editor \
+	      --enable-server \
+	      --enable-campaign-server \
+	      --enable-tools \
+	      --with-desktopdir=/usr/share/applications $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 icons/wesnoth.desktop $PKG/usr/share/applications/wesnoth.desktop
+  install -D -m 0644 images/wesnoth-icon.png $PKG/usr/share/pixmaps/wesnoth-icon.png
+
+  install -d $PKG/var/run/wesnothd
+      
+  install_docs ABOUT-NLS COPYING INSTALL MANUAL* README
+}
+

@@ -1,0 +1,44 @@
+NAME=gnomemeeting
+VERSION=1.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnomemeeting.org/"
+DESC="A VoIP client for the GNOME Desktop."
+GROUP=chat
+LICENSE="GPLv2"
+SIZE="3643K"
+HUSE="static dbus"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnomemeeting-1.2.1.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="=openh323-1.15.3 evolution-data-server >=libgnomeui-2.2.0 libsdl =pwlib-1.8.4 howl"
+
+use dbus && RUNTIME="$RUNTIME =dbus-0.22"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  # dbus support is only here for future versions, since
+  # gnomemeeting wants a dbus version that is older then the latest
+  # stable one, enable this only if you know what you are doing
+  use dbus && OPTS="--enable-dbus"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL FAQ \
+    NEWS README TODO
+}

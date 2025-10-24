@@ -1,0 +1,5 @@
+#
+# /etc/hosts.deny - control file for incomming TCP connections
+#
+
+ALL: ALL: DENY

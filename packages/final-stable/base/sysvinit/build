@@ -1,0 +1,38 @@
+NAME=sysvinit
+VERSION=2.85
+ARCH=i686
+RELEASE=2
+URL="ftp://ftp.cistron.nl/pub/people/miquels/sysvinit/"
+DESC="Linux system V init."
+GROUP=base
+LICENSE=GPLv2
+SIZE="90K"
+
+SOURCES="ftp://ftp.cistron.nl/pub/people/miquels/sysvinit/$NAME-$VERSION.tar.gz
+	 $NAME-$VERSION.diff inittab"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/{etc,sbin,bin,usr/{bin,include,share/man/{man1,man5,man8}}}
+  
+  patch -p1 < ../$NAME-$VERSION.diff
+  
+  cd src
+  
+  sed -i "s:-Wall -O2 -D_GNU_SOURCE:-Wall -D_GNU_SOURCE $CFLAGS:" Makefile
+  
+  make
+  make ROOT=$PKG install
+
+  cd ..
+  
+  install -m 0644 ../inittab $PKG/etc/inittab
+  
+  rm -rf $PKG/bin
+  ln -sf killall5 $PKG/sbin/pidof 
+  
+  install_docs COPYRIGHT README
+}

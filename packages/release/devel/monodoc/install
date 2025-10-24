@@ -1,0 +1,13 @@
+post_install() {
+  /opt/mono/bin/monodoc --make-index >/dev/null 2>&1
+  /usr/bin/update-desktop-database -q >/dev/null 2>&1
+}
+
+post_upgrade() {
+  /opt/mono/bin/monodoc --make-index >/dev/null 2>&1
+  /usr/bin/update-desktop-database -q >/dev/null 2>&1
+}
+
+post_remove() {
+  /usr/bin/update-desktop-database -q >/dev/null 2>&1
+}

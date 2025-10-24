@@ -1,0 +1,31 @@
+NAME=dhcp
+VERSION=3.0.2
+ARCH=i686
+RELEASE=1
+URL="http://www.isc.org/sw/dhcp/"
+DESC="Dynamic Host Configuration Protocol (DHCP)."
+GROUP=network
+LICENSE=BSDL
+SIZE="833K"
+
+SOURCES="ftp://ftp.isc.org/isc/dhcp/dhcp-3.0.2.tar.gz
+         dhcp.diff dhcpd.init dhcpd.sysconf
+	 dhcp-3.0.2-config-1.diff"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+ 
+  patch -p1 < ../dhcp-3.0.2-config-1.diff
+ 
+  ./configure --copts "-DPARANOIA -DEARLY_CHROOT $CFLAGS"
+  make CC_OPTIONS="$CFLAGS" DEBUG=""
+  make DESTDIR=$PKG install
+
+  install -D -m 0700 ../dhcpd.init $PKG/etc/rc.d/dhcpd
+  install -D -m 0644 ../dhcpd.sysconf $PKG/etc/conf.d/dhcpd
+  
+  mkdir -p $PKG/var/lib/dhcp
+  touch $PKG/var/lib/dhcp/dhcpd.leases
+  
+  install_docs LICENSE README RELNOTES
+}

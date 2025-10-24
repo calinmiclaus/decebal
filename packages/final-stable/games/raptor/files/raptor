@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ ! -d ~/.raptor  ]
+then
+  mkdir -p ~/.raptor
+fi
+
+if [ ! -L ~/.raptor/data ]
+then
+  ln -sf /usr/games/share/raptor/data ~/.raptor/data
+fi
+
+if [ ! -L ~/.raptor/raptor ]
+then
+  ln -sf /usr/games/share/raptor/raptor ~/.raptor/raptor
+fi
+
+cd ~/.raptor
+exec ./raptor "$@"

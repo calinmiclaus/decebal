@@ -1,0 +1,8 @@
+#
+# /var/spool/cron/crontabs/root - settings to run /etc/cron/*
+#
+
+47 * * * * /usr/bin/run-parts /etc/cron.d/hourly 1> /dev/null
+40 4 * * * /usr/bin/run-parts /etc/cron.d/daily 1> /dev/null
+30 4 * * 0 /usr/bin/run-parts /etc/cron.d/weekly 1> /dev/null
+20 4 1 * * /usr/bin/run-parts /etc/cron.d/monthly 1> /dev/null

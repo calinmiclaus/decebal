@@ -1,0 +1,4 @@
+kernel-ide-2.6.12:Recomended for desktop (IDE)
+kernel-scsi-2.6.12:Recomended for desktop (SCSI)
+kernel-server_ide-2.6.11.10:Recomended for servers (grsec) (IDE)
+kernel-server_scsi-2.6.11.10:Recomended for servers (grsec) (SCSI)

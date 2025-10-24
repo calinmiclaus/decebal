@@ -1,0 +1,38 @@
+NAME=setserial
+VERSION=2.17
+ARCH=i686
+RELEASE=1
+URL="http://setserial.sourceforge.net/"
+DESC="Allows to change various attributes of a serial device."
+GROUP=base
+LICENSE=PD
+SIZE="51K"
+
+SOURCES="http://dl.sourceforge.net/sourceforge/setserial/setserial-2.17.tar.gz
+         serial.init setserial-2.17.diff"
+	 
+BUILDTIME="groff"
+
+RUNTIME="glibc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p0 < ../setserial-2.17.diff
+  
+  # there is some problem with groff at this moment
+  # so a quick hack
+  sed -i "s:setserial setserial.cat:setserial:" Makefile.in
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../serial.init $PKG/etc/rc.d/serial
+  install -m 0644 serial.conf $PKG/etc/serial.conf
+  
+  install_docs README
+}

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+
+pkg_info_list_contents() {
+  local PKGNAME=`pkgname $1`
+  
+  if pkg_is_installed $PKGNAME
+  then
+    local IPKG=`get_installed_pkg $PKGNAME`
+    
+    if [ -n "$IPKG" ]
+    then
+      . ${ROOT}${DATABASEDIR}/db/$IPKG
+      
+      for FILE in ${FILES[@]}
+      do
+        echo "$PKGNAME /$FILE"
+      done
+      
+      unset FILES
+    else
+      echo "there was an error while reading package database entry."
+    fi
+  else
+    echo "package $PKGNAME is not installed."
+  fi
+}

@@ -1,0 +1,26 @@
+NAME=xml-parser-perl
+VERSION=2.31
+ARCH=noarch
+RELEASE=1
+URL="http://www.cpan.org/"
+DESC="A XML Parser module for perl."
+GROUP=perl-modules
+LICENSE=OL
+SIZE="249K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/C/CO/COOPERCL/XML-Parser-2.31.tar.gz"
+
+RUNTIME="perl"
+
+build() {
+  cd $SRC/XML-Parser-2.31
+    
+  echo y | perl Makefile.PL
+  
+  make
+  make DESTDIR=$PKG install    
+    
+  rm -rf $PKG/usr/lib/perl5/5.8.6/i686-linux/perllocal.pod
+      
+  install_docs Changes MANIFEST README
+}

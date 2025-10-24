@@ -1,0 +1,31 @@
+NAME=arpwatch
+VERSION=2.1a13
+ARCH=i686
+RELEASE=1
+DESC="Tools that monitor ethernet or fddi activity."
+URL="http://www-nrg.ee.lbl.gov/"
+GROUP=network
+LICENSE="OL"
+SIZE="149K"
+
+SOURCES="ftp://ftp.ee.lbl.gov/arpwatch.tar.gz"
+
+RUNTIME="libpcap"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+
+  mkdir -p $PKG/usr/sbin
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  chown -R root.root $PKG/usr/sbin/
+  chmod -R 0755 $PKG/usr/sbin/*
+
+  install -D -m 0644 arpsnmp.8 $PKG/usr/share/man/man8/arpsnmp.8;
+  install -m 0644 arpwatch.8 $PKG/usr/share/man/man8/arpwatch.8;
+  
+  install_docs CHANGES FILES INSTALL README VERSION
+}

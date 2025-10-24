@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# /etc/rc.d/esound - control file for the Enlightment Sound Daemon
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/esound.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Enlightment Sound daemon"
+    /usr/bin/esd -nobeeps &
+    if [ $? -eq 0 ]
+    then
+      success
+      writepidfile /usr/bin/esd $pidfile
+      touch /var/lock/subsys/esound
+    else
+      failure
+    fi
+    ;;
+  stop)
+    msg "Stopping the Enlightment Sound daemon"
+    stop_service /usr/bin/esd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/esd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+
+
+    

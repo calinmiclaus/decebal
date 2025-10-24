@@ -1,0 +1,19 @@
+diff -Naur usbutils-0.11/configure usbutils-0.11.new/configure
+--- usbutils-0.11/configure	2002-08-06 09:37:24.000000000 +0300
++++ usbutils-0.11.new/configure	2004-04-07 00:39:01.000000000 +0300
+@@ -1766,13 +1766,13 @@
+ 
+   else
+     cat >> confdefs.h <<EOF
+-#define USBIDS_FILE "${prefix}/share/usb.ids"
++#define USBIDS_FILE "${prefix}/share/misc/usb.ids"
+ EOF
+ 
+   fi
+ else
+   cat >> confdefs.h <<EOF
+-#define USBIDS_FILE "${datadir}/usb.ids"
++#define USBIDS_FILE "${datadir}/misc/usb.ids"
+ EOF
+ 
+ fi

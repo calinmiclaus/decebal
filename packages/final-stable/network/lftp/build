@@ -1,0 +1,35 @@
+NAME=lftp
+VERSION=3.0.13
+ARCH=i686
+RELEASE=1
+DESC="Complex ftp client"
+URL="http://lftp.yar.ru/"
+GROUP=network
+LICENSE="GPLv2"
+SIZE="1194K"
+HUSE="nls socks socks5"
+
+SOURCES="http://ftp.yars.free.net/pub/software/unix/net/ftp/client/lftp/lftp-3.0.13.tar.bz2"
+
+RUNTIME=">=openssl-0.9.7e >=ncurses-5.3 readline"
+
+use nls && BUILDTIME="gettext"
+use socks && RUNTIME="$RUNTIME socks"
+use socks5 && RUNTIME="$RUNTIME socks5"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="$OPTS --disable-nls"
+  use socks && OPTS="$OPTS --with-socks" || OPTS="$OPTS --without-socks"
+  use socks5 && OPTS="$OPTS --with-socks5" || OPTS="$OPTS --without-socks5"
+  
+  ./configure --prefix=/usr \
+              --with-ssl \
+	      $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs ABOUT-NLS BUGS COPYING ChangeLog FAQ FEATURES INSTALL \
+    MIRRORS NEWS README* THANKS TODO
+}

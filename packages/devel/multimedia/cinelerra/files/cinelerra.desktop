@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Cinelerra
+Comment=Digital Video and Movie Editor
+Exec=cinelerra
+Icon=/usr/share/pixmaps/cinelerra.png
+Type=Application
+Categories=Application;AudioVideo;

@@ -1,0 +1,50 @@
+NAME=xfsprogs
+VERSION=2.6.36
+ARCH=i686
+RELEASE=1
+URL="http://oss.sgi.com/projects/xfs/"
+DESC="XFS file system utilities."
+GROUP=base
+LICENSE=GLPLv2.1
+SIZE="830K"
+
+SOURCES="ftp://oss.sgi.com/projects/xfs/cmd_tars/$NAME-$VERSION.src.tar.gz"
+
+BUILDTIME="gettext"
+
+RUNTIME="glibc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  remove_flags -O1 -O2 -O -O3
+  add_flags -O1
+  
+  export OPTIMIZER="${CFLAGS}"
+  export DEBUG=-DNDEBUG
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install install-dev
+  
+  mv $PKG/usr/sbin $PKG
+  
+  mv $PKG/usr/libexec/* $PKG/usr/lib
+  
+  rm -rf $PKG/usr/libexec
+  
+  mkdir -p $PKG/lib
+  
+  mv $PKG/usr/lib/{libhandle.so.1.0.3,libhandle.so.1} $PKG/lib
+  
+  chmod 755 $PKG/lib/libhandle.so.1.0.3
+  
+  rm -f $PKG/usr/lib/libhandle.so
+  
+  ln -s ../../lib/libhandle.so.1.0.3 $PKG/usr/lib/libhandle.so
+  
+  install_docs README VERSION
+  
+  mv $PKG/usr/share/doc/$NAME $PKG/usr/share/doc/$NAME-$VERSION/
+}
+ 

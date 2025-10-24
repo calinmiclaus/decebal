@@ -1,0 +1,46 @@
+NAME=firestarter
+VERSION=1.0.3
+ARCH=i686
+RELEASE=1
+URL="http://www.fs-security.com/"
+DESC="Firestarter is a complete firewalling tool for Linux."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="1173K"
+
+SOURCES="http://belnet.dl.sourceforge.net/sourceforge/firestarter/$NAME-$VERSION.tar.gz
+         firestarter.init"
+
+BUILDTIME="intltool"
+
+RUNTIME="gtk2
+         libglade
+	 libgnomeui
+	 gnome-vfs"
+
+build() {
+  cd $NAME-$VERSION
+  
+  if [ -r /etc/profile.d/gnome.sh ]
+  then
+    . /etc/profile.d/gnome.sh
+  fi
+  
+  sed -i 's!/etc/dhcpcd/!/etc/dhcpc/!' src/scriptwriter.c
+
+  export GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1
+
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+              --disable-schemas-install
+  make
+  make DESTDIR=$PKG install
+   
+  unset GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL
+  
+  install -D -m 0700 ../firestarter.init $PKG/etc/rc.d/firestarter
+  install -D -m 0644 pixmaps/firestarter.png $PKG/usr/share/pixmaps/firestarter.png
+      
+  install_docs AUTHORS COPYING CREDITS ChangeLog INSTALL \
+    NEWS README TODO   
+}

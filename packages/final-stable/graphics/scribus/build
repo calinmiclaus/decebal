@@ -1,0 +1,28 @@
+NAME=scribus
+VERSION=1.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.scribus.org.uk"
+DESC="A DTP-Program for Linux using the Qt-Library."
+GROUP=graphics
+LICENSE=GPLv2
+
+SOURCES="http://www.scribus.org.uk/downloads/1.2.1/scribus-1.2.1.tar.bz2
+         scribus.desktop"
+
+RUNTIME="qt
+         cups
+	 python"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --disable-debug
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../scribus.desktop $PKG/usr/share/applications/scribus.desktop 
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL NEWS README TODO
+}

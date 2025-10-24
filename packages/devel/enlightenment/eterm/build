@@ -1,0 +1,39 @@
+NAME=eterm
+VERSION=0.9.3
+ARCH=i686
+RELEASE=1
+URL="http://www.eterm.org/"
+DESC="The Enlightenment Terminal Emulator."
+GROUP=enlightenment
+LICENSE="NS"
+SIZE="645K"
+HUSE="static debug profile"
+
+SOURCES="http://www.eterm.org/download/Eterm-0.9.3.tar.gz"
+
+RUNTIME="imlib2 >=libast-0.5 xorg"
+
+build() {
+  cd $SRC/Eterm-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --with-debugging=9"
+  use profile && OPTS="$OPTS --enable-profile"
+  
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment \
+	      --mandir=/opt/enlightenment/share/man \
+	      --with-pty-group=tty \
+	      --enable-etwin \
+	      --enable-trans \
+	      --enable-mmx \
+	      --enable-utmp \
+	      --with-home=linux \
+	      --with-end=linux \
+	      --enable-multi-charset \
+	      --with-gnu-ld $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CVS-README ChangeLog README
+}

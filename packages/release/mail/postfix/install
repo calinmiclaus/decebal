@@ -1,0 +1,31 @@
+post_install() {
+  /usr/sbin/groupadd -g 34 postdrop 2>/dev/null
+  /usr/sbin/groupadd -g 35 postfix 2>/dev/null
+  /usr/sbin/useradd -g 35 -u 35 -c "Postfix SMTP server" -d /var/spool/postfix -s/bin/false postfix 2>/dev/null
+  /usr/sbin/postfix -c /etc/postfix set-permissions 2>/dev/null
+
+  if [ ! -f /etc/aliases ]
+  then
+    /usr/bin/newaliases 2>/dev/null
+  fi
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 34 postdrop 2>/dev/null
+  /usr/sbin/groupadd -g 35 postfix 2>/dev/null
+  /usr/sbin/useradd -g 35 -u 35 -c "Postfix SMTP server" -d /var/spool/postfix -s/bin/false postfix 2>/dev/null
+  /usr/sbin/postfix -c /etc/postfix set-permissions 2>/dev/null
+
+  if [ ! -f /etc/aliases ]
+  then
+    /usr/bin/newaliases 2>/dev/null
+  fi
+}
+
+
+post_remove() {
+  /usr/sbin/userdel postfix 2>/dev/null
+  /usr/sbin/groupdel postfix 2>/dev/null
+  /usr/sbin/groupdel postdrop 2>/dev/null
+  /sbin/decebal remove postfix >/dev/null 2>&1
+}

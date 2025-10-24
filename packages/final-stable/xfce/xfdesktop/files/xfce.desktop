@@ -1,0 +1,7 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Xfce 4.2 Session
+Comment=Use this session to run Xfce 4.2 as your desktop environment
+Exec=/opt/xfce/bin/startxfce4
+Icon=/opt/xfce/share/pixmaps/xfce4_xicon1.png
+Type=Application

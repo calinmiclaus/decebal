@@ -1,0 +1,31 @@
+NAME=libast
+VERSION=0.6.1
+ARCH=i686
+RELEASE=1
+URL="http://www.eterm.org/"
+DESC="Is the Library of Assorted Spiffy Things."
+GROUP=enlightenment
+LICENSE="NS"
+SIZE="348K"
+HUSE="static"
+
+SOURCES="http://www.eterm.org/download/libast-0.6.1.tar.gz"
+
+RUNTIME="imlib2 xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --with-debugging=9"
+  
+  ./configure --prefix=/opt/enlightenment \
+              --enable-mmx \
+              --with-gnu-ld \
+	      --with-regexp=posix $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ChangeLog DESIGN README
+}
+

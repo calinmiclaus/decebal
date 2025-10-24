@@ -1,0 +1,13 @@
+#
+# /etc/conf.d/mysqld - configuration file for /etc/rc.d/mysqld
+#
+
+# The directory where MySQL will keep the databases.
+DATADIR=/var/lib/mysql
+
+# The directory where MySQL will keep its log files.
+LOGDIR=/var/log/mysql
+
+# Self explanatory.
+LOGFILE=mysqld.log
+ERRORLOG=error.log

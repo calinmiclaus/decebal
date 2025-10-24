@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ ! -d ~/.fwp ]
+then
+  mkdir -p ~/.fwp
+fi
+
+for DIR in arenas configs gui vehicles weapons
+do
+  if [ ! -L ~/.fwp/$DIR ]
+  then
+    ln -sf /usr/games/share/fwp/$DIR ~/.fwp/${DIR##*/}
+  fi
+done
+
+if [ ! -L ~/.fwp/fwp ]
+then
+  ln -s /usr/games/share/fwp/fwp ~/.fwp/fwp
+fi
+
+cd ~/.fwp
+exec ./fwp "$@"
+	  

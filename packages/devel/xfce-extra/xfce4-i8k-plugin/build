@@ -1,0 +1,26 @@
+NAME=xfce4-i8k-plugin
+VERSION=0.0.1
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A simple i8k XFce4 panel plugin."
+GROUP=xfce-extra
+LICENSE=BSDL
+SIZE="201K"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-i8k-plugin-0.0.1.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=xfce4-panel-0.10.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README
+}

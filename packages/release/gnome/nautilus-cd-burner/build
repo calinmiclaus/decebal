@@ -1,0 +1,33 @@
+NAME=nautilus-cd-burner
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="An easy to use CD/DVD burning package, well integrated with Nautilus and the GNOME desktop."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2.1 "
+SIZE="608K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/nautilus-cd-burner-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="cdrtools nautilus hal"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --localstatedir=/var/lib \
+	      --enable-hal $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog* INSTALL \
+    NEWS README MAINTAINERS TODO
+}

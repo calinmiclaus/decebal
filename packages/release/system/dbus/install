@@ -1,0 +1,16 @@
+post_install() {
+  /usr/sbin/groupadd -g 83 messagebus &>/dev/null
+  /usr/sbin/useradd -u 83 -g 83 -c "DBUS daemon" -s /bin/false messagebus &>/dev/null
+  /bin/chown messagebus.messagebus /var/lib/dbus &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 83 messagebus &>/dev/null
+  /usr/sbin/useradd -u 83 -g 83 -c "DBUS daemon" -s /bin/false messagebus &>/dev/null
+  /bin/chown messagebus.messagebus /var/lib/dbus &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel messagebus &>/dev/null
+  /usr/sbin/groupdel messagebus &>/dev/null
+}

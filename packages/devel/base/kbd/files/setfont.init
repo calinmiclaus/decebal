@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# /etc/rc.d/setfont - Set the default console font
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/console
+
+depends=""
+conflicts=""
+pidfile=""
+
+case "$1" in
+  start)
+    msg "Setting default console font: $FONT (setfont)"
+    setfont $FONT -C /dev/tty1
+    [ $? -eq 0 ] && success || failure
+    ;;
+  *)
+    echo "usage: $0 {start}"
+    exit 1
+    ;;
+esac
+
+exit 0

@@ -1,0 +1,27 @@
+NAME=crossfire
+VERSION=1.7.0
+ARCH=i686
+RELEASE=1
+URL="http://crossfire.real-time.com/"
+DESC="A multiplayer graphical arcade and adventure game made for the X-Windows environment."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="3936K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/crossfire/crossfire-1.7.0.tar.bz2"
+
+RUNTIME=">=python-2.4"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr/games \
+              --sysconfdir=/etc/games \
+	      --localstatedir=/var/lib/games \
+	      --mandir=/usr/games/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog DEVELOPERS \
+    INSTALL NEWS README TODO
+}

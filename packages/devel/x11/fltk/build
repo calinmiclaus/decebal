@@ -1,0 +1,26 @@
+NAME=fltk
+VERSION=1.1.6
+ARCH=i686
+RELEASE=1
+URL="http://www.fltk.org/"
+DESC="C++ user interface toolkit for X and OpenGL."
+GROUP=x11
+LICENSE="FLTK GPLv2"
+SIZE="1854K"
+
+SOURCES="http://ftp.easysw.com/pub/fltk/1.1.6/fltk-1.1.6-source.tar.bz2"
+
+RUNTIME=">=libpng-1.2.7
+         >=libjpeg-6b
+         xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+
+  install_docs ANNOUNCEMENT CHANGES CMakeLists.txt COPYING CREDITS \
+    README*
+}

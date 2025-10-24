@@ -1,0 +1,25 @@
+NAME=libmcrypt
+VERSION=2.5.7
+ARCH=i686
+RELEASE=1
+URL="http://mcrypt.sourceforge.net/"
+DESC="A simple encryption library."
+GROUP=security
+LICENSE=GPLv2
+SIZE="511K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/mcrypt/libmcrypt-2.5.7.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING.LIB ChangeLog INSTALL KNOWN-BUGS \
+    NEWS README THANKS TODO
+}

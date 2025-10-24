@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# /etc/rc.d/syslog-ng - control file for the system logging daemons
+#
+
+. /etc/rc.d/functions
+
+[ -r /etc/syslog-ng.conf ] || exit 6
+
+case "$1" in
+  start)
+    msg "Starting the system logging daemon"
+    start_service /usr/sbin/syslog-ng -f /etc/syslog-ng.conf
+    ;;
+  stop)
+    msg "Stopping the system logging daemon"
+    stop_service /usr/sbin/syslog-ng
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/syslog-ng
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+esac

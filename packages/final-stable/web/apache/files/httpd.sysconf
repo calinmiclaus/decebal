@@ -1,0 +1,30 @@
+#
+# /etc/conf.d/httpd - configuration file for /etc/rc.d/httpd
+#
+
+# Set this to yes if you want to use SSL.
+USE_SSL=no
+
+# Set this to yes if you want to use MOD_PHP.
+USE_PHP=no
+
+# Set this to yes if you want to use MOD_PERL.
+USE_PERL=no
+
+# Set this to yes if you want to use MOD_PYTHON.
+USE_PYTHON=no
+
+# Set this to yes if you want to use MOD_TCL.
+USE_TCL=no
+
+# Set this to yes if you want to use MOD_MONO.
+USE_MONO=no
+
+# Set this to yes if you want to use MOD_AUTH_MYSQL.
+USE_AUTH_MYSQL=no
+
+# Set this to yes if you want to use MOD_AUTH_PGSQL (postgresql).
+USE_AUTH_PGSQL=no
+
+# Apache additional arguments.
+APACHE_OPTS=""

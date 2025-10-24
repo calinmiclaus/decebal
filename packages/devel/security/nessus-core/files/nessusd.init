@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# /etc/rc.d/nessusd - control file for the server part of the Nessus Security Scanner
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/nessusd
+
+case "$1" in
+  start)
+    msg "Starting the Nessus Security Scanner daemon"
+    start_service /usr/sbin/nessusd -D $NESSUSD_OPTS
+    if [ $? -eq 0 ]
+    then
+      write_pidfile /usr/sbin/nessusd /var/run/nessusd.pid
+    fi
+    ;;
+  stop)
+    msg "Stopping the Nessus Security Scanner daemon"
+    stop_service /usr/sbin/nessusd
+    rm -f /var/run/nessusd.pid
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/nessusd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

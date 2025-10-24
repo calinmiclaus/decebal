@@ -1,0 +1,75 @@
+NAME=kernel-vanilla-ide
+VERSION=2.6.12
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org/"
+DESC="The latest Linux Kernel"
+GROUP=kernels
+LICENSE="GPLv2"
+SIZE="36368K"
+HUSE="menuconfig xconfig"
+
+SOURCES="http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.12.tar.bz2
+	 config-vanilla-ide-$RELEASE"
+
+RUNTIME="module-init-tools bootloader"	 
+
+PROVIDES="kernel kernel-sources"
+	 
+build() {
+  cd $SRC/linux-2.6.12
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  sed -i "s:EXTRAVERSION \= :EXTRAVERSION \= -vanilla-$RELEASE:" Makefile
+  
+  mkdir -p $PKG/{boot,lib/modules}
+  
+  if use menuconfig
+  then
+    make menuconfig
+  elif use xconfig
+  then
+    make xconfig
+  else
+    cp ../config-vanilla-ide-$RELEASE ./.config
+    yes "" | make config
+  fi
+  
+  make clean
+  make
+  make INSTALL_MOD_PATH=$PKG modules_install
+  
+  install -m 0644 System.map $PKG/boot/System.map-vanilla-ide-2.6.12-$RELEASE
+  install -m 0644 arch/i386/boot/bzImage $PKG/boot/vmlinuz-vanilla-ide-2.6.12-$RELEASE
+  install -m 0644 .config $PKG/boot/config-vanilla-ide-2.6.12-$RELEASE
+  
+  rdev -R $PKG/boot/vmlinuz-vanilla-ide-2.6.12-$RELEASE 0
+  rdev -v $PKG/boot/vmlinuz-vanilla-ide-2.6.12-$RELEASE -1
+  rdev -r $PKG/boot/vmlinuz-vanilla-ide-2.6.12-$RELEASE 0
+  
+  mkdir -p $PKG/lib/modules/2.6.12-vanilla-ide-$RELEASE
+  rm -f $PKG/lib/modules/2.6.12-vanilla-ide-$RELEASE/{build,source}
+  ln -s /usr/src/linux-2.6.12-vanilla-ide-$RELEASE $PKG/lib/modules/2.6.12-vanilla-$RELEASE/build
+  ln -s /usr/src/linux-2.6.12-vanilla-ide-$RELEASE $PKG/lib/modules/2.6.12-vanilla-$RELEASE/source
+  
+  mkdir -p $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/{include,arch/i386/kernel,.tmp_versions}
+  for DIR in acpi asm-generic asm-i386 config linux math-emu media mtd net pcmcia rxrpc scsi sound
+  do
+    cp -a include/$DIR $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/include/$DIR
+  done
+  
+  cp -a scripts $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/
+  cp arch/i386/Makefile $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/arch/i386/
+  cp arch/i386/kernel/asm-offsets.s $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/arch/i386/kernel/
+  
+  for FILE in $(find ./ -type f -name "Kconfig*")
+  do
+    mkdir -p $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/${FILE%/*}
+    cp $FILE $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/$FILE
+  done
+  
+  ( cd $PKG/usr/src/linux-2.6.12-vanilla-ide-$RELEASE/include; ln -s asm-i386 asm )
+  
+  install_docs COPYING CREDITS MAINTAINERS README REPORTING-BUGS
+}

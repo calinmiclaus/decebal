@@ -1,0 +1,41 @@
+NAME=libbonobo
+VERSION=2.8.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A set of language and system independant CORBA interfaces."
+GROUP=gnome
+LICENSE="GPLv2 GLGPLv2.1"
+SIZE="1036K"
+HUSE="gtkdoc static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/sources/libbonobo/2.8/libbonobo-2.8.1.tar.bz2"
+
+BUILDTIME=">=pkgconfig-0.15.0 gettext xml-parser-perl intltool"
+
+RUNTIME="orbit2 gnome-common perl"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtkdoc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  use debug && OPTS="$OPTS --enable-debug"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/opt/gnome \
+	      --enable-bonobo-activation-debug=no $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  # put the correct path here
+  sed -i "s:\/opt\/gnome2\/:\/opt\/gnome\/:" $PKG/etc/opt/gnome/bonobo-activation/bonobo-activation-config.xml
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS \
+    README TODO
+}

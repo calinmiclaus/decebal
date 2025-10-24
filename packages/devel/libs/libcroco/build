@@ -1,0 +1,29 @@
+NAME=libcroco
+VERSION=0.6.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A standalone css2 parsing and manipulation library."
+GROUP=libs
+LICENSE="GPLv2 GLGPL2.1"
+SIZE="349K"
+HUSE="static"
+
+SOURCES="http://ftp.acc.umu.se/pub/gnome/sources/libcroco/0.6/libcroco-0.6.0.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=glib2-2.0 >=libxml2-2.4.23"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+    
+  install_docs ABOUT-NLS AUTHORS COPYING COPYING.LIB ChangeLog Doxyfile \
+    HACKING INSTALL NEWS README TODO
+}

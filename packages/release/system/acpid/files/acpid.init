@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# /etc/rc.d/acpid - control script for the ACPI daemon (acpid)
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/acpid
+
+pidfile="/var/run/acpid.pid"
+
+load_modules() {
+  [ -d /proc/apci ] && return 0
+  
+  MODULES_DIR=/lib/modules/`uname -r`/kernel/drivers/acpi/
+  
+  if [ "`kernelversion`" = "2.6" ]
+  then
+    MODULES=`find $MODULES_DIR -name *.ko 2>/dev/null`
+  else
+    MODULES=`find $MODULES_DIR -name *.o 2>/dev/null`
+  fi
+  
+  if [ -n "$MODULES" ]
+  then
+    echo "Loading ACPI modules from /etc/conf.d/acpid"
+    for MODULE in $MODULES
+    do
+      MODULE=${MODULE##*/}
+      MODULE=${MODULE%%.*}
+      if ! echo $DONT_LOAD | grep -q $MODULE
+      then
+        msg "\t* $MODULE"
+	run modprobe $MODULE
+      fi
+    done
+  fi
+  
+  if [ ! -d /proc/acpi ]
+  then
+    echo "You dont have support for ACPI in kernel or as module. Please"
+    echo "recompile your kernel and try again. Also take a look at:"
+    echo "  /etc/conf.d/acpid"
+    exit 1      
+  fi        
+}      
+    
+case "$1" in
+  start)
+    load_modules
+    msg "Starting the ACPI daemon"
+    start_service /usr/sbin/acpid $ACPID_OPTS
+    ;;
+  stop)
+    msg "Stopping the ACPI daemon"
+    stop_service /usr/sbin/acpid $ACPID_OPTS
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/acpid
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
+         

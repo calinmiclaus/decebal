@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# /usr/bin/lessfilter - less filter
+#
+# To use: export LESSOPEN="|/usr/bin/lessfilter %s"
+#
+
+filter() {
+    case "$1" in
+	*.[1-9n]) cat "$1" | nroff -c -mandoc | cat -s ;;
+	*.[1-9n].gz) zcat "$1" | nroff -c -mandoc | cat -s ;;
+	*.[1-9n].bz2) bzcat "$1" | nroff -c -mandoc | cat -s ;;
+	*.tar) tar tvvf "$1" ;;
+	*.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
+	*.tbz2|*.tar.bz2) tar tjvvf "$1" ;;
+	*.[zZ]|*.gz) gzip -dc "$1" ;;
+	*.bz2) bzip2 -dc "$1" ;;
+	*.zip) zipinfo "$1" ;;
+	*.rpm) dd ibs=`/usr/bin/rpmoffset < "$1"` skip=1 if="$1" | gzip -dc | cpio -tv ;;
+	*.cpio) cpio -itv < "$1" ;;
+    esac
+}
+
+filter "$1" 2> /dev/null

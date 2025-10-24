@@ -1,0 +1,15 @@
+post_install() {
+  /usr/sbin/groupadd -g 74 icecast 2>/dev/null
+  /usr/sbin/useradd -g 74 -u 74 -c "Icecast Streaming Server" -d /dev/null -s /bin/false icecast 2>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 74 icecast 2>/dev/null
+  /usr/sbin/useradd -g 74 -u 74 -c "Apache Web Server" -d /dev/null -s /bin/false icecast 2>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel icecast 2>/dev/null
+  /usr/sbin/groupdel icecast 2>/dev/null
+}
+  

@@ -1,0 +1,33 @@
+NAME=gwget
+VERSION=0.94
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A wget Front-end for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="389K"
+HUSE="static epiphany"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/gwget/0.94/gwget-0.94.tar.bz2"
+
+RUNTIME=">=libgnomeui-2.0.0 wget"
+
+use epiphany && RUNTIME="$RUNTIME >=epiphany-1.5.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use epiphany && OPTS="$OPTS --enable-epiphany-extension --with-epiphany-version=1.6" || OPTS="$OPTS --disable-epiphany-extension"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README THANKS TODO
+}

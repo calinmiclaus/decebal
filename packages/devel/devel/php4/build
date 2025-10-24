@@ -1,0 +1,107 @@
+NAME=php4
+VERSION=4.3.11
+ARCH=i686
+RELEASE=1
+URL="http://www.php.net/"
+DESC="A high-level scripting language."
+GROUP=devel
+LICENSE="PHPv3.0"
+SIZE="3918K"
+HUSE="ipv6 cyrus fribidi java msql snmp mcal xslt nohardened"
+
+SOURCES="http://ro.php.net/distributions/php-4.3.11.tar.bz2
+         http://www.hardened-php.net/hardened-php-4.3.11-0.2.7.patch.gz
+	 php.ini php.conf"
+
+RUNTIME=">=openssl-0.9.7e >=zlib-1.2.1 bzip2 >=curl-7.9.8 gdbm db >=libxml2-2.4.14 gettext uw-imap
+         gmp openldap >=aspell-0.50"
+
+BACKUPS="etc/php/php.ini
+         etc/httpd/mod.d/php.conf"
+
+CONFLICTS="php"
+
+use cyrus && RUNTIME="$RUNTIME cyrus-imap"
+use fribidi && RUNTIME="$RUNTIME fribidi"
+use java && RUNTIME="$RUNTIME java"
+use msql && RUNTIME="$RUNTIME msql"
+use snmp && RUNTIME="$RUNTIME snmp"
+use mcal && RUNTIME="$RUNTIME libmcal"
+use xslt && RUNTIME="$RUNTIME libxslt"
+
+build() {
+  cd $SRC/php-$VERSION
+  
+  # PHP needs the httpd.conf in $PKG/etc/httpd
+  mkdir -p $PKG/etc/httpd
+  cp /etc/httpd/httpd.conf $PKG/etc/httpd/httpd.conf
+  
+  use nohardened || {
+    patch -p1 < ../hardened-php-4.3.11-0.2.7.patch
+  }
+  
+  use ipv6 || OPTS="--disable-ipv6"
+  use dmalloc && OPTS="$OPTS --enable-dmalloc"
+  use cyrus && OPTS="$OPTS --with-cyrus"
+  use fribidi && OPTS="$OPTS --with-fribidi"
+  use java && OPTS="$OPTS --with-java"
+  use msql && OPTS="$OPTS --with-msql"
+  use snmp && OPTS="$OPTS --with-snmp"
+  use mcal && OPTS="$OPTS --with-mcal"
+  use xslt && OPTS="$OPTS --enable-xslt"
+  
+  ./configure --with-apxs2=/usr/sbin/apxs \
+              --prefix=/usr \
+	      --sysconfdir=/etc/php \
+	      --mandir=/usr/share/man \
+	      --with-config-file-path=/etc/php/php.ini \
+	      --with-config-file-scan-dir=/etc/php \
+	      --enable-safe-mode \
+	      --enable-magic-quotes \
+	      --with-openssl=/usr \
+	      --with-zlib \
+	      --enable-bcmath \
+	      --with-bz2 \
+	      --enable-calendar \
+	      --with-curl \
+	      --with-gdbm \
+	      --with-db4 \
+	      --with-dom \
+	      --enable-ftp \
+	      --with-gd \
+	      --enable-gd-native-ttf \
+	      --with-gettext \
+	      --with-gmp \
+	      --with-iconv \
+	      --with-imap \
+	      --with-imap-ssl \
+	      --with-ldap \
+	      --enable-mbstring \
+	      --with-mcrypt \
+	      --with-mhash \
+	      --with-mime-magic \
+	      --with-mysql \
+	      --with-mysql-sock=/var/run/mysql/mysql.socket \
+	      --with-ncurses \
+	      --with-pspell \
+	      --with-readline \
+	      --with-mm \
+	      --enable-sockets \
+	      --enable-shmop \
+	      --enable-posix \
+	      --enable-session \
+	      --enable-sysvsem \
+	      --enable-sysvshm \
+	      --enable-shared $OPTS
+  make
+  make INSTALL_ROOT=$PKG install
+  
+  # Remove $PKG/etc/httpd
+  rm -rf $PKG/etc/httpd
+  
+  install -D -m 0644 ../php.ini $PKG/etc/php/php.ini
+  install -D -m 0644 ../php.conf $PKG/etc/httpd/mod.d/php.conf
+  
+  install_docs CODING_STANDARDS CREDITS EXTENSIONS INSTALL LICENSE \
+    NEWS README* TODO*             	      
+}

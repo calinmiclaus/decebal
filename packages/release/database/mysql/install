@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 40 mysql &>/dev/null
+  /usr/sbin/useradd -g mysql -u 40 -d /var/lib/mysql -s/bin/false mysql &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 40 mysql &>/dev/null
+  /usr/sbin/useradd -g mysql -u 40 -d /var/lib/mysql -s/bin/false mysql &>/dev/null
+}
+
+pre_remove() {
+  /usr/sbin/userdel mysql &>/dev/null
+  /usr/sbin/groupdel mysql &>/dev/null
+}

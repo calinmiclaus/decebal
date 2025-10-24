@@ -1,0 +1,27 @@
+NAME=gnome-nettool
+VERSION=1.2.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="GNOME interface for various networking tools."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="559K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-nettool-1.2.0.tar.bz2"
+
+BUILDTIME="intltool gettext pkgconfig"
+
+RUNTIME=">=libgnomeui-2.0.0 >=libgnome-2.0.0 >=gtk2-2.5.4 >=libglade-2.0.0 >=gconf-2.0-1.1.11"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

@@ -1,0 +1,22 @@
+NAME=bittornado
+VERSION=0.3.12
+ARCH=i686
+RELEASE=1
+URL="http://www.bittornado.com/"
+DESC="TheSHAD0W's EXPERIMENTAL BITTORRENT CLIENT."
+GROUP=network
+LICENSE="MIT"
+SIZE="184K"
+
+SOURCES="http://download2.bittornado.com/download/BitTornado-0.3.12.tar.gz"
+
+RUNTIME="python wxpython"
+
+build() {
+  cd $SRC/BitTornado-CVS
+  
+  python setup.py build install --root=$PKG
+  
+  install_docs LICENSE.txt README.txt ipranges.portugal.txt docs/*.txt
+}
+

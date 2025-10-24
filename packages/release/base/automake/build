@@ -1,0 +1,30 @@
+NAME=automake
+VERSION=1.9.6
+ARCH=noarch
+RELEASE=1
+URL="http://www.gnu.org/software/automake/"
+DESC="A GNU tool for automatically creating Makefiles."
+GROUP=base
+LICENSE=GPLv2
+SIZE="740K"
+
+SOURCES="http://ftp.gnu.org/gnu/automake/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=autoconf-2.58
+         >=bash-2.5b  
+         perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  ln -sf automake-1.9 $PKG/usr/share/automake
+  ln -sf aclocal-1.9 $PKG/usr/share/aclocal
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL NEWS README THANKS TODO
+}           

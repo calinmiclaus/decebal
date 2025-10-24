@@ -1,0 +1,34 @@
+NAME=simplecdrx
+VERSION=1.3.3
+ARCH=i686
+RELEASE=1
+URL="http://ogre.rocky-road.net/cdr.shtml"
+DESC="A GTK+ based frontend for CD writing, mastering, and audio manipulation."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="316K"
+
+SOURCES="http://ogre.rocky-road.net/files/simplecdrx-1.3.3.tar.bz2
+         simplecdr.desktop simplecdr.png"
+
+RUNTIME="libogg libvorbis >=gtk-1.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # Hmm...for sime reason the gtktest isn't working and
+  # gettext cant install the nls files...so we skip these
+  # steps...
+  ./configure --prefix=/usr \
+              --disable-gtktest \
+	      --disable-nls
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../simplecdr.desktop $PKG/usr/share/applications/simplecdr.destop
+  install -D -m 0644 ../simplecdr.png $PKG/usr/share/pixmaps/simplecdr.png
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}
+

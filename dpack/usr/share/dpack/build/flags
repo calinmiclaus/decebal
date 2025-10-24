@@ -1,0 +1,64 @@
+#!/bin/bash
+
+add_flags() {
+  set +x
+  for FLAG in $@
+  do
+    if ! echo $CFLAGS | grep -q '$FLAG'
+    then
+      export CFLAGS="$CFLAGS $FLAG"
+    fi
+    if ! echo $CXXFLAGS | grep -q '$FLAG'
+    then
+      export CXXFLAGS="$CXXFLAGS $FLAG"
+    fi
+  done
+  set -e -x
+}
+
+remove_flags() {
+  set +x
+  for FLAG in $@
+  do
+    for CFLAG in $CFLAGS
+    do
+      if [ "$CFLAG" != "$FLAG" ]
+      then
+        NEWCFLAGS="$NEWCFLAGS $CFLAG"
+      fi
+    done
+    for CXXFLAG in $CXXFLAGS
+    do
+      if [ "$CXXFLAG" != "$FLAG" ]
+      then
+        NEWCXXFLAGS="$NEWCXXFLAGS $CXXFLAG"
+      fi
+    done
+    export CFLAGS="$NEWCFLAGS"
+    export CXXFLAGS="$NEWCXXFLAGS"
+    NEWCFLAGS=""
+    NEWCXXFLAGS=""
+  done
+  set -e -x
+}
+
+replace_flags() {
+  set +x
+  export CFLAGS="`echo $CFLAGS | sed s/$1/$2/`"
+  export CXXFLAGS="`echo $CXXFLAGS | sed s/$1/$2/`"
+  set -e -x
+}
+
+add_ld_flags() {
+  set +x
+  local NEWLDFLAGS=""
+  for FLAG in $@
+  do
+    if ! echo $LDFLAGS | grep -q '$FLAG'
+    then
+      NEWLDFLAGS="$NEWLDFLAGS $FLAG"
+    fi
+  done
+  export LDFAGS="$NEWLDFLAGS -pie"  
+  set -e -x
+}

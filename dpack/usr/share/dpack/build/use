@@ -1,0 +1,24 @@
+#!/bin/bash
+
+use() {
+  set +x
+  if [ -n "$(echo $USE | grep $1)" -o -n "$(echo $GLOBALUSE | grep $1)" ]
+  then
+    return 0
+  else
+    return 1
+  fi
+  set -e -x
+}
+
+have() {
+  set +x
+  if pkg_is_installed $1
+  then
+    return 0
+  else
+    return 1
+  fi
+  set -e -x
+}
+  

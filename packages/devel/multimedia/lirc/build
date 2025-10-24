@@ -1,0 +1,26 @@
+NAME=lirc
+VERSION=0.7.0
+ARCH=i686
+RELEASE=1
+URL="http://www.lirc.org/"
+DESC="The Linux Infrared Remote Control package."
+GROUP=multimedia
+LICENSE=GPLv2
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/lirc/lirc-0.7.0.tar.bz2
+         lircd.init lircd.sysconf"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --with-driver=any
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../lircd.init $PKG/etc/rc.d/lircd
+  install -D -m 0644 ../lircd.sysconf $PKG/etc/conf.d/lircd
+  
+  install_docs ANNOUNCE AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

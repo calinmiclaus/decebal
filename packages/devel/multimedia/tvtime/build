@@ -1,0 +1,30 @@
+NAME=tvtime
+VERSION=0.9.15
+ARCH=i686
+RELEASE=1
+URL="http://www.tvtime.net/"
+DESC="A high quality TV viewing application."
+GROUP=multimedia
+LICENSE=GPLv2
+SIZE="1444K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/tvtime/tvtime-0.9.15.tar.gz"
+
+RUNTIME="xorg"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

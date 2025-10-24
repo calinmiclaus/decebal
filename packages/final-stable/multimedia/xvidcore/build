@@ -1,0 +1,30 @@
+NAME=xvidcore
+VERSION=1.0.3
+ARCH=i686
+RELEASE=1
+URL="http://www.xvid.org/"
+DESC="OpenSource implementation of DivX."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="575K"
+HUSE="debug profile"
+
+SOURCES="http://ftp.gentoo.or.kr/distfiles/xvidcore-1.0.3.tar.bz2"
+
+BUILDTIME="nasm"
+
+build() {
+  cd $SRC/$NAME-$VERSION/build/generic  
+
+  mkdir -p $PKG/usr/{lib,include}
+  
+  use debug && OPTS="--enable-idebug"
+  use profile && OPTS="$OPTS --enable-iprofile"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  cd $SRC/$NAME-$VERSION
+  install_docs AUTHORS ChangeLog CodingStyle LICENSE README TODO
+}

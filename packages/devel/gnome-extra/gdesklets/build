@@ -1,0 +1,44 @@
+NAME=gdesklets
+VERSION=0.34.3
+ARCH=i686
+RELEASE=1
+URL="http://gdesklets.gnomedesktop.org/"
+DESC="Provides an advanced architecture for desktop applets."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="663K"
+HUSE="nls static warnings gnome"
+
+SOURCES="http://www.pycage.de/download/gdesklets/gDesklets-0.34.3.tar.bz2"
+
+RUNTIME=">=pygtk-2.4.0 >=pyorbit-2.0.1 >=gnome-python-2.6.0 >=libgtop-2.8.0 >=librsvg-2.0.0"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/gDesklets-$VERSION
+
+  use static && OPTS="--enable-static"
+  use warnings && OPTS="$OPTS --enable-more-warnings"
+  use gnome && OPTS="$OPTS --enable-gnome-support" || OPTS="$OPTS --disable-gnome-support"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/usr/share/man \
+	      --localstatedir=/var/lib \
+	      --with-gconf-source=/etc/opt/gnome/gconf/gconf.xml.defaults \
+	      --with-gconf-schema-file-dir=/etc/opt/gnome/gconf/schemas \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  # For some reason make install does not handle this properly.
+  ( install -D -m 0644 $PKG/gdesklets-display-thumbnail.schemas $PKG/etc/opt/gnome/gconf/schemas/gdesklets-display-thumbnail.schemas
+    rm -f $PKG/gdesklets-display-thumbnail.schemas )
+  
+  rm -f $PKG/usr/share/mime/{aliases,globs,magic,subclasses,XMLnamespaces} \
+    /usr/share/applications/mimeinfo.cache
+      	      
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

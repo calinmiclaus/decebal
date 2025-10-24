@@ -1,0 +1,34 @@
+NAME=quota
+VERSION=3.12
+ARCH=i686
+RELEASE=1
+URL="http://linuxquota.sourceforge.net/"
+DESC="Manage and view Linux quotas."
+GROUP=system
+LICENSE=GPLv2
+SIZE="206K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/linuxquota/quota-3.12.tar.gz
+         quota.init"
+
+RUNTIME="e2fsprogs"
+
+build() {
+  cd $SRC/quota-tools
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/quota \
+	      --enable-rootsbin=yes
+  make
+  make ROOTDIR=$PKG install
+  
+  # remove files that conflict with other packages.
+  rm $PKG/usr/man/man2/quotactl.2
+  rm $PKG/usr/man/man8/rquotad.8
+  rm $PKG/usr/sbin/rpc.rquotad
+  rm -rf $PKG/usr/include
+  
+  install -D -m 0700 ../quota.init $PKG/etc/rc.d/quota
+
+  install_docs README* Changelog
+}

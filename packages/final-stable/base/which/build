@@ -1,0 +1,28 @@
+NAME=which
+VERSION=2.16
+ARCH=i686
+RELEASE=1
+URL="http://www.xs4all.nl/~carlo17/which"
+DESC="A utility to show the full path of commands."
+GROUP=base
+LICENSE=GPLv2
+SIZE="122K"
+
+SOURCES="http://www.xs4all.nl/~carlo17/which/which-2.16.tar.gz"
+
+BUILDTIME="texinfo"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog EXAMPLES INSTALL \
+    LICENSE NEWS README README.alias
+}  

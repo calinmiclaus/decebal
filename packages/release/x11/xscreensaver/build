@@ -1,0 +1,45 @@
+NAME=xscreensaver
+VERSION=4.19
+ARCH=i686
+RELEASE=1
+URL="http://www.jwz.org/xscreensaver/"
+DESC="XScreenSaver is a modular screen saver and locker."
+GROUP=x11
+LICENSE=OL
+
+SOURCES="http://www.jwz.org/xscreensaver/xscreensaver-4.19.tar.gz"
+
+RUNTIME=">=xorg-6.7 >=gtk2-2.4.7 >=libxml2-2.6.10 >=libglade-2.3.6 >=libjpeg-6b gcc bc"
+	 
+use pam && RUNTIME="$RUNTIME pam"
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use gle && OPTS="$OPTS --with-gle" || OPTS="$OPTS --without-gle"
+  use pam && OPTS="$OPTS --with-pam" || OPTS="$OPTS --without-pam"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --without-motif \
+              --without-gnome \
+	      --with-gtk \
+    	      --with-xml \
+              --with-gl \
+              --without-gle \
+              --with-xpm \
+              --with-pixbuf \
+              --with-jpeg \
+              --enable-locking \
+              --with-shadow \
+	      --with-xinerama-ext \
+	      --with-xpm \
+	      --with-xshm-ext \
+	      $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs INSTALL README README.VMS README.debugging
+}

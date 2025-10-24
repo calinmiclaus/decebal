@@ -1,0 +1,6 @@
+md5: 2b3b2147b7bc91f362be55cb49fa1c4e pciutils-2.1.11.tar.bz2
+md5: 880acfc38dc96c313a56815c9c40b22d pci.ids.bz2
+md5: f70e9e9b986583a76d0923eb62659db9 pci.db.bz2
+md5: c6135ce795940ebf3777592d4e6f8049 pcimodules-pciutils-2.1.11.diff
+md5: 751621815dd1195dd85efcd9e3c6313f pcimodules.overflow.diff
+md5: 501ece0a1edee05c56d105520e10cfa0 pciutils_decebal.diff

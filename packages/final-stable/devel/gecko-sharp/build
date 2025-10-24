@@ -1,0 +1,27 @@
+NAME=gecko-sharp
+VERSION=0.6
+ARCH=i686
+RELEASE=1
+URL="http://www.go-mono.com/"
+DESC="C# bindings to gtkmozembedded."
+GROUP=devel
+LICENSE="LGPLv2.1 MPLv1.1"
+SIZE="108K"
+
+SOURCES="http://www.go-mono.com/archive/1.0.6/gecko-sharp-0.6.tar.gz"
+
+RUNTIME=">=mozilla-1.7 gtk2 >=mono-1.0 >=gtk-sharp-1.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  export MOZILLA_FIVE_HOME="/usr/lib/mozilla"
+  export PKG_CONFIG_PATH="/opt/mono/lib/pkgconfig"
+  export PATH="$PATH:/opt/mono/bin"
+  ./configure --prefix=/opt/mono
+  make
+  make GACUTIL="/opt/mono/bin/gacutil /root $PKG/opt/mono/lib" prefix=$PKG/opt/mono install
+       
+  install_docs AUTHORS ChangeLog INSTALL LICENSE* \
+    NEWS README
+}

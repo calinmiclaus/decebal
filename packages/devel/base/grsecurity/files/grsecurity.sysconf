@@ -1,0 +1,96 @@
+#
+# /etc/conf.d/grsecurity - configuration file for /etc/rc.d/grsecurity
+#
+
+# Do you want to activate grsecurity options at boot time?
+GRSECURITY=yes
+
+# Log all execution. (all functions that use execve).
+EXECLOG=yes
+
+# Log all executions inside a chroot jail.
+CHROOTEXECLOG=no
+
+# Log all chdir operations.
+CHDIRLOG=yes
+
+# Log all mount and umount operations.
+MOUNTLOG=no
+
+# Log all removals of of message queues, semaphores and shared memory.
+IPCLOG=yes
+
+# Log all important signals.
+SIGNALLOG=yes
+
+# Log all failed fork atempts.
+FORKLOG=yes
+
+# Log any changes of the system clock.
+TIMELOG=yes
+
+# Log all text relocations.
+TEXTRELLOG=no
+
+# Activate all settings above for the following group.
+# Ex: AUDITGROUP=100 - this is the users group in /etc/group
+AUDITGROUP=100
+
+# Set the trusted users group.
+# Ex: TRUSTEDGROUP=101 - this the trusted group in /etc/group
+TRUSTEDGROUP=101
+
+# Activate trusted path execution (TPE).
+ACTIVATETPE=yes
+
+# Partially restrict execution to non-root users.
+PARTIALLY=yes
+
+# This is the group (gid) of the users that will have trusted execution
+# enabled, if PARTIALY is set to no then this is the group of the users
+# that dont have trusted path execution (untrusted users).
+TRUSTED=101
+
+# Force execution limiting for users that have limits activated.
+EXECVELIMITING=yes
+
+# Shared memory will be destroyed when no one is attached to it.
+DESTROYSHARED=yes
+
+# Non-root users will not be able to use dmesg.
+RESTRICTDMESG=yes
+
+# Randomize pids?
+RANDOMIZEPIDS=yes
+
+# Use random TCP ISN selection?
+RANDOMISNS=yes
+
+# Use random IP ids?
+RANDOMIPIDS=yes
+
+# Use randomized TCP source ports?
+RANDOMSPORTS=yes
+
+# Use randomized RPC XIDs?
+RANDOMRPCXIDS=yes
+
+# Which tool will you use to control PAX (chpax or paxctl)?
+PAXTOOL=/sbin/paxctl
+
+# PAX flags settings (chpax -h for more information).
+# Ex: /usr/bin/xmms:ps
+PAXRULES="/usr/X11R6/bin/Xorg:psmxer
+  /usr/X11R6/bin/xorgcfg:psmxer
+  /usr/X11R6/bin/XFree86:prs
+  /usr/bin/xine:ps
+  /usr/bin/gxine:ps
+  /usr/bin/mplayer:ps
+  /usr/bin/gmplayer:ps
+  /usr/lib/mozilla/mozilla-bin:m
+  /opt/firefox/firefox-bin:m
+  /opt/thunderbird/thunderbird-bin:m
+  /usr/bin/xmms:m
+  /usr/bin/totem:ps
+  /opt/xfce/bin/xfce4-panel:ps
+  /usr/bin/gnome-sound-recorder:ps"

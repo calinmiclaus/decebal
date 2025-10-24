@@ -1,0 +1,42 @@
+NAME=wxgtk
+VERSION=2.4.2
+ARCH=i686
+RELEASE=1
+URL="http://wxwidgets.org/"
+DESC="An open source C++ GUI framework (GTK version)."
+GROUP=graphics
+LICENSE=GLGPLv2
+SIZE="5381935K"
+HUSE="opengl gtk2"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wxwindows/wxGTK-2.4.2.tar.bz2"
+#SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wxwindows/wxGTK-2.5.5.tar.bz2"
+
+RUNTIME=">=libpng-1.2.8 >=libjpeg-0.6b >=libtiff-3.7.1 xorg >=zlib-1.2.1"
+
+use gtk2 && RUNTIME="$RUNTIME gtk2" || RUNTIME="$RUNTIME >=gtk-1.2.7"
+
+build() {
+  cd $SRC/wxGTK-$VERSION
+  
+  use opengl && OPTS="--enable-opengl"
+  use gtk2 && OPTS="$OPTS --enable gtk2" || OPTS="$OPTS --with-gtk --disable-gtk2"
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+	      --with-libpng \
+	      --with-libjpeg \
+	      --with-libtiff \
+	      --with-libxpm \
+	      --with-sdl \
+	      $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  # We want wxgtk and wxgtk2 installed at the same time (you
+  # can use gtk2 or gtk for both).
+  rm -rf $PKG/usr/share/{aclocal,locale}  
+  
+  install_docs CHANGES-GTK.txt CHANGES.txt COPYING.LIB INSTALL.txt \
+    LICENCE.txt README-GTK.txt README.txt TODO.txt
+}

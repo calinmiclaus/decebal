@@ -1,0 +1,33 @@
+NAME=docbook-xsl
+VERSION=1.65.1
+ARCH=noarch
+RELEASE=1
+DESC="XML stylesheets for Docbook-xml transformations."
+URL="http://scrollkeeper.sourceforge.net/docbook.shtml"
+GROUP=doc-tools
+LICENSE=BSDL
+SIZE="1504K"
+
+SOURCES="http://telia.dl.sourceforge.net/sourceforge/docbook/docbook-xsl-1.65.1.tar.gz"
+
+BUILDTIME=">=libxml2-2.6.10
+           >=libxslt-1.1.7"
+
+RUNTIME=">=libxml2-2.6.10
+         >=libxslt-1.1.7"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/share/xml/docbook/xsl-stylesheets-1.65.1
+  
+  cp -af VERSION common extensions fo html htmlhelp images javahelp lib \
+    manpages params profiling template tools xhtml $PKG/usr/share/xml/docbook/xsl-stylesheets-1.65.1/
+  
+  mkdir -p $PKG/usr/share/doc/xml
+  
+  cp -af doc/* $PKG/usr/share/doc/xml/
+  
+  install_docs BUGS ChangeLog README RELEASE-NOTES.html \
+    RELEASE-NOTES.xml TODO VERSION WhatsNew
+}       

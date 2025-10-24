@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# /etc/rc.d/kdc
+#
+
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    msg "Starting the Heimdal KDC daemon"
+    start_service /usr/bin/kdc
+    ;;
+  stop)
+    msg "Stopping the Heimdal KDC daemon"
+    stop_service /usr/bin/kdc
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/kdc
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+esac
+								

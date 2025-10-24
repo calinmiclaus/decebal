@@ -1,0 +1,31 @@
+NAME=e17-utils
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="A collection of utils for enlightenment 0.17."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="432K"
+HUSE="static"
+
+SOURCES="e17-utils-21052005.tar.bz2"
+
+RUNTIME="=evas-21052005 =ecore-21052005 >=imlib2-1.0.0 =epsilon-21052005 =e17-21052005 =ewl-21052005 =esmart-21052005
+         =edje-21052005 =eet-21052005 =engrave-21052005"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README
+}

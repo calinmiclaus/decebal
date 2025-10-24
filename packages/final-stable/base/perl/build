@@ -1,0 +1,52 @@
+NAME=perl
+VERSION=5.8.6
+ARCH=i686
+RELEASE=2
+URL="http://www.perl.org/"
+DESC="A high-level, general-purpose programming language."
+GROUP=base
+LICENSE="ARTISTIC GPLv2"
+SIZE="12218K"
+HUSE="suidperl"
+
+SOURCES="http://www.cpan.org/src/$NAME-$VERSION.tar.gz
+         CAN-2005-0156-suid.patch"
+
+RUNTIME=">=db-4.2.52"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p0 < ../CAN-2005-0156-suid.patch
+  
+  use suidperl && OPTS="-Dd_dosuid"
+  
+  ./Configure -des \
+              -Dprefix=/usr \
+              -Dvendorprefix=/usr \
+              -Dsiteprefix=/usr \
+	      -Dscriptdir=/usr/bin \
+	      -Dman1dir=/usr/share/man/man1 \
+	      -Dman3dir=/usr/share/man/man3 \
+	      -Dinstallman1dir=${D}/usr/share/man/man1 \
+	      -Dinstallman3dir=${D}/usr/share/man/man3 \
+	      -Dman1ext='1' \
+              -Dman3ext='3pm' \
+              -Dcccdlflags='-fPIC' \
+              -Dccdlflags='-rdynamic' \
+              -Duselargefiles \
+              -Dd_semctl_semun \
+              -Dscriptdir=/usr/bin \
+              -Dcf_by=Decebal \
+              -Doptimize="${CFLAGS}" \
+	      -Di_db $OPTS
+	      
+  make
+  make DESTDIR=$PKG install
+  
+  ln -sf perl${VERSION} $PKG/usr/bin/perl
+  ln -sf c2ph $PKG/usr/bin/pstruct
+  ln -sf s2p $PKG/usr/bin/psed
+  
+  install_docs AUTHORS Artistic Changes* Copying INSTALL MANIFEST README*
+}

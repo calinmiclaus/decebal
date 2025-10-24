@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# /etc/rc.d/pppd - control file for the PPP daemon
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/ppp0.pid"
+
+case "$1" in
+    start)
+	msg "Establishing PPP connection (pppd)"
+	run ppp-on
+	;;
+    stop)
+	msg "Closing PPP connecttion (pppd)"
+	run ppp-off
+	rm -f /var/run/pppd.tdb
+	;;
+    reload)
+	echo "function not implemented - use force-reload"
+	exit 3
+	;;
+    restart|force-reload)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+    status)
+	status_service /usr/sbin/pppd
+	;;
+    *)
+	echo "usage: $0 {start|stop|force-reload|restart|status}"
+	exit 1
+	;;
+esac

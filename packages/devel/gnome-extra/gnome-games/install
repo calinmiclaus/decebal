@@ -1,0 +1,90 @@
+post_install() {
+  schemas="/etc/opt/gnome/gconf/schemas/aisleriot.schemas
+    /etc/opt/gnome/gconf/schemas/blackjack.schemas
+    /etc/opt/gnome/gconf/schemas/gataxx.schemas
+    /etc/opt/gnome/gconf/schemas/glines.schemas
+    /etc/opt/gnome/gconf/schemas/gnect.schemas
+    /etc/opt/gnome/gconf/schemas/gnibbles.schemas
+    /etc/opt/gnome/gconf/schemas/gnobots2.schemas
+    /etc/opt/gnome/gconf/schemas/gnome-stones.schemas
+    /etc/opt/gnome/gconf/schemas/gnometris.schemas
+    /etc/opt/gnome/gconf/schemas/gnomine.schemas
+    /etc/opt/gnome/gconf/schemas/gnotravex.schemas
+    /etc/opt/gnome/gconf/schemas/gnotski.schemas
+    /etc/opt/gnome/gconf/schemas/gtali.schemas
+    /etc/opt/gnome/gconf/schemas/iagno.schemas
+    /etc/opt/gnome/gconf/schemas/libgnomegames.schemas
+    /etc/opt/gnome/gconf/schemas/mahjongg.schemas
+    /etc/opt/gnome/gconf/schemas/same-gnome.schemas"
+  
+  for schema in $schemas
+  do
+    GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-install-rule "$schema" > /dev/null 2>&1
+  done
+  /bin/killall -HUP /opt/gnome/bin/gconfd-2 >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /opt/gnome/share/mime >/dev/null 2>&1
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper > /dev/null 2>&1
+}
+
+post_upgrade() {
+  schemas="/etc/opt/gnome/gconf/schemas/aisleriot.schemas
+    /etc/opt/gnome/gconf/schemas/blackjack.schemas
+    /etc/opt/gnome/gconf/schemas/gataxx.schemas
+    /etc/opt/gnome/gconf/schemas/glines.schemas
+    /etc/opt/gnome/gconf/schemas/gnect.schemas
+    /etc/opt/gnome/gconf/schemas/gnibbles.schemas
+    /etc/opt/gnome/gconf/schemas/gnobots2.schemas
+    /etc/opt/gnome/gconf/schemas/gnome-stones.schemas
+    /etc/opt/gnome/gconf/schemas/gnometris.schemas
+    /etc/opt/gnome/gconf/schemas/gnomine.schemas
+    /etc/opt/gnome/gconf/schemas/gnotravex.schemas
+    /etc/opt/gnome/gconf/schemas/gnotski.schemas
+    /etc/opt/gnome/gconf/schemas/gtali.schemas
+    /etc/opt/gnome/gconf/schemas/iagno.schemas
+    /etc/opt/gnome/gconf/schemas/libgnomegames.schemas
+    /etc/opt/gnome/gconf/schemas/mahjongg.schemas
+    /etc/opt/gnome/gconf/schemas/same-gnome.schemas"
+  
+  for schema in $schemas
+  do
+    GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-install-rule "$schema" > /dev/null 2>&1
+  done
+  /bin/killall -HUP /opt/gnome/bin/gconfd-2 >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /opt/gnome/share/mime >/dev/null 2>&1
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper > /dev/null 2>&1
+}
+
+pre_remove() {
+  schemas="/etc/opt/gnome/gconf/schemas/aisleriot.schemas
+    /etc/opt/gnome/gconf/schemas/blackjack.schemas
+    /etc/opt/gnome/gconf/schemas/gataxx.schemas
+    /etc/opt/gnome/gconf/schemas/glines.schemas
+    /etc/opt/gnome/gconf/schemas/gnect.schemas
+    /etc/opt/gnome/gconf/schemas/gnibbles.schemas
+    /etc/opt/gnome/gconf/schemas/gnobots2.schemas
+    /etc/opt/gnome/gconf/schemas/gnome-stones.schemas
+    /etc/opt/gnome/gconf/schemas/gnometris.schemas
+    /etc/opt/gnome/gconf/schemas/gnomine.schemas
+    /etc/opt/gnome/gconf/schemas/gnotravex.schemas
+    /etc/opt/gnome/gconf/schemas/gnotski.schemas
+    /etc/opt/gnome/gconf/schemas/gtali.schemas
+    /etc/opt/gnome/gconf/schemas/iagno.schemas
+    /etc/opt/gnome/gconf/schemas/libgnomegames.schemas
+    /etc/opt/gnome/gconf/schemas/mahjongg.schemas
+    /etc/opt/gnome/gconf/schemas/same-gnome.schemas"
+  
+  for schema in $schemas
+  do
+    GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source` /opt/gnome/bin/gconftool-2 --makefile-install-rule "$schema" > /dev/null 2>&1
+  done
+  /bin/killall -HUP /opt/gnome/bin/gconfd-2 >/dev/null 2>&1
+}
+
+post_remove() {
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper > /dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /opt/gnome/share/mime >/dev/null 2>&1
+}
+

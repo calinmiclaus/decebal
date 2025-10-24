@@ -1,0 +1,146 @@
+#!/bin/bash
+
+write_mouse_configuration() {
+  [ -n "$MOUSEDEVICE" ] && MOUSEDEVICE="/dev/mouse"
+  cat << EOF >$TMP/mouse_configuration
+Section "InputDevice"
+  Identifier     "Mouse 0"
+  Driver         "mouse"
+  Option         "Device"  "$MOUSEDEVICE"
+  Option         "Protocol"     "$MOUSEPROTOCOL"
+EOF
+  if [ "$EMULATE3BUTTONS" = "yes" ]
+  then
+    echo "  Option \"Emulate3Buttons\"" >> $TMP/mouse_configuration
+    echo "  Option \"Emulate3Timeout\"    \"50\"" >> $TMP/mouse_configuration
+  fi
+  if [ "$ACTIVATEWHEEL" = "yes" ]
+  then
+    echo "  Option      \"ZAxisMapping\"  \"4 5\"" >> $TMP/mouse_configuration
+  fi
+  echo "EndSection" >> $TMP/mouse_configuration
+  
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --msgbox "`cat $TMP/mouse_configuration`" 0 0
+  if [ $? -eq 0 ]
+  then
+    main
+  else
+    handle_exit "write_mouse_configuration()" "ESC pressed." "$LINENO" "1"
+  fi
+}
+
+get_mouse_protocol() {
+  local TYPE="$1"
+  case "$TYPE" in
+    auto) echo "Auto" ;;
+    ps2) echo "PS/2" ;;
+    imps2) echo "IMPS/2" ;;
+    busmouse) echo "Busmouse" ;;
+    microsoft) echo "Microsoft" ;;
+    explorerps2) echo "ExplorerPS/2" ;;
+    mousemanplusp2) echo "MouseManPlusPS/2" ;;
+    mousemanplus) echo "Auto" ;;
+    netmouseps2) echo "NetMousePS/2" ;;
+    netscrollps2) echo "NetScrollPS/2" ;;
+    thinkingmouseps2) echo "ThinkingMousePS/2" ;;
+    netmouse) echo "IntelliMouse" ;;
+    acecad) echo "AceCad" ;;
+    glidepoint) echo "GlidePoint" ;;
+    glidepointps2) echo "GlidePointPS/2" ;;
+    intellimouse) echo "IntelliMouse" ;;
+    logitech) echo "Logitech" ;;
+    mmhittab) echo "Microsoft" ;;
+    mmseries) echo "Microsoft" ;;
+    mouseman) echo "MouseMan" ;;
+    thinkingmouse) echo "ThinkingMouse" ;;
+    usb) echo "usb" ;;
+  esac
+}
+
+activate_wheel() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --yesno \
+"\nDo you have mouse with wheel or scroll?\n" 0 0
+  local RETVAL=$?
+  case "$RETVAL" in
+    0) 
+      ACTIVATEWHEEL="yes"
+      write_mouse_configuration
+      ;;
+    1)
+      ACTIVATEWHEEL="no"
+      write_mouse_configuration
+      ;;
+   -1) handle_exit "activate_wheel()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}
+  
+enable_three_buttons_emulation() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --yesno \
+"\nIf your mouse has only two buttons, it is recommended
+that you enable the Emulate3Buttons.\n" 0 0
+  local RETVAL=$?
+  case "$RETVAL" in
+    0)
+      EMULATE3BUTTONS="yes"
+      activate_wheel
+      ;;
+    1)
+      EMULATE3BUTTONS="no"
+      activate_wheel
+      ;;
+    3) handle_exit "enable_three_buttons_emulation()" "Exit pressed." "$LINENO" "1" ;;
+   -1) handle_exit "enable_three_buttons_emulation()" "Exit pressed." "$LINENO" "1" ;;
+  esac
+}
+
+configure_mouse() {
+  dialog --backtitle "$BACKTITLE " \
+         --title " $TITLE " \
+	 --ok-label "Select" \
+	 --cancel-label "Exit" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --help-button \
+	 --menu \
+"\nSelect your mouse type." 18 70 10 \
+"auto" "Serial mouse (only new models which conform to the PnP COM device specification)." \
+"ps2" "Most of the PS2 mice (use imps2 if your mouse has a roller or wheel)." \
+"imps2" "Most PS2 mouses which have a roller or wheel." \
+"busmouse" "The bus and InPort mice always use this regardless of the brand of the mouse." \
+"microsoft" "Most 2-button serial mice support the Microsoft protocol." \
+"explorerps2" "PS2 or USB mouse with has a wheel which also acts as the button 2 (middle button)." \
+"mousemanplusp2" "Logitech MouseMan+ and FirstMouse+ (two buttons on top, one side button and a roller) (PS2)." \
+"mousemanplus" "Logitech MouseMan+ and FirstMouse+ (two buttons on top, one side button and a roller) (serial)." \
+"netmouseps2" "Genius NetMouse (they have a magic button which is used like a wheel or a roller) (PS2)." \
+"netscrollps2" "Four button mouse with a roller (PS2)." \
+"thinkingmouseps2" "Kensington Thinking Mouse and Kensington Expert Mouse (serial) (4 button mice)." \
+"netmouse" "Genius NetMouse (they have a magic button which is used like a wheel or a roller) (serial)." \
+"acecad" "Acecad tablet absolute mode (Sumagrapics MM-Series mode)." \
+"glidepoint" "ALPS GlidePoint (this is a serial connected pad)." \
+"glidepointps2" "ALPS GlidePoint PS2 (this is a PS2 connected pad)." \
+"intellimouse" "Most serial mouse which have a roller or a wheel." \
+"logitech" "Old serial mouse models from Logitech." \
+"mmhittab" "Serial mice (not detected by the Auto protocol." \
+"mmseries" "Serial mice (not detected by the Auto protocol." \
+"mouseman" "3-button serial mice may work with the Mousesystems protocol." \
+"thinkingmouse" "Kensington Thinking Mouse and Kensington Expert Mouse (serial) (4 button mice)." \
+"usb" "USB connected mouse (handled by the generic Human Interface Device)." 2>$TMP/mouse
+  local RETVAL=$?
+  local SELECTION=`cat $TMP/mouse`
+  case "$RETVAL" in
+    0) 
+      MOUSEPROTOCOL=`get_mouse_protocol $SELECTION`
+      enable_three_buttons_emulation
+      ;;
+    1) handle_exit "configure_mouse()" "Exit pressed." "$LINENO" "1" ;;
+    2) show_mouse_help ;;
+    3) main ;;
+   -1) handle_exit "configure_mouse()" "ESC pressed." "$LINENO" "1" ;;
+  esac 
+}

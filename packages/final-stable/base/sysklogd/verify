@@ -1,0 +1,10 @@
+md5: d214aa40beabf7bdb0c9b3c64432c774 sysklogd-1.4.1.tar.gz
+md5: 4daaa6c8f1ea9560361177cacd3a968b sysklogd-1.4.1-race-condition.patch
+md5: c7087d273b72380b53c20cded317c8a6 sysklogd-1.4.1-signal-1.patch
+md5: ba8ef448858868f82e94747e10c0655b syslogd.init
+md5: 923c6212f904ca49de37dce6e7666dc3 syslog.logrotate
+md5: d74c1f3f794d154b7abb90704a58d6cd syslog.conf
+md5: 60d9eab1d3e38b40268a458ac68e97d4 syslogd.sysconf
+md5: d9e4c2d71ea06b67fdf3fed64f54c78e sysklogd-1.4.1-kernel_headers-1.patch
+md5: 5bb280ec21d1c0433ab00715af74c2ee klogd.init
+md5: a52e7991ac388ad33c8f1b3f1f798623 klogd.sysconf

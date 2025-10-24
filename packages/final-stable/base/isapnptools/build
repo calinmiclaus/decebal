@@ -1,0 +1,28 @@
+NAME=isapnptools
+VERSION=1.26
+ARCH=i686
+RELEASE=1
+URL="http://www.roestock.demon.co.uk/isapnptools/"
+DESC="Programs to configure ISA Plug-And-Play devices."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="225K"
+
+SOURCES="http://www.ibiblio.org/pub/Linux/system/hardware/isapnptools-1.26.tgz
+         isapnp.init"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var/lib \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../isapnp.init $PKG/etc/rc.d/isapnp
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

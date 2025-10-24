@@ -1,0 +1,32 @@
+NAME=gtkspell
+VERSION=2.0.8
+ARCH=i686
+RELEASE=1
+URL="http://gtkspell.sf.net"
+DESC="Provides MSWord/MacOSX-style highlighting of misspelled words."
+GROUP=gnome-extra
+LICENSE=GPLv2
+SIZE="334K"
+HUSE="nls gtkdoc"
+
+SOURCES="http://gtkspell.sourceforge.net/download/gtkspell-2.0.8.tar.gz"
+
+RUNTIME=">=gtk2-2.4.7 aspell"
+
+use nls && BUILDTIME="gettext"	 
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable--nls"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc" || OPTS="$OPTS --disable-gtk-doc"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

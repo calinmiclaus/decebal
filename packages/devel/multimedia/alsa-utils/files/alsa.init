@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# /etc/rc.d/alsa - control file for the ALSA driver.
+#
+
+. /etc/rc.d/functions
+
+load_oss_modules() {
+  if ! grep -q ^snd-pcm-oss /proc/modules
+  then
+    msg "Loading OSS compatibility modules for ALSA"
+    run modprobe snd-pcm-oss
+  fi
+}
+
+load_alsa_modules() {
+  if [ ! -d /proc/asound ]
+  then
+    MODULES=`modprobe -c 2>/dev/null | \
+               grep -E "^[[:space:]]*alias[[:space:]]+snd-card-[[:digit:]]" | \
+               awk '{print $3}'`
+  
+    if [ -n "$MODULES" ]
+    then
+      echo "Loading ALSA modules:"
+      for module in $MODULES
+      do
+        msg "\* $module"
+        run modprobe $module
+      done
+      load_oss_modules
+    fi
+  fi
+}
+
+case "$1" in
+  start)
+    load_alsa_modules
+    load_oss_modules
+    msg "Loading ALSA mixer settings"
+    run /usr/sbin/alsactl restore
+    
+    [ $? -eq 0 ] && touch /var/lock/subsys/alsa
+    ;;
+  stop)
+    msg "Saving ALSA mixer settings"
+    run /usr/sbin/alsactl store
+    
+    [ $? -eq 0 ] && rm -f /var/lock/subsys/alsa
+    ;;
+  restart|forece-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if [ -d /proc/asound ]
+    then
+      echo "alsa is running"
+      exit 0
+    else
+      echo "alsa is not running"
+      exit 1
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,30 @@
+NAME=gftp
+VERSION=2.0.18
+ARCH=i686
+RELEASE=1
+URL="http://gftp.seul.org/"
+DESC="A free multithreaded ftp client for *NIX based machines running X11R6 or later."
+GROUP=network
+LICENSE=GPLv2
+SIZE="1342K"
+
+SOURCES="http://gftp.seul.org/gftp-2.0.18.tar.bz2"
+
+RUNTIME="gtk2 openssl-0.9.7e readline"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog* INSTALL \
+    NEWS README* THANKS TODO
+}

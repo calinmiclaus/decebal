@@ -1,0 +1,20 @@
+NAME=ipx
+VERSION=1.1
+ARCH=i686
+RELEASE=1
+URL="http://sunsite.unc.edu/pub/Linux/system/filesystems/ncpfs/"
+DESC="The IPX implementation on Linux"
+GROUP=network
+LICENSE=BSDL
+
+SOURCES="http://sunsite.unc.edu/pub/Linux/system/filesystems/ncpfs/ipx-1.1.tar.gz ipx_decebal.diff"
+
+build () 
+{ 
+    cd $SRC/$NAME-$VERSION;
+    patch -p1 <../ipx_decebal.diff;
+    make;
+    make DESTDIR=$PKG install;
+    mkdir -p $PKG/usr/share/doc/$NAME-$VERSION;
+    install_docs COPYING README
+}

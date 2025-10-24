@@ -1,0 +1,8 @@
+^
+^Here you can configure some daemons running on this box.
+^
+^'inetd' - the Internet Super Daemon
+^This handles basic services like telnet, ftp,...
+
+inetd:.inetdconf.main_menu:Configure the Internet Super Daemon
+vsftpd:.vsftpdconf.main_menu:Configure the Very Secure ftp daemon

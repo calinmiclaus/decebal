@@ -1,0 +1,33 @@
+NAME=sed
+VERSION=4.1.4
+ARCH=i686
+RELEASE=1
+URL="GNU sed is a stream editor."
+DESC="http://sed.sourceforge.net/"
+GROUP=base
+LICENSE=GPLv2
+SIZE="775K"
+HUSE="nls"
+
+SOURCES="ftp://ftp.gnu.org/gnu/sed/sed-4.1.4.tar.gz"
+
+BUILDTIME="gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr \
+              --bindir=/bin \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS BUGS COPYING COPYING.DOC ChangeLog \
+    INSTALL NEWS README README.boot THANKS
+}

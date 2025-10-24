@@ -1,0 +1,19 @@
+NAME=linux-howtos
+VERSION=1.0
+ARCH=noarch
+RELEASE=1
+URL="http://www.tldp.org"
+DESC="Very vast linux howtos collection"
+GROUP=system
+LICENSE=GPLv2
+SIZE="7150K"
+
+SOURCES="http://www.ibiblio.org/pub/Linux/docs/HOWTO/Linux-HOWTOs.tar.bz2"
+
+build() {
+  rm $SRC/Linux-HOWTOs.tar.bz2
+
+  mkdir -p $PKG/usr/share/doc/linux-howtos
+
+  cp $SRC/* $PKG/usr/share/doc/linux-howtos
+}

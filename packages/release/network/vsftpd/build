@@ -1,0 +1,51 @@
+NAME=vsftpd
+VERSION=2.0.3
+ARCH=i686
+RELEASE=1
+URL="http://vsftpd.beasts.org/"
+DESC="A Very Secure (VS) FTP server."
+GROUP=network
+LICENSE="GPLv2"
+SIZE="147K"
+
+SOURCES="ftp://vsftpd.beasts.org/users/cevans/vsftpd-2.0.3.tar.gz
+         vsftpd.logrotate vsftpd.conf vsftpd.init vsftpd.pam vsftpd.user_list
+	 vsftpd.banned_emails vsftpd.chroot_list"
+
+BACKUPS="etc/vsftpd.conf"
+
+RUNTIME=">=openssl-0.9.7e
+tcp-wrappers
+libcap"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+   
+  sed -i "s|/usr/share/empty|/var/lib/vsftpd/empty|" tunables.c vsftpd.conf.5
+  
+  sed -i "s:#undef VSF_BUILD_TCPWRAPPERS:#define VSF_BUILD_TCPWRAPPERS:" builddefs.h
+  sed -i "s:#undef VSF_BUILD_SSL:#define VSF_BUILD_SSL:" builddefs.h
+  sed -i "s:#define VSF_BUILD_PAM:#undef VSF_BUILD_PAM:" builddefs.h
+  
+  sed -i "s:-O2 -Wall:-Wall $CFLAGS:" Makefile
+      
+  make
+    
+  install -D -m755 vsftpd $PKG/usr/sbin/vsftpd
+  install -D -m644 vsftpd.8 $PKG/usr/share/man/man8/vsftpd.8
+  install -D -m644 vsftpd.conf.5 $PKG/usr/share/man/man5/vsftpd.conf.5
+  install -D -m 0755 ../vsftpd.logrotate $PKG/etc/logrotate.d/vsftpd
+  install -D -m 0700 ../vsftpd.init $PKG/etc/rc.d/vsftpd
+  install -D -m 0644 ../vsftpd.conf $PKG/etc/vsftpd.conf
+  install -D -m 0644 ../vsftpd.pam $PKG/etc/pam.d/ftp
+  install -D -m 0644 ../vsftpd.user_list $PKG/etc/vsftpd/vsftpd.user_list
+  install -D -m 0644 ../vsftpd.banned_emails $PKG/etc/vsftpd/vsftpd.banned_emails
+  install -D -m 0644 ../vsftpd.chroot_list $PKG/etc/vsftpd/vsftpd.chroot_list
+  
+  ln -s vsftpd $PKG/usr/sbin/in.ftpd    
+  
+  mkdir -p $PKG/{srv/ftp,var/lib/vsftpd/empty}
+    
+  install_docs AUDIT BENCHMARKS BUGS COPYING Changelog FAQ INSTALL LICENSE \
+    README* SIZE SPEED TODO TUNING
+}

@@ -1,0 +1,50 @@
+NAME=gst-plugins
+VERSION=0.8.8
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Gstreamer Multimedia Framework Plugins."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2"
+SIZE="2162K"
+HUSE="nls profile static experimental arts swfdec docs"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gst-plugins-0.8.8.tar.bz2"
+
+RUNTIME="gstreamer >=liboil-0.2 >=aalib-0.11.0 liba52 >=alsa-lib-0.9.1 >=dirac-0.5.0 >=esound-0.2.12
+         >=gnome-vfs-2.0 hermes >=jack-0.29.0 lame libcaca >=libdv-0.100 >=libfame-0.9.0 libpng >=libmms-0.1
+	 libmng >=libvisual-0.2.0 >=libmad-0.15 >=libid3tag-0.15 >=libmikmod-3.1.5 >=libmpeg2-0.4.0
+	 >=mjpegtools-1.6.1.93 >=libmusicbrainz-2.0.2 nas >=polypaudio-0.7 libraw1394 libavc1394 >=libsdl-0.11.0
+	 >=libshout-2.0 libsidplay >=speex-1.1.6 >=libsndfile-1.0.0 >=libogg-1.0 libtheora
+	 >=libvorbis-1.0 audiofile ladspa directfb"
+
+use arts && RUNTIME="$RUNTIME >=arts-0.9.5"
+use xine && RUNTIME="$RUNTIME xine-lib"
+
+have swfdec && RUNTIME="$RUNTIME swfdec"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  replace_flags -O3 -O2
+  
+  use nls && OPTS="--enable-nls" || OPTS="$OPTS --disable-nls"
+  use profile && OPTS="$OPTS --enable-profiling"
+  use arts || OPTS="$OPTS --disable-arts --disable-artsc"
+  use static && OPTS="$OPTS --enable-static"
+  use experimental && OPTS="$OPTS --enable-experimental"
+  use docs || OPTS="$OPTS --disable-docs-build"
+  use xine || OPTS="$OPTS --enable-xine"
+        
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var \
+	      --disable-tests \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog \
+    INSTALL NEWS RELEASE REQUIREMENTS README
+}

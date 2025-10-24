@@ -1,0 +1,5 @@
+#
+# Select your desired KDE mirror (used when downloading kde packages).
+#
+
+KDEMIRROR="http://download.kde.org/stable/3.4.2/src/"

@@ -1,0 +1,27 @@
+NAME=libxml
+VERSION=1.8.17
+ARCH=i686
+RELEASE=1
+URL="http://www.xmlsoft.org/"
+DESC="A library for manipulating XML files."
+GROUP=libs
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="726K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/libxml/1.8/libxml-1.8.17.tar.bz2"
+
+RUNTIME="readline >=ncurses-5.3 zlib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  LDFLAGS="-lncurses" ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

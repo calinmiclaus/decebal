@@ -1,0 +1,22 @@
+post_install() {
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/sbin/groupadd -g 71 gdm
+  /usr/sbin/useradd -u 71 -g 71 -c "GNOME Display Manager" -d /var/lib/gdm -s /bin/bash gdm &>/dev/null
+  chown -R gdm.gdm /var/lib/gdm &>/dev/null
+}
+
+post_upgrade() {
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/sbin/groupadd -g 71 gdm
+  /usr/sbin/useradd -u 71 -g 71 -c "GNOME Display Manager" -d /var/lib/gdm -s /bin/bash gdm &>/dev/null
+  chown -R gdm.gdm /var/lib/gdm &>/dev/null
+}
+
+post_remove() {
+  /usr/bin/scrollkeeper-update -p /var/lib/scrollkeeper >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/sbin/userdel gdm &>/dev/null
+  /usr/sbin/groupdel gdm &>/dev/null
+}

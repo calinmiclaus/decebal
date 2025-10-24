@@ -1,0 +1,34 @@
+NAME=ppracer
+VERSION=0.3.1
+ARCH=i686
+RELEASE=1
+URL="http://racer.planetpenguin.de/"
+DESC="An OpenGL racing game featuring Tux, the Linux mascot."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="6326K"
+HUSE="debug profile"
+
+SOURCES="http://download.berlios.de/ppracer/ppracer-0.3.1.tar.bz2
+         ppracer.desktop ppracer.png"
+
+RUNTIME="xorg >=libsdl-1.2.0 sdl_mixer tcl libpng"
+
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use profile && OPTS="--enable-profile"
+  
+  ./configure --prefix=/usr/games \
+              --with-data-dir=/usr/games/share/ppracer $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../ppracer.desktop $PKG/usr/share/applications/ppracer.desktop
+  install -D -m 0644 ../ppracer.png $PKG/usr/share/pixmaps/ppracer.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

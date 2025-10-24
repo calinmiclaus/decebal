@@ -1,0 +1,26 @@
+NAME=expat
+VERSION=1.95.8
+ARCH=i686
+RELEASE=1
+URL="http://www.libexepat.org/"
+DESC="An XML Parser library written in C."
+GROUP=libs
+LICENSE=MIT
+SIZE="310K"
+HUSE="static"
+
+SOURCES="http://mesh.dl.sourceforge.net/sourceforge/expat/expat-1.95.8.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs COPYING Changes MANIFEST README
+}

@@ -1,0 +1,32 @@
+NAME=powermanga
+VERSION=0.79
+ARCH=i686
+RELEASE=1
+URL="http://linux.tlk.fr/games/Powermanga/"
+DESC="An arcade 2D shoot-em-up game with 41 levels and more than 200 sprites."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="6648K"
+
+SOURCES="http://linux.tlk.fr/games/Powermanga/download/powermanga-0.79.tgz
+         powermanga.desktop powermanga.png"
+
+RUNTIME="xorg >=libsdl-0.11.0 sdl_mixer"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+	      --mandir=/usr/games/share/man/man6 \
+              --localstatedir=/var/lib
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 $PKG/usr/games/powermanga $PKG/usr/games/bin/powermanga && \
+    rm -f $PKG/usr/games/powermanga
+  
+  install -D -m 0644 ../powermanga.desktop $PKG/usr/share/applications/powermanga.desktop
+  install -D -m 0644 ../powermanga.png $PKG/usr/share/pixmaps/powermanga.png
+  
+  install_docs AUTHORS CHANGES COPYING README
+}

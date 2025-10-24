@@ -1,0 +1,28 @@
+NAME=libxslt
+VERSION=1.1.14
+ARCH=i686
+RELEASE=1
+URL="http://xmlsoft.org/XSLT/"
+DESC="XML stylesheet transformation library."
+GROUP=libs
+LICENSE="BSDL"
+SIZE="2593K"
+HUSE="static debug"
+
+SOURCES="ftp://xmlsoft.org/libxslt-1.1.14.tar.gz"
+
+RUNTIME=">=libxml2-2.6.17"
+
+build() {
+  cd $SRC/$NAME-$VERSION    
+
+  use static || OPTS="--disable-static"
+  use debug || OPTS="--without-debug --without-debugger"
+
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+    
+  install_docs AUTHORS COPYING ChangeLog Copyright FEATURES INSTALL \
+    NEWS README TODO
+}

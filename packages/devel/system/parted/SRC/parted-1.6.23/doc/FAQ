@@ -1,0 +1,114 @@
+===============================================================================
+		GNU Parted FAQ
+===============================================================================
+
+      Copyright (C) 2001 Free Software Foundation, Inc.
+
+      Permission is granted to copy, distribute and/or modify this document
+      under the terms of the GNU Free Documentation License, Version 1.1
+      or any later version published by the Free Software Foundation;
+      with the no Invariant Sections, with the no Front-Cover Texts, and
+      with no Back-Cover Texts.  A copy of the license is included in the
+      file, COPYING.DOC.
+
+
+CONTENTS
+--------
+
+1. When you resize does it always do so non-destructively?
+2. What happens if you try to shrink a partition too much?
+3. How should I use Parted to shrink Windows, and install GNU/Linux?
+4. Is there any way to search the mailing list (bug-parted)?
+
+
+ANSWERS
+-------
+
+
+1. When you resize does it always do so non-destructively?
+----------------------------------------------------------
+Yes.
+
+
+2. What happens if you try to shrink a partition too much?
+----------------------------------------------------------
+Parted's resizer and partition code uses constraints.  That is,
+the file system resizer says what it can do (safely), and likewise
+the partition code.
+
+Action will only proceed if all constraints can be satisfied.
+However, Parted tries to find the closest solution that satisfies
+all constraints.
+
+If, say, you have a partition that has 20Gb of used space on it,
+and you try to shrink it to 100Mb, Parted will try to satisfy the
+constraint (that the file system be able to keep all the 20Gb of
+data), by finding the nearest solution.  This "nearest solution" is
+going to be a long way away - instead of shrinking to 100Mb, it
+shrinks to 20Gb instead.
+
+Parted silently uses the nearest solution.  A solution should always
+exist, becase the partition exists!  So, the nearest solution might
+be what you have already!!!
+
+
+3. How should I use Parted to shrink Windows, and install GNU/Linux?
+--------------------------------------------------------------------
+With Parted, it is possible to resize your Windows partition, to
+create room to install GNU/Linux.  This process shouldn't result in any
+damage to Windows, although we make no guarantees ;-)  Note that this
+is only possible if your Windows partition is either FAT16 or FAT32.
+If Parted is unable to achieve what you want, then it should say so,
+rather than damaging your data (again, no guarantees).
+
+The easiest method is to use the Parted bootdisk:
+
+ (1) create and boot the Parted bootdisk.  (see section 1.5 of the
+documentation for instructions)
+
+ (2) start parted:
+
+	# parted
+
+  Parted will display this message:
+ 
+Warning: The operating system thinks the geometry on /dev/hdb is 2586/240/63.
+Therefore, cylinder 1024 ends at 7559.999M.  You should check that this matches
+the BIOS geometry before using this program.
+
+  You can ignore this, provided you follow step 3.
+
+ (3) have a look at your partition table:
+
+	(parted) print
+	Disk geometry for /dev/hdb: 0.000-19092.937 megabytes
+	Disk label type: msdos
+	Minor    Start       End     Type      Filesystem  Flags
+	1          0.031  19091.953  primary   FAT         lba
+
+  This indicates there is a single 19 gigabyte FAT partition.
+ 
+  The "lba" indicates that Windows is using LBA (linear) mode.  If
+  you don't see this, then things get much more complicated, and you
+  should read the Parted documentation thoroughly.  If you proceed,
+  you may damage some data without warning.  (The warning was to check
+  your BIOS geometry matches Parted's on startup)
+
+ (4) resize the partition to the size you want (in this example,
+ 10Gb)
+
+ 	(parted) resize 1 0 10000
+
+ (5) exit parted:
+
+ 	(parted) quit
+
+ (6) that's it!  you can reboot your computer, and start installating
+GNU/Linux.
+
+
+4. Is there any way to search the mailing list (bug-parted)?
+------------------------------------------------------------
+The popular search engines have indexed bug-parted, so you can probably
+do it with them ("search for bug-parted and any other keywords").
+

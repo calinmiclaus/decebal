@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=PPRacer
+GenericName=Arcade Game
+Comment=Race with TUX the Pinguin
+Icon=ppracer.png
+FilePattern=ppracer
+TryExec=ppracer
+Exec=ppracer
+Categories=Application;Game;ArcadeGame;

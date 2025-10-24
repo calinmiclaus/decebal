@@ -1,0 +1,104 @@
+C 00  Unclassified device
+0000  Non-VGA unclassified device
+0001  VGA compatible unclassified device
+C 01  Mass storage controller
+0100  SCSI storage controller
+0101  IDE interface
+0102  Floppy disk controller
+0103  IPI bus controller
+0104  RAID bus controller
+0180  Unknown mass storage controller
+C 02  Network controller
+0200  Ethernet controller
+0201  Token ring network controller
+0202  FDDI network controller
+0203  ATM network controller
+0204  ISDN controller
+0280  Network controller
+C 03  Display controller
+0300  VGA compatible controller
+0301  XGA compatible controller
+0302  3D controller
+0380  Display controller
+C 04  Multimedia controller
+0400  Multimedia video controller
+0401  Multimedia audio controller
+0402  Computer telephony device
+0480  Multimedia controller
+C 05  Memory controller
+0500  RAM memory
+0501  FLASH memory
+0580  Memory controller
+C 06  Bridge
+0600  Host bridge
+0601  ISA bridge
+0602  EISA bridge
+0603  MicroChannel bridge
+0604  PCI bridge
+0605  PCMCIA bridge
+0606  NuBus bridge
+0607  CardBus bridge
+0608  RACEway bridge
+0609  Semi-transparent PCI-to-PCI bridge
+060a  InfiniBand to PCI host bridge
+0680  Bridge
+C 07  Communication controller
+0700  Serial controller
+0701  Parallel controller
+0702  Multiport serial controller
+0703  Modem
+0780  Communication controller
+C 08  Generic system peripheral
+0800  PIC
+0801  DMA controller
+0802  Timer
+0803  RTC
+0804  PCI Hot-plug controller
+0880  System peripheral
+C 09  Input device controller
+0900  Keyboard controller
+0901  Digitizer Pen
+0902  Mouse controller
+0903  Scanner controller
+0904  Gameport controller
+0980  Input device controller
+C 0a  Docking station
+0a00  Generic Docking Station
+0a80  Docking Station
+C 0b  Processor
+0b00  386
+0b01  486
+0b02  Pentium
+0b10  Alpha
+0b20  Power PC
+0b30  MIPS
+0b40  Co-processor
+C 0c  Serial bus controller
+0c00  FireWire (IEEE 1394)
+0c01  ACCESS Bus
+0c02  SSA
+0c03  USB Controller
+0c04  Fibre Channel
+0c05  SMBus
+0c06  InfiniBand
+C 0d  Wireless controller
+0d00  IRDA controller
+0d01  Consumer IR controller
+0d10  RF controller
+0d80  Wireless controller
+C 0e  Intelligent controller
+0e00  I2O
+C 0f  Satellite communications controller
+0f00  Satellite TV controller
+0f01  Satellite audio communication controller
+0f03  Satellite voice communication controller
+0f04  Satellite data communication controller
+C 10  Encryption controller
+1000  Network and computing encryption device
+1010  Entertainment encryption device
+1080  Encryption controller
+C 11  Signal processing controller
+1100  DPIO module
+1101  Performance counters
+1110  Communication synchronizer
+1180  Signal processing controller

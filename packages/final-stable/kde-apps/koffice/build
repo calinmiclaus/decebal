@@ -1,0 +1,32 @@
+NAME=koffice
+VERSION=1.4.0a
+ARCH=i686
+RELEASE=1
+DESC="The KDE office suite. It includes KWord, KSpread, KPresenter and others."
+URL="http://www.kde.org"
+GROUP=kde-apps
+LICENSE="GPLv2 LGPLv2"
+SIZE="19265K"
+
+#SOURCES="ftp://ftp.kde.org/pub/kde/stable/koffice-$VERSION/src/koffice-$VERSION.tar.bz2"
+SOURCES="ftp://ftp.kde.org/pub/kde/stable/koffice-1.4/src/$NAME-$VERSION.tar.bz2"
+
+BUILDTIME="kdebase
+           wv2
+	   aspell
+	   imagemagick"
+
+RUNTIME="kdebase"
+           
+build() {
+    cd $NAME-$VERSION
+    ./configure --prefix=/opt/kde \
+                --localstatedir=/var/opt/kde \
+                --disable-debug \
+		--with-xinerama \
+		--enable-final
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs AUTHORS COPYING COPYING.LIB INSTALL README
+}

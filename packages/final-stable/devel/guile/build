@@ -1,0 +1,28 @@
+NAME=guile
+VERSION=1.6.7
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/guile/guile.html"
+DESC="A library designed to help programmers create flexible applications."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="2968K"
+HUSE="static debug"
+
+SOURCES="http://ftp.gnu.org/pub/gnu/guile/guile-1.6.7.tar.gz"
+
+RUNTIME="readline bash"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-guile-debug"
+   
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ANON-CVS AUTHORS BUGS COPYING ChangeLog \
+    GUILE-VERSION HACKING INSTALL NEWS README* SNAPSHOTS THANKS
+}

@@ -1,0 +1,4 @@
+md5: 2c63e827d755527950d9d13fe3d87692 gpm-1.20.1.tar.bz2
+md5: 5e238868aa55c5e63fb08dcdeeed4068 gpm-1.20.1-segfault.patch
+md5: 578e120170ba2f1ce55f2f874c198a4f mouse.init
+md5: e9b6f0879c0f93708efef0f93da25dac mouse.sysconf

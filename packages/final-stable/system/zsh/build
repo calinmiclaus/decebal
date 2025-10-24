@@ -1,0 +1,27 @@
+NAME=zsh
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.zsh.org/"
+DESC="A powerful UNIX shell."
+GROUP=system
+LICENSE=BSDL
+SIZE="2027K"
+
+SOURCES="http://www.cs.elte.hu/pub/zsh/zsh-4.2.2.tar.bz2"
+
+RUNTIME=">=ncurses-5.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --enable-maildir-support \
+	      --with-curses-terminfo \
+              --enable-zsh-secure-free
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ChangeLog* LICENCE INSTALL META-FAQ README
+}

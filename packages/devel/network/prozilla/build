@@ -1,0 +1,11 @@
+NAME=prozilla
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://prozilla.genesys.ro/"
+DESC="A download accelerator for Linux."
+GROUP=network
+LICENSE=""
+SIZE=""
+
+SOURCES=""

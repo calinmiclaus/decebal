@@ -1,0 +1,24 @@
+NAME=io-stringy-perl
+VERSION=2.110
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/author/ERYQ/IO-stringy-2.110/"
+DESC="I/O on in-core objects like strings and arrays."
+GROUP=perl-modules
+LICENSE=BSDL
+SIZE="39K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/D/DS/DSKOLL/IO-stringy-2.110.tar.gz"
+
+build() {
+  cd $SRC/IO-stringy-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs COPYING README* MANIFEST
+}

@@ -1,0 +1,27 @@
+NAME=aiksaurus
+VERSION=1.2.1
+ARCH=i686
+RELEASE=1
+URL="http://aiksaurus.sourceforge.net/"
+DESC="A cross-platform, open-source thesaurus."
+GROUP=office
+LICENSE="GPLv2"
+SIZE="907K"
+HUSE="static"
+
+SOURCES="http://belnet.dl.sourceforge.net/sourceforge/aiksaurus/aiksaurus-1.2.1.tar.gz"
+
+RUNTIME="gtk2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  
+  ./configure --prefix=/usr \
+              --with-gtk $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog README*
+}

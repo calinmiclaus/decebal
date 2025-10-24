@@ -1,0 +1,12 @@
+NAME=valgrind
+VERSION=2.4.0
+ARCH=i686
+RELEASE=1
+URL="http://www.valgrind.org/"
+DESC=""
+GROUP=devel
+LICENSE=""
+SIZE=""
+HUSE=""
+
+SOURCES="http://valgrind.org/downloads/valgrind-2.4.0.tar.bz2"

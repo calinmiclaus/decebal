@@ -1,0 +1,15 @@
+--- Makefile	2004-10-13 03:48:02.722519064 +0300
++++ Makefile.new	2004-10-13 03:48:27.057819536 +0300
+@@ -603,9 +603,9 @@
+ 
+ 
+ rpm:    Makefile
+-       make dist
+-       $(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
+-       rm $(PACKAGE)-$(VERSION).tar.gz
++	make dist
++	$(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
++	rm $(PACKAGE)-$(VERSION).tar.gz
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+ .NOEXPORT:

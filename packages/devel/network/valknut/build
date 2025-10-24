@@ -1,0 +1,32 @@
+NAME=valknut
+VERSION=0.3.7
+ARCH=i686
+RELEASE=1
+DESC="Direct Connect Filesharing Client with GUI."
+URL="http://dcgui.berlios.de"
+GROUP=network
+LICENSE=GPLv2
+SIZE="1055K"
+HUSE="profile socks"
+
+SOURCES="http://download.berlios.de/dcgui/valknut-0.3.7.tar.bz2
+         valknut.desktop"
+
+RUNTIME=">=openssl-0.9.7e >=dclib-0.3.7 libxml2 qt"
+
+use socks && RUNTIME="$RUNTIME socks"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  use profile && OPTS="--enable-profile"
+  use socks && OPTS="$OPTS --with-socks"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install -D -m 0644 ../valknut.desktop $PKG/usr/share/applications/valknut.desktop
+
+  install_docs AUTHORS ChangeLog COPYING* INSTALL* NEWS README TODO
+}

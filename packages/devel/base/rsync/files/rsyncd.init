@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/rsyncd - control file for the rsync daemon
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/rsyncd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the rsync daemon"
+    start_service /usr/bin/rsync --daemon
+    ;;
+  stop)
+    msg "Stopping the rsync daemon"
+    stop_service /usr/bin/rsync
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/rsync
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+    

@@ -1,0 +1,33 @@
+NAME=slang
+VERSION=1.4.9
+ARCH=i686
+RELEASE=1
+URL="http://space.mit.edu/~davis/slang/"
+DESC="A powerful interpreted language library."
+GROUP=libs
+LICENSE="GPLv2"
+SOURCES="ftp://space.mit.edu/pub/davis/slang/v1.4/slang-1.4.9.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var/lib \
+	      --libexecdir=/usr/lib/$NAME \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+		
+  make
+  make DESTDIR=$PKG install
+
+  make elf
+  make DESTDIR=$PKG install-elf
+  make DESTDIR=$PKG install-links
+
+  chmod 0755 $PKG/usr/lib/libslang.so.1.4.9
+
+  install_docs COPYING COPYING.ART COPYING.GPL COPYRIGHT INSTALL.pc INSTALL.unx INSTALL.vms NEWS README UPGRADE.txt
+  mv $PKG/usr/doc/$NAME/* $PKG/usr/share/doc/$NAME-$VERSION
+  rm -rf $PKG/usr/doc
+}

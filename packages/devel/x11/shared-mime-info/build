@@ -1,0 +1,24 @@
+NAME=shared-mime-info
+VERSION=0.16
+ARCH=i686
+RELEASE=1
+URL="http://www.freedesktop.org/Software/shared-mime-info/"
+DESC="Shared MIME databases for KDE and GNOME."
+GROUP=x11
+LICENSE="GPLv2"
+
+SOURCES="http://freedesktop.org/~jrb/shared-mime-info-0.16.tar.gz"
+
+RUNTIME=">=libxml2-2.6.10
+         >=glib2-2.4.2
+	 xml-parser-perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING ChangeLog README NEWS
+}

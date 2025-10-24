@@ -1,0 +1,45 @@
+NAME=elinks
+VERSION=0.9.1
+ARCH=i686
+RELEASE=1
+DESC="Extended links (Lynx style web browser)"
+URL="http://elinks.or.cz/"
+GROUP=web
+LICENSE="GPLv2"
+SIZE="1808K"
+HUSE="guile lua ipv6 x nls gnutls" 
+
+SOURCES="http://elinks.or.cz/download/elinks-0.9.1.tar.bz2"
+
+RUNTIME=">=ncurses-5.3 >=zlib-1.2.1 bzip2 expat"
+
+use guile && RUNTIME="$RUNTIME guile"
+use lua && RUNTIME="$RUNTIME lua"
+use x && RUNTIME="$RUNTIME xorg"
+# for some reason this doesent work, cant find nls anywhere
+#use nls && BUILDTIME="$BUILDTIME nls"
+use gnutls && RUNTIME="$RUNTIME gnutls" || RUNTIME="$RUNTIME >=openssl-0.9.7e"
+
+build ()  { 
+  cd $SRC/$NAME-$VERSION
+  
+  use guile && OPTS="--with-guile"
+  use lua && OPTS="$OPTS --with-lua" || OPTS="$OPTS --without-lua"
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  use x && OPTS="$OPTS xorg" || OPTS="$OPTS xorg"
+  use nls || OPTS="$OPTS --disable-nls"
+  use gnutls && OPTS="$OPTS --with-gnutls --without-openssl" || OPTS="$OPTS --with-openssl --without-gnutls"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --enable-local-cgi \
+	      --enable-leds \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  rm -rf $PKG/usr/lib $PKG/usr/share/locale/locale.alias
+
+  install_docs ABOUT-NLS AUTHORS BUGS COPYING ChangeLog INSTALL NEWS \
+    README SITES THANKS TODO
+}

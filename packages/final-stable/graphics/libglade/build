@@ -1,0 +1,31 @@
+NAME=libglade
+VERSION=2.5.1
+ARCH=i686
+RELEASE=1
+URL="www.jamesh.id.au/software/libglade/"
+DESC="Allows you to load glade interface files in a program at runtime."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="310K"
+HUSE="static gtkdoc"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/libglade-2.5.1.tar.bz2"
+
+BUILDTIME="pkgconfig gettext"
+
+RUNTIME=">=gtk2-2.5.0 >=libxml2-2.4.0 >=glib2-2.5.0 python"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

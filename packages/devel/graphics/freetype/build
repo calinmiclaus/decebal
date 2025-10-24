@@ -1,0 +1,33 @@
+NAME=freetype
+VERSION=1.3.1
+ARCH=i686
+RELEASE=2
+DESC="Free and portable TrueType font rendering engine."
+URL="http://www.freetype.org"
+GROUP=graphics
+LICENSE="FREETYPE"
+SIZE="1393K"
+HUSE="static nls"
+
+SOURCES="ftp://ring.ocn.ad.jp/pub/graphics/freetype/freetype1/freetype-1.3.1.tar.gz
+         freetype-1.3.1.patch"
+
+BUILDTIME="gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 <../$NAME-$VERSION.patch
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make libdir=$PKG/usr/lib includedir=$PKG/usr/include install
+  
+  install_docs FILES INSTALL PATENTS README
+}

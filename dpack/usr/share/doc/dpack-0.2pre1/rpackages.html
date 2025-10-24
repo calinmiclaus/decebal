@@ -1,0 +1,97 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="ipackages.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="upackages.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Removing packages</h1>
+<p>To remove packages you use <b><code>pkg_remove</code></b>.<br><br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_remove -h<br>
+usage: pkg_add [options] &lt;package&gt;<br>
+options:<br>
+&nbsp;&nbsp;-b, --nobackup &nbsp;&nbsp;&nbsp;&nbsp;- remove configuration files as well<br>
+&nbsp;&nbsp;-d, --nodeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- skip all dependencies checks (dangerous)<br>
+&nbsp;&nbsp;-P, --preserve &nbsp;&nbsp;&nbsp;&nbsp;- move package contents to preserve dir<br>
+&nbsp;&nbsp;-r, --root &lt;path&gt;&nbsp;&nbsp;- use an alternative remove path<br>
+&nbsp;&nbsp;-v, --verbose &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- be more verbose<br>
+&nbsp;&nbsp;-V, --version &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- print name, version and license<br> 
+&nbsp;&nbsp;-h, --help &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- print this message and exit<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+The detailed explanation of the options is here:<br><br>
+<b><code>-b,--nobackup</code></b><ul>when a package is removed <b><code>pkg_remove</code></b> will check if the package that is about to be
+removed contains files marked as <b><code>BACKUPS</code></b> (usually configuration files) and save the
+files as <b><code>FILE.pkgbackup</code></b>, using this option makes <b><code>pkg_remove</code></b> delete these files too</ul>
+<b><code>-d,--nodeps</code></b><ul>when you remove a package <b><code>pkg_remove</code></b> will check if other packages depend on the
+package that you are about to remove, if such packages exist, then <b><code>pkg_add</code></b> will exit
+with an error message. using the option will make <b><code>pkg_remove</code></b> skip this step (this
+option cannot be used together with the <b><code>-c</code></b> option).</ul>
+<b><code>-P, --preserve</code></b><ul> this option will make <b><code>pkg_remove</code></b> save the contents of the package that is about to be removed
+in the <b><code>$PRESERVEDIR</code></b> (defined in <b><code>/etc/dpack/common</code></b>), usually this is <b><code>/var/lib/pkg/preserve/PKGNAME</code></b>. This is
+usefull when you want to keep the package just in case something doesnt work well with your next step.</ul>
+<b><code>-r, --root &lt;path&gt;</code></b><ul>use an alternate &lt;<b>path</b>&gt; for removing. This option should be used if you want
+to remove packages from another system (eg: a amounted partition).</ul>
+<b><code>-v, --verbose</code></b><ul>be more verbose, use this option if you want <b><code>pkg_remove</code></b> to print more
+information (without this option <b><code>pkg_remove</code></b> will only print a one line message)</ul>
+Examples:<br><br>
+Removing a package:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_remove ed<br>
+[+] removing ed...[OK]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Removing a package (verbose mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_remove -v ed<br>
+[+] removing ed...<br>
+&nbsp;&nbsp;&nbsp;[-] checking dependencies...[ OK ]<br>
+&nbsp;&nbsp;&nbsp;[-] saving backup files...[ DONE ]<br>
+&nbsp;&nbsp;&nbsp;[-] removing files...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /bin/ed<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/bin/red<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/ChangeLog<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/COPYING<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/INSTALL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/NEWS<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/POSIX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/README<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/THANKS<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/TODO<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/info/ed.info.gz<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/man/man1/ed.1.gz<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/man/man1/red.1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/share/doc/ed-0.2/<br>
+&nbsp;&nbsp;&nbsp;[-] removing database entry...[ DONE ]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Removing a package (and printing dependencies errors):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_remove gtk-xfce-engine<br>
+[+] removing gtk-xfce-engine...[FAILED]<br>
+[ERROR]: packages that depend on gtk-xfce-engine:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;libxfcegui4<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+Removing same package (with -d options):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_remove -d gtk-xfce-engine<br>
+[+] removing gtk-xfce-engine...[OK]<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+The package has been removed, but programs from the package(s) that depend on it will not<br>
+work anymore, so this option should only be used if you really know what you are doing.<br></p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="ipackages.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="upackages.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Installing packages</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Upgrading packages</td></tr></table>
+</body>
+</html>
+

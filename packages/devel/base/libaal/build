@@ -1,0 +1,36 @@
+NAME=libaal
+VERSION=1.0.4
+ARCH=i686
+RELEASE=1
+URL="http://www.namesys.com/"
+DESC="A library that provides application abstraction mechanism."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="321K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.namesys.com/pub/reiser4progs/libaal-1.0.4.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/lib
+  mv $PKG/usr/lib/{libaal-1.0.so.4,libaal-1.0.so.4.0.0} $PKG/lib/
+  mv $PKG/usr/lib/{libaal-minimal.so.0,libaal-minimal.so.0.0.0} $PKG/lib/
+  
+  ln -sf ../../lib/libaal-minimal.so.0.0.0 $PKG/usr/lib/libaal-minimal.so
+  ln -sf ../../lib/libaal-1.0.so.4.0.0 $PKG/usr/lib/libaal.so
+  
+  install_docs AUTHORS BUGS COPYING CREDITS ChangeLog INSTALL \
+    NEWS README TODO THANKS
+}

@@ -1,0 +1,29 @@
+NAME=pth
+VERSION=2.0.3
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/pth"
+DESC="The GNU Portable Threads."
+GROUP=libs
+LICENSE="LGPLv2.1"
+SIZE="624K"
+HUSE="static debug profile"
+
+SOURCES="ftp://ftp.ossp.org/pkg/lib/pth/pth-2.0.3.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use static || OPTS="$OPTS --disable-static"
+  use profile && OPTS="$OPTS --enable-profile"
+    
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ANNOUNCE AUTHORS COPYING ChangeLog HACKING HISTORY \
+    INSTALL NEWS PORTING README SUPPORT TESTS THANKS USERS
+}

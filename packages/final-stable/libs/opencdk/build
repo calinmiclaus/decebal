@@ -1,0 +1,27 @@
+NAME=opencdk
+VERSION=0.5.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/gnutls/"
+DESC="Povides basic parts of the OpenPGP message format."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="322K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnupg.org/gcrypt/alpha/gnutls/opencdk/opencdk-0.5.5.tar.bz2"
+
+RUNTIME=">=zlib-1.1.4 >=libgcrypt-1.1.94"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README \
+    README-alpha THANKS TODO
+}

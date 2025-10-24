@@ -1,0 +1,33 @@
+NAME=jack
+VERSION=0.99.0
+ARCH=i686
+RELEASE=1
+URL="http://jackit.sourceforge.net/"
+DESC="The Jack Audio Connection Kit."
+GROUP=multimedia
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="705K"
+HUSE="static debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/jackit/jack-audio-connection-kit-0.99.0.tar.gz
+         jack.init jack.sysconf"
+	 
+RUNTIME="libsndfile bash readline"
+
+build() {
+  cd $SRC/jack-audio-connection-kit-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 ../jack.init $PKG/etc/rc.d/jack
+  install -D -m 0644 ../jack.sysconf $PKG/etc/conf.d/jack
+  
+  install_docs AUTHORS COPYING* README TODO
+}
+
+

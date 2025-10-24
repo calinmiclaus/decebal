@@ -1,0 +1,34 @@
+diff -Naur make-3.80.orig/read.c make-3.80/read.c
+--- make-3.80.orig/read.c	2003-09-12 06:06:22.000000000 +0000
++++ make-3.80/read.c	2003-09-12 06:20:00.000000000 +0000
+@@ -457,8 +457,8 @@
+      struct ebuffer *ebuf;
+      int set_default;
+ {
+-  static char *collapsed = 0;
+-  static unsigned int collapsed_length = 0;
++  char *collapsed = 0;
++  unsigned int collapsed_length = 0;
+   unsigned int commands_len = 200;
+   char *commands;
+   unsigned int commands_idx = 0;
+@@ -571,9 +571,7 @@
+       if (collapsed_length < linelen+1)
+ 	{
+ 	  collapsed_length = linelen+1;
+-	  if (collapsed != 0)
+-	    free (collapsed);
+-	  collapsed = (char *) xmalloc (collapsed_length);
++	  collapsed = (char *) xrealloc (collapsed, collapsed_length);
+ 	}
+       strcpy (collapsed, line);
+       /* Collapse continuation lines.  */
+@@ -1230,6 +1228,8 @@
+   /* At eof, record the last rule.  */
+   record_waiting_files ();
+ 
++  if (collapsed)
++    free ((char *) collapsed);
+   free ((char *) commands);
+ 
+   return 1;

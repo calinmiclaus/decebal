@@ -1,0 +1,37 @@
+NAME=rsync
+VERSION=2.6.6
+ARCH=i686
+RELEASE=1
+URL="http://rsync.samba.org/"
+DESC="A replacement for rcp (and scp) that has many more features."
+GROUP=base
+LICENSE=GPLv2
+SIZE="673K"
+
+SOURCES="ftp://ftp.samba.org/pub/rsync/$NAME-$VERSION.tar.gz
+         rsyncd.init rsyncd.conf rsync.motd"
+
+BACKUPS="etc/rsyncd.conf
+         etc/rsyncd.motd"
+
+RUNTIME="popt"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var/lib \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../rsyncd.conf $PKG/etc/rsyncd.conf
+  install -D -m 0644 ../rsync.motd $PKG/etc/rsync.motd
+  install -D -m 0700 ../rsyncd.init $PKG/etc/rc.d/rsyncd
+  
+  mkdir -p $PKG/srv/rsync
+  
+  install_docs COPYING INSTALL NEWS OLDNEWS README TODO
+}

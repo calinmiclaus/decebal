@@ -1,0 +1,31 @@
+NAME=gphoto2
+VERSION=2.1.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gphoto.org"
+DESC="A digital camera download and access program."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="522K"
+HUSE="nls aalib"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gphoto/gphoto2-2.1.5.tar.gz"
+
+RUNTIME="libgphoto2 libexif libjpeg ncurses popt readline"
+
+use aalib && RUNTIME="$RUNTIME aalib"
+#use nls && BUILDTIME="nls"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use aalib && OPTS="--with-aalib" || OPTS="--without-aalib"
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

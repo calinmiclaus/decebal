@@ -1,0 +1,12 @@
+NAME=dvdbackup
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://dvd-create.sourceforge.net/"
+DESC=""
+GROUP=multimedia
+LICENSE=""
+SIZE=""
+
+
+SOURCES="http://dvd-create.sourceforge.net/dvdbackup-0.1.1.tar.gz"

@@ -1,0 +1,22 @@
+NAME=hicolor-icon-theme
+VERSION=0.5
+ARCH=noarch
+RELEASE=1
+URL="http://freedesktop.org/Software/icon-theme/"
+DESC="Default icon-theme used by implementations of the icon theme specification."
+GROUP=x11
+LICENSE="GPLv2"
+
+SOURCES="http://freedesktop.org/Software/icon-theme/releases/hicolor-icon-theme-0.5.tar.gz"
+
+BUILDTIME="xml-parser-perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING ChangeLog README
+}

@@ -1,0 +1,45 @@
+NAME=gtk-doc
+VERSION=1.2
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org"
+DESC="Documentation system for public API."
+GROUP=doc-tools
+LICENSE=GPLv2
+SIZE="131K"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/gtk-doc/1.2/gtk-doc-1.2.tar.bz2"
+
+BUILDTIME=">=openjade-1.3.2
+           >=intltool-0.30
+	   >=libxslt-1.1.7
+	   >=libxml2-2.6.10
+	   >=docbook-xsl-1.65.1
+	   >=docbook-xml-4.1.2
+	   >=pkconfig-0.15.0
+	   perl"
+
+BUILDTIME=">=openjade-1.3.2
+           >=intltool-0.30
+	   >=libxslt-1.1.7
+	   >=libxml2-2.6.10
+	   >=docbook-xsl-1.65.1
+	   >=docbook-xml-4.1.2
+	   perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var
+  make
+  make DESTDIR=$PKG install
+  
+  sed -i "s:http\:\/\/docbook.sourceforge.net/release/xsl/current/html/chunk.xsl:/usr/share/xml/docbook/html/chunk.xsl:" \
+    $PKG/usr/share/gtk-doc/data/gtk-doc.xsl
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL MAINTAINERS NEWS README
+}
+  
+ 

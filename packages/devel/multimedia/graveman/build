@@ -1,0 +1,31 @@
+NAME=graveman
+VERSION=0.3.12
+ARCH=i686
+RELEASE=1
+URL="http://graveman.tuxfamily.org/index-e.php"
+DESC="A frontend for cdrtools, dvd+rw-tools, sox and flac."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="455K"
+HUSE="debug"
+
+SOURCES="http://graveman.tuxfamily.org/sources/graveman-$VERSION.tar.bz2"
+
+RUNTIME=">=gtk2-2.4.0 >=libglade-2.4.0 >=libid3tag-0.15 >=libmad-0.15 >=libogg-1.0 >=libvorbis-1.0
+         >=flac-1.1.0 >=cdrtools-2.0 >=dvd+rw-tools-5.19.4.9.7 >=cdrdao-1.2.0 >=sox-12.17.0 >=zlib-1.2.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  
+  ./configure --prefix=/usr \
+              --enable-linux-ide $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  sed -i "s:Utility;:Multimedia;AudioVideo;DiscBurning;:" $PKG/usr/share/applications/graveman.desktop
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README* THANKS
+}

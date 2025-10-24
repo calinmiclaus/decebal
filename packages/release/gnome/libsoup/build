@@ -1,0 +1,30 @@
+NAME=libsoup
+VERSION=2.2.2
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A HTTP library for GNOME."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="394K"
+HUSE="gtkdoc static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/libsoup-2.2.2.tar.bz2"
+
+RUNTIME="glib2 gnutls libxml2"
+
+use gtkdoc && BUILDTIME="gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gtkdoc && OPTS="--enable-gtk-doc"
+  use static || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

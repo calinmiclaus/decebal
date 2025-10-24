@@ -1,0 +1,29 @@
+NAME=libexif
+VERSION=0.6.12
+ARCH=i686
+RELEASE=1
+URL="http://sourceforge.net/projects/libexif"
+DESC="A library to parse an EXIF file and read the data from those tags."
+GROUP=libs
+LICENSE="LGPLv2"
+SIZE="525K"
+HUSE="nls static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libexif/libexif-0.6.12.tar.gz"
+
+use nls && BUILDTIME="gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

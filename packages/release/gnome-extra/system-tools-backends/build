@@ -1,0 +1,27 @@
+NAME=system-tools-backends
+VERSION=1.2.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="System configuration utilities for the GNOME Desktop (backends)."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="520K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/system-tools-backends-1.2.0.tar.bz2"
+
+BUILDTIME="intltool gettext"
+
+RUNTIME="perl libgnomeui"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

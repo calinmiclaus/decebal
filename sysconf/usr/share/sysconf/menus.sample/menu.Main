@@ -1,0 +1,19 @@
+#Format:
+#
+#item:type:description
+#
+#where :
+#
+#item - cum se numeste, titlul in meniu, fara spatii
+#type  - .module.function - sa execute functia "function" din modulu "module"
+#      - @menu - deschide meniul "menu"
+#       - %command - executa comanda "command"
+^asta e meniul principal
+^si aici se gaseste descrierea meniului
+^apare chiar la inceput
+^ si poate fi pe oricate linii
+^
+^
+^pot aparea si linii goale
+
+Howto:.howtobrowser.main_menu:Browse the howto's

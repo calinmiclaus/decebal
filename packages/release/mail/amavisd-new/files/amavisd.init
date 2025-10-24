@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# /etc/rc.d/amavisd
+# 
+
+. /etc/rc.d/functions
+
+pidfile="/var/lib/amavis/var/amavisd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Amavis daemon"
+    start_service /usr/sbin/amavisd
+    ;;
+  stop)
+    msg "Stopping the Amavis daemon"
+    stop_service /usr/sbin/amavisd
+    ;;
+  reload)
+    msg "Reloading the Amavis daemon"
+    reload_service /usr/sbin/amavisd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/amavisd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

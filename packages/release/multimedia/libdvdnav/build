@@ -1,0 +1,28 @@
+NAME=libdvdnav
+VERSION=0.1.9
+ARCH=i686
+RELEASE=1
+DESC="The library for xine-dvdnav plugin."
+URL="http://dvd.sourceforge.net/"
+GROUP=multimedia
+LICENSE="GPLv2"
+
+SOURCES="http://umn.dl.sourceforge.net/sourceforge/dvd/libdvdnav-0.1.9.tar.gz"
+
+BUILDTIME="autoconf automake"
+
+RUNTIME="bash"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  [ -e /usr/bin/aclocal-1.7 ] || ln -s /usr/bin/aclocal-1.9 /usr/bin/aclocal-1.7 &>/dev/null
+
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+
+  rm -rf /usr/bin/aclocal-1.7
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

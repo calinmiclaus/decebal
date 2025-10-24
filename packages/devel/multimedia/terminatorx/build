@@ -1,0 +1,42 @@
+NAME=terminatorx
+VERSION=3.82
+ARCH=i686
+RELEASE=1
+URL="http://www.terminatorX.cx/"
+DESC="A realtime audio synthesizer."
+GROUP=multimedia
+LICENSE="GPLv2 GFDLv1.1"
+
+SOURCES="http://terminatorx.cx/dist/terminatorX-3.82.tar.gz"
+
+RUNTIME="alsa-lib libmad libvorbis audiofile libxml2 sox
+	 mpg321 >=gtk2-2.0.0 ladspa scrollkeeper startup-notification"
+
+use jack && RUNTIME="$RUNTIME jack"
+use lrdf && RUNTIME="$RUNTIME liblrdf"
+
+build() {
+  cd $SRC/terminatorX-$VERSION
+  
+  use jack && OPTS="$OPTS --enable-jack" || OPTS="$OPTS --disable-jack"
+  use lrdf && OPTS="$OPTS --enable-lrdf" || OPTS="$OPTS --disable-lrdf"
+  use legacy && OPTS="$OPTS --enable-legacy"
+  
+  if ! echo $PATH | grep -q /opt/gnome/bin
+  then
+    export PATH="$PATH:/opt/gnome/bin"
+  fi
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 gnome-support/terminatorX.desktop $PKG/usr/share/applications/terminatorX.desktop
+  install -D -m 0644 gnome-support/terminatorX-app.png $PKG/usr/share/terminatorX-app.png
+  install -D -m 0644 gnome-support/terminatorX.keys $PKG/usr/share/mime-info/terminatorX.keys
+  install -D -m 0644 gnome-support/terminatorX.mime $PKG/usr/share/mime-info/terminatorX.mime
+     
+  install_docs AUTHORS COPYING* ChangeLog INSTALL README* \
+    THANKS TODO
+}

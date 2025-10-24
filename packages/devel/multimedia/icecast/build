@@ -1,0 +1,33 @@
+NAME=icecast
+VERSION=2.2.0
+ARCH=1
+RELEASE=1
+URL="http://www.icecast.org/"
+DESC="A streaming media server (supports Ogg Vorbis and MP3 audio streams)."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="685K"
+HUSE="static"
+
+SOURCES="http://downloads.xiph.org/releases/icecast/icecast-2.2.0.tar.gz
+         icecast.init"
+
+RUNTIME="libxml2 libxslt >=curl-7.10 >=libvorbis-1.0 >=libogg-1.0 libtheora"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/icecast \
+	      --localstatedir=/var $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../icecast.init $PKG/etc/rc.d/icecast.init
+  
+  install_docs AUTHORS COPYING ChangeLog HACKING \
+    NEWS README TODO
+  mv $PKG/usr/share/doc/$NAME $PKG/usr/share/doc/$NAME-$VERSION
+}

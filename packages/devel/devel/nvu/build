@@ -1,0 +1,98 @@
+NAME=nvu
+VERSION=1.0PR
+ARCH=i686
+RELEASE=1
+URL="http://www.nvu.vom/"
+DESC="Web Development Program."
+GROUP=devel
+LICENSE="MPLv1.1"
+SIZE="2910K"
+
+SOURCES="http://cvs.nvu.com/download/nvu-1.0PR-sources.tar.bz2"
+
+BUILDTIME=">=zip-2.3"
+
+RUNTIME=">=glib-1.2.10 >=libjpeg-6b >=libpng-1.2.5 >=zlib-1.2.1 xorg >=freetype2-2.1.9 >=gtk2-2.4.7 >=libidl-0.8.0 desktop-file-utils"
+
+use svg && RUNTIME="$RUNTIME librsvg"
+use gnomevfs && RUNTIME="$RUNTIME gnomevfs"
+
+build() {
+    cd $SRC/mozilla
+    
+    export MOZILLA_OFFICIAL="1"
+    export BUILD_OFFICIAL="1"
+    export MOZ_STANDALONE_COMPOSER=1
+    
+    use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+    use svg && OPTS="$OPTS --enable-svg" || OPTS="$OPTS --disable-svg"
+    use gnomevfs && OPTS="$OPTS --enable-gnomevfs" || OPTS="$OPTS --disable-gnomevfs"
+    
+    ./configure --prefix=/opt/nvu \
+                --with-default-mozilla-five-home=/opt/nvu/lib/nvu \
+                --enable-toolkit-gtk2 \
+                --enable-default-toolkit=gtk2 \
+                --enable-application=composer \
+                --with-system-jpeg \
+                --with-system-mng \
+                --with-system-png \
+                --with-system-zlib \
+                --enable-xft \
+                --enable-xinerama \
+                --enable-reorder \
+                --enable-strip \
+                --enable-strip-libs \
+                --enable-cpp-rtti \
+                --enable-calendar \
+                --enable-xsl \
+                --enable-crypto \
+                --disable-freetype2 \
+                --disable-toolkit-qt \
+                --disable-toolkit-xlib \
+                --disable-toolkit-gtk \
+		--disable-mailnews \
+		--disable-ldap \
+		--disable-calendar \
+		--disable-composer \
+                --disable-debug \
+                --disable-tests \
+                --disable-xprint \
+                --disable-logging \
+                --disable-pedantic \
+                --disable-installer \
+		--disable-activex \
+		--disable-activex-scripting \
+		--disable-oji \
+		--disable-necko-disk-cache \
+		--enable-extensions=wallet,spellcheck,xmlextras,pref,universalchardet,editor/cascades,venkman,inspector \
+		--enable-image-decoders=png,gif,jpeg \
+		--enable-necko-protocols=http,ftp,file,jar,viewsource,res,data \
+                --without-system-nspr \
+                --enable-nspr-autoconf \
+                --with-pthreads \
+                --enable-single-profile \
+	        --disable-profilesharing \
+                --enable-optimize="$CFLAGS" \
+                $OPTS
+  make
+  read
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/opt/nvu/include/$NAME-$VERSION/nss
+  cp -Lf dist/private/nss/*.h dist/public/nss/*.h  $PKG/opt/nvu/include/$NAME-$VERSION/nss/
+
+  cd $PKG/opt/nvu/lib/$NAME-$VERSION
+  export LD_LIBRARY_PATH="$PWD"
+  export MOZILLA_FIVE_HOME="$PWD"
+  ./regxpcom
+  ./regchrome
+  touch `find . -name *.rdf`      
+  
+  cd $SRC/mozilla
+  
+#  install -D -m 0644 ../nvu.desktop $PKG/usr/share/applications/nvu.desktop
+#  install -D -m 0644 ../nvu.png $PKG/usr/share/pixmaps/nvu.png
+#  install -D -m 0644 ../nvu.sh $PKG/etc/profile.d/nvu.sh
+  
+  install_docs LEGAL LICENSE README.txt
+}

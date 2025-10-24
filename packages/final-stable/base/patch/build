@@ -1,0 +1,22 @@
+NAME=patch
+VERSION=2.5.4
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/patch/patch.html"
+DESC="Applys a diff file to an original file."
+GROUP=base
+LICENSE=GPLv2
+
+SOURCES="ftp://ftp.gnu.org/pub/gnu/patch/patch-2.5.4.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

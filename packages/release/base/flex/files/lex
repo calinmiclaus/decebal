@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Compatbility script for lex.
+#
+
+/usr/bin/flex -l "$@"
+

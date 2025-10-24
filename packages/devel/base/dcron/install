@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 25 cron &>/dev/null
+  /usr/sbin/useradd -g 25 -u 24 -c "Crontab User" -d /var/spool/cron -s /bin/false cron &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel cron &>/dev/null
+  /usr/sbin/groupdel cron &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 25 cron &>/dev/null
+  /usr/sbin/useradd -g 25 -u 25 -c "Crontab User" -d /var/spool/cron -s /bin/false cron &>/dev/null
+}

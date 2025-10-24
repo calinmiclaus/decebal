@@ -1,0 +1,33 @@
+NAME=ggv
+VERSION=2.8.4
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A PostScript (PS) viewer for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2 FDLv1.1"
+SIZE="1262K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/ggv-2.8.4.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomeui-2.0 espgs"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/bin
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO MAINTAINERS
+}

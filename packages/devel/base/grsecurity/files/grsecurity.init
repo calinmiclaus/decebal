@@ -1,0 +1,257 @@
+#!/bin/bash
+#
+# /etc/rc.d/grsecurity - configure grsecurity and pax settings
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/grsecurity
+
+GRSECDIR=/proc/sys/kernel/grsecurity
+
+# Exit if user doesnt want to configure grsecurity at boot time.
+[ "$GRSECURITY" = "yes" ] || exit 0
+
+# Exit if grsecurity is not activated in the kernel.
+[ -d $GRSECDIR ] || exit 0
+
+configgrsec() {
+  local RETVAL=0
+  
+  if [ "$EXECLOG" = "yes" ] && [ -f $GRSECDIR/exec_logging ]
+  then
+    echo 1 > $GRSECDIR/exec_logging
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/exec_logging
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$CHROOTEXECLOG" = "yes" ] && [ -f $GRSECDIR/chroot_execlog ]
+  then
+    echo 1 > $GRSECDIR/chroot_execlog
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/chroot_execlog
+    RETVAL=$(( RETVAL + $? ))    
+  fi
+  
+  if [ "$CHDIRLOG" = "yes" ] && [ -f $GRSECDIR/audit_chdir ]
+  then
+    echo 1 > $GRSECDIR/audit_chdir
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/audit_chdir
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$MOUNTLOG" = "yes" ] && [ -f $GRSECDIR/audit_mount ]
+  then
+    echo 1 > $GRSECDIR/audit_mount
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/audit_mount
+    RETVAL=$(( RETVAL + $? ))
+  fi
+
+  if [ "$IPCLOG" = "yes" ] && [ -f $GRSECDIR/audit_ipc ]
+  then
+    echo 1 > $GRSECDIR/audit_ipc
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/audit_ipc
+    RETVAL=$(( RETVAL + $? ))
+  fi
+
+  if [ "$SIGNALLOG" = "yes" ] && [ -f $GRSECDIR/signal_logging ]
+  then
+    echo 1 > $GRSECDIR/signal_logging
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/signal_logging
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$FORKLOG" = "yes" ] && [ -f $GRSECDIR/forkfail_logging ]
+  then
+    echo 1 > $GRSECDIR/forkfail_logging
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/forkfail_logging
+    RETVAL=$(( RETVAL + $? ))
+  fi
+
+  if [ "$TIMELOG" = "yes" ] && [ -f $GRSECDIR/timechange_logging ]
+  then
+    echo 1 > $GRSECDIR/timechange_logging
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/timechange_logging
+    RETVAL=$(( RETVAL + $? ))
+  fi
+    
+  if [ "$TEXTLELLOG" = "yes" ] && [ -f $GRSECDIR/audit_textrel ]
+  then
+    echo 1 > $GRSECDIR/audit_textrel
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/audit_textrel
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ -n "$AUDITGROUP" ] && [ -f $GRSECDIR/audit_gid ]
+  then
+    echo $AUDITGROUP > $GRSECDIR/audit_gid
+    RETVAL=$(( RETVAL + $? ))
+  fi
+
+  if [ -n "$TRUSTEDGROUP" ] && [ -f $GRSECDIR/audit_group ]
+  then
+    echo $TRUSTEDGROUP > $GRSECDIR/audit_group
+    RETVAL=$(( RETVAL + $? ))
+  fi
+
+  if [ "$ACTIVATETPE" = "yes" ] && [ -f $GRSECDIR/tpe ]
+  then
+    echo 1 > $GRSECDIR/tpe
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/tpe
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$PARTIALLY" = "yes" ] && [ -f $GRSECDIR/tpe_restrict_all ]
+  then
+    echo 1 > $GRSECDIR/tpe_restrict_all
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/tpe_restrict_all
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ -n "$TRUSTED" ] && [ -f $GRSECDIR/tpe_gid ]
+  then
+    echo $TRUSTED > $GRSECDIR/tpe_gid
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$EXECVELIMITING" = "yes" ] && [ -f $GRSECDIR/execve_limiting ]
+  then
+    echo 1 > $GRSECDIR/execve_limiting
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/execve_limiting
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$DESTRYSHARED" = "yes" ] && [ -f $GRSECDIR/destroy_unused_shm ]
+  then
+    echo 1 > $GRSECDIR/destroy_unused_shm
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/destroy_unused_shm
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$RESTRICTDMESG" = "yes" ] && [ -f $GRSECDIR/dmesg ]
+  then
+    echo 1 > $GRSECDIR/dmesg
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/dmesg
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$RANDOMIZEPIDS" = "yes" ] && [ -f $GRSECDIR/rand_pids ]
+  then
+    echo 1 > $GRSECDIR/rand_pids
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/rand_pids
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$RANDOMISNS" = "yes" ] && [ -f $GRSECDIR/rand_isns ]
+  then
+    echo 1 > $GRSECDIR/rand_isns
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/rand_isns
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$RANDOMIIPIDS" = "yes" ] && [ -f $GRSECDIR/rand_ip_ids ]
+  then
+    echo 1 > $GRSECDIR/rand_ip_ids
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/rand_ip_ids
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ "$RANDOMSPORTS" = "yes" ] && [ -f $GRSECDIR/rand_tcp_src_ports ]
+  then
+    echo 1 > $GRSECDIR/rand_tcp_src_ports
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/rand_tcp_src_ports
+    RETVAL=$(( RETVAL + $? ))
+  fi
+
+  if [ "$RANDOMRPCXIDS" = "yes" ] && [ -f $GRSECDIR/rand_rpc ]
+  then
+    echo 1 > $GRSECDIR/rand_rpc
+    RETVAL=$(( RETVAL + $? ))
+  else
+    echo 0 > $GRSECDIR/rand_rpc
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  if [ -r $GRSECDIR/grsec_lock ]
+  then
+    echo 1 > $GRSECDIR/grsec_lock
+    RETVAL=$(( RETVAL + $? ))
+  fi
+  
+  return $RETVAL
+}
+
+configpax() {
+  local RETVAL=0
+  
+  for RULE in `echo $PAXRULES`
+  do
+    OPTIONS=${RULE##*:}
+    FILE=${RULE%%:*}
+    
+    if [ -f $FILE ]
+    then
+      $PAXTOOL -${OPTIONS} $FILE
+      RETVAL=$(( RETVAL + $? ))
+    fi
+  done
+  
+  return $RETVAL
+}
+
+case "$1" in
+  start)
+    msg "Configuring grsecurity options"
+    if [ "`cat $GRSECDIR/grsec_lock`" != "1" ]
+    then
+      run configgrsec
+      if [ $? -eq 0 ]
+      then
+        touch /var/lock/subsys/grsecurity
+      fi
+    else
+      already_running
+    fi
+    
+    msg "Activating PAX flags for binaries"
+    run configpax
+    ;;
+  *)
+    echo "usage: $0 {start}"
+    exit 1
+    ;;
+esac

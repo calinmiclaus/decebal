@@ -1,0 +1,72 @@
+NAME=docbook-sgml
+VERSION=3.1_4.3
+ARCH=noarch
+RELEASE=1
+URL="http://www.oasis-open.org/docbook/"
+DESC="Utils useful for structuring books and software documentation."
+GROUP=doc-tools
+LICENSE=OL
+SIZE="119K"
+
+SOURCES="http://www.docbook.org/sgml/3.1/docbk31.zip
+         http://www.docbook.org/sgml/4.3/docbook-4.3.zip"
+
+BUILDTIME=">=sgml-common-0.6.3"
+
+RUNTIME=">=sgml-common-0.6.3"
+
+# ripped out from somewhere (can't remember from where...but credits go him)
+build() {
+  cd $SRC
+  
+  find ./ -type f ! -name docbook-4.3.zip ! -name docbk31.zip -exec rm -f -- {} \;
+  
+  unzip docbk31.zip
+  
+  cp docbook.cat docbook.cat.orig
+  sed -e '/ISO 8879/d' docbook.cat.orig > docbook.cat
+  cp docbook.cat docbook.cat.orig
+  sed -e '/gml/d' docbook.cat.orig > docbook.cat
+  cp docbook.cat docbook.cat.orig
+  sed -e 's|DTDDECL "-//OASIS//DTD DocBook V3.1//EN"|SGMLDECL|g' docbook.cat.orig > docbook.cat
+  
+  mkdir -p $PKG/usr/share/sgml/docbook/sgml-dtd-3.1
+
+  chown -R root.root .
+  chmod -R 755 .
+  
+  install docbook.cat $PKG/usr/share/sgml/docbook/sgml-dtd-3.1/catalog
+  
+  cp -af *.dtd *.mod *.dcl $PKG/usr/share/sgml/docbook/sgml-dtd-3.1/
+  
+  install_docs 31chg.txt 40issues.txt 50issues.txt readme.txt
+  
+  find ./ -type f ! -name docbook-4.3.zip ! -name docbk31.zip -exec rm -f -- {} \;
+  
+  unzip docbook-4.3.zip
+  
+  cp docbook.cat docbook.cat.orig
+  sed -e '/ISO 8879/d' docbook.cat.orig > docbook.cat
+  cp docbook.cat docbook.cat.orig
+  sed -e '/gml/d' docbook.cat.orig > docbook.cat
+  
+  mkdir -p $PKG/usr/share/sgml/docbook/sgml-dtd-4.3
+  
+  chown -R root.root .
+  chmod -R 755 .
+  
+  install docbook.cat $PKG/usr/share/sgml/docbook/sgml-dtd-4.3/catalog
+  
+  cp -af *.dtd *.mod *.dcl $PKG/usr/share/sgml/docbook/sgml-dtd-4.3/
+  
+  install_docs ChangeLog README
+  
+  chmod 0644 $PKG/usr/share/doc/$NAME-$VERSION/*
+
+}
+
+
+
+  
+  
+  

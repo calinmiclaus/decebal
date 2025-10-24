@@ -1,0 +1,29 @@
+NAME=mm
+VERSION=1.3.1
+ARCH=i686
+RELEASE=1
+URL="http://www.ossp.org/pkg/lib/mm/"
+DESC="A 2-layer abstraction library shared memory library."
+GROUP=libs
+LICENSE=BSDL
+SIZE="320K"
+HUSE="static"
+
+SOURCES="ftp://ftp.ossp.org/pkg/lib/mm/mm-1.3.1.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  chmod 0755 $PKG/usr/lib/libmm.so.13.0.21
+    
+  install_docs ChangeLog INSTALL LICENSE PORTING README THANKS
+}

@@ -1,0 +1,41 @@
+NAME=balsa
+VERSION=2.3.0
+ARCH=i686
+RELEASE=1
+URL="http://balsa.gnome.org/"
+DESC="A EMAIL client for the GNOME Desktop."
+GROUP=mail
+LICENSE="GPLv2"
+SIZE="2930K"
+HUSE="static smime ui"
+
+SOURCES="http://balsa.gnome.org/balsa-2.3.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomeprintui-2.1.4 libgnomeui libgtkhtml aspell libesmtp gmime gpgme pcre openldap"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use smime && OPTS="$OPTS --enable-smime"
+  use ui && OPTS="$OPTS --enable-touch-ui"
+  
+  PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      --enable-gtkhtml \
+	      --enable-pcre \
+	      --enable-ldap \
+	      --with-gpgme \
+	      --with-ssl \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog HACKING INSTALL \
+    NEWS README TODO
+}

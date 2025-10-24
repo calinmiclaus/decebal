@@ -1,0 +1,28 @@
+NAME=sdl_image
+VERSION=1.2.4
+ARCH=i686
+RELEASE=1
+URL="http://jcatki.no-ip.org/SDL_image/"
+DESC="Image manipulating library for SDL."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="822K"
+HUSE="static"
+
+SOURCES="http://www.libsdl.org/projects/SDL_image/release/SDL_image-1.2.4.tar.gz"
+
+RUNTIME="libsdl >=libjpeg-6b libpng >=zlib-1.2.1"
+
+build() {
+  cd $SRC/SDL_image-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES COPYING README
+}
+

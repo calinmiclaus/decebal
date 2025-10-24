@@ -1,0 +1,28 @@
+NAME=glibmm
+VERSION=2.6.1
+ARCH=i686
+RELEASE=1
+URL="http://gtkmm.sourceforge.net/"
+DESC="C++ bindings for glib."
+GROUP=libs
+LICENSE=LGPLv2.1
+SIZE="1896K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/bindings/2.10/2.10.0/sources/c++/glibmm-2.6.1.tar.bz2"
+
+RUNTIME="glib2 perl libsigc++"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug-refcounting"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS CHANGES COPYING ChangeLog INSTALL \
+    NEWS README*
+}

@@ -1,0 +1,26 @@
+NAME=chmlib
+VERSION=0.35
+ARCH=i686
+RELEASE=1
+URL="http://66.93.236.84/%7Ejedwin/projects/chmlib/"
+DESC="A library for dealing with Microsoft ITSS/CHM format files."
+GROUP=doc-tools
+LICENSE="GLGPLv2.1"
+SIZE="359K"
+HUSE="static"
+
+SOURCES="http://66.93.236.84/%7Ejedwin/projects/chmlib/chmlib-0.35.tgz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  mkdir -p $PKG/usr/{lib,include}
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make INSTALLPREFIX=$PKG/usr install              
+  
+  install_docs AUTHORS COPYING INSTALL NEWS README
+}

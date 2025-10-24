@@ -1,0 +1,27 @@
+NAME=gnome-hideseek
+VERSION=0.4.0
+ARCH=i686
+RELEASE=1
+URL="http://hideseek.sourceforge.net/"
+DESC="GNOME Preferences Hide and Seek."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="175K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/hideseek/gnome-hideseek-0.4.0.tar.gz"
+
+BUILDTIME="gettext"
+
+RUNTIME=">=gtk2-2.4.0 >=gconf-2.4.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+    
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

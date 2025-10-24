@@ -1,0 +1,38 @@
+NAME=allegro
+VERSION=4.1.18
+ARCH=i686
+RELEASE=1
+URL="http://alleg.sourceforge.net/"
+DESC="A game programming library for C/C++ developers."
+GROUP=games
+LICENSE="BSDL"
+SIZE="2382K"
+HUSE="static profile arts esd"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/alleg/allegro-4.1.18.tar.gz"
+
+RUNTIME="xorg >=alsa-lib-1.0.7 svgalib directfb"
+
+use arts && RUNTIME="$RUNTIME opts"
+use esd && RUNTIME="$RUNTIME esound"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static=yes"
+  use profile && OPTS="$OPTS --enable-proflib=yes"
+  use arts || OPTS="$OPTS --enable-artsdigi=no"
+  use esd || OPTS="$OPTS --enable-esddigi=no"
+  
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man $OPTS
+  make
+  make DESTDIR=$PKG install
+  make DESTDIR=$PKG install-man
+  make DESTDIR=$PKG install-info
+
+  chmod 755 $PKG/usr/lib/liballeg-4.1.18.so
+  
+  install_docs AUTHORS CHANGES THANKS
+}

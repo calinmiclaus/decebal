@@ -1,0 +1,24 @@
+NAME=libsidplay
+VERSION=1.36.59
+ARCH=i686
+RELEASE=1
+URL="http://www.geocities.com/SiliconValley/Lakes/5147/sidplay/linux.html"
+DESC="A library for playing SID music files."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="380K"
+HUSE="static"
+
+SOURCES="http://www.geocities.com/SiliconValley/Lakes/5147/sidplay/packages/libsidplay-1.36.59.tgz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING DEVELOPER INSTALL
+}

@@ -1,0 +1,36 @@
+NAME=arts
+VERSION=1.4.2
+ARCH=i686
+RELEASE=1
+URL="http://www.arts-project.org"
+DESC="Analog realtime synthesizer."
+GROUP=kde
+LICENSE="GPLv2, LGPLv2"
+SIZE="952K"
+HUSE="static"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/3.4.2/src/$NAME-$VERSION.tar.bz2
+	 arts-1.4-mcopidl.patch"
+
+RUNTIME="audiofile alsa-lib libmad libvorbis esound qt"
+
+build() {
+  OPTS=""
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  cd $SRC/$NAME-$VERSION
+  patch -p1 <../arts-1.4-mcopidl.patch
+  
+  aclocal
+  ./configure --prefix=/opt/kde \
+      --disable-debug \
+      --with-alsa \
+      --disable-dependency-tracking \
+      $OPTS
+
+  make
+  make DESTDIR=$PKG install
+
+  install_docs COPYING* INSTALL
+}

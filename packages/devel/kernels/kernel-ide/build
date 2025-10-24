@@ -1,0 +1,74 @@
+NAME=kernel-ide
+VERSION=2.6.12
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org/"
+DESC="The latest Linux Kernel"
+GROUP=kernels
+LICENSE="GPLv2"
+SIZE="36632K"
+HUSE="menuconfig xconfig"
+
+SOURCES="http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.12.tar.bz2
+	 config-ide-$RELEASE"
+
+RUNTIME="module-init-tools bootloader"	 
+
+PROVIDES="kernel kernel-sources"
+	 
+build() {
+  cd $SRC/linux-2.6.12
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  sed -i "s:EXTRAVERSION \=:EXTRAVERSION \=-ide-$RELEASE:" Makefile
+  
+  mkdir -p $PKG/{boot,lib/modules}
+  
+  if use menuconfig
+  then
+    make menuconfig
+  elif use xconfig
+  then
+    make xconfig
+  else
+    cp ../config-ide-$RELEASE ./.config
+    yes "" | make config
+  fi
+  
+  make clean
+  make
+  make INSTALL_MOD_PATH=$PKG modules_install
+  
+  install -m 0644 System.map $PKG/boot/System.map-ide-2.6.12-$RELEASE
+  install -m 0644 arch/i386/boot/bzImage $PKG/boot/vmlinuz-ide-2.6.12-$RELEASE
+  install -m 0644 .config $PKG/boot/config-ide-2.6.12-$RELEASE
+  
+  rdev -R $PKG/boot/vmlinuz-ide-2.6.12-$RELEASE 0
+  rdev -v $PKG/boot/vmlinuz-ide-2.6.12-$RELEASE -1
+  rdev -r $PKG/boot/vmlinuz-ide-2.6.12-$RELEASE 0
+  
+  mkdir -p $PKG/usr/src/linux-2.6.12-ide-$RELEASE/{include,arch/i386/kernel,.tmp_versions}
+  for DIR in acpi asm-generic asm-i386 config linux math-emu media mtd net pcmcia rxrpc scsi sound
+  do
+    cp -a include/$DIR $PKG/usr/src/linux-2.6.12-ide-$RELEASE/include/$DIR
+  done
+  
+  cp -a scripts $PKG/usr/src/linux-2.6.12-ide-$RELEASE/
+  cp arch/i386/Makefile $PKG/usr/src/linux-2.6.12-ide-$RELEASE/arch/i386/
+  cp arch/i386/kernel/asm-offsets.s $PKG/usr/src/linux-2.6.12-ide-$RELEASE/arch/i386/kernel/
+  
+  for FILE in $(find ./ -type f -name "Kconfig*")
+  do
+    mkdir -p $PKG/usr/src/linux-2.6.12-ide-$RELEASE/${FILE%/*}
+    cp $FILE $PKG/usr/src/linux-2.6.12-ide-$RELEASE/$FILE
+  done
+  
+  ( cd $PKG/usr/src/linux-2.6.12-ide-$RELEASE/include; ln -s asm-i386 asm )
+  
+  rm -f $PKG/lib/modules/2.6.12-ide-$RELEASE/{build,source}
+  ln -sf ../../../usr/src/linux-2.6.12-ide-$RELEASE $PKG/lib/modules/2.6.12-ide-$RELEASE/build
+  ln -sf ../../../usr/src/linux-2.6.12-ide-$RELEASE $PKG/lib/modules/2.6.12-ide-$RELEASE/source
+
+  install_docs COPYING CREDITS MAINTAINERS README REPORTING-BUGS
+}

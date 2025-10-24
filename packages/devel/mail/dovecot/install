@@ -1,0 +1,20 @@
+post_install() {
+  /usr/sbin/groupadd -g 77 dovecot &>/dev/null
+  /usr/sbin/useradd -u 77 -g 77 -c "Dovecot IMAP server" -d /var/run/dovecot -s /bin/false dovecot &>/dev/null
+  chown -R dovecot.dovecot /var/run/clamav
+  chown -R dovecot.dovecot /var/lib/dovecot
+  chmod 700 /var/lib/dovecot 
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 77 dovecot &>/dev/null
+  /usr/sbin/useradd -u 77 -g 77 -c "Dovecot IMAP server" -d /var/run/dovecot -s /bin/false dovecot &>/dev/null
+  chown -R dovecot.dovecot /var/run/clamav
+  chown -R dovecot.dovecot /var/lib/dovecot
+  chmod 700 /var/lib/dovecot 
+}
+
+post_remove() {
+  /usr/sbin/userdel dovecot &>/dev/null
+  /usr/sbin/groupdel dovecot &>/dev/null
+}

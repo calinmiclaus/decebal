@@ -1,0 +1,41 @@
+NAME=gnome-games
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="Games for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2 FDLv1.1"
+SIZE="5168K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-games-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="libgnomeui esound librsvg guile"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  use static || OPTS="--disable-static"
+  	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      --with-scores-group=games \
+	      --with-scores-user=games $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  chown root.users $PKG/var/lib/games/*
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO HACKING MAINTAINERS
+}

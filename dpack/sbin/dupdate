@@ -1,0 +1,359 @@
+#!/bin/bash
+#
+# /sbin/dupate - handle package management from precompiled archives
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+BASEDIR=$(pwd)
+
+FUNCTIONSDIR="/usr/share"
+CONFDIR="/etc/dpack"
+
+source $CONFDIR/common
+source $CONFDIR/update
+source $FUNCTIONSDIR/dpack/msg
+source $FUNCTIONSDIR/dpack/tmp
+source $FUNCTIONSDIR/dpack/exit
+source $FUNCTIONSDIR/dpack/pkg
+source $FUNCTIONSDIR/dpack/depend
+
+handle_signal() {
+  echo "User interrupt...all operations aborted."
+  rm -rf $TMP
+  pkg_exit "handle_signal()" "trap_user_exit" "$LINENO" 1
+}
+
+trap "handle_signal" SIGHUP SIGINT SIGQUIT SIGTERM
+
+usage() {
+  cat << EOF
+usage: dupdate [options] <argument>
+options:
+  -d, --nodeps    - skip all dependencies checks (dangerous)
+  -D, --deps      - resolve dependencies before updating
+  -f, --fetch     - only download packages, do not install them
+  -i, --info      - show information about a package
+  -k, --keep      - do not remove downloaded packages after update
+  -m, --md5sum    - skip md5sum check
+  -r, --reinstall - reinstall the package (same version and release)
+  -s, --search    - search packages that contain *argument*
+  -u, --upgrade   - only upgrade installed packages (used with a group)
+  -v, --verbose   - be more verbose
+  -V, --version   - print name, version and license
+  -H, --howto     - a short howto with some examples
+  -h, --help      - print this message and exit
+arguments:
+  <package>       - will update the package
+  <group>         - will update entire group
+  <world>         - will update the entire system
+  <sync>          - will update the package info files
+		      
+For a detailed help please see dupdate (8).
+EOF
+}
+
+version() {
+  cat << EOF
+dupdate v0.1.0 (dpack v0.1.6)
+  
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+  
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+  
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+PKG_NODEPS=0
+PKG_DEPS=0
+PKG_FETCH=0
+PKG_INFO=0
+PKG_KEEP=0
+PKG_MD5SUM=0
+PKG_REINSTALL=0
+PKG_SEARCH=0
+PKG_UPGRADE=0
+PKG_VERBOSE=0
+
+PKG_ARGS=""
+PKGADD_ARGS=""
+DUPDATE_OPTS=""
+
+if [ $# -eq 0 ]
+then
+  echo "error: dupdate needs an argument." >&2
+  usage >&2
+  pkg_exit "main()" "check_if_we_have_arguments" "$LINENO" 1
+fi
+
+while [ $# -ne 0 ]
+do
+  case "$1" in
+    --nodeps)
+      if [ "$PKG_DEPS" = "1" ]
+      then
+        echo "You cannot use -d (--nodeps) and -D (--deps) at the same time." >&2
+	usage >&2
+	exit 1
+      else
+        PKG_NODEPS=1
+        DUPDATE_OPTS="$DUPDATE_OPTS -d"
+        PKGADD_OPTS="$PKGADD_OPTS -d"
+      fi
+      ;;
+    --deps)
+      if [ "$PKG_NODEPS" = "1" ]
+      then
+        echo "You cannot use -d (--nodeps) and -D (--deps) at the same time." >&2
+	usage >&2
+	exit 1
+      else
+        PKG_DEPS=1
+        DUPDATE_OPTS="$DUPDATE_OPTS -D"
+      fi
+      ;;
+    --fetch)
+      PKG_FETCH=1
+      DUPDATE_OPTS="$DUPDATE_OPTS -f"
+      ;;
+    --info)
+      PKG_INFO=1
+      DUPDATE_OPTS="$DUPDATE_OPTS -i"
+      ;;
+    --keep)
+      PKG_KEEP=1
+      DUPDATE_OPTS="$DUPDATE_OPTS -k"
+      ;;
+    --md5sum)
+      PKG_MD5SUM=1 # To be removed when dupdate is stable.
+      DUPDATE_OPTS="$DUPDATE_OPTS -m"
+      ;;
+    --reinstall)
+      PKG_REINSTALL=1
+      DUPDATE_OPTS="$DUPDATE_OPTS -r"
+      ;;
+    --search)
+      PKG_SEARCH=1
+      DUPDATE_OPTS="$DUPDATE_OPTS -s"
+      ;;
+    --upgrade)
+      PKG_UPGRADE=1
+      DUPDATE_OPTS="$DUPDATE_OPTS -u"
+      ;;
+    --verbose)
+      PKG_VERBOSE=1
+      DUPDATE_OPTS="$DUPDATE_OPTS -v"
+      PKGADD_OPTS="$PKGADD_OPTS -v"
+      ;;
+    --version)
+      version
+      exit 0
+      ;;
+    --howto)
+      howto
+      exit 0
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --*)
+      echo "error: unrecognized option." >&2
+      usage >&2
+      exit 1
+      ;;
+    -*)
+      while getopts "dDfikmrsuvVhH" OPT
+      do
+        case "$OPT" in
+	  d)
+           if [ "$PKG_DEPS" = "1" ]
+           then
+             echo "You cannot use -d (--nodeps) and -D (--deps) at the same time." >&2
+	     usage >&2
+	     exit 1
+           else
+             PKG_NODEPS=1
+             DUPDATE_OPTS="$DUPDATE_OPTS -d"
+	     PKGADD_OPTS="$PKGADD_OPTS -d"
+           fi
+	   ;;
+	 D)
+           if [ "$PKG_NODEPS" = "1" ]
+           then
+             echo "You cannot use -d (--nodeps) and -D (--deps) at the same time." >&2
+	     usage >&2
+	     exit 1
+           else
+             PKG_DEPS=1
+             DUPDATE_OPTS="$DUPDATE_OPTS -D"
+           fi
+	   ;;
+	  f)
+	    PKG_FETCH=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -f"
+	    ;;
+	  i)
+	    PKG_INFO=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -i"
+	    ;;
+	  k)
+	    PKG_KEEP=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -k"
+	    ;;
+	  m)
+	    PKG_MD5SUM=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -m"
+	    ;;
+	  r)
+	    PKG_REINSTALL=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -r"
+	    ;;
+	  s)
+	    PKG_SEARCH=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -s"
+	    ;;
+	  u)
+	    PKG_UPGRADE=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -u"
+	    ;;
+	  v)
+	    PKG_VERBOSE=1
+	    DUPDATE_OPTS="$DUPDATE_OPTS -v"
+	    PKGADD_OPTS="$PKGADD_OPTS -v"
+	    ;;
+	  V)
+	    version
+	    exit 0
+	    ;;
+	  H)
+	    howto
+	    exit 0
+	    ;;
+	  h)
+	    usage
+	    exit 0
+	    ;;
+	  *)
+	    usage >&2
+	    pkg_exit "main()" "get_options" "$LINENO" 1
+	    ;;
+	esac 
+      done
+      ;;
+    *) 
+       PKG_ARGS="$1"
+       shift 1
+       while [ -n "$1" ]
+       do
+         PKG_ARGS="$PKG_ARGS $1"
+	 shift 1
+       done
+       ;;
+  esac
+  shift 1
+done
+
+if [ "$PKG_ARGS" = "" ]
+then
+  echo "error: dupdate needs at leas one option." >&2
+  usage >&2
+  pkg_exit "main()" "check_if_we_have_arguments" "$LINENO" 1
+fi
+
+pkg_check_if_group() {
+  local GROUPS="base chat devel doc-tools editors games gnome gnome-extra \
+    graphics kde kde-apps kde-i8n kernels libs mail multimedia network \
+    office web x11 xfce xfce-extra"
+  if echo $GROUPS | grep -q $1
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+if echo $PKG_ARGS | grep -q ^world
+then
+  if [ "$PKG_INFO" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/update/worldinfo
+    pkg_info_world
+    RETAL=$?
+  else
+    source $FUNCTIONSDIR/dpack/update/world
+    pkg_world
+    RETVAL=$?
+  fi
+elif echo $PKG_ARGS | grep -q ^sync
+then
+  source $FUNCTIONSDIR/dpack/update/sync
+  pkg_sync
+  RETVAL=$?
+elif [ "$PKG_INFO" = "1" ]
+then
+  for ARG in $PKG_ARGS
+  do
+    if pkg_check_if_group $ARG
+    then
+      source $FUNCTIONSDIR/dpack/update/groupinfo
+      pkg_info_group $ARG
+      RETVAL=$(($RETVAL + $?))
+    else
+      source $FUNCTIONSDIR/dpack/update/info
+      pkg_info $ARG
+      RETVAL=$(($RETVAL + $?))
+    fi
+  done
+elif [ "$PKG_SEARCH" = "1" ]
+then
+  source $FUNCTIONSDIR/dpack/update/search
+  for ARG in $PKG_ARGS
+  do
+    pkg_search $ARG
+    RETVAL=$(($RETVAL + $?))
+  done
+else
+  for ARG in $PKG_ARGS
+  do
+    if pkg_check_if_group $ARG
+    then
+      source $FUNCTIONSDIR/dpack/update/group
+      pkg_group $ARG
+      RETVAL=$?
+    else
+      source $FUNCTIONSDIR/dpack/update/dupdate
+      pkg_update_pkg $ARG
+      RETVAL=$?
+    fi
+  done
+fi
+
+cd $BASEDIR
+
+exit $RETVAL

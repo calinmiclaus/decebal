@@ -1,0 +1,8 @@
+md5: e6fa25f71226d090f34de3f6b122fb5a tcp_wrappers_7.6.tar.gz
+md5: ba40194d3d07e1b4be65e128196efe24 tcp-wrappers_7.6-9.diff.gz
+md5: 41f6de1afe6a488062cd2c583ebae398 tcp-wrappers-gcc-34.diff
+md5: 3d90cc3d19cb90ab3ec2424ef36465b9 tcp-wrappers-7.6-decebal.diff
+md5: 834325e9578edb373806cf43be6eae19 hosts.allow
+md5: 4d3d4682f485f32f0baeecee81a10431 hosts.deny
+md5: 85efa5f60a4681d1827e3e03e8f1dded try-from.8
+md5: 08ddf2c33043115ea9c257de8821725e safe_finger.8

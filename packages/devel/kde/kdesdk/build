@@ -1,0 +1,28 @@
+NAME=kdesdk
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="Development tools for KDE"
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="4718K"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.5.0"
+
+build() {
+    cd $NAME-$VERSION
+    ./configure --prefix=/opt/kde \
+                --localstatedir=/var/opt/kde \
+                --disable-debug \
+		--with-xinerama \
+		--enable-final
+		
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs COPYING README 
+}
+

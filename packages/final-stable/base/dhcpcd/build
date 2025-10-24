@@ -1,0 +1,28 @@
+NAME=dhcpcd
+VERSION=1.3.22_pl4
+ARCH=i686
+RELEASE=1
+URL="http://www.phystech.com/download/dhcpcd.html"
+DESC="A DHCP client daemon for Linux."
+GROUP=base
+LICENSE=GPLv2
+SIZE="144K"
+
+SOURCES="http://www.phystech.com/ftp/dhcpcd-1.3.22-pl4.tar.gz
+         dhcpcd-1.3.22-pl4.patch"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-1.3.22-pl4
+  
+  patch -p1 < ../dhcpcd-1.3.22-pl4.patch
+  
+  ./configure --prefix=/ \
+              --sysconfdir=/etc
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}
+

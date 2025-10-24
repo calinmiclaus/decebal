@@ -1,0 +1,155 @@
+#!/bin/bash
+
+pkg_convert_deb() {
+  msg_start_nnl "converting ${1}..."
+
+  pkg_create_tmp
+
+  local DEBIAN=$TMP/debian
+  local DECEBAL=$TMP/decebal
+  local RETVAL NAME VERSION ARCH RELEASE DESC URL LICENSE INDEX
+  
+  msg_verbose_nnl "creating needed directories..."
+  cp $1 $TMP/ && cd $TMP
+  mkdir -p decebal
+  mkdir -p debian
+  msg_done_verbose
+  
+  msg_verbose_nnl "getting archives from deb..."
+  ( cd $DEBIAN ; ar x $BASEDIR/$1 >/dev/null 2>&1 )
+  if [ $? -eq 0 ]
+  then
+    msg_done_verbose
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "there was an error while getting archives from deb." >&2
+    pkg_exit "pkg_convert_deb()" "get_arhive_from_deb" "$LINENO" 1
+  fi
+  
+  msg_verbose_nnl "unpacking control.tar.gz..."
+  ( cd $DEBIAN ; tar zxf control.tar.gz 2>/dev/null )
+  if [ $? -eq 0 ]
+  then
+    msg_done_verbose
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "there was an error while unpacking control.tar.gz." >&2
+    pkg_exit "pkg_convert_deb()" "unpack_control.tar.gz" "$LINENO" 1
+  fi
+
+  msg_verbose_nnl "unpacking data.tar.gz..."
+  ( mkdir -p $DEBIAN/data ; cd $DEBIAN/data ; tar zxf $DEBIAN/data.tar.gz 2>/dev/null )
+  if [ $? -eq 0 ]
+  then
+    msg_done_verbose
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "there was an error while unpacking data.tar.gz." >&2
+    pkg_exit "pkg_convert_deb()" "unpack_data.tar.gz" "$LINENO" 1
+  fi
+  
+  msg_verbose_nnl "creating package database entry..."
+  RETVAL=0
+  NAME="$(grep ^Package: $DEBIAN/control)"
+  NAME="${NAME##*:}"
+  NAME="${NAME:1}"
+  VERANDREL="$(grep ^Version: $DEBIAN/control)"
+  VERANDREL="${VERANDREL##*:}"
+  VERSION="${VERANDREL%%-*}"
+  VERSION="${VERSION:1}"
+  RELEASE="${VERANDREL##*-}"
+  RELEASE="${RELEASE:1}"
+  ARCH="$(grep ^Architecture: $DEBIAN/control)"
+  ARCH="${ARCH##*:}"
+  ARCH="${ARCH:1}"
+  DESC="$(grep ^Description: $DEBIAN/control)"
+  DESC="${DESC##*:}"
+  DESC="${DESC:1}"
+  USIZE="$(grep ^Installed-Size: $DEBIAN/control)"
+  USIZE="${USIZE##*:}"
+  USIZE="${USIZE:1}"
+  GROUP="$(grep ^Section: $DEBIAN/control)"
+  GROUP="${GROUP##*:}"
+  GROUP="${GROUP:1}"
+  
+  > $DECEBAL/.INFO
+  echo "NAME=$NAME" >> $DECEBAL/.INFO
+  echo "VERSION=$VERSION" >> $DECEBAL/.INFO
+  echo "ARCH=$ARCH" >> $DECEBAL/.INFO
+  echo "RELEASE=$RELEASE" >> $DECEBAL/.INFO
+  echo "URL=\"\"" >> $DECEBAL/.INFO
+  echo "DESC=\"$DESC\"." >> $DECEBAL/.INFO
+  echo "GROUP=$GROUP" >> $DECEBAL/.INFO
+  echo "LICENSE=\"\"" >> $DECEBAL/.INFO
+  echo "USIZE=\"${USIZE}K\"" >> $DECEBAL/.INFO
+  
+  if [ -f $DEBIAN/conffiles ]
+  then
+    INDEX=0
+    > $DECEBAL/.BACKUPS
+    for FILE in $(cat $DEBIAN/conffiles)
+    do
+      echo "BACKUPS[$INDEX]=\"${FILE:1}\"" >> $DECEBAL/.BACKUPS
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  INDEX=0
+  ( cd $DEBIAN/data
+    tar cvf /dev/null * | sort > $DECEBAL/FILES )
+  > $DECEBAL/.FILES
+  while read LINE
+  do
+    if [ ! "$LINE" = "FILES" ]
+    then
+      echo "FILES[$INDEX]=\"$LINE\"" >> $DECEBAL/.FILES
+      INDEX=$(($INDEX + 1))
+    fi
+  done < $DECEBAL/FILES
+  rm -f $DECEBAL/FILES
+  
+  msg_done_verbose
+  
+  msg_verbose_nnl "moving data files..."
+  mv $DEBIAN/data/* $DECEBAL
+  if [ $? -eq 0 ]
+  then
+    msg_done_verbose
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "could not move the deb data files."
+    pkg_exit "pkg_convert_deb()" "move_the_deb_data_files" "$LINENO" 1
+  fi
+  
+  msg_verbose_nnl "creating package $NAME-$VERSION-$ARCH-$RELEASE.tbz2..."
+    
+  HAS_INSTALL=$(ls -a $DECEBAL | grep ".INSTALL")
+  HAS_DEPENDS=$(ls -a $DECEBAL | grep ".DEPENDS")
+  HAS_CONFLICTS=$(ls -a $DECEBAL | grep ".CONFLICTS")
+  HAS_PROVIDES=$(ls -a $DECEBAL | grep ".PROVIDES")
+  HAS_REPLACES=$(ls -a $DECEBAL | grep ".REPLACES")
+  HAS_BACKUPS=$(ls -a $DECEBAL | grep ".BACKUPS")
+  HAS_DESC=$(ls -a $DECEBAL | grep ".DESCRIPTION")
+  		  
+  ( cd $DECEBAL
+    tar jcf $BASEDIR/$NAME-$VERSION-$ARCH-$RELEASE.tbz2 $HAS_INSTALL \
+      $HAS_DEPENDS $HAS_CONFLICTS $HAS_PROVIDES $HAS_REPLACES $HAS_BACKUPS \
+      $HAS_DESC .FILES .INFO * >/dev/null 2>&1 )
+  if [ $? -eq 0 ]
+  then
+    msg_done_verbose
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "there was an error while creating package $NAME-$VERSION-$ARCH-$RELEASE.tbz2 (tar failed)."
+    pkg_exit "pkg_rebuild()" "create_package" "$LINENO" 1
+  fi
+  
+  pkg_remove_tmp
+  
+  msg_ok								
+}

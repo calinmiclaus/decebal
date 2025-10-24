@@ -1,0 +1,20 @@
+diff -Naur frozen-bubble-1.0.0/Makefile frozen-bubble-1.0.0.new/Makefile
+--- frozen-bubble-1.0.0/Makefile	2003-02-03 08:36:55.000000000 -0600
++++ frozen-bubble-1.0.0.new/Makefile	2005-05-03 15:17:25.000000000 -0500
+@@ -1,6 +1,6 @@
+ DIRS = c_stuff
+ 
+-PREFIX = /usr/local
++PREFIX = /usr/games
+ DATADIR = $(PREFIX)/share
+ BINDIR = $(PREFIX)/bin
+ MANDIR = $(DATADIR)/man
+@@ -8,8 +8,6 @@
+ all: dirs
+ 
+ dirs:
+-	@if ! perl -e 'use SDL'; then echo -e "\n    *** I need perl-SDL installed"; false; fi
+-	@if ! perl -e 'use SDL; ($$mj, $$mn, $$mc) = split /\./, $$SDL::VERSION; exit 1 if $$mj<1 || $$mn<19'; then echo -e "\n    *** I need perl-SDL version 1.19.0 or upper"; false; fi
+ 	@for n in . $(DIRS); do \
+ 		[ "$$n" = "." ] || $(MAKE) -C $$n ;\
+ 	done

@@ -1,0 +1,30 @@
+NAME=ntfsprogs
+VERSION=1.9.4
+ARCH=i686
+RELEASE=1
+URL="http://linux-ntfs.sourceforge.net/"
+DESC="Userland tools for working with NTFS filesystem on Linux."
+GROUP=system
+LICENSE="GPLv2"
+SIZE="684"
+HUSE="static debug HUSE"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/linux-ntfs/ntfsprogs-1.9.4.tar.gz"
+
+use gnomevfs && RUNTIME="$RUNTIME gnome-vfs"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="--enable-debug"
+  use gnomevfs && OPTS="$OPTS --enable-gnome-vfs" || OPTS="$OPTS --disable-gnome-vfs"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING CREDITS ChangeLog INSTALL \
+    NEWS README TODO*
+}

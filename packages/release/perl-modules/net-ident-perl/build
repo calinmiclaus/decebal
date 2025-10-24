@@ -1,0 +1,23 @@
+NAME=net-ident-perl
+VERSION=1.20
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~jpc/Net-Ident-1.20/"
+DESC="Lookup the username on the remote end of a TCP/IP connection."
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SIZE="24K"
+SOURCES="http://search.cpan.org/CPAN/authors/id/J/JP/JPC/Net-Ident-1.20.tar.gz"
+
+build() {
+  cd $SRC/Net-Ident-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs INSTALL Changes README MANIFEST
+}

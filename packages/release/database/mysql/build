@@ -1,0 +1,65 @@
+NAME=mysql
+VERSION=4.1.12
+ARCH=i686
+RELEASE=1
+URL="http://www.mysql.org"
+DESC="A fast SQL database server."
+GROUP=database
+LICENSE=GPLv2
+SIZE="16669K"
+HUSE="static raid"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.mysql.com/Downloads/MySQL-4.1/mysql-4.1.12.tar.gz
+         my-large.cnf my-small.cnf my-huge.cnf my-medium.cnf
+         mysqld.init mysqld.sysconf"
+
+BACKUPS="etc/mysql/my-large.cnf
+         etc/mysql/my-small.cnf
+	 etc/mysql/my-huge.cnf
+	 etc/mysql/my-medium.cnf
+	 etc/conf.d/mysqld"
+
+RUNTIME=">=openssl-0.9.7e >=zlib-1.1.4 >=readline-5.0 >=gcc-3.3.3 bash perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use raid && OPTS="$OPTS --with-raid" || OPTS="$OPTS --without-raid"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+  	      --libexecdir=/usr/sbin \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-mysqld-user=mysql \
+	      --with-unix-socket-path=/var/run/mysql/mysql.sock \
+	      --localstatedir=/var/lib/mysql \
+	      --disable-dependency-tracking \
+	      --enable-assembler \
+	      --without-debug \
+	      --enable-thread-safe-client \
+	      --without-bench \
+	      --with-extra-charsets=complex \
+              --enable-local-infile \
+	      --with-openssl \
+	      --without-docs \
+	      --with-innodb \
+              --with-pthread \
+	      $OPTS
+  make
+  make pkglibdir=/usr/lib DESTDIR=$PKG install
+  
+  # remove mysql test dir.
+  rm -rf $PKG/usr/mysql-test
+  
+  install -D -m 0700 ../mysqld.init $PKG/etc/rc.d/mysqld
+  install -D -m 0644 ../mysqld.sysconf $PKG/etc/conf.d/mysqld
+  install -D -m 0644 ../my-huge.cnf $PKG/etc/mysql/my-huge.cnf
+  install -D -m 0644 ../my-large.cnf $PKG/etc/mysql/my-large.cnf
+  install -D -m 0644 ../my-medium.cnf $PKG/etc/mysql/my-medium.cnf
+  install -D -m 0644 ../my-small.cnf $PKG/etc/mysql/my-small.cnf
+  ln -sf mysql/my-medium.cnf $PKG/etc/my.cnf
+  
+  install_docs COPYING ChangeLog INSTALL-SOURCE README
+}

@@ -1,0 +1,18 @@
+NAME=sysconf
+VERSION=0.1
+RELEASE=1
+ARCH=noarch
+DESC="sysconf, the configuration tool for Decebal Linux"
+URL="http://www.decebal.org/sysconf"
+GROUP=system
+LICENSE=GPLv2
+
+SOURCES="http://devel.decebal.org/sysconf-0.1.tar.bz2"
+
+RUNTIME="dialog
+	 coreutils"
+
+build() {
+    cd $SRC/$NAME-$VERSION
+    cp -R * $PKG/
+}

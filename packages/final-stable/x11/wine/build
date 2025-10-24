@@ -1,0 +1,40 @@
+NAME=wine
+VERSION=20050830
+ARCH=i686
+RELEASE=1
+URL="http://www.winehq.org"
+DESC="MS Windows emulator"
+GROUP=x11
+LICENSE="LGPL"
+SIZE="12142K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wine/Wine-$VERSION.tar.gz"
+
+build() {
+    cd $SRC/$NAME-$VERSION
+
+#    include flags
+    remove_flags -fstack-protector -fstack-protector-all
+
+
+    ./configure --prefix=/usr \
+                --sysconfdir=/etc \
+		--disable-debug \
+                --mandir=/usr/share/man \
+		--infodir=/usr/share/info
+	
+    make
+
+    mkdir -p $PKG/usr/bin
+    mkdir -p $PKG/etc
+
+    make prefix=$PKG/usr \
+                sysconfdir=$PKG/etc \
+                mandir=$PKG/usr/share/man \
+                infodir=$PKG/usr/share/info install
+
+    rm -rf $PKG/usr/share/man/man3w
+
+    install_docs ANNOUNCE AUTHORS BUGS COPYING.LIB ChangeLog \
+		 DEVELOPERS-HINTS LICENSE LICENSE.OLD README VERSION
+}

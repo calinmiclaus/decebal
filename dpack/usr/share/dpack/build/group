@@ -1,0 +1,151 @@
+#!/bin/bash
+
+pkg_build_group() {
+  local STARTTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  local TOTAL=0
+  local SUCCESS=0
+  local INSTALLED=0
+  local FAILURE=0
+  local FAILEDPKGS=""
+  
+  pkg_log "building group $1 started."
+  
+  if [ -n "$PKG_DIR" ]
+  then
+    DSRC_OPTS="$DSRC_OPTS -w $PKG_DIR"
+  fi
+    
+  local PACKAGES="$(cat /usr/share/dpack/groups/$1 2>/dev/null)"
+  for PKG in $(find $PACKAGEDIR/$1/ -maxdepth 1 -mindepth 1 -type d 2>/dev/null)
+  do
+    PKG="${PKG##*/}"
+    if ! echo $PACKAGES | grep -q $PKG
+    then
+      PACKAGES="$PACKAGES $PKG"
+    fi
+  done
+
+  for PKG in $PACKAGES
+  do
+    if [ "$PKG_DOWNLOAD" = "1" ]
+    then
+      dsrc $DSRC_OPTS $PKG
+      if [ $? -eq 0 ]
+      then
+        SUCCESS=$(($SUCCESS + 1))
+      else
+        FAILURE=$(($FAILURE + 1))
+	FAILEDPKGS="$FAILEDPKGS $PKG"
+      fi
+    elif [ "$PKG_REBUILD" = "1" ]
+    then
+      if [ "$PKG_UPGRADE" = "1" ]
+      then
+        if pkg_is_installed $PKG
+        then
+          dsrc $DSRC_OPTS $PKG
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1))
+          else
+            FAILURE=$(($FAILURE + 1))
+	    FAILEDPKGS="$FAILEDPKGS $PKG"
+          fi
+	fi
+      else
+        dsrc $DSRC_OPTS $PKG
+        if [ $? -eq 0 ]
+        then
+          SUCCESS=$(($SUCCESS + 1))
+        else
+          FAILURE=$(($FAILURE + 1))
+	  FAILEDPKGS="$FAILEDPKGS $PKG"
+        fi
+      fi	  
+    else
+      if pkg_is_installed $PKG
+      then
+        local IPKG=$(get_installed_pkg $PKG)
+        local IVER=$(pkgversion $IPKG)
+        local IREL=$(pkgrelease $IPKG)
+        local BUILD=$(find $PACKAGEDIR/$1/ -maxdepth 1 -mindepth 1 -type d -name "$PKG" 2>/dev/null)
+        if [ -n "$BUILD" ]
+        then
+	  source $BUILD/build 2>/dev/null
+          if [ ! "$VERSION" = "$IVER" -o ! "$RELEASE" = "$IREL" ]
+	  then
+            dsrc $DSRC_OPTS $PKG
+            if [ $? -eq 0 ]
+            then
+              SUCCESS=$(($SUCCESS + 1))
+            else
+              FAILURE=$(($FAILURE + 1))
+	      FAILEDPKGS="$FAILEDPKGS $PKG"
+            fi
+	  else
+	    echo "package '$PKG' already installed ($PKG-$IVER-i686-$IREL)."
+	    INSTALLED=$(($INSTALLED + 1))
+	  fi      
+        else
+          FAILURE=$(($FAILURE + 1))
+	  FAILEDPKGS="$FAILEDPKGS $PKG"
+        fi
+      else
+        if [ ! "$PKG_UPGRADE" = "1" ]
+	then
+          dsrc $DSRC_OPTS $PKG
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1))
+          else
+            FAILURE=$(($FAILURE + 1))
+	    FAILEDPKGS="$FAILEDPKGS $PKG"
+          fi
+        fi
+      fi
+    fi
+    TOTAL=$(($TOTAL + 1))
+  done
+  
+  local ENDTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  
+  msg_group_or_world "building group ${GREEN}$1 ${NORMAL}finished"
+  if [ "$PKG_DOWNLOAD" = "1" ]
+  then
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages downloaded successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages download failed        : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the sources for the following packages could not be downloaded:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi		
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  else
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages built/installed successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages already installed           : ${YELLOW}$INSTALLED${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages built/installed failure     : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the following packages could not be built/installed:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi		    
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  fi
+  
+  pkg_log "building group $1 ended (upgraded $SUCCESS packages)"
+  
+  unset SUCCESS FAILURE FAILEDPKGS TOTAL STARTTIME ENDTIME INSTALLED \
+    NAME VERSION RELEASE ARCH URL DESC GROUP LICENSE SIZE HUSE RUNTIME \
+    BUILDTIME SOURCES CONFLICTS PROVIDES REPLACES BACKUPS
+  unset -f build
+}

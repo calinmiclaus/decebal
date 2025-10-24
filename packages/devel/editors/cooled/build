@@ -1,0 +1,23 @@
+NAME=cooled
+VERSION=0.5
+ARCH=i686
+RELEASE=1
+DESC="CoolEdit, a hack of the editor from Midnight Commander"
+URL="http://cooled.sourceforge.net/"
+GROUP=editors
+LICENSE="GPLv2"
+
+SOURCES="http://cooled.sourceforge.net/cooled-0.5.tar.gz"
+
+RUNTIME="gpm"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/bin
+  
+  make prefix=/usr
+  make prefix=$PKG/usr install
+
+  install_docs COPYING README TODO index.html
+}

@@ -1,0 +1,28 @@
+NAME=file
+VERSION=4.15
+ARCH=i686
+RELEASE=1
+URL="ftp://ftp.astron.com/pub/file/"
+DESC="File type identification utility."
+GROUP=base
+LICENSE="LNv1.15"
+SIZE="533K"
+
+SOURCES="ftp://ftp.astron.com/pub/file/$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=zlib-1.2.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --datadir=/usr/share/misc \
+	      --enable-fsect-man5
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ChangeLog LEGAL.NOTICE MAINT README
+}

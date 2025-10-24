@@ -1,0 +1,355 @@
+#!/bin/bash
+#
+# /sbin/pkg_rebuild - rebuild a package from installed components
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+BASEDIR=$(pwd)
+
+CONFDIR="/etc/dpack"
+FUNCTIONSDIR="/usr/share"
+
+source $CONFDIR/common
+source $FUNCTIONSDIR/dpack/exit
+source $FUNCTIONSDIR/dpack/msg.new
+source $FUNCTIONSDIR/dpack/tmp.new
+source $FUNCTIONSDIR/dpack/pkg
+source $FUNCTIONSDIR/dpack/depend
+
+usage() {
+  cat << EOF
+usage: pkg_rebuild [options] <package>
+options:
+  -f, --force       - create package even if not all files are found
+  -r, --root <dir>  - use an alternative root path <dir>
+  -v, --verbose     - be more verbose
+  -V, --version     - print name, version and license
+  -h, --help        - print this message and exit
+
+For a detalied help see pkg_rebuild (8).
+EOF
+}
+
+version() {
+  cat << EOF
+pkg_rebuild v0.0.2 (dpack v0.1.6)
+  
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+  
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+  
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+PKG_FORCE=0
+PKG_VERBOSE=0
+
+PKG_ROOT=""
+PKG_ARGS=""
+
+if [ $# -eq 0 ]
+then
+  echo "error: pkg_rebuild needs an argument." >&2
+  usage >&2
+  exit 1
+fi
+      
+while [ $# -ne 0 ]
+do
+  case "$1" in
+    --force)   PKG_FORCE=1   ;;
+    --verbose) PKG_VERBOSE=1 ;;
+    --root)
+      PKG_ROOT="$2"
+      shift 1
+      ;;
+    --version)
+      version
+      exit 0
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --*)
+      echo "error: unrecognized option." >&2
+      usage >&2
+      exit 1
+      ;;
+    -*)
+      while getopts "fvVhr:-" OPT
+      do
+        case "$OPT" in
+	  f) PKG_FORCE=1   ;;
+          v) PKG_VERBOSE=1 ;;
+          V)
+            version
+            exit 0
+            ;;
+          h)
+            usage
+	    exit 0
+	    ;;
+          r)
+	    PKG_ROOT="$OPTARG"
+            shift 1
+            ;;
+          -)
+            OPTBIND=0
+	    break
+	    ;;
+	  *)
+            usage >&2
+            exit 1
+            ;;
+        esac
+      done
+      ;;
+    *)      
+      PKG_ARGS="$1"
+      shift 1
+      for ARG in 1 2 3 4 5 6 7 8 9 10
+      do
+        PKG_ARGS="$PKG_ARGS $1"
+        shift 1
+      done
+      ;;
+  esac
+  shift 1
+done      
+
+if [ "$PKG_ARGS" = "" ]
+then
+  echo "error: pkg_rebuild needs and argument (package)." >&2
+  usage >&2
+  pkg_exi "main()" "no_arguments_suplied" "$LINENO" 1
+fi
+
+
+pkg_rebuild() {
+  local MISSINGFILES=""
+  local INDEX=0
+  
+  if ! pkg_is_installed $1
+  then
+    echo "package '$1' is not installed."
+    pkg_exit "pkg_rebuild()" "check_if_package_is_installed" "$LINENO" 1
+  fi
+  
+  msg_start_nnl "creating package ${1}..."
+  msg_verbose_nnl "getting database entry..."
+    
+  local IPKG=$(get_installed_pkg $1 2>/dev/null)
+  
+  . ${PKG_ROOT}${DATABASEDIR}/db/$IPKG 2>/dev/null
+  if [ $? -eq 0 ]
+  then
+    msg_done_verbose
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "could not get package database entry (database error)." >&2
+    pkg_exit "pkg_rebuild()" "get_package_database_entry" "$LINENO" 1
+  fi
+  
+  pkg_create_tmp
+  
+  msg_verbose_nnl "finding files..." && [ "$PKG_VERBOSE" = "1" ] && echo
+  > $TMP/.FILES
+  for FILE in ${FILES[@]}
+  do
+    if [ "$PKG_VERBOSE" = "1" ]
+    then
+      echo -e "\t -> $PKG_ROOT/$FILE"
+    fi
+    
+    if [ -d $PKG_ROOT/$FILE ]
+    then
+      mkdir -p $TMP/$FILE
+      echo "FILES[$INDEX]=\"$FILE\"" >> $TMP/.FILES
+      INDEX=$(($INDEX + 1))
+    elif [ -e $PKG_ROOT/$FILE -o -h $PKG_ROOT/$FILE ]
+    then
+      cp --no-dereference $PKG_ROOT/$FILE $TMP/$FILE
+      echo "FILES[$INDEX]=\"$FILE\"" >> $TMP/.FILES
+      INDEX=$(($INDEX + 1))
+    else
+      MISSING_FILES="$MISSING_FILES $FILE"
+    fi
+  done
+  
+  if [ -n "$MISSINGFILES" ]
+  then
+    msg_failed
+    msg_error "could not find all files from package '$1'."
+    msg_error "following files could not be found: "
+    for FILE in $MISSINGFILES
+    do
+      echo -e "\t $PKG_ROOT/$FILE"
+    done
+    pkg_exit "pkg_rebuild()" "find_files_from_package" "$LINENO" 1
+  fi
+  
+  msg_verbose_nnl "creating database entry..."
+  cat << EOF > $TMP/.INFO
+NAME=$NAME
+VERSION=$VERSION
+ARCH=$ARCH
+RELEASE=$RELEASE
+URL="$URL"
+DESC="$DESC"
+MAINTAINER="$MAINTAINER"
+USIZE="$USIZE"
+CSIZE="$CSIZE"
+BUILDDATE="$BUILDDATE"
+INSTALLDATE="$INDTALLDATE"
+USEFLAGS="$USEFLAGS"
+EOF
+  
+  if [ -n "$DEPENDS" ]
+  then
+    INDEX=0
+    > $TMP/.DEPENDS
+    for DEP in ${DEPENDS[@]}
+    do
+      echo "DEPENDS[$INDEX]=\"$DEP\"" >> $TMP/.DEPENDS
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if [ -n "$CONFLICTS" ]
+  then
+    INDEX=0
+    > $TMP/.CONFLICTS
+    for CONFLICT in ${CONFLICTS[@]}
+    do
+      echo "CONFLICTS[$INDEX]=\"$CONFLICT\"" >> $TMP/.PROVIDES
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if [ -n "$REPLACES" ]
+  then
+    INDEX=0
+    > $TMP/.REPLACES
+    for REPLACE in ${REPLACES[@]}
+    do
+      echo "REPLACES[$INDEX]=\"$REPLACE\"" >> $TMP/.REPLACES
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if [ -n "$PROVIDES" ]
+  then
+    INDEX=0
+    > $TMP/.PROVIDES
+    for PROVIDE in ${PROVIDES[@]}
+    do
+      echo "PROVIDES[$INDEX]=\"$PROVIDE\"" >> $TMP/.PROVIDES
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+
+  if [ -n "$BACKUPS" ]
+  then
+    INDEX=0
+    > $TMP/.BACKUPS
+    for BACKUP in ${BACKUPS[@]}
+    do
+      echo "BACKUPS[$INDEX]=\"$BACKUP\"" >> $TMP/.BACKUPS
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if declare -f pre_install >/dev/null 2>&1
+  then
+    declare -f pre_install >> $TMP/.INSTALL
+  fi
+
+  if declare -f post_install >/dev/null 2>&1
+  then
+    declare -f post_install >> $TMP/.INSTALL
+  fi
+  
+  if declare -f pre_upgrade >/dev/null 2>&1
+  then
+    declare -f pre_upgrade >> $TMP/.INSTALL
+  fi
+  
+  if declare -f post_upgrade >/dev/null 2>&1
+  then
+    declare -f post_upgrade >> $TMP/.INSTALL
+  fi
+  
+  if declare -f pre_remove >/dev/null 2>&1
+  then
+    declare -f pre_remove >> $TMP/.INSTALL
+  fi
+  
+  if declare -f post_remove >/dev/null 2>&1
+  then
+    declare -f post_remove >> $TMP/.INSTALL
+  fi
+
+  msg_done_verbose
+  msg_verbose_nnl "creating package $NAME-$VERSION-$ARCH-$RELEASE.tbz2..."
+  
+  HAS_INSTALL=$(ls -a $TMP | grep ".INSTALL")
+  HAS_DEPENDS=$(ls -a $TMP | grep ".DEPENDS")
+  HAS_CONFLICTS=$(ls -a $TMP | grep ".CONFLICTS")
+  HAS_PROVIDES=$(ls -a $TMP | grep ".PROVIDES")
+  HAS_REPLACES=$(ls -a $TMP | grep ".REPLACES")
+  HAS_BACKUPS=$(ls -a $TMP | grep ".BACKUPS")
+  HAS_DESC=$(ls -a $TMP | grep ".DESCRIPTION")
+		
+  ( cd $TMP
+    tar jcf $BASEDIR/$NAME-$VERSION-$ARCH-$RELEASE.tbz2 $HAS_INSTALL \
+      $HAS_DEPENDS $HAS_CONFLICTS $HAS_PROVIDES $HAS_REPLACES $HAS_BACKUPS \
+      $HAS_DESC .FILES .INFO * >/dev/null 2>&1 )
+  if [ $? -eq 0 ]
+  then
+    msg_done_verbose
+  else
+    msg_failed_verbose
+    msg_failed
+    msg_error "there was an error while creating package $NAME-$VERSION-$ARCH-$RELEASE.tbz2 (tar failed)."
+    pkg_exit "pkg_rebuild()" "create_package" "$LINENO" 1
+  fi
+    
+  msg_ok
+}
+
+for ARG in $PKG_ARGS
+do
+  pkg_rebuild $ARG
+done
+  
+cd $BASEDIR
+  
+exit 0

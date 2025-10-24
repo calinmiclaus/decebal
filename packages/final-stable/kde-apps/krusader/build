@@ -1,0 +1,34 @@
+NAME=krusader
+VERSION=1.60.0
+ARCH=i686
+RELEASE=1
+DESC="Twin panel filemanager, Midnight Commander style."
+URL="http://krusader.sourceforge.net/"
+GROUP=kde-apps
+LICENSE="GPLv2"
+SIZE="3142K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/krusader/$NAME-$VERSION.tar.gz"
+
+RUNTIME="kdebase qt"
+
+build () {
+  OPTS=""
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+
+  cd $SRC/$NAME-$VERSION;
+
+  sed -i -e 's/rcdir =/#rcdir =/' krusader/Makefile.in krusader/Makefile.am
+  sed -i -e 's/rc_DATA =/#rc_DATA =/' krusader/Makefile.in krusader/Makefile.am
+
+  ./configure --prefix=/opt/kde \
+	      --localstatedir=/var/opt/kde \
+	      $OPTS
+#              --enable-final \
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog FAQ INSTALL README TODO CVSNEWS \
+  
+}

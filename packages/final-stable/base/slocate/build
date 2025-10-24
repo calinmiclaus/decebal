@@ -1,0 +1,43 @@
+NAME=slocate
+VERSION=2.7
+ARCH=i686
+RELEASE=2
+URL="http://www.geekreview.org/slocate"
+DESC="Provides a secure way to index and quickly search for local files."
+GROUP=base
+LICENSE=GPLv2
+SIZE="85K"
+
+SOURCES="ftp://ftp.geekreview.org/slocate/src/slocate-2.7.tar.gz
+         updatedb.conf updatedb"
+
+RUNTIME=">=bash-2.05b"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/{bin,share/man/man1} $PKG/var/lib/slocate
+  
+  ./autogen.sh --prefix=/usr \
+               --sysconfdir=/etc \
+	       --localstatedir=/var/lib \
+	       --infodir=/usr/share/info \
+	       --mandir=/usr/share/man
+  make
+  
+  install -m 0750 -g 28 slocate $PKG/usr/bin/slocate
+  install -m 0644 doc/slocate.1.linux.gz $PKG/usr/share/man/man1/slocate.1.gz
+  install -m 0644 doc/updatedb.1.gz $PKG/usr/share/man/man1/updatedb.1.gz
+  
+  install -D -m 0755 ../updatedb $PKG/etc/cron.d/daily/updatedb
+  install -D -m 0644 ../updatedb.conf $PKG/etc/updatedb.conf
+  
+  ln -sf slocate $PKG/usr/bin/locate
+  ln -sf slocate $PKG/usr/bin/updatedb
+  ln -sf slocate.1.gz $PKG/usr/share/man/man1/locate.1.gz
+  
+  touch $PKG/var/lib/slocate/slocate.db
+  chown root.slocate $PKG/var/lib/slocate/slocate.db
+    
+  install_docs AUTHORS COPYING ChangeLog INSTALL LICENSE MIRRORS NEWS README 
+}  

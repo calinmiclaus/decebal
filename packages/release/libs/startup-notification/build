@@ -1,0 +1,26 @@
+NAME=startup-notification
+VERSION=0.8
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org"
+DESC="Monitor and display application startup."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="230K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/startup-notification/0.8/startup-notification-0.8.tar.bz2"
+
+RUNTIME=">=xorg-6.7"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING INSTALL ChangeLog NEWS README
+}

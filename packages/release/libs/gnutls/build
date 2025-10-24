@@ -1,0 +1,29 @@
+NAME=gnutls
+VERSION=1.0.25
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/gnutls/"
+DESC="A library which provides SSL and TLS."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="1520K"
+HUSE="static developer profile"
+
+SOURCES="ftp://ftp.gnupg.org/gcrypt/alpha/gnutls/gnutls-1.0.25.tar.gz"
+
+RUNTIME=">=libgcrypt-1.2.0 >=zlib-1.2.1 >=libtasn1-0.2.10 >=opencdk-0.5.5 lzo"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use developer && OPTS="--enable-developer-mode"
+  use profile && OPTS="$OPTS --enable-profile-mode"
+  use static || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS \
+    README THANKS
+}

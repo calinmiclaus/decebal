@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Stani's Python Editor
+Comment=Complet IDE for Python
+Exec=spe
+Icon=spe.png
+Terminal=false
+Type=Application
+Categories=Application;Development;
+Encoding=UTF-8
+StartupNotify=true
+MimeType=text/py;text/pyc

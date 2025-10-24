@@ -1,0 +1,27 @@
+NAME=spe
+VERSION=0.7.2c
+ARCH=i686
+RELEASE=1
+URL="http://spe.pycs.net/"
+DESC="Stani's Python Editor (IDE)."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="1666K"
+
+SOURCES="http://projects.blender.org/frs/download.php/260/SPE-0.7.2.c-wx2.5.2.8.-bl2.35.zip
+         spe.desktop spe.png"
+
+BUILDTIME="unzip"
+
+RUNTIME="python wxwidgets wxpython"
+
+build() {
+  cd $SRC/SPE-0.7.2.c-wx2.5.2.8.-bl2.35
+  
+  python setup.py build install --root=$PKG
+  
+  install -D -m 0644 ../spe.desktop $PKG/usr/share/applications/spe.desktop
+  install -D -m 0644 ../spe.png $PKG/usr/share/pixmaps/spe.png
+  
+  install_docs README.txt  
+}

@@ -1,0 +1,32 @@
+NAME=orbit2
+VERSION=2.12.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A simple and fast CORBA ORB."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2"
+SIZE="659K"
+HUSE="gtk-doc debug static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/ORBit2-2.12.1.tar.bz2"
+
+RUNTIME=">=glib2-2.0.0 >=libidl-0.7.4 >=popt-1.7 >=bash-2.05b >=openssl-0.9.7e gnome-common"
+
+use gtk-doc && BUILDTIME="gtk-doc"
+
+build() {
+  cd $SRC/ORBit2-$VERSION
+  
+  use gtk-doc && OPTS="--enable-gtk-doc"
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debug=yes"
+      
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog HACKING INSTALL \
+    MAINTAINERS NEWS README TODO
+}

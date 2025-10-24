@@ -1,0 +1,42 @@
+#
+# /etc/dpack/common - common variables used by pkg_add, pkg_del, pkg_info,
+#                     dsrc and dupdate.
+#
+
+# Directory where information about installed packages is saved (the
+# databased directory).
+DATABASEDIR=/var/lib/pkg
+
+# Directory where pkg_add, dsrc and dupdate will save downloaded files (if
+# you want a separate dirctory for dsrc, then add a line in /etc/dpack/build,
+# ex: CACHEDIR=/var/cache/dsrc).
+CACHEDIR=/var/cache/dpack
+
+# Directory where pkg_add, pkg_del, dsrc and dupdate will log actios.
+LOGDIR=/var/log/dpack
+
+# Log method (can be combined, all actions save in one log file, or
+# separate, actions are save in separate files).
+LOGMETHOD=combined
+
+# Donwload tool used by pkg_add, dsrc and dupate to download files (if you
+# want a separate tool for dsrc then one line in /etc/dpack/build containing
+# your download tool, ex: DOWNLOADTOOL="axel").
+DOWNLOADTOOL="wget --continue --passive-ftp --tries=3 --waitretry=3"
+
+# Do you want color messages (usefull for debugging).
+USECOLORS=yes
+
+# Do you want sounds for events (not really implmented in this version).
+USESOUNDS=no
+
+# Now lets say you remove a package with -d (--nodeps), and after a time
+# you decide to install that package again. There could be packages that
+# depend on the one you install, but they will not have a required field
+# in the package database. Why is this an option (is should be default),
+# its because this takes a lot of time (from 15to 30 seconds on a system
+# with 500 installed packages), so only enable this if you have time :/
+# NOTE: this will be changed in 0.1.6 (each package will have its own
+# directory).
+USEREQUIRED=no
+

@@ -1,0 +1,35 @@
+NAME=elicit
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="A screen zoomer / color picker written with the Enlightenment Foundation Libraries."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="218K"
+HUSE="static"
+
+SOURCES="elicit-21052005.tar.bz2"
+
+RUNTIME="=evas-21052005 >=edb-21052005 =ecore-21052005 =edje-21052005 =esmart-21052005 imlib2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  for FILE in $(find ./ -type f -name Makefile.am)
+  do
+    cp $FILE ${FILE%/*}/Makefile.in
+  done	    
+  
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING INSTALL ChangeLog \
+    NEWS README TODO
+}

@@ -1,0 +1,33 @@
+NAME=mailx
+VERSION=8.1.2
+ARCH=i686
+RELEASE=1
+URL="http://www.openbsd.org"
+DESC="A intelligent mail processing system."
+GROUP=mail
+LICENSE="BSDL"
+SIZE="91K"
+
+SOURCES="http://http.us.debian.org/debian/pool/main/m/mailx/mailx_8.1.2-0.20040524cvs.orig.tar.gz
+         http://http.us.debian.org/debian/pool/main/m/mailx/mailx_8.1.2-0.20040524cvs-4.diff.gz
+         mailx.diff"
+
+RUNTIME=">=liblockfile-1.05"
+
+build() {
+  cd $SRC/mailx-8.1.2-0.20040524cvs.orig
+  
+  patch -p1 < ../mailx_8.1.2-0.20040524cvs-4.diff
+  patch -p1 < ../mailx.diff
+  
+  # activate our cflags here
+  sed -i "s:\-g \-Wall \-IEXT:\-g \-Wall \-IEXT $CFLAGS:" Makefile
+  
+  make
+  make DESTDIR=$PKG install
+  
+  ln -sf mail $PKG/usr/bin/Mail
+  ln -sf mail $PKG/usr/bin/mailx
+  
+  install_docs debian/README.debian debian/copyright
+}  

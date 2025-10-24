@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# /etc/rc.d/racoon - Control script for the IPsec key management daemon.
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/racoon
+
+[ -f /etc/racoon/setkey.conf ] || exit 6
+[ -f /etc/racoon/racoon.conf ] || exit 6
+
+pidfile="/var/run/racoon.pid"
+
+case "$1" in
+  start)
+    msg "Setting up IPsec policies"
+    run /usr/sbin/setkey $SETKEY_OPTS -f /etc/racoon/setkey.conf
+    
+    msg "Starting IPsec IKE daemon"
+    start_service /usr/sbin/racoon $RACOON_OPTS -f /etc/racoon/racoon.conf
+    ;;
+  stop)
+    msg "Stopping IPsec IKE daemon"
+    stop_service /usr/sbin/racoon
+    
+    msg "Flushing the IPsec policies"
+    run /usr/sbin/setkey $SETKEY_FLUSH_OPTS
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  dump)
+    echo "Dumping the IPsec policies"
+    /usr/sbin/setkey -D
+    /usr/sbin/setkey -D -P	
+  status)
+    status_service /usr/sbin/racoon
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|dump|status}"
+    exit 1
+    ;;
+esac
+

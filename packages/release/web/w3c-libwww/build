@@ -1,0 +1,39 @@
+NAME=w3c-libwww
+VERSION=5.4.0
+ARCH=i686
+RELEASE=1
+URL="http://www.w3.org/Library/"
+DESC="A highly modular, general-purpose client side Web API written in C."
+GROUP=web
+LICENSE="W3C"
+SIZE="1102K"
+
+SOURCES="http://www.w3.org/Library/Distribution/w3c-libwww-5.4.0.tgz"
+
+RUNTIME="xorg zlib >=openssl-0.9.7e expat"
+
+use socks && RUNTIME="$RUNTIME socks"
+use socks5 && RUNTIME="$RUNTIME socks5"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use socks && OPTS="--with-socks" || OPTS="--without-socks"
+  use socks5 && OPTS="--with-socks5" || OPTS="--without-socks5"
+  
+  ./configure --prefix=/usr \
+              --enable-static \
+	      --with-x \
+	      --with-zlib \
+	      --with-expat \
+	      --with-dav \
+	      --with-ssl \
+	      $OPTS
+	      
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYRIGH* ChangeLog INSTALL.html LICENSE.html \
+    PATCHES.html README.html
+}

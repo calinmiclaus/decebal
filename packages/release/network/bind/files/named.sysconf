@@ -1,0 +1,9 @@
+#
+# /etc/conf.d/named - configuration file for /etc/rc.d/named
+#
+
+# Do you want to run named in a chrooted enviroment (recommended) ?
+CHROOTED=yes
+
+# Directory of the chrooted envioroment.
+CHROOTDIR=/chroot/named

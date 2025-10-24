@@ -1,0 +1,11 @@
+--- mach32.c.orig	2005-08-06 05:31:45.000000000 -0500
++++ mach32.c	2005-08-06 05:28:34.000000000 -0500
+@@ -1544,7 +1544,7 @@
+ 		goto writerr;
+ 	    printf("mach32: Notice: new EEPROM file >%s< succesful created.\n",
+ 		   eeprom_fname);
+-	  finish_w_eeprom:
++	  finish_w_eeprom:;
+ 	}
+ 	/* Change eeprom contents if requested: */
+ 	if (!(eeprom_option & EEPROM_USE_MEMCFG))

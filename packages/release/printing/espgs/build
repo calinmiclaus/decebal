@@ -1,0 +1,59 @@
+NAME=espgs
+VERSION=7.07.1
+ARCH=i686
+RELEASE=1
+URL="http://www.cups.org/"
+DESC="An interpreter for the PostScript language."
+GROUP=printing
+LICENSE=GPLv2
+SIZE="11362K"
+
+SOURCES="http://telia.dl.sourceforge.net/espgs/espgs-$VERSION-source.tar.bz2
+         http://linux.cs.lewisu.edu/gnu/ghostscript/gnu-gs-fonts-std-6.0.tar.gz
+	 http://heanet.dl.sourceforge.net/sourceforge/omniprint/Omni-0.9.1.tar.gz"
+
+RUNTIME="glib zlib cups openssl"
+
+use x && RUNTIME="$RUNTIME xorg"
+
+build() {
+  cd $SRC/espgs-$VERSION
+  
+  mv $SRC/Omni $SRC/espgs-$VERSION/
+  
+  mkdir -p $PKG/usr
+  
+  use x && OPTS="--with-x" || OPTS="--without-x"
+  
+  ./configure --prefix=/ \
+              --datadir=/usr/share \
+	      --with-drivers=ALL \
+	      --enable-cups \
+	      --with-fontpath=/usr/share/ghostscript \
+	      --with-ijs \
+	      --with-omni \
+	      $OPTS
+  make
+  make prefix=$PKG/usr datadir=$PKG/usr/share install
+  
+  mv $SRC/fonts $PKG/usr/share/ghostscript
+  
+#  cd pstoraster
+  
+#  sed -i "s:^prefix=.*$:prefix=/usr:" pstoraster pstopxl
+
+#  install -D -m 0755 pstoraster $PKG/usr/lib/cups/filter/pstoraster
+#  install -D -m 0755 pstoraster $startdir/pkg/usr/lib/cups/filter/pstoraster
+#  install -D -m 0755 pstopxl $PKG/usr/lib/cups/filter/pstopxl
+#  install -D -m 0644 pstoraster.convs $PKG/etc/cups/pstoraster.convs
+#  install -D -m 0644 pxlcolor.ppd $PKG/usr/share/cups/model/pxlcolor.ppd
+#  install -D -m 0644 pxlmono.ppd $PKG/usr/share/cups/model/pxlmono.ppd
+
+#  cd $SRC/espgs-$VERSION
+  
+  install_docs CHANGES INSTALL LICENSE README README.espgs
+  
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION/omni  
+  cd $SRC/espgs-$VERSION/Omni
+  cp -a AUTHORS COPYING $PKG/usr/share/doc/$NAME-$VERSION/omni
+}

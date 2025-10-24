@@ -1,0 +1,33 @@
+NAME=edb
+VERSION=1.0.5.004
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="The Enlightenment Core Library."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="617K"
+HUSE="static"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=edb-1.0.5.004.tar.gz
+SOURCES="$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=zlib-1.2.1 gtk ncurses"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* README
+}
+
+	       
+  

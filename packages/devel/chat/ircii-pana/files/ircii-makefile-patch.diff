@@ -1,0 +1,9 @@
+--- Makefile	2004-03-27 01:10:01.000000000 +0200
++++ Makefile.new	2004-04-15 03:49:37.000000000 +0300
+@@ -1,5 +1,5 @@
+ 
+-SHELL = /usr/local/bin/bash
++SHELL = /bin/bash
+ 
+ default:
+ 	$(SHELL) ./configure

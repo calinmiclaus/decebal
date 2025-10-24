@@ -1,0 +1,27 @@
+NAME=libungif
+VERSION=4.1.3
+ARCH=i686
+RELEASE=1
+URL="http://prtr-13.ucsc.edu/~badger/software/libungif/"
+DESC="A library for reading and writing gif images without LZW compression."
+GROUP=graphics
+LICENSE=BSDL
+SIZE="556K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libungif/libungif-4.1.3.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog INSTALL NEWS ONEWS \
+    README TODO UNCOMPRESSED_GIF
+}

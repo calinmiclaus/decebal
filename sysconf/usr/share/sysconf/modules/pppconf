@@ -1,0 +1,339 @@
+#!/bin/bash
+#
+# Script for configuring your daemons
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+# TODO rewrite it
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+ppp_path="/etc/ppp"
+
+function search_menu()
+{
+cat /dev/null >$tmp/smsel
+OPT=""
+for i in $ppp_path/peers/*;
+do
+OPT="$OPT `basename $i` account"
+done
+SMBUTTON=0
+$dialog --backtitle "$version" --title " Select Account " \
+--cancel-label "Back" \
+--default-item "$SMSEL" --menu "Select an account" 0 0 0 $OPT 2>$tmp/smsel
+SMBUTTON=$?
+SMSEL=`cat $tmp/smsel`
+test $SMBUTTON -eq 1 && cat /dev/null >$tmp/smsel
+}
+
+function show_help()
+{
+$dialog --backtitle "$version" --title " Help " \
+--msgbox "\nUse PULSE for pulse dialing and TONE for tone dialing. \
+Tone dialing means a digital line, pulse means an analog one. \
+The other options should be self-explanatory" 0 0
+}
+
+function info_menu()
+{
+search_menu
+test $SMBUTTON -eq 0 &&
+if [ 1 -eq 1 ];
+then
+account=`cat $tmp/smsel`
+phonenumber=`cat $ppp_path/chat-$account|grep "OK ATD"|cut -b 8-`
+username=`cat $ppp_path/peers/$account|grep "noauth user"|cut -f 3- -d " "`
+line=`cat $ppp_path/chat-$account|grep "OK ATD"|cut -b 7`
+password=`cat $ppp_path/pap-secrets|grep "^\"$username\""|cut -f 3 -d " "`
+password=`echo $password|tr "\"" " "`
+password=`echo $password`
+line=`upcase $line`
+case "$line" in
+"T") line="TONE";;
+"P") line="PULSE";;
+esac
+echo >$tmp/info
+echo "Account name = $account" >>$tmp/info
+echo "Line type    = $line" >>$tmp/info
+echo "Phone number = $phonenumber" >>$tmp/info
+echo "Username     = $username" >>$tmp/info
+echo "Password     = $password" >>$tmp/info
+$dialog --backtitle "$version" --title " Account Information " \
+--textbox $tmp/info 0 0
+fi
+}
+
+function delete_menu()
+{
+local RMBUTTON=0
+search_menu
+test $SMBUTTON -eq 0 &&
+if [ 1 -eq 1 ];
+then
+account=`cat $tmp/smsel`
+$dialog --backtitle "$version" --title " Delete Account " \
+--yesno "\nAre you sure you want to delete the account $account ?" 0 0
+RMBUTTON=$?
+if [ $RMBUTTON -eq 0 ];
+then
+username=`cat $ppp_path/peers/$account|grep "noauth user"|cut -f 3 -d " "`
+rm -rf $ppp_path/peers/$account
+rm -rf $ppp_path/chat-$account
+cat $ppp_path/pap-secrets|grep -v "^\"$username\"">$ppp_path/pap-secrets
+fi
+fi
+}
+
+function add_menu()
+{
+local AMBUTTON=2
+account=""
+line="TONE"
+phonenumber=""
+username=""
+password=""
+while [ $AMBUTTON -ne 0 -a $AMBUTTON -ne 1 ];
+do
+$dialog --backtitle "$version" --title " Edit Account $account" \
+--default-item "$AMSEL" --help-button --ok-label "Save" --extra-label "Edit" \
+--cancel-label "Back" \
+--inputmenu "\nEdit your settings for the new account.\n\n" 0 0 15 \
+"Account name:" "$account" \
+"Phone number:" "$phonenumber" \
+"Line type:" "$line" \
+"User name:" "$username" \
+"Password:" "$password" 2>$tmp/amsel
+AMBUTTON=$?
+AMSEL=`cat $tmp/amsel|cut -f 2- -d " "|cut -f 1 -d ":"`
+AMSEL="$AMSEL:"
+case $AMBUTTON in
+2) show_help;;
+3)
+case "$AMSEL" in
+"Account name:")account=`cat $tmp/amsel|cut -f 2- -d ":"|cut -b 2-`;;
+"Phone number:")phonenumber=`cat $tmp/amsel|cut -f 2- -d ":"|cut -b 2-`;;
+"Line type:")line=`cat $tmp/amsel|cut -f 2- -d ":"|cut -b 2-`;;
+"User name:")username=`cat $tmp/amsel|cut -f 2- -d ":"|cut -b 2-`;;
+"Password:")password=`cat $tmp/amsel|cut -f 2- -d ":"|cut -b 2-`;;
+esac;;
+0)
+echo "\"$username\" * \"$password\" *" >>$ppp_path/pap-secrets
+line_type=`echo $line|cut -b 1`
+cat <<EOF>$ppp_path/chat-$account
+TIMEOUT 60
+ABORT "NO CARRIER"
+ABORT "NO DIALTONE"
+ABORT ERROR
+ABORT "NO ANSWER"
+ABORT BUSY
+ABORT "Username/Password Incorrect"
+"" "AT&FH0"
+OK ATD$line_type$phonenumber
+CONNECT ""
+~-- ""
+EOF
+cat <<EOF>$ppp_path/peers/$account
+/dev/modem 115200 crtscts
+connect '/usr/sbin/chat -v -f /etc/ppp/chat-$account'
+noauth user $username
+EOF
+;;
+esac
+done
+}
+
+function edit_menu()
+{
+search_menu
+test $SMBUTTON -eq 0 &&
+if [ 1 -eq 1 ];
+then
+local EMBUTTON=2
+account=`cat $tmp/smsel`
+oldaccount=$account
+phonenumber=`cat $ppp_path/chat-$account|grep "OK ATD"|cut -b 8-`
+username=`cat $ppp_path/peers/$account|grep "noauth user"|cut -f 3- -d " "`
+line=`cat $ppp_path/chat-$account|grep "OK ATD"|cut -b 7`
+password=`cat $ppp_path/pap-secrets|grep "^\"$username\""|cut -f 3 -d " "`
+password=`echo $password|tr "\"" " "`
+password=`echo $password`
+line=`upcase $line`
+case "$line" in
+"T") line="TONE";;
+"P") line="PULSE";;
+esac
+
+while [ $EMBUTTON -ne 0 -a $EMBUTTON -ne 1 ];
+do
+$dialog --backtitle "$version" --title " Edit Account $oldaccount " \
+--default-item "$EMSEL" --help-button --ok-label "Save" --extra-label "Edit" \
+--cancel-label "Back" \
+--inputmenu "\nEdit the settings for account ($account).\n\n" 0 0 15 \
+"Account name:" "$account" \
+"Phone number:" "$phonenumber" \
+"Line type:" "$line" \
+"User name:" "$username" \
+"Password:" "$password" 2>$tmp/emsel
+EMBUTTON=$?
+EMSEL=`cat $tmp/emsel|cut -f 2- -d " "|cut -f 1 -d ":"`
+EMSEL="$EMSEL:"
+case $EMBUTTON in
+2) show_help;;
+3)
+case "$EMSEL" in
+"Account name:")account=`cat $tmp/emsel|cut -f 2- -d ":"|cut -b 2-`;;
+"Phone number:")phonenumber=`cat $tmp/emsel|cut -f 2- -d ":"|cut -b 2-`;;
+"Line type:")line=`cat $tmp/emsel|cut -f 2- -d ":"|cut -b 2-`;;
+"User name:")username=`cat $tmp/emsel|cut -f 2- -d ":"|cut -b 2-`;;
+"Password:")password=`cat $tmp/emsel|cut -f 2- -d ":"|cut -b 2-`;;
+esac;;
+0)
+
+username=`cat $ppp_path/peers/$oldaccount|grep "noauth user"|cut -f 3 -d " "`
+rm -rf $ppp_path/peers/$oldaccount
+rm -rf $ppp_path/chat-$oldaccount
+cat $ppp_path/pap-secrets|grep -v "^\"$username\"">$ppp_path/pap-secrets
+
+echo "\"$username\" * \"$password\" *" >>$ppp_path/pap-secrets
+line_type=`echo $line|cut -b 1`
+cat <<EOF>$ppp_path/chat-$account
+TIMEOUT 60
+ABORT "NO CARRIER"
+ABORT "NO DIALTONE"
+ABORT ERROR
+ABORT "NO ANSWER"
+ABORT BUSY
+ABORT "Username/Password Incorrect"
+"" "AT&FH0"
+OK ATD$line_type$phonenumber
+CONNECT ""
+~-- ""
+EOF
+cat <<EOF>$ppp_path/peers/$account
+/dev/modem 115200 crtscts
+connect '/usr/sbin/chat -v -f /etc/ppp/chat-$account'
+noauth user $username
+EOF
+;;
+esac
+done
+fi
+}
+
+function dial_menu()
+{
+search_menu
+if [ $SMBUTTON -eq 0 ];
+then
+pppd call `cat $tmp/smsel`
+terminate $tmp
+fi
+}
+
+function config_menu()
+{
+local CMBUTTON=0
+while [ $CMBUTTON -eq 0 ];
+do
+$dialog --backtitle "$version" --title " PPP Configuration " \
+--cancel-label "Back" --default-item "$CMSEL" --menu \
+"\nSelect one of the following options.\n\n" 0 0 0 \
+"Idle" "Set the idle timeout" \
+"Modem" "Select your modem device" \
+"Default" "Set your default account" 2>$tmp/cmsel
+CMBUTTON=$?
+local CMSEL=`cat $tmp/cmsel`
+if [ $CMBUTTON -eq 0 ];
+then
+case "$CMSEL" in
+"Idle")
+idle=`cat $ppp_path/options|grep idle|cut -f 2- -d " "`
+$dialog --backtitle "$version" --title " Idle Timeout " \
+--cancel-label "Back" \
+--inputbox "\nEnter the period of traffic inactivity after which your \
+connection will be closed. Use 0 for no timeout.\n\n" 0 0 "$idle" 2>$tmp/idle
+IDLEBUTTON=$?
+if [ $IDLEBUTTON -eq 0 ];
+then
+local idle=`cat $tmp/idle`
+cat $ppp_path/options|grep -v "idle" >$tmp/ppp.tmp
+echo "idle $idle" >>$tmp/ppp.tmp
+mv -f $tmp/ppp.tmp $ppp_path/options
+fi
+rm -rf $tmp/idle
+;;
+"Modem")
+local modem=`ls -o /dev/modem|cut -f 2- -d ">"|cut -f 2 -d " "`
+modem=`echo $modem`
+$dialog --backtitle "$version" --title " Modem Configuration " \
+--default-item "$modem" --cancel-label "Back" \
+--menu "\nSelect your modem.\n\n" 0 0 0 \
+"/dev/ttyS0" "COM1 under DOS" \
+"/dev/ttyS1" "COM2 under DOS" \
+"/dev/ttyS2" "COM3 under DOS" \
+"/dev/ttyS3" "COM4 under DOS" 2>$tmp/modem
+#read
+local MODEMBUTTON=$?
+if [ $MODEMBUTTON -eq 0 ];
+then
+rm -rf /dev/modem
+ln -s `cat $tmp/modem` /dev/modem
+fi
+rm -rf $tmp/modem
+;;
+"Default")
+search_menu
+test $SMBUTTON -eq 0 && cat $tmp/smsel >$ppp_path/default
+;;
+esac
+fi
+
+done
+
+
+}
+
+function main_menu()
+{
+local MMBUTTON=0
+local MMSEL="Dial"
+until [ $MMBUTTON -eq 1 ];
+do
+$dialog --backtitle "$version" --title " PPP Configuration " \
+--cancel-label "Back" --default-item "$MMSEL" --menu \
+"\nSelect what you want to configure\n\n" 0 0 0 \
+"Dial" "Dial account" \
+"Add" "Add account" \
+"Delete" "Delete account" \
+"Edit" "Edit account" \
+"Info" "Account information" \
+"Hangup" "Hangup connection" \
+"Config" "Modem config & preferences" \
+"Exit" "Exit PPP configuration" \
+2>$tmp/mmsel
+MMBUTTON=$?
+MMSEL=`cat $tmp/mmsel`
+if [ $MMBUTTON -eq 0 ];
+then
+case $MMSEL in
+"Hangup") ppp-off;;
+"Info") info_menu;;
+"Delete") delete_menu;;
+"Add") add_menu;;
+"Edit") edit_menu;;
+"Dial") dial_menu;;
+"Config") config_menu;;
+"Exit")
+return
+;;
+esac
+fi
+done
+}
+
+tmp=`make_tmp network`
+$1
+rm -rf $tmp

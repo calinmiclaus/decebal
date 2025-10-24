@@ -1,0 +1,35 @@
+NAME=kbd
+VERSION=1.12
+ARCH=i686
+RELEASE=2
+URL="ftp://ftp.win.tue.nl/pub/linux-local/utils/kbd/"
+DESC="Keytable files and keyboard utilities."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="864K"
+HUSE="nls"
+
+SOURCES="ftp://ftp.win.tue.nl/pub/linux-local/utils/kbd/kbd-1.12.tar.gz
+         console.init console.sysconf"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls || sed -i "s:#define ENABLE_NLS::" defines.h
+  
+  sed -i "s:CFLAGS  \= \-O2:CFLAGS  \= $CFLAGS:" src/Makefile.in
+  
+  ./configure
+  make
+  make DESTDIR=$PKG install
+  
+  ln -sf default8x16.psfu.gz $PKG/usr/share/kbd/consolefonts/default.gz
+  
+  install -D -m 0700 ../console.init $PKG/etc/rc.d/console
+  install -D -m 0644 ../console.sysconf $PKG/etc/conf.d/console
+  
+  install_docs CHANGES COPYING CREDITS README
+}
+
+  
+

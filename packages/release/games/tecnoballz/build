@@ -1,0 +1,35 @@
+NAME=tecnoballz
+VERSION=0.91
+ARCH=i686
+RELEASE=1
+URL="http://linux.tlk.fr/games/TecnoballZ/"
+DESC="A exciting Brick Breaker with 50 levels of game and 11 special levels."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="1790K"
+
+SOURCES="http://linux.tlk.fr/games/TecnoballZ/download/tecnoballz-0.91.tgz
+         tecnoballz.desktop tecnoballz.png tecnoballz-0.91-destdir-1.diff"
+
+RUNTIME="xorg libogg sdl_mixer libmikmod libvorbis"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../tecnoballz-0.91-destdir-1.diff
+    
+  ./configure --prefix=/usr/games \
+              --datadir=/usr/games/share
+  sed -i "s:CFLAGS \= \-O3:CFLAGS = $CFLAGS:" Makefile
+  sed -i "s:^#define DATADIR \"\/usr\/local\/share\/tecnoballz\":#define DATADIR \"\/usr\/games\/share\/tecnoballz\":" \
+    config.h
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../tecnoballz.desktop $PKG/usr/share/applications/tecnoballz.desktop
+  install -D -m 0644 ../tecnoballz.png $PKG/usr/share/pixmaps/tecnoballz.png
+  
+  rm -rf $PKG/var
+  
+  install_docs AUTHORS CHANGES COPYING INSTALL README
+}

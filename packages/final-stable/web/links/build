@@ -1,0 +1,39 @@
+NAME=links
+VERSION=2.1pre17
+ARCH=1
+RELEASE=1
+URL="http://atrey.karlin.mff.cuni.cz/~clock/twibright/links/"
+DESC="A text WWW browser, similar to Lynx"
+GROUP=web
+LICENSE=GPLv2
+SIZE="3700K"
+HUSE="x"
+
+SOURCES=ftp://atrey.karlin.mff.cuni.cz/pub/local/clock/links/$NAME-$VERSION.tar.bz2
+
+RUNTIME=">=openssl-0.9.7e >=libjpeg-6b >=libtiff-3.6.1 >=libpng-1.2.7 >=ncurses-5.3 >=libungif-4.1.3 svgalib directfb"
+
+use x && RUNTIME="$RUNTIME xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use x && OPTIONS="--with-x" || OPTIONS="--without-x"
+   
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --enable-javascript \
+	      --with-ssl=/usr/lib \
+              --enable-graphics \
+	      --with-fb \
+	      --with-svgalib \
+	      --with-directfb \
+	      $OPTIONS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog INSTALL NEWS README \
+    PATCH-gpm-1.20.0-smooth-cursor SITES TODO
+}

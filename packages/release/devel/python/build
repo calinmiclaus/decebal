@@ -1,0 +1,37 @@
+NAME=python
+VERSION=2.4
+ARCH=i686
+RELEASE=1
+DESC="A high-level scripting language."
+URL="http://www.python.org/"
+GROUP=devel
+LICENSE="PYTHON"
+SIZE="7656K"
+HUSE="ipv6"
+
+SOURCES="http://www.python.org/ftp/python/2.4/Python-2.4.tar.bz2"
+
+RUNTIME=">=db-4.2.52 ncurses"
+
+build() {
+  cd $SRC/Python-$VERSION
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+        
+  # set out CFLAGS here
+  export OPT="$CFLAGS"
+       
+  ./configure --prefix=/usr \
+              --with-threads \
+	      --with-ncurses \
+	      --enable-shared \
+	      $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  ln -sf python2.4 $PKG/usr/bin/python
+  ln -sf python2.4 $PKG/usr/lib/python
+  ln -sf python2.4 $PKG/usr/include/python
+  
+  install_docs LICENSE README
+}

@@ -1,0 +1,101 @@
+#!/bin/bash
+
+pkg_is_installed() {
+ if ls ${PKG_ROOT}${DATABASEDIR}/db/$1-*-*-* 2>/dev/null | grep -q "$1\-[0-9]"
+ then
+   return 0
+ elif [ -f ${PKG_ROOT}${DATABASEDIR}/virtual/$1 ]
+ then
+   return 0
+ else
+   return 1
+ fi
+}
+
+get_installed_pkg() {
+  if pkg_is_installed $1
+  then
+    local IPKG=`ls ${PKG_ROOT}${DATABASEDIR}/db/$1-*-*-* 2>/dev/null | grep "$1\-[0-9]"`
+    local IPKG=${IPKG##*/}
+    
+    if [ -n "$IPKG" ]
+    then
+      echo $IPKG
+    else
+      return 1
+    fi
+  else
+    return 1
+  fi
+}
+
+pkgname() {
+  local STRING=`basename $1 .tbz2`
+  local INDEX=1
+
+  if [ "`echo $STRING | cut -f 1 -d '-'`" = "`echo $STRING | cut -f 2 -d '-'`" ]
+  then
+    echo $STRING
+  else
+    while [ ! "`echo $STRING | cut -f $INDEX -d '-'`" = "" ]
+    do
+      INDEX=$[$INDEX+1]
+    done
+
+    INDEX=$[$INDEX-1]
+
+    if [ "$INDEX" = "2" -o "$INDEX" = "3" ]
+    then
+      echo $STRING
+    else
+      INDEX=$[$INDEX-3]
+      echo "`echo $STRING | cut -f 1-$INDEX -d '-'`"
+    fi
+  fi
+}
+
+pkgversion() {
+  local STRING=`basename $1 .tbz2`
+  local INDEX=1
+
+  while [ ! "`echo $STRING | cut -f $INDEX -d '-'`" = "" ]
+  do
+    INDEX=$[INDEX+1]
+  done
+
+  INDEX=$[$INDEX-3]
+
+  echo "`echo $STRING | cut -f $INDEX -d '-'`"
+}
+
+pkgarch() {
+  local STRING=`basename $1 .tbz2`
+  local INDEX=1
+
+  while [ ! "`echo $STRING | cut -f $INDEX -d '-'`" = "" ]
+  do
+    INDEX=$[INDEX+1]
+  done
+
+  INDEX=$[$INDEX-2]
+
+  echo "`echo $STRING | cut -f $INDEX -d '-'`"
+}
+
+pkgrelease() {
+  local STRING=`basename $1 .tbz2`
+  local INDEX=1
+
+  while [ ! "`echo $STRING | cut -f $INDEX -d '-'`" = "" ]
+  do
+    INDEX=$[INDEX+1]
+  done
+
+  INDEX=$[$INDEX-1]
+
+  echo "`echo $STRING | cut -f $INDEX -d '-'`"
+}
+
+stripurl() {
+  echo $1 | sed 's|^.*://.*/||g'
+}

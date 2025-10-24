@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/spamd
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/spamassasin
+
+pidfile="/var/run/spamd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Mail-SpamAssasin daemon"
+    start_service /usr/sbin/spamd $SPAMD_OPTS
+    ;;
+  stop)
+    msg "Stoping the Mail-SpamAssasin daemon"
+    stop_service /usr/sbin/spamd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/spamd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

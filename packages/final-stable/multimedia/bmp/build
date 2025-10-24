@@ -1,0 +1,44 @@
+NAME=bmp
+VERSION=0.9.7
+ARCH=i686
+RELEASE=1
+URL="http://www.sosdg.org/~larne/w/BMP_Homepage"
+DESC="A Cross platform Multimedia Player based on XMMS."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="1928K"
+HUSE="static gnome"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/beepmp/bmp-0.9.7.tar.gz
+         bmp.png"
+
+BUILDTIME="pkgconfig gettext"
+
+RUNTIME=">=glib2-2.4.0 >=gtk2-2.4.0 >=libglade-2.3.1 >=alsa-lib-1.0 >=esound-0.2 >=libogg-1.0
+         libvorbis libid3tag librsvg"
+
+use gnome && RUNTIME="$RUNTIME >=gconf-2.6.0 >=gnome-vfs-2.6.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gnome && OPTS="--prefix=/opt/gnome --sysconfdir=/etc/opt/gnome --mandir=/opt/gnome/share/man --enable-gconf --enable-gnome-vfs" || \
+    OPTS="--prefix=/usr --sysconfdir=/etc --mandir=/usr/share/man"
+  use static && OPTS="$OPTS --enable-static"
+	  
+  ./configure $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  use gnome && \
+    install -D -m 0644 ../bmp.png $PKG/opt/gnome/share/pixmaps/bmp.png || \
+    install -D -m 0644 ../bmp.png $PKG/usr/share/pixmaps/bmp.png
+  
+  use gnome && \
+    sed -i "s:^Icon=bmp.svg:Icon=bmp.png:" $PKG/opt/gnome/share/applications/bmp.desktop || \
+    sed -i "s:^Icon=bmp.svg:Icon=bmp.png:" $PKG/usr/share/applications/bmp.desktop
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog FAQ INSTALL \
+    NEWS README TODO
+}
+

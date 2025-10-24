@@ -1,0 +1,11 @@
+post_install() {
+  /sbin/depmod -a &>/dev/null
+}
+
+post_upgrade() {
+  /sbin/depmod -a &>/dev/null
+}
+
+post_remove() {
+  /sbin/depmod -a &>/dev/null
+}

@@ -1,0 +1,29 @@
+NAME=libxml2
+VERSION=2.6.19
+ARCH=i686
+RELEASE=1
+URL="http://xmlsoft.org/"
+DESC="XML parsing library (v2)."
+GROUP=libs
+LICENSE="BSDL"
+SIZE="3100K"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/libxml2/2.6/libxml2-2.6.19.tar.bz2"
+
+RUNTIME=">=zlib-1.1.4 bash"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+              --with-threads \
+	      --with-debug=off
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog Copyright INSTALL NEWS \
+    README TODO TODO_SCHEMAS
+}

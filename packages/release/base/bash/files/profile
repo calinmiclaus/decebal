@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+# /etc/profile - when bash is invoked as an login shell it reads and
+#                executes commands from this file
+#
+
+# Set system hostname and domainname.
+HOSTNAME=`grep ^HOSTNAME= /etc/conf.d/network 2>/dev/null | cut -f 2 -d '='`
+DOMAINNAME=`grep ^DOMAINNAME= /etc/conf.d/network | cut -f 2 -d '='`
+
+# Set PATH, MANPATH, INFOPATH and INFODIR.
+PATH=/bin:/usr/bin:/usr/local/bin
+[ -d /usr/games/bin ] && PATH=$PATH:/usr/games/bin
+[ -d /usr/local/games/bin ] && PATH=$PATH:/usr/local/games/bin
+[ -d /opt/bin ] && PATH=$PATH:/opt/bin
+
+if [ $UID -eq 0 ]
+then
+  PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin  
+  [ -d /opt/sbin ] && PATH=$PATH:/opt/sbin
+else
+  PATH=$PATH:~/bin
+fi
+
+MANPATH=/usr/share/man:/usr/local/man:/usr/local/share/man
+[ -d /usr/games/share/man ] && MANPATH="$MANPATH:/usr/games/share/man"
+
+INFODIR=/usr/share/info
+INFOPATH=/usr/share/info
+
+# Set INPUTRC (keyboard input for programs using readline).
+if [ ! -r "~/.inputrc" ]
+then
+  INPUTRC=/etc/inputrc
+fi
+
+# Configure bash history (uncomment HISTIGNORE if you wannt exit saved
+# in ~/.bash_history).
+HISTSIZE=1000
+HISTIGNORE="&:[bf]g:exit"
+
+# Set USER and MAIL.
+USER=`id -un`
+MAIL=/var/spool/mail/$USER
+
+# Set default system editor.
+# Possible values:
+# 
+# EDITOR=/bin/ed
+# EDITOR=/usr/bin/vi
+# EDITOR=/usr/bin/vim
+# EDITOR=/usr/bin/emacs
+# EDITOR=/usr/bin/nano
+# EDITOR=/usr/bin/joe
+# EDITOR=/usr/bin/jed
+EDITOR=/bin/ed
+
+# Set TERM.
+if [ "$TERM" = "" -o "$TERM" = "unknown" ]
+then
+  TERM=linux
+fi
+
+export PATH MANPATH INFOPATH INFODIR INPUTRC HISTSIZE HISTIGNORE USER \
+       MAIL EDITOR TERM
+
+# Configure ls to list files using diferent colors for specific files.
+if [ ! -r "~/.dircolors" ]
+then
+  eval `dircolors -b /etc/dircolors`
+fi
+
+# Set default system umask.
+umask 022
+
+# Configure ulimit for non-root users.
+# -n 250     - maximum number of open files.
+# -u 100     - maximum number of processes.
+# -f 1000000 - maximum file size.
+# -c 0       - no core files.
+if [ $UID -ge 100 ]
+then
+  ulimit -n 250 -u 250 -f 1000000
+  ulimit -S -c 0
+fi
+
+# Source every bash file in /etc/profile.d
+for SCRIPT in /etc/profile.d/*.sh
+do
+  if [ -r $SCRIPT ]
+  then
+    source $SCRIPT
+  fi
+done
+
+   

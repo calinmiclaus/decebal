@@ -1,0 +1,38 @@
+NAME=gzip
+VERSION=1.3.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gzip.org"
+DESC="GNU compression utility (replacement for compress)."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="323K"
+
+SOURCES="ftp://alpha.gnu.org/gnu/gzip/gzip-1.3.5.tar.gz"
+
+RUNTIME="libc bash"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i 's%"BINDIR"%"/bin%' gzexe.in
+
+  mkdir -p $PKG/{bin,usr/share/man,usr/share/info}
+
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  rm -f $PKG/usr/bin/{gunzip,zegrep,zfgrep,zdiff}
+  
+  mv $PKG/usr/bin/gzip $PKG/bin/gzip
+  
+  ln -s gzip $PKG/bin/gunzip
+  ln -s zgrep $PKG/usr/bin/zegrep
+  ln -s zgrep $PKG/usr/bin/zfgrep
+  ln -s zcmp $PKG/usr/bin/zdiff
+ 
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS THANKS TODO README*
+}

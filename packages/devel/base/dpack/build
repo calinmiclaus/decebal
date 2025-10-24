@@ -1,0 +1,29 @@
+NAME=dpack
+VERSION=0.2pre1
+ARCH=noarch
+RELEASE=1
+URL="http://www.decebal.org/~slider/code.php"
+DESC="A simple package manager."
+GROUP=base
+LICENSE=GPLv2
+SIZE="32K"
+
+SOURCES="http://people.decebal.org/~slider/code/dpack/dpack-current.tar.bz2
+	 http://people.decebal.org/~slider/code/dpack/dpack-doc-0.2.tar.bz2"
+
+RUNTIME=">=bash-3.0 grep sed coreutils mktemp"
+
+build() {
+  
+  cd $SRC/dpack-current
+    
+  for i in etc sbin usr; do cp -R $i $PKG;done
+  
+  cd $SRC/dpack-doc-0.2
+  
+#  install_docs VERSION
+
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION
+  
+  cp -R * $PKG/usr/share/doc/$NAME-$VERSION
+}

@@ -1,0 +1,28 @@
+NAME=globulation2
+VERSION=0.8.17
+ARCH=i686
+RELEASE=1
+URL="http://www.ysagoon.com/glob2"
+DESC="An innovative high quality RTS with original features."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="8754K"
+
+SOURCES="http://epfl.ysagoon.com/~glob2/data/glob2-$VERSION.tar.gz
+         globulation.desktop globulation.png"
+
+RUNTIME="speex libsdl sdl_image sdl_net xorg"
+
+build() {
+  cd $SRC/glob2-$VERSION
+  
+  ./configure --prefix=/usr/games \
+              --sysconfdir=/etc
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../globulation.desktop $PKG/usr/share/applications/globulation.desktop
+  install -D -m 0644 ../globulation.png $PKG/usr/share/pixmaps/globulation.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

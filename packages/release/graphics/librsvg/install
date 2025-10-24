@@ -1,0 +1,17 @@
+post_install() {
+  mkdir -p /etc/gtk-2.0
+  /usr/bin/gtk-query-immodules-2.0 1>/etc/gtk-2.0/gtk.immodules 2>/dev/null
+  /usr/bin/gdk-pixbuf-query-loaders 1>/etc/gtk-2.0/gdk-pixbuf.loaders 2>/dev/null
+}
+
+post_upgrade() {
+  mkdir -p /etc/gtk-2.0
+  /usr/bin/gtk-query-immodules-2.0 1>/etc/gtk-2.0/gtk.immodules 2>/dev/null
+  /usr/bin/gdk-pixbuf-query-loaders 1>/etc/gtk-2.0/gdk-pixbuf.loaders 2>/dev/null
+}
+
+post_remove() {
+  mkdir -p /etc/gtk-2.0
+  /usr/bin/gtk-query-immodules-2.0 1>/etc/gtk-2.0/gtk.immodules 2>/dev/null
+  /usr/bin/gdk-pixbuf-query-loaders 1>/etc/gtk-2.0/gdk-pixbuf.loaders 2>/dev/null
+}

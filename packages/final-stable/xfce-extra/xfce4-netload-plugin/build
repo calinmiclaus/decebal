@@ -1,0 +1,33 @@
+NAME=xfce4-netload-plugin
+VERSION=0.3.2
+ARCH=pentium3
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="XFce4 netload panel plugin."
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="235K"
+HUSE="static debug profile"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-netload-plugin-0.3.2.tar.bz2"
+
+BUILDTIME="gettext pkgconfig"
+
+RUNTIME=">=xfce4-panel-4.0.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+	
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README
+}
+

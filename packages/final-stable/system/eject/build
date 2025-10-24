@@ -1,0 +1,26 @@
+NAME=eject
+VERSION=2.0.13
+ARCH=i686
+RELEASE=1
+URL="http://www.pobox.com/~tranter/eject.html"
+DESC="Handle removable media ejecting under software control."
+GROUP=system
+LICENSE="GPLv2"
+SIZE="58K"
+
+SOURCES="http://www.ibiblio.org/pub/Linux/utils/disk-management/eject-2.0.13.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i "s:\-I/usr/src/linux \-I/usr/src/linux/include::" Makefile.in
+    
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    PORTING PROBLEMS README TODO
+}
+
+

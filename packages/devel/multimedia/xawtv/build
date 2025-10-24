@@ -1,0 +1,44 @@
+NAME=xawtv
+VERSION=3.94
+ARCH=i686
+RELEASE=1
+URL="http://bytesex.org/xawtv/"
+DESC="A TV viewing application and a few TV utilities."
+GROUP=multimedia
+LICENSE=GPLv2
+
+SOURCES="http://dl.bytesex.org/releases/xawtv/xawtv-3.94.tar.gz
+         xawtv.desktop xawtv.png"
+
+RUNTIME="xaw3d
+         xvidcore
+	 alsa-lib"
+
+use lirc && RUNTIME="$RUNTIME lirc"
+use vbi && RUNTIME="$RUNTIME libzvbi"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use lirc && OPTS="$OPTS --enable-lirc" || OPTS="$OPTS --disable-lirc"
+  use vbi && OPTS="$OPTS --enable-zvbi" || OPTS="$OPTS --disable-zvbi"
+  
+  ./configure --prefix=/usr \
+              --enable-xfree-ex \
+              --enable-motif \
+              --enable-xvideo \
+              --enable-aa \
+              --enable-alsa \
+              --enable-gl \
+              --enable-dv \
+              --enable-mmx \
+              --enable-xft \
+	      $OPTS
+  make
+  make prefix=$PKG/usr ROOT=$PKG install
+  
+  install -D -m 0644 ../xawtv.desktop $PKG/usr/share/applications/xawtv.desktop
+  install -D -m 0644 ../xawtv.png $PKG/usr/share/pixmaps/xawtv.png
+  
+  install_docs COPYING Changes README* TODO
+}

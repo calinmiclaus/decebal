@@ -1,0 +1,36 @@
+NAME=iptraf
+VERSION=2.7.0
+ARCH=i686
+RELEASE=1
+URL="http://cebu.mozcom.com/riker/iptraf/index.html"
+DESC="Monitor the traffic on your network interfaces"
+GROUP=network
+LICENSE="GPLv2"
+SIZE="354K"
+#HUSE="ipv6"
+
+SOURCES="ftp://iptraf.seul.org/pub/iptraf/iptraf-2.7.0.tar.gz
+	 iptraf-2.7.0-atheros.patch"
+#         iptraf-2.7.0.patch iptraf-2.7.0-Makefile-1.diff"
+
+RUNTIME="ncurses"
+
+build() {
+#  use ipv6 && OPTS="--enable-ipv6"
+
+  cd $SRC/$NAME-$VERSION
+  
+#  patch -p1 < ../iptraf-2.7.0-Makefile-1.diff
+  patch -p1 <../iptraf-2.7.0-atheros.patch
+  sed -i "s:\/var\/local\/iptraf:\/var\/lib\/iptraf:" src/dirs.h
+  sed -i "s:\/usr\/local\/bin:\/usr\/bin:" src/dirs.h
+  
+  cd src
+  
+  make    
+  make DESTDIR=$PKG install
+  
+  cd ..
+  
+  install_docs CHANGES FAQ INSTALL LICENSE README* RELEASE-NOTES
+}

@@ -1,0 +1,42 @@
+NAME=ffmpeg
+VERSION=0.4.9pre1
+ARCH=i686
+RELEASE=1
+URL="http://ffmpeg.sourceforge.net/"
+DESC="A very fast video and audio converter."
+GROUP=multimedia
+LICENSE="LGPLv2.1"
+SIZE="1573K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/ffmpeg/ffmpeg-0.4.9-pre1.tar.gz"
+
+RUNTIME="lame esound libogg imlib2 libsdl libvorbis liba52 faad2 faac pth"
+
+build() {
+  cd $SRC/$NAME-0.4.9-pre1
+  
+  mkdir -p $PKG/usr/bin
+  
+  ./configure --prefix=/usr \
+              --enable-gpl \
+              --enable-mp3lame \
+	      --enable-vorbis \
+	      --enable-pp \
+	      --enable-faac \
+	      --enable-faad \
+	      --enable-a52 \
+	      --enable-shared \
+	      --enable-pthreads \
+	      $OPTS										   
+  make
+  make prefix=$PKG/usr bindir=$PKG/usr/bin mandir=$PKG/usr/share/man install
+  
+  cd libavcodec/libpostproc
+  make
+  make prefix=$PKG/usr install
+  make SHARED_PP="yes"
+  make prefix=$PKG/usr SHARED_PP="yes" install 
+  
+  cd $SRC/$NAME-0.4.9-pre1
+  install_docs COPYING CREDITS Changelog INSTALL README
+}

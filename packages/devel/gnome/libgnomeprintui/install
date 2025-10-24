@@ -1,0 +1,7 @@
+post_install() {
+  /sbin/ldconfig &>/dev/bull
+}
+
+post_upgrade() {
+  /sbin/ldconfig &>/dev/null
+}

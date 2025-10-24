@@ -1,0 +1,28 @@
+NAME=gnome-python
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://www.daa.com.au/~james/software/pygtk/"
+DESC="Python bindings for GNOME."
+GROUP=gnome-extra
+LICENSE=LGPLv2.1
+SIZE="351K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/gnome-python/2.10/gnome-python-2.10.0.tar.bz2"
+
+RUNTIME=">=pygtk-2.6.0 >=pyorbit-2.0.1 libgnomeui"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL \
+    NEWS PKG-INFO README
+}
+

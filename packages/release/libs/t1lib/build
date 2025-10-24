@@ -1,0 +1,23 @@
+NAME=t1lib
+VERSION=1.3
+ARCH=i686
+RELEASE=1
+DESC="Library for generating character- and string-glyphs from Adobe Type 1."
+URL="b"
+GROUP=libs
+LICENSE="GPLv2 GLGPLv2"
+SIZE="1492K"
+
+SOURCES="ftp://sunsite.unc.edu/pub/Linux/libs/graphics/t1lib-1.3.tar.gz"
+
+build() {
+  cd $SRC/T1Lib-$VERSION
+  
+  ./configure --prefix=/usr
+  make without_doc
+  make prefix=$PKG/usr install
+  
+  chmod 755 $PKG/usr/lib/{libt1.so.1.3.0,libt1x.so.1.3.0}
+  
+  install_docs Changes LICENSE LGPL README*
+}

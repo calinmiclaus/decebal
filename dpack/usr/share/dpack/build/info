@@ -1,0 +1,56 @@
+#!/bin/bash
+
+pkg_info() {
+  local BUILD=$(find $PACKAGEDIR/ -maxdepth 3 -type d -name $1 2>/dev/null)
+  if [ -z "$BUILD" -o ! -f $BUILD/build ]
+  then
+    msg_error "Could not find package build files (use: dsrc sync)."
+    pkg_exit "pkg_info()" "check_if_we_have_a_build_file" "$LINENO" 1
+  fi
+  
+  source $BUILD/build 2>/dev/null
+  
+  local LATESTPKG="$NAME-$VERSION-$ARCH-$RELEASE"
+  if pkg_is_installed $NAME
+  then
+    INSTALLEDPKG="$(get_installed_pkg $NAME)"
+    if [ ! "$LATESTPKG" = "$INSTALLEDPKG" ]
+    then
+      echo "LATEST       : $LATESTPKG [ NEW ]"
+      echo "INSTALLED    : $INSTALLEDPKG"
+    else
+      echo "LATEST       : $LATESTPKG [ SAME ]"
+      echo "INSTALLED    : $INSTALLEDPKG"
+    fi
+  else
+    echo "LATEST       : $LATESTPKG"
+    echo "INSTALLED    : not installed"
+  fi
+  
+  echo "LICENSE      : $LICENSE"
+  echo "HOMEPAGE     : $URL"
+  echo "DESCRIPTION  : $DESC"
+  echo "GROUP        : $GROUP"
+  echo "BUILD FILE   : $BUILD/build"
+  echo -n "DOWNLOAD     : "
+  for SRC in $SOURCES
+  do
+    echo $SRC
+    break
+  done
+  echo "SIZE         : $SIZE"
+  if [ -n "$HUSE" ]
+  then
+    echo "USE FLAGS    : $HUSE"
+  else
+    echo "USE FLAGS    : none"
+  fi
+  if [ -n "$RUNTIME" ]
+  then
+    echo "DEPENDENCIES : $RUNTIME"
+  else
+    echo "DEPENDENCIES : none"
+  fi
+  
+  exit 0
+}

@@ -1,0 +1,251 @@
+diff -Naur hotplug-2004_09_23/Makefile hotplug-2004_09_23.new/Makefile
+--- hotplug-2004_09_23/Makefile	2004-09-23 12:46:57.000000000 -0500
++++ hotplug-2004_09_23.new/Makefile	2004-12-19 21:50:51.789579992 -0600
+@@ -4,6 +4,9 @@
+ 
+ REV=$(shell date "+%Y_%m_%d"| awk '{print $$1}')
+ 
++# We need this for dsrc to work...
++DESTDIR=
++
+ # System locations
+ prefix =
+ exec_prefix = ${prefix}
+@@ -83,16 +86,16 @@
+ # so is /var/log/hotplug (for ascii event logs)
+ 
+ install:
+-	${INSTALL_SCRIPT} -D sbin/hotplug $(sbindir)/hotplug
+-	$(INSTALL) -d $(etcdir)/hotplug/{usb,pci}
+-	$(INSTALL) -D etc/hotplug.d/default/default.hotplug $(etcdir)/hotplug.d/default/default.hotplug
++	${INSTALL_SCRIPT} -D sbin/hotplug $(DESTDIR)$(sbindir)/hotplug
++	$(INSTALL) -d $(DESTDIR)$(etcdir)/hotplug/{usb,pci}
++	$(INSTALL) -D etc/hotplug.d/default/default.hotplug $(DESTDIR)$(etcdir)/hotplug.d/default/default.hotplug
+ 	for F in etc/hotplug/{*.{agent,rc},hotplug.functions} ; do \
+-	    ${INSTALL_SCRIPT} $$F $(etcdir)/hotplug ; \
++	    ${INSTALL_SCRIPT} $$F $(DESTDIR)$(etcdir)/hotplug ; \
+ 	    done
+ 	for F in etc/hotplug/{blacklist,usb.{user,hand,dist}map} ; do \
+-	    ${INSTALL_DATA} $$F $(etcdir)/hotplug ; \
++	    ${INSTALL_DATA} $$F $(DESTDIR)$(etcdir)/hotplug ; \
+ 	    done
+-	${INSTALL_SCRIPT} -D etc/rc.d/init.d/hotplug $(etcdir)/init.d/hotplug
+-	$(INSTALL_DATA) -D hotplug.8  $(mandir)/man8/hotplug.8
+-	$(INSTALL) -d $(prefix)/var/log/hotplug $(prefix)/var/run
+-	$(INSTALL) -d -m 700 $(prefix)/var/run/usb
++	${INSTALL_SCRIPT} -D etc/rc.d/init.d/hotplug $(DESTDIR)$(etcdir)/init.d/hotplug
++	$(INSTALL_DATA) -D hotplug.8  $(DESTDIR)$(mandir)/share/man8/hotplug.8
++	$(INSTALL) -d $(prefix)/var/log/hotplug $(DESTDIR)$(prefix)/var/run
++	$(INSTALL) -d -m 700 $(DESTDIR)$(prefix)/var/run/usb
+diff -Naur hotplug-2004_09_23/etc/hotplug/blacklist hotplug-2004_09_23.new/etc/hotplug/blacklist
+--- hotplug-2004_09_23/etc/hotplug/blacklist	2004-03-11 17:32:59.000000000 -0600
++++ hotplug-2004_09_23.new/etc/hotplug/blacklist	2004-12-19 22:12:39.816729640 -0600
+@@ -19,5 +19,115 @@
+ # xircom_tulip_cb
+ dmfe
+ 
+-#evbug is a debug tool and should be loaded explicitly
++#evbug is a debug tool and should be loaded explicitly (the other 2 modules
++# create a lot of debugging messages in syslog...)
+ evbug
++evdev
++tsdev
++
++# Alternate Intel EtherExpress Pro/100 support driver.  List it
++# here so it won't conflict with an already-loaded eepro100 module.
++e100
++
++# Alternate 8139 driver.  Some 8139 cards need this specific driver,
++# though...
++8139cp
++
++# This module causes many Intel motherboards to crash and reboot.
++i810-tco
++
++# Since we use the new alsa sound modules...we dont need the OSS modules
++# loaded...
++ac97
++ac97_codec
++aci
++ad1816
++ad1848
++ad1889
++adlib_card
++aedsp16
++ali5455
++awe_wave
++btaudio
++cmpci
++cs4232
++cs4281
++cs46xx
++emu10k1
++es1370
++es1371
++esssolo1
++forte
++gus
++i810_audio
++kahlua
++mad16
++maestro
++maestro3
++maui
++mpu401
++msnd
++msnd_classic
++msnd_pinnacle
++nm256_audio
++opl3
++opl3sa
++opl3sa2
++pas2
++pss
++rme96xx
++sb
++sb_lib
++sgalaxy
++sonicvibes
++sound
++sscape
++trident
++trix
++uart401
++uart6850
++v_midi
++via82cxxx_audio
++wavefront
++ymfpci
++
++# Hardware specific video framebuffer modules.  If the user wants
++# these, they can load them manually or de-blacklist them.  Having
++# them load automatically may lead to funny side effects with
++# certain revisions of video hardware.
++atyfb
++sisfb
++radeonfb
++cyber2000fb
++rivafb
++tdfxfb
++vga16fb
++aty128fb
++hgafb
++clgenfb
++pm2fb
++sstfb
++fbgen
++matroxfb_DAC1064
++i2c-matroxfb
++matroxfb_accel
++matroxfb_g450
++matroxfb_Ti3026
++matroxfb_misc
++matroxfb_base
++matroxfb_crtc2
++matroxfb_maven
++fbcon-cfb2
++fbcon-cfb4
++tridentfb
++fbcon-mfb
++fbcon-hga
++pm3fb
++fbcon-vga-planes
++neofb
++
++# These modules dont work on my computer...
++hw_random
++ich2rom
++ichxrom
++shpchp
++pciehp
+diff -Naur hotplug-2004_09_23/etc/hotplug/hotplug.functions hotplug-2004_09_23.new/etc/hotplug/hotplug.functions
+--- hotplug-2004_09_23/etc/hotplug/hotplug.functions	2004-09-20 18:12:07.000000000 -0500
++++ hotplug-2004_09_23.new/etc/hotplug/hotplug.functions	2004-12-19 22:04:16.344269088 -0600
+@@ -141,7 +141,7 @@
+ 	    # it's not an error if a module doesn't exist or won't load.
+ 	    if $MODPROBE -n $MODULE >/dev/null 2>&1 &&
+ 		    ! $MODPROBE $MODULE >/dev/null 2>&1 ; then
+-		mesg "... can't load module $MODULE"
++		debug_mesg "... can't load module $MODULE"
+ 	    else
+ 		# /etc/modules.conf may have set non-default module
+ 		# parameters ... handle per-device parameters in apps
+@@ -165,7 +165,7 @@
+ 	fi
+ 
+ 	if [ "$LOADED" = "false" ]; then
+-	    mesg "missing kernel or user mode driver $MODULE "
++	    debug_mesg "missing kernel or user mode driver $MODULE "
+ 	fi
+ 	if echo "$MODULE" | grep -q "usb-storage" > /dev/null 2>&1 ; then
+ 	    [ -x /usr/sbin/updfstab ] &&  /usr/sbin/updfstab
+diff -Naur hotplug-2004_09_23/etc/hotplug/input.rc hotplug-2004_09_23.new/etc/hotplug/input.rc
+--- hotplug-2004_09_23/etc/hotplug/input.rc	2004-09-20 17:17:11.000000000 -0500
++++ hotplug-2004_09_23.new/etc/hotplug/input.rc	2004-12-19 22:01:36.105629064 -0600
+@@ -54,8 +54,13 @@
+     [ -d $PROCDIR ] || return
+ 
+     if [ ! -r $PROCDIR/devices ]; then
+-	    echo $"** can't synthesize input events - $PROCDIR/devices missing"
+-	    return
++       # we only want this message on syslog (in most cases this gets printed
++       # if we dont run a 2.6 kernel...)
++       if [ -x /usr/bin/logger ]
++       then
++         logger -r "hotplug[$$]" "** can't synthesize input events - $PROCDIR/devices missing"
++       fi
++       return
+     fi
+ 
+     ACTION=add
+diff -Naur hotplug-2004_09_23/etc/hotplug/net.agent hotplug-2004_09_23.new/etc/hotplug/net.agent
+--- hotplug-2004_09_23/etc/hotplug/net.agent	2004-09-20 18:02:34.000000000 -0500
++++ hotplug-2004_09_23.new/etc/hotplug/net.agent	2004-12-19 21:57:25.940659920 -0600
+@@ -75,6 +75,14 @@
+ 		    debug_mesg invoke \"$script\" --quiet start
+ 		    exec "$script" --quiet start
+ 		fi
++	    
++	    # Decebal	
++	    elif [ -f /etc/decebal-version ]; then
++	       if [ -x /sbin/ifaceup -a -r /etc/conf.d/network/$INTERFACE ]; then
++	         debug_mesg invoke ifaceup $INTERFACE
++		 exec /sbin/ifaceup $INTERFACE
++	       fi	 
++		
+ 	    else
+ 		mesg "how do I bring interfaces up on this distro?"
+ 	    fi
+@@ -99,6 +107,11 @@
+ 		    debug_mesg invoke "$script" --quiet stop
+ 		    exec "$script" --quiet stop
+ 		fi
++	    elif [ -f /etc/decebal-version ]; then
++	      if [ -x /sbin/ifacedown -a -r /etc/conf.d/network/$INTERFACE ]; then
++	        debug_mesg invoke ifacedown $INTERFACE
++		exec /sbin/ifacedown $INTERFACE
++	      fi
+ 	    fi
+ 	    ;;
+     esac
+diff -Naur hotplug-2004_09_23/etc/hotplug/scsi.agent hotplug-2004_09_23.new/etc/hotplug/scsi.agent
+--- hotplug-2004_09_23/etc/hotplug/scsi.agent	2004-09-20 16:29:54.000000000 -0500
++++ hotplug-2004_09_23.new/etc/hotplug/scsi.agent	2004-12-19 22:05:38.905717840 -0600
+@@ -14,7 +14,7 @@
+ add)
+     # 2.5.50 kernel bug: this happens sometimes
+     if [ ! -d /sys/$DEVPATH ]; then
+-	mesg "bogus sysfs DEVPATH=$DEVPATH"
++	debug_mesg "bogus sysfs DEVPATH=$DEVPATH"
+ 	exit 1
+     fi
+ 
+@@ -33,7 +33,7 @@
+ 
+     if [ ! -f $TYPE_ATTR ]
+     then
+-    	mesg "Attribute $TYPE_ATTR does not exist"
++    	debug_mesg "Attribute $TYPE_ATTR does not exist"
+ 	exit 1
+     fi
+ 

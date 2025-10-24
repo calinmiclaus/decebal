@@ -1,0 +1,4 @@
+DEPENDS[0]="dialog"
+DEPENDS[1]="gawk"
+DEPENDS[2]="sed"
+DEPENDS[3]="coreutils"

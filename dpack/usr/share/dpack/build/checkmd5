@@ -1,0 +1,40 @@
+#!/bin/bash
+
+pkg_check_md5sum() {
+  msg "checking source files integrity..."
+  
+  if [ ! -r $1/verify -a -n "$SOURCES" ]
+  then
+    msg_failed
+    msg_error "verify file not present."
+    pkg_exit "pkg_check_md5sum()" "check_if_package_has_a_verify_file" "$LINENO" 1
+  fi
+  
+  local CORRUPTFILES=""
+  for FILE in $SOURCES
+  do
+    local LOCALFILE=$(stripurl $FILE)
+    local MD5SUM=$(md5sum "$SRC/$LOCALFILE" | awk '{print $1}')
+    msg_child "$LOCALFILE..."
+    if ! grep -q "^md5:[[:space:]]$MD5SUM[[:space:]]$LOCALFILE" $1/verify
+    then
+      msg_corrupt_verbose
+      CORRUPTFILES="$CORRUPTFILES $LOCALFILE"
+    else
+      msg_passed_verbose
+    fi
+  done
+  
+  if [ -n "$CORRUPTFILES" ]
+  then
+    msg_failed
+    msg_error "One or more files did not pass the integrity test."
+    msg_error "Corrupt files:"
+    for FILE in $CORRUPTFILES
+    do
+      echo -e "\t $FILE"
+    done
+    pkg_exit "pkg_check_md5sum()" "print_corrupt_files" "$LINENO" 1
+  fi
+  msg_passed
+}

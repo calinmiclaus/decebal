@@ -1,0 +1,95 @@
+#!/bin/bash
+#
+# /etc/rc.d/setserial - configure serial devices
+#
+
+. /etc/rc.d/functions
+
+depends="modules"
+conflicts=""
+pidfile=""
+
+# not needed anymore...devfs is obsolete
+#if ls /dev/tts 2>/dev/null 1>&2
+#then
+#    alldevs="/dev/tts/*"
+#else
+#    alldevs="/dev/ttyS?"
+#    if ls /dev/ttyS?? 2> /dev/null 1>&2
+#    then
+#        alldevs="$alldevs /dev/ttyS??"
+#    fi
+#fi
+
+SUPPORT=`grep "ttyS$" /proc/devices 2>/dev/null`
+if [ -n "$SUPPORT" ]
+then
+    support="yes"
+else
+    support="no"
+fi
+
+release=`kernelversion`
+alldevs="/dev/ttyS??"
+
+retval=0
+
+case "$1" in
+    start)
+	msg "Configuring serial devices"
+	if [ "$support" = "no" ]
+	then
+	    if [ "$release" = "2.6" ]; then
+		modprobe -q 8250 &>/dev/null
+		[ $? -ne 0 ] || {
+	    	    failure
+	    	    exit 1
+		}
+	    else						
+		modprobe -q serial &>/dev/null
+		[ $? -ne 0 ] || {
+		    failure
+		    exit 1
+		}
+	    fi
+	fi
+	
+	if [ -r /etc/serial.conf ]
+	then
+	    grep -v ^# < /etc/serial.conf | while read device args
+	    do
+		setserial -z $device $args
+		[ $? -ne 0 ] || {
+		    failure
+		    exit 1
+		}
+	    done
+	else
+	    echo "###AUTOSAVE###" > /etc/serial.conf
+	fi
+	
+	setserial -bg ${alldevs} 2>/dev/null
+	[ $? -eq 0 ] && success || failure
+	
+	touch /var/lock/subsys/serial
+	;;
+    stop)
+	print_msg "Saving serial devices state"
+	autosave=$(head -n 1 /etc/serial.conf)
+	if [ "$autosave" = "###AUTOSAVE###X" ]
+	then
+	    grep '^#' /etc/serial.conf > /etc/serial.conf.new
+	    setserial -G -g ${alldevs} >> /etc/serial.conf.new 2>/dev/null
+	    retval=$[$retval+$?]
+	    mv /etc/serial.conf /etc/serial.conf.old
+	    mv /etc/serial.conf.new /etc/serial.conf
+	    [ $retval -eq 0 ] && success || failure 
+	fi
+	
+	rm -f /var/lock/subsys/serial
+	;;
+    *)
+	echo "usage: $0 {start|stop}"
+	exit 1
+	;;
+esac

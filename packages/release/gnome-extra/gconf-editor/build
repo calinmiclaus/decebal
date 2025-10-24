@@ -1,0 +1,33 @@
+NAME=gconf-editor
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="An editor for the GConf configuration system."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="530K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gconf-editor-2.10.0.tar.bz2"
+
+BUILDTIME="intltool gettext pkgconfig"
+
+RUNTIME=">=gconf-2.9.2 >=gtk2-2.5.5 >=libgnome-1.96.0 >=libgnomeui-2.5.4"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+	    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

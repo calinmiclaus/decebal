@@ -1,0 +1,121 @@
+diff -ru netkit-telnet-0.17/configure netkit-telnet-0.17-new/configure
+--- netkit-telnet-0.17/configure	2000-07-29 20:00:29.000000000 +0200
++++ netkit-telnet-0.17-new/configure	2003-11-08 23:43:58.000000000 +0100
+@@ -67,7 +67,7 @@
+ 
+ ##################################################
+ 
+-WARNINGS='-Wall -W -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline '
++WARNINGS='-Wall -W -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes'
+ 
+ cat << EOF > __conftest.c
+     int main() { int class=0; return class; }
+diff -ru netkit-telnet-0.17/telnet/commands.cc netkit-telnet-0.17-new/telnet/commands.cc
+--- netkit-telnet-0.17/telnet/commands.cc	2000-07-23 06:16:24.000000000 +0200
++++ netkit-telnet-0.17-new/telnet/commands.cc	2003-11-08 23:47:23.000000000 +0100
+@@ -88,7 +88,7 @@
+ 
+ #ifndef       MAXHOSTNAMELEN
+ #define       MAXHOSTNAMELEN 64
+-#endif        MAXHOSTNAMELEN
++#endif        /* MAXHOSTNAMELEN */
+ 
+ #if	defined(HAS_IPPROTO_IP) && defined(IP_TOS)
+ int tos = -1;
+diff -ru netkit-telnet-0.17/telnet/proto.h netkit-telnet-0.17-new/telnet/proto.h
+--- netkit-telnet-0.17/telnet/proto.h	1997-05-19 11:32:36.000000000 +0200
++++ netkit-telnet-0.17-new/telnet/proto.h	2003-11-08 23:48:39.000000000 +0100
+@@ -1,3 +1,6 @@
++#include <string.h>
++#include <stdlib.h>
++
+ #if 0
+ void auth_encrypt_connect(void);
+ void auth_encrypt_init(void);
+diff -ru netkit-telnet-0.17/telnet/terminal.cc netkit-telnet-0.17-new/telnet/terminal.cc
+--- netkit-telnet-0.17/telnet/terminal.cc	1999-12-12 20:48:05.000000000 +0100
++++ netkit-telnet-0.17-new/telnet/terminal.cc	2003-11-08 23:49:48.000000000 +0100
+@@ -468,7 +468,7 @@
+ 
+ #ifdef	SIGINFO
+ 	signal(SIGINFO, ayt);
+-#endif	SIGINFO
++#endif	/* SIGINFO */
+ 
+ #if defined(NOKERNINFO)
+ 	tmp_tc.c_lflag |= NOKERNINFO;
+@@ -504,7 +504,7 @@
+ 
+ #ifdef	SIGINFO
+ 	signal(SIGINFO, ayt_status);
+-#endif	SIGINFO
++#endif	/* SIGINFO */
+ 
+ #ifdef	SIGTSTP
+ 	signal(SIGTSTP, SIG_DFL);
+diff -ru netkit-telnet-0.17/telnet/utilities.cc netkit-telnet-0.17-new/telnet/utilities.cc
+--- netkit-telnet-0.17/telnet/utilities.cc	1999-12-12 16:33:40.000000000 +0100
++++ netkit-telnet-0.17-new/telnet/utilities.cc	2003-11-08 23:54:01.000000000 +0100
+@@ -285,7 +285,7 @@
+ 	    length -= 2;
+ 	}
+ 	if (length < 1) {
+-	    fprintf(NetTrace, "(Empty suboption???)");
++	    fprintf(NetTrace, "(Empty suboption?)");
+ 	    return;
+ 	}
+ 	switch ((unsigned char)(pointer[0])) {
+@@ -307,7 +307,7 @@
+ 	case TELOPT_TSPEED:
+ 	    fprintf(NetTrace, "TERMINAL-SPEED");
+ 	    if (length < 2) {
+-		fprintf(NetTrace, " (empty suboption???)");
++		fprintf(NetTrace, " (empty suboption?)");
+ 		break;
+ 	    }
+ 	    switch (pointer[1]) {
+@@ -329,7 +329,7 @@
+ 	case TELOPT_LFLOW:
+ 	    fprintf(NetTrace, "TOGGLE-FLOW-CONTROL");
+ 	    if (length < 2) {
+-		fprintf(NetTrace, " (empty suboption???)");
++		fprintf(NetTrace, " (empty suboption?)");
+ 		break;
+ 	    }
+ 	    switch (pointer[1]) {
+@@ -347,7 +347,7 @@
+ 	case TELOPT_NAWS:
+ 	    fprintf(NetTrace, "NAWS");
+ 	    if (length < 2) {
+-		fprintf(NetTrace, " (empty suboption???)");
++		fprintf(NetTrace, " (empty suboption?)");
+ 		break;
+ 	    }
+ 	    if (length == 2) {
+@@ -371,7 +371,7 @@
+ 	case TELOPT_LINEMODE:
+ 	    fprintf(NetTrace, "LINEMODE ");
+ 	    if (length < 2) {
+-		fprintf(NetTrace, " (empty suboption???)");
++		fprintf(NetTrace, " (empty suboption?)");
+ 		break;
+ 	    }
+ 	    switch ((unsigned char)(pointer[1])) {
+@@ -388,7 +388,7 @@
+ 		fprintf(NetTrace, "DONT ");
+ 	    common:
+ 		if (length < 3) {
+-		    fprintf(NetTrace, "(no option???)");
++		    fprintf(NetTrace, "(no option?)");
+ 		    break;
+ 		}
+ 		switch ((unsigned char)(pointer[2])) {
+@@ -441,7 +441,7 @@
+ 	    case LM_MODE:
+ 		fprintf(NetTrace, "MODE ");
+ 		if (length < 3) {
+-		    fprintf(NetTrace, "(no mode???)");
++		    fprintf(NetTrace, "(no mode?)");
+ 		    break;
+ 		}
+ 		{

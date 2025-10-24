@@ -1,0 +1,30 @@
+NAME=goobox
+VERSION=0.9.91
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A Compact Disk Player for the GNOME Desktop."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="541K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/goobox/0.9/goobox-0.9.91.tar.bz2"
+
+RUNTIME=">=libgnomeui-2.6.0 >=gstreamer-0.8.0 >=gnome-media-2.8.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --disable-schemas-install $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

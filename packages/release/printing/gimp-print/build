@@ -1,0 +1,35 @@
+NAME=gimp-print
+VERSION=4.2.7
+ARCH=i686
+RELEASE=1
+URL="http://gimp-print.sourceforge.net"
+DESC="High quality drivers for Canon, Epson, Lexmark and PCL printers."
+GROUP=printing
+LICENSE=GPLv2
+SIZE="5056K"
+HUSE="gimp nls static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gimp-print/gimp-print-4.2.7.tar.gz"
+
+RUNTIME="foomatic readline hpijs cups"
+
+use gimp && RUNTIME="$RUNTIME gimp"
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gimp && OPTS="--with-gimp" || OPTS="--without-gimp"
+  use static || OPTS="$OPTS --disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+    
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

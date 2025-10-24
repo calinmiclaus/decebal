@@ -1,0 +1,23 @@
+NAME=loop-aes
+VERSION=3.0c
+ARCH=i686
+RELEASE=1
+URL="http://loop-aes.sourceforge.net/"
+DESC="Loadable Linux kernel module  that has AES cipher built-in."
+LICENSE="GPLv2"
+GROUP="security"
+SIZE="160K"
+
+SOURCES="http://loop-aes.sourceforge.net/loop-AES-latest.tar.bz2"
+
+BUILDTIME="kernel-sources"
+
+build() {
+  cd $SRC/loop-AES-v$VERSION
+  
+  make
+  
+  install -D -m 0644 $PKG/lib/modules/`uname -r`/kernel/crypto/
+  
+  install_docs ChangeLog README
+}

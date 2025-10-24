@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+# /etc/rc.d/apmd - control file for the APM daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/apmd
+
+conflict acpid
+
+pidfile="/var/run/apmd.pid"
+
+case "$1" in
+    start)
+        # Load the apm module if no apm support is detected.
+	if [ ! -r /proc/apm ] 
+	then
+	  modprobe apm &>/dev/null
+	  if [ $? -ne 0 ]
+	  then
+	     echo "You don't have support for APM Bios compiled in the"
+	     echo "kernel or module. Please recompile and try again."
+	     exit 1
+	  fi
+	fi
+	
+	[ -c /dev/apm_bios ] || mknod -m 660 /dev/apm_bios c 10 134 2>/dev/null
+	
+	msg "Starting the Advanced Power Management daemon"
+	start_service /usr/sbin/apmd $APMD_OPTS
+	;;
+    stop)
+	msg "Stopping the Advanced Power Management daemon"
+	stop_service /usr/sbin/apmd
+	;;
+    restart|force-reload)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+    status)
+	status_service /usr/sbin/apmd
+	;;
+    *)
+	echo "usage: $0 {start|stop|force-reload|restart|status}"
+	exit 1
+	;;
+esac

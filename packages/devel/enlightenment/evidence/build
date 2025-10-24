@@ -1,0 +1,47 @@
+NAME=evidence
+VERSION=0.9.8
+ARCH=i686
+RELEASE=1
+URL="http://evidence.sourceforge.net/"
+DESC="The Enlightenment File Manager."
+GROUP=enlightenment
+LICENSE="GPLv2"
+SIZE="5757K"
+HUSE="debug dcop gnomevfs kio static debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/evidence/evidence-0.9.8.tar.gz"
+
+RUNTIME="evas ecore gtk2 xorg libvorbis libid3tag xine-lib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use dbus && OPTS="$OPTS --enable-dbus" || OPTS="$OPTS --disable-dbus"
+  use dcop && OPTS="$OPTS --enable-dcop" || OPTS="$OPTS --disable-dcop"
+  use gnomevfs && OPTS="$OPTS --enable-backend-gnomevfs" || OPTS="$OPTS --disable-backend-gnomevfs2"
+  use kio && OPTS="$OPTS --enable-backend-kio" || OPTS="$OPTS --disable-backend-kio"
+  use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+  
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment \
+	      --enable-glib \
+	      --enable-ecore-ipc \
+	      --enable-ecore \
+	      --enable-canvas-evas2 \
+	      --enable-extra-themes \
+	      --enable-extra-iconsets \
+	      --enable-tree-view \
+	      --enable-icon-view \
+	      --enable-browser-view \
+	      --enable-xds \
+	      --enable-plugin-vorbis \
+	      --enable-plugin-id3 \
+	      --enable-thumbnailer-xine \
+	      --enable-plugin-ttf \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+	      
+  install_docs AUTHORS COPYING ChangeLog INSTALL README
+}

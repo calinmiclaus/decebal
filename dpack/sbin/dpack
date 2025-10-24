@@ -1,0 +1,97 @@
+#!/bin/bash
+#
+# /sbin/dpack - a wrapper for pkg_install, pkg_upgrade, pkg_remove and pkg_query
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+usage() {
+  cat << EOF
+usage: dpack <action> [options] <argument>
+actions:
+  dpack {-B, --build}   [options] <package>  - build/install packages
+  dpack {-I, --install} [options] <package>  - install a package
+  dpack {-R, --remove}  [options] <package>  - remove a package
+  dpack {-U, --ugrade}  [options] <package>  - upgrade a package
+  dpack {-Q, --query}   [options] <package>  - query the package database
+  dpack {-S, --sync}    [options] <package>  - update a package
+  dpack {-V, --version}                      - print name and version
+  dpack {-h, --help}                         - print this message
+
+NOTE: only one <action> at a time.
+	  
+For a detailed help see dpack (8) or dpack <action> -h.
+EOF
+}
+
+version() {
+  cat << EOF
+dpack v0.1.6 (dpack v0.1.6)
+  
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+  
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+  
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+if [ "$PRINT_DPACK_VERSION" = "1" ]
+then
+  echo "Decebal Package Manager v0.1.6 (dpack)"
+  exit 0
+fi
+
+if [ $# -eq 0 ]
+then
+  echo "error: dpack needs an action and one argument." >&2
+  usage >&2
+  exit 1
+fi
+      
+case "$1" in
+  -B|--build)   dsrc ${@:2} ;;
+  -I|--install) pkg_install ${@:2}    ;;
+  -U|--upgrade) pkg_upgrade ${@:2} ;;
+  -R|--remove)  pkg_remove ${@:2}    ;;
+  -Q|--query)   pkg_query ${@:2}   ;;
+  -S|--sync)    dupdate ${@:2} ;;
+  -V|--version)
+    version
+    exit 0
+    ;;
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "error: unrecognized action." >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+							      			  

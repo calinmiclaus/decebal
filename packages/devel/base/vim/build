@@ -1,0 +1,60 @@
+NAME=vim
+VERSION=6.3
+ARCH=i686
+RELEASE=2
+URL="http://www.vim.org/"
+DESC="A popular vi clone that features syntax highlighting and much more."
+GROUP=base
+LICENSE="GPL compatible"
+SIZE="3612K"
+HUSE="gtk"
+SIZE="3612K"
+
+SOURCES="ftp://ftp.vim.org/pub/vim/unix/vim-6.3.tar.bz2
+         vimrc .vimrc gvim.desktop gvim.png"
+
+BACKUPS="etc/vimrc"
+
+RUNTIME=">=ncurses-5.3"
+
+use gtk && RUNTIME="$RUNTIME gtk2"
+
+build() {
+  cd $SRC/vim63/src
+  
+  use gtk || OPTS="--without-x --disable-gui"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --with-vim-NAME=vim \
+	      --with-features=big \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --localstatedir=/var/lib/vim \
+	      --enable-multibyte \
+	      --enable-cscope $OPTS
+  make VIMRTDIR=
+  make DESTDIR=$PKG VIMRTDIR= installvimbin installruntime installlinks
+  
+  ln -sf vim $PKG/usr/bin/vi
+  ln -sf vim.1.gz $PKG/usr/share/man/man1/vi.1.gz
+  ln -sf vim $PKG/usr/bin/evim
+  ln -sf vim.1.gz $PKG/usr/share/man/man1/evim.1.gz
+  ln -sf vim.1.gz $PKG/usr/share/man/man1/ex.1.gz
+  ln -sf vim.1.gz $PKG/usr/share/man/man1/rvim.1.gz
+  ln -sf vim.1.gz $PKG/usr/share/man/man1/view.1.gz
+  ln -sf vim.1.gz $PKG/usr/share/man/man1/rview.1.gz
+  ln -sf vim.1.gz $PKG/usr/share/man/man1/gvim.1.gz
+  
+  cd $SRC/vim63
+  
+  install -D -m 0644 ../vimrc $PKG/etc/vimrc
+  install -D -m 0644 ../.vimrc $PKG/etc/skel/.vimrc
+  
+  use gtk && {
+    install -D -m 0644 ../gvim.desktop $PKG/usr/share/applications/gvim.desktop
+    install -D -m 0644 ../gvim.png $PKG/usr/share/pixmaps/gvim.png
+  }
+  
+  install_docs README.txt README_src.txt README_unix.txt
+}

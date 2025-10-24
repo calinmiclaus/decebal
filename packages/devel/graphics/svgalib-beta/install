@@ -1,0 +1,7 @@
+post_install() {
+  /sbin/ldconfig /usr/lib 2>/dev/null
+}
+
+post_remove() {
+  /sbin/ldconfig /usr/lib 2>/dev/null
+}

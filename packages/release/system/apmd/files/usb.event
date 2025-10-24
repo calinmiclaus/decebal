@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# /etc/apm/event.d/usb
+#
+
+case "$1" in
+  suspend) /etc/rc.d/hotplug stop usb ;;
+  resume) /etc/rc.d/hotplug start usb ;;
+esac
+
+

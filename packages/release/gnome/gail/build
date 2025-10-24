@@ -1,0 +1,39 @@
+NAME=gail
+VERSION=1.8.2
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="The GNOME Accessibility Project."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="539K"
+HUSE="gtkdoc static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/gail-1.8.2.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="libgnomecanvas"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/lib/gtk-2.0/modules
+  for i in `ls $PKG/opt/gnome/lib/gtk-2.0/modules`
+  do
+    ln -sf /opt/gnome/lib/gtk-2.0/modules/$i $PKG/usr/lib/gtk-2.0/modules/$i
+  done
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS README
+}

@@ -1,0 +1,29 @@
+NAME=freetype2
+VERSION=2.1.9
+ARCH=i686
+RELEASE=1
+URL="http://www.freetype.org"
+DESC="TrueType font rendering library."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="969K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/freetype/freetype-2.1.9.tar.bz2"
+
+RUNTIME=">=zlib-1.1.4"
+
+build() {
+  cd $SRC/freetype-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ChangeLog README
+}

@@ -1,0 +1,40 @@
+NAME=librsvg
+VERSION=2.9.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="SAX-based renderer for SVG files into a GdkPixbuf."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="383K"
+HUSE="gnomevfs gtkdoc static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/librsvg-2.9.5.tar.bz2"
+
+BUILDTIME=">=pkgconfig-0.15.0"
+
+RUNTIME=">=gtk2-2.4.7 >=libcroco-0.6.0 >=libart_lgpl-2.3.16"
+
+use gnomevfs && RUNTIME="$RUNTIME gnome-vfs"
+has mozilla && RUNTIME="$RUNTIME mozilla"
+has libgnomeprint && RUNTIME="$RUNTIME libgnomeprint"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtkdoc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gnomevfs && OPTS="--enable-gnome-vfs" || OPTS="--disable-gnome-vfs"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc" || OPTS="$OPTS --disable-gtk-doc"
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+              --disable-gtk-doc \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS \
+    README TODO
+}

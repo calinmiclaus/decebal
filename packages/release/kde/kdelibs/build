@@ -1,0 +1,42 @@
+NAME=kdelibs
+VERSION=3.4.2
+ARCH=i686
+RELEASE=1
+DESC="KDE Core Libraries."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="16482K"
+HUSE="debug"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2
+        kde.sh"
+
+RUNTIME="arts libxslt libxml2 pcre lesstif libart_lgpl fam openldap cups bzip2 openssl qt"
+
+function build() {
+  OPTS=""
+  use debug && OPTS="--enable-debug" || OPTS="--disable-debug"
+  cd $SRC/$NAME-$VERSION
+
+  export PATH=$PATH:/opt/kde/bin    
+
+  ./configure --prefix=/opt/kde \
+	      --sysconfdir=/etc/opt/kde \
+	      --with-distribution="Decebal Linux" \
+              --disable-debug \
+	      --with-alsa \
+	      --with-ssl-dir=/usr \
+	      --with-xinerama \
+              --enable-fast-malloc=full \
+	      --disable-dependency-tracking \
+	      $OPTS
+    
+  make
+  make DESTDIR=$PKG install    
+    
+  install -D -m 0644 ../kde.sh $PKG/etc/profile.d/kde.sh
+    
+  install_docs AUTHORS COMPILING* COPYING* DEBUG INSTALL KDE2PORTING.html \
+    KDE3PORTING.html NAMING README
+}

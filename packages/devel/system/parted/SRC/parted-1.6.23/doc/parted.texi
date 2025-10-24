@@ -1,0 +1,2939 @@
+\input texinfo    @c -*-texinfo-*-
+@c %**start of header
+@setfilename parted.info
+@settitle Parted User's Manual
+@c %**end of header
+
+@include version.texi
+
+@paragraphindent 4
+
+@direntry
+* parted: (parted).                         GNU partitioning software
+@end direntry
+
+@ifinfo
+This file documents the use of GNU Parted, a program for creating,
+resising, checking and copy partitions, and file systems on them.
+
+Copyright 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+no Invariant Sections, with the no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the section
+entitled ``GNU Free Documentation License''.
+@end ifinfo
+
+@titlepage
+@title GNU Parted User Manual
+@subtitle GNU Parted, version @value{VERSION}, @value{UPDATED}
+@author Andrew Clausen @email{clausen@@gnu.org}
+@author Richard M. Kreuter @email{kreuter@@anduril.rutgers.edu}
+
+@c @page
+@c @vskip 0pt plus 1filll
+
+Copyright @copyright{} 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end titlepage
+
+@ifnottex
+@node Top
+@top TITLE
+
+@c WTF doesn't texi2html include the titlepage?
+@ifhtml
+Copyright @copyright{} 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end ifhtml
+
+This document describes the use of GNU Parted, a program for creating,
+destroying, resizing, checking and copying hard drive partitions, and
+the file systems on them.
+
+This document applies to @value{VERSION} of GNU Parted.  The original
+version was by Andrew Clausen, and was translated into this format
+by Richard M. Kreuter.  It is currently maintained by Andrew Clausen.
+@end ifnottex
+
+@shortcontents
+
+@menu
+* Introduction::                Overview
+* Using Parted::                Partitioning a Hard Drive
+* Firmware::                    Between powering on and loading
+* Boot Loaders::                How the operating system gets its start
+* Operating Systems::           Operating systems and file systems
+* File Systems::                Supported file systems, and their quirks
+* LVM and RAID::                Virtual disk volumes
+* Disk Imaging::                Cloning installations
+* Related Software and Info::   Further reading on related topics
+* Copying This Manual::         How to make copies of this manual
+* History::                     This manual's history
+@ifnotplaintext
+* Index::                       Index of referenced concepts
+@end ifnotplaintext
+@end menu
+
+@node    Introduction
+@chapter Introduction
+
+@menu
+* Overview::                    GNU Parted and prerequisite knowledge
+* Software Required::           GNU Parted's software dependencies
+* Supported Platforms::         Where you can use GNU Parted
+* License::                     What you may and may not do with GNU Parted
+* Compiling::                   How to build GNU Parted
+* Parted boot disks::           How to use Parted on an unsupported platform
+@end menu
+
+@node Overview
+@section Overview of GNU Parted
+@cindex description of parted
+@cindex overview
+@cindex parted description
+@cindex bugs, reporting
+@cindex reporting bugs
+@cindex contacting developers
+
+GNU Parted is a program for creating, destroying, resizing, checking
+and copying partitions, and the file systems on them.
+
+This is useful for creating space for new operating systems, for
+reorganizing disk usage, for copying data between hard disks and for
+``disk imaging'' --- replicating an installation on another computer.
+
+This documentation is written with the assumption that the reader
+has some understanding of partitions and file systems.  If you want to
+learn more about these, the Partition mini-HOWTO is recommended reading.
+It is probably included with your distribution, or it is available at
+
+@c FIXME: standards: howto labelled non-free by LDP
+@uref{http://www.linuxdoc.org/HOWTO/mini/Partition/index.html}
+
+GNU Parted was designed to minimize the chance of data loss.  For
+example, it was designed to avoid data loss during interruptions (like
+power failure) and performs many safety checks.  However there could
+be bugs in Parted, so you should back up your important files before
+running Parted.
+
+The GNU Parted homepage is @uref{http://www.gnu.org/software/parted}.  It can
+be downloaded from @uref{ftp://ftp.gnu.org/gnu/parted}.
+
+The Parted mailing list is @email{parted@@gnu.org}.  To subscribe, write
+to @email{bug-parted-request@@gnu.org} with @samp{subscribe} as the
+Subject of the message.  Subscription information and archives are
+available at:
+
+@uref{http://mail.gnu.org/mailman/listinfo/bug-parted}
+
+Please send bug reports to @email{bug-parted@@gnu.org}.  When sending bug
+reports, please include the version of GNU Parted.  If the bug is
+related to partition tables, then please include the output from these
+commands:
+
+@example
+@group
+# @kbd{fdisk /dev/hda -l}
+# @kbd{fdisk /dev/hda}
+Command (m for help): @kbd{p}
+Command (m for help): @kbd{x}
+Extended command (m for help): @kbd{p}
+@end group
+@end example
+
+Feel free to ask for help on this list --- just check that your question
+isn't answered here first.  If you don't understand the documentation,
+please tell us, so we can explain it better.  General philosophy is:
+if you need to ask for help, then something needs to be fixed so you
+(and others) don't need to ask for help.
+
+Also, we'd love to hear your ideas :-)
+
+@node Software Required
+@section Software Required for the use of Parted
+@cindex software dependencies
+@cindex required software
+@cindex libuuid
+@cindex e2fsprogs
+@cindex readline
+@cindex gettext
+
+If you're installing or compiling Parted yourself, you'll need to
+have some other programs installed.  If you are compiling Parted,
+you will need both the normal and devel packages of these programs
+installed:
+
+@itemize @bullet
+
+@item libuuid, part of the e2fsprogs package.  If you don't have this,
+you can get it from:
+
+	@uref{http://web.mit.edu/tytso/www/linux/e2fsprogs.html}
+
+If you want to compile Parted and e2fsprogs, note that you will need to
+@kbd{make install} and @kbd{make install-libs} e2fsprogs.
+
+@item GNU Readline (optional), available from
+
+	@uref{ftp://ftp.gnu.org/gnu/readline}
+
+If you are compiling Parted, and you don't have readline, you can
+disable Parted's readline support with the @kbd{--disable-readline}
+option for @command{configure}.
+
+@item GNU gettext (or compatible software) for compilation, if
+internationalisation support is desired.
+
+	@uref{ftp://ftp.gnu.org/gnu/gettext}
+
+@item libreiserfs, if you want reiserfs support:
+
+	@uref{http://reiserfs.osdn.org.ua}
+
+Note that parted will automatically detect libreiserfs at runtime, and enable
+reiserfs support.  libreiserfs is new, and hasn't been widely tested yet.
+
+@end itemize
+
+@node Supported Platforms
+@section Platforms on which GNU Parted runs
+@cindex supported platforms
+@cindex platforms, supported
+
+Hopefully, this list will grow a lot.  If you do not have one of these
+platforms, then you can use a boot disk.
+@xref{Parted boot disks, Using Parted Boot Disks}.
+
+@table @asis
+@item GNU/Linux
+Linux versions 2.0 and up, on Alpha, x86 PCs, PC98, Macintosh PowerPC, Sun hardware.
+
+@item GNU/Hurd
+@end table
+
+GNU libc 2.1 or higher is required.  You can probably use older versions
+by using the @samp{--disable-nls} option. @xref{Compiling, Building GNU
+Parted}. (Note: I think we have now dropped this requirement.  TODO:
+check if libc 2.0 works!)
+
+@node License
+@section Terms of distribution for GNU Parted
+@cindex license terms
+@cindex terms of distribution
+@cindex gnu gpl
+@cindex gpl
+
+GNU Parted is free software, covered by the GNU General Public License
+Version 2.  This should have been included with the Parted distribution,
+in the COPYING file.  If not, write to the Free Software Foundation,
+Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+Libparted is considered part of GNU Parted.  It is covered by the GNU
+General Public License.  It is NOT released under the GNU Lesser General
+Public License (LGPL).
+
+@node Compiling
+@section Building GNU Parted
+@cindex compiling parted
+@cindex building parted
+
+If you want to compile GNU Parted, this is generally done with:
+
+@example
+@group
+$ @kbd{./configure}
+$ @kbd{make}
+@end group
+@end example
+
+However, there are a few options for @command{configure}:
+
+@table @code
+@item --without-readline		
+turns off use of readline.  This is useful for making rescue disks,
+etc., where few libraries are available.
+
+@item --disable-debug
+don't include assertions
+
+@item --disable-dynamic-loading
+disables dynamic loading of some libraries (only libreiserfs for now,
+although we hope to expand this).  Dynamic loading is useful because it
+allows you to reuse libparted shared libraries even when you don't know
+when if some libraries will be available.  It has a small overhead (mainly
+linking with libdl), so it may be useful to disable it on bootdisks if
+you don't need the flexibility.
+
+@item --disable-fs
+disable all file system support
+
+@item --disable-nls			
+turns off native language support.  This is useful for use with old
+versions of glibc, or a trimmed down version of glibc suitable for
+rescue disks.
+
+@item --disable-shared		
+turns off shared libraries.  This may be necessary for use with old
+versions of GNU libc, if you get a compile error about a ``spilled
+register''.  Also useful for boot/rescue disks.
+
+@item --disable-Werror
+ignore warning messages in compilation
+
+@item --enable-all-static		
+builds the Parted binary as a fully static binary.  This is convienient
+for boot disks, because you don't need to install any libraries on the
+boot disk (although, other programs may require them@dots{})  Note: you will
+also want to run strip(1).
+
+@item --enable-discover-only
+support only reading/probing
+
+@item --enable-mtrace
+enable malloc() debugging
+
+@item --enable-read-only
+disable writing (for debugging)
+
+@end table
+
+@node Parted boot disks
+@section Using a Parted Boot Disk
+@cindex boot disk
+@cindex boot floppy
+@cindex unsupported platforms
+@cindex resizing root device
+
+If you want run Parted on a machine without GNU/Linux installed, or you
+want to resize a root or boot partition, you will need to use a boot disk.
+
+
+Boot disk images (x86-only) are available from:
+
+@uref{ftp://ftp.gnu.org/gnu/parted/bootdisk}
+
+You need two disks.  The boot disk contains Linux... it doesn't
+vary between Parted versions.  The root disk contains Parted (and
+other stuff), and varies between Parted releases.
+
+So, here are the steps:
+
+@itemize
+@item Download the boot disk (i.e. @kbd{partboot.img}) and a root disk
+(eg: @kbd{partroot-@value{VERSION}.img}).
+
+@item Create the boot disk, by copying the image to a floppy.  In GNU/Linux,
+you can type:
+
+	@example
+	# @kbd{dd if=partboot.img of=/dev/fd0 bs=1440k}
+	@end example
+
+In Windows, you can use @kbd{rawrite.exe}.  It is available in many
+places, including @uref{ftp://ftp.tux.org/pub/dos/rawrite/rawrite.exe}.
+
+@item Create the root disk, using a similar procedure.  e.g.:
+
+	@example
+	# @kbd{dd if=partroot-@value{VERSION}.img of=/dev/fd0 bs=1440k}
+	@end example
+
+@item Boot off the boot disk.  Do this by inserting the boot disk, and
+rebooting your computer.  You might need to tell your BIOS (the startup
+program when your computer turns on) to allow booting off a floppy disk.
+
+@item When asked, insert the root floppy disk.
+@end itemize
+
+The boot disk contains many drivers for different hard disk controllers,
+but yours might not be supported.  So, if you're unlucky, you will need
+to make your own boot disk.  You can copy the parted binary from the parted
+bootdisk onto another disk, or try other boot disks, or make your own.
+You may find Mkpart useful (not to be confused with Parted's mkpart command),
+which is a shell script to make custom parted boot disks.  It is available at:
+
+@uref{ftp://ftp.tux.org/pub/people/kent-robotti/mkpart}
+
+To copy parted from the boot disk onto another disk:
+
+@enumerate
+@item Boot from the Parted boot disk.
+
+@item Insert another ext2-formatted floppy disk.  If it isn't formated,
+you can create a file system with, for example:
+
+@example
+$ @kbd{parted /dev/fd0 mklabel loop mkpartfs primary ext2 0 1.4}
+@end example
+
+@item Mount the floppy disk, e.g.,
+
+@example
+$ @kbd{mount -t ext2 /dev/fd0 /mnt/floppy}
+@end example
+
+@item Copy @file{/usr/bin/parted} to the floppy, e.g.,
+
+@example
+$ @kbd{cp /usr/bin/parted /mnt/floppy}
+@end example
+
+@item Unmount the floppy, e.g.,
+
+@example
+$ @kbd{umount /mnt/floppy}
+@end example
+
+@item Find a boot disk that @emph{does} support your hard disk.
+(Hint: try looking for rescue disks from various distributions on big
+mirror sites)
+
+@item Boot off your rescue disk.  Mount the disk you copied Parted onto.
+
+@item Run Parted.  For example,
+
+@example
+# @kbd{cd /mnt/floppy}
+# @kbd{./parted}
+@end example
+@end enumerate
+
+@node    Using Parted
+@chapter Using Parted
+@cindex commands
+
+@menu
+* Partitioning::                    Disk partitioning in context
+* Running Parted::                  Partitioning with Parted
+* Invoking Parted::                 Parted's invocation options and commands
+* Command explanations::            Full explanation of parted's commands
+* Examples::                        Example Parted sessions
+@end menu
+
+@node Partitioning
+@section Partitioning Concepts
+@cindex partitioning overview
+
+Unfortunately, partitioning your disk is rather complicated.  This is
+because there are interactions between many different systems that need
+to be taken into consideration:
+
+@itemize @bullet
+@item
+The firmware - the program that is programmed into a ROM chip inside
+your computer, that does memory checks, etc.  You cannot (easily)
+change programs in this system.  Examples of firmware programs: AmiBIOS,
+Award, Phoenix, OpenFirmware.  You will only have one of these programs.
+
+@item
+The boot loader - the program that allows you to select which operating
+system you want to use, and loads that operating system.  Examples:
+LILO, GRUB, Yaboot, Quik.  You may have more than one boot loader
+installed, especially if you have more than one type of operating system
+installed.
+
+@item
+The operating system (at the moment, this must be GNU/Linux or GNU/Hurd)
+that runs Parted, and the other operating systems that you use.
+
+@item
+The file system types - the way the data stored on partitions.  Examples
+of these are: ext2, fat32, hfs, reiserfs.  You will often have
+partitions of different file system types.
+@end itemize
+
+Parted supports many combinations of firmware, boot loader, operating
+system, and file systems, and will support more in the future.  To
+further understand the roles of each, please see @ref{Firmware},
+@ref{Boot Loaders}, @ref{Operating Systems}, and @ref{File Systems}.
+
+This chapter describes how to use Parted, which is mostly independent
+of system details.  You should read this chapter and then the chapters
+on firmware, boot loaders, operating systems, and file systems that
+are relevant to your installation.  For example, if you are only using
+LILO as your boot loader, then you should read the introduction and
+@ref{LILO, the section on LILO}.
+
+@node Running Parted
+@section Using GNU Parted
+@cindex modes of use
+
+Parted has two modes: command line and interactive.  Parted should
+always be started with:
+
+@example
+# @kbd{parted @var{device}}
+@end example
+
+@noindent where @var{device} is the hard disk device to edit.  (If you're
+lazy and omit the DEVICE argument, Parted will attempt to guess which
+device you want.)
+
+In command line mode, this is followed by one or more commands.  For
+example:
+
+@example
+# @kbd{parted /dev/sda resize 1 52Mb 104Mb mkfs 2 fat16}
+@end example
+
+@noindent Options (like @kbd{--help}) can only be specified on the
+command line.
+
+In interactive mode, commands are entered one at a time at a prompt, and
+modify the disk immediately.  For example:
+
+@example
+(parted) @kbd{resize 1 52.0005Mb 104.5Mb}
+(parted) @kbd{mkfs 2 fat16}
+@end example
+
+@noindent Unambiguous abbreviations are allowed.  For example, you can
+type ``p'' instead of ``print'', and ``re'' instead of ``resize''.
+Commands can be typed either in English, or your native language (if
+your language has been translated).  This may create ambiguities.
+
+Numbers indicating partition locations can be whole numbers or decimals.
+The suffix selects the unit, which may be one of
+
+@table @code
+@item s
+sector (512 bytes)
+
+@item B
+byte
+
+@item kB
+kilobyte (1000 bytes)
+
+@item MB
+megabyte (1000000 bytes)
+
+@item GB
+gigabyte (1000000000 bytes)
+
+@item TB
+terabyte (1000000000000 bytes)
+
+@item %
+percentage of the device (between 0 and 100)
+
+@item cyl
+cylinders (related to the BIOS CHS geometry)
+
+@item chs
+cylinders, heads, sectors addressing (related to the BIOS CHS geometry)
+
+@item compact
+This is a special unit that defaults to megabytes for input, and picks a
+unit that gives a compact representation for output.
+@end table
+
+If no suffix is given, then the default unit is assumed.  Negative numbers
+count back from the end of the disk, with ``-1s'' indicating the end of the
+disk.  Parted will compute sensible ranges for the locations you specify
+(e.g. a range of +/- 500 MB when you specify the location in ``G'').
+Use the sector unit ``s'' to specify exact locations.
+
+If you don't give a parameter to a command, Parted will prompt you for it.
+For example:
+
+@example
+(parted) @kbd{resize 1}
+Start? @kbd{0Gb}
+End? @kbd{40Gb}
+@end example
+
+Parted will always warn you before doing something that is potentially
+dangerous, unless the command is one of those that is inherently
+dangerous (viz., rm, mklabel and mkfs).  For example, if you attempt to
+shrink a partition ``too much'' (i.e., by more than the free space
+available), Parted will automatically reduce the shrinkage so that the
+partition is the smallest it can be without losing data.  If this size is
+significantly different from the size requested, Parted will warn you.
+Since many partitioning systems have complicated constraints, Parted will
+usually do something slightly different to what you asked.  (For example,
+create a partitiong starting at 10.352Mb, not 10.4Mb)
+
+@node Invoking Parted
+@section Command Line Options
+@cindex options at invocation
+@cindex commands, overview
+@cindex invocation options
+
+When invoked from the command line, parted supports the following syntax:
+
+@example
+# @kbd{parted [@var{option}] @var{device} [@var{command} [@var{argument}]]}
+@end example
+
+Available options and commands follow.  For detailed explanations of the
+use of parted commands, see @ref{Command explanations}. Options begin
+with a hyphen, commands do not:
+
+Options:
+
+@table @samp
+@item -h
+@itemx --help
+display a help message
+
+@item -i
+@itemx --interactive
+where necessary, prompt for user intervention
+
+@item -s
+@itemx --script
+never prompt for user intervention
+
+@item -v
+@itemx --version
+display the version
+@end table
+
+@node Command explanations
+@section Parted Session Commands
+@cindex command syntax
+@cindex detailed command listing
+@cindex commands, detailed listing
+
+GNU Parted provides the following commands:
+
+@menu
+* check::
+* cp::
+* help::
+* mklabel::
+* mkfs::
+* mkpart::
+* mkpartfs::
+* move::
+* name::
+* print::
+* quit::
+* rescue::
+* resize::
+* rm::
+* select::
+* set::
+@end menu
+
+@node check
+@subsection check
+@cindex check, command description
+@cindex command description, check
+
+@deffn Command check @var{number}
+
+Checks if the file system on partition @var{number} has
+any errors.
+
+Example:
+
+@example
+(parted) @kbd{check 1}
+@end example
+
+Check the file system on partition 1.
+@end deffn
+
+@node cp
+@subsection cp
+@cindex cp, command description
+@cindex command description, cp
+
+@deffn Command cp [@var{from-device}] @var{from-number} @var{to-number}
+
+Copies the file system on the partition @var{from-number} to partition
+@var{to-number}, deleting the original contents of the destination
+partition.
+
+An optional device parameter, @var{from-device} can be given, which
+specifies which device the source partition is on.
+
+Supported file systems:
+@itemize
+@item ext2, ext3
+(provided the destination partition is larger than the source partition)
+
+@item fat16, fat32
+@item linux-swap	
+(equivalent to mkswap on destination partition)
+@item reiserfs (if libreiserfs is installed)
+
+@end itemize
+
+Example:
+
+@example
+(parted) @kbd{cp /dev/hdb 2 3}
+@end example
+
+@c FIXME: this doesn't format right.
+Copy partition 2 of @file{/dev/hdb} (i.e., @file{/dev/hdb2}) to partition
+on 3, on the device Parted was loaded with, destroying the original
+contents of partition 3.
+@end deffn
+
+@node help
+@subsection help
+@cindex help, command description
+@cindex command description, help
+
+@deffn Command help [@var{command}]
+
+Prints general help, or help on @var{command}.
+
+Example:
+
+@example
+(parted) @kbd{help resize}
+@end example
+
+Print help for the resize command.
+@end deffn
+
+@node mklabel
+@subsection mklabel
+@cindex mklabel, command description
+@cindex command description, mkindex
+
+@deffn Command mklabel @var{label-type}
+
+Creates a new disk label, of type @var{label-type}.  The new disk label
+will have no partitions.  This command (normally) won't technically
+destroy your data, but it will make it basically unusable,
+and you will need to use the rescue command (@pxref{Related Software and
+Info}) to recover any partitions.  Gpart only works for msdos disk
+labels (AFAIK), but is much better than parted at recovering partitions.
+Parted works on all partition tables.  @footnote{Everyone seems to
+have a different word for ``disk label'' --- these are all the same
+thing: partition table, partition map.  Also, the Master Boot Record on
+x86 machines is stored in the same sector as Partition Tables (you don't
+need to know this to use Parted).}
+
+@var{label-type} must be one of these supported disk labels:
+@itemize
+@item bsd
+@item loop (raw disk access)
+@item gpt
+@item mac
+@item msdos
+@item pc98
+@item sun
+@end itemize
+
+Example:
+
+@example
+(parted) @kbd{mklabel msdos}
+@end example
+
+Create an msdos style disklabel.
+@end deffn
+
+@node mkfs
+@subsection mkfs
+@cindex mkfs, command description
+@cindex command description, mkfs
+
+@deffn Command mkfs @var{number} @var{fs-type}
+
+Makes a file system @var{fs-type} on partition @var{number}, destroying
+all data that resides on that partition.
+
+Supported file systems:
+@itemize
+@item ext2
+@item fat16
+@item fat32
+@item linux-swap
+@item reiserfs (if libreiserfs is installed)
+@end itemize
+
+Example:
+
+@example
+(parted) @kbd{mkfs 2 fat32}
+@end example
+
+Make a @var{fat32} file system on partition 2.
+@end deffn
+
+@node mkpart
+@subsection mkpart
+@cindex mkpart, command description
+@cindex command description, mkpart
+
+@deffn Command mkpart @var{part-type} [@var{fs-type}] @var{start} @var{end}
+
+Creates a new partition, @emph{without} creating a new file system on
+that partition.  This is useful for creating partitions for file systems
+(or LVM, etc.) that Parted doesn't support.  You may specify a file
+system type, to set the appropriate partition code in the partition
+table for the new partition.  @var{fs-type} is required for data
+partitions (i.e., non-extended partitions).  @var{start} and @var{end}
+are the offset from the beginning of the disk, that is, the ``distance''
+from the start of the disk.
+
+@var{part-type} is one of: primary, extended, logical.  Extended and
+logical are only used for msdos and dvh disk labels.
+
+@var{fs-type} must be on of these supported file systems:
+@itemize
+@item ext2
+@item fat32
+@item fat16
+@item HFS
+@item linux-swap
+@item NTFS
+@item reiserfs
+@item ufs
+@end itemize
+
+Example:
+
+@example
+(parted) @kbd{mkpart logical 0.0 692.1}
+@end example
+
+Create a logical partition that will contain an ext2 file system.  The
+partition will start at the beginning of the disk, and end 692.1
+megabytes into the disk.
+
+@end deffn
+
+@node mkpartfs
+@subsection mkpartfs
+@cindex mkpartfs, command description
+@cindex command description, mkpartfs
+
+@deffn Command mkpartfs @var{part-type} @var{fs-type} @var{start} @var{end}
+
+Creates a new partition of type @var{part-type} with a new file system
+of type @var{fs-type} on it.  The new partition will start @var{start}
+megabytes, and end @var{end} megabytes from the beginning of the disk.
+Do not use this command to recover a deleted partition (use mkpart
+instead).
+
+@var{part-type} is one of: primary, extended, logical.  Extended and logical
+are only used for msdos and dvh disk labels.
+
+@var{fs-type} must be one of these supported file systems:
+@itemize
+@item ext2
+@item fat32
+@item fat16
+@item linux-swap
+@item reiserfs (if libreiserfs is installed)
+@end itemize
+
+Example:
+
+@example
+(parted) @kbd{mkpartfs logical ext2 440 670}
+@end example
+
+Make a logical partition and write an ext2 file system, starting 440
+megabytes and ending 670 megabytes from the beginning of the disk.
+@end deffn
+
+@node move
+@subsection move
+@cindex move, command description
+@cindex command description, move
+
+@deffn Command move @var{number} @var{start} @var{end}
+
+Moves partition on the disk, by moving its beginning to @var{start}.
+You can't move a partition so that the old and new positions overlap.
+That is, you can only move partitions into free space.  If you want
+to resize a partition in-place, use @command{resize}.
+
+Move never changes the partition number.
+
+Supported file systems:
+@itemize
+@item ext2, ext3
+(provided the destination partition is larger than the source partition)
+@item fat32
+@item fat16
+@item linux-swap
+@item reiserfs (if libreiserfs is installed)
+@end itemize
+
+Example:
+
+@example
+(parted) move 2 150 500
+@end example
+
+Move the partition numbered 2 so that it begins 150 megabytes from the start of
+the disk, and ends 500 megabytes from the start.
+
+@end deffn
+
+@node name
+@subsection name
+@cindex name, command description
+@cindex command description, name
+
+@deffn Command name @var{number} @var{name}
+
+Sets the name for the partition @var{number} (GPT, Mac, MIPS and PC98 only).
+The name can be placed in quotes.
+
+Example:
+
+@example
+(parted) @kbd{name 2 'Secret Documents'}
+@end example
+
+Set the name of partition 2 to `Secret Documents'.
+@end deffn
+
+@node print
+@subsection print
+@cindex print, command description
+@cindex command description, print
+
+@deffn Command print [@var{number}]
+
+Displays the partition table on the device parted is editing, or
+detailed information about a particular partition.
+
+Example:
+
+@example
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/hda: 0.000-2445.679 megabytes
+Disk label type: msdos
+Minor    Start       End     Type      Filesystem  Flags
+1          0.031    945.000  primary   fat32       boot, lba
+2        945.000   2358.562  primary   ext2
+3       2358.562   2445.187  primary   linux-swap
+(parted) @kbd{print 1}
+Minor: 1
+Flags: boot, lba
+File System: fat32
+Size:            945.000Mb (0%)
+Minimum size:     84.361Mb (0%)
+Maximum size:   2445.679Mb (100%)
+@end group
+@end example
+@end deffn
+
+@node quit
+@subsection quit
+@cindex quit, command description
+@cindex command description, quit
+
+@deffn Command quit
+
+Quits Parted.
+
+@c RMK: generality: the following will apply to any operating system on
+@c which parted will run, not only Linux-based ones.
+@c clausen: yeah... just that the way hurd and linux work are totally
+@c different, and it's actually very hard to speak in general.  Need to
+@c discuss this more
+It is only after Parted exits that the Linux kernel knows about the changes
+Parted has made to the disks.  However, the changes caused by typing your
+commands will @emph{probably} be made to the disk immediately after typing a
+command.  However, Linux's cache, and the disk's hardware cache may delay this.
+@end deffn
+
+@node rescue
+@subsection rescue
+@cindex rescue, command description
+@cindex command description, rescu
+
+@deffn Command rescue @var{start} @var{end}
+rescue a lost partition that used to be located approximately between
+@var{start} and @var{end}.  If such a partition is found, Parted will
+ask you if you want to create a partition for it.  This is useful if you
+accidently deleted a partition with parted's rm command, for example.
+
+Example:
+
+@example
+(parted) @kbd{print}
+@group
+Disk geometry for /dev/hdc: 0.000-8063.507 megabytes
+Disk label type: msdos
+Minor    Start       End     Type      Filesystem  Flags
+1          0.031   8056.032  primary   ext3
+@end group
+(parted) @kbd{rm}
+Partition number? 1
+(parted) @kbd{print}
+@group
+Disk geometry for /dev/hdc: 0.000-8063.507 megabytes
+Disk label type: msdos
+Minor    Start       End     Type      Filesystem  Flags
+@end group
+@end example
+
+OUCH!  We deleted our ext3 partition!!!  Parted comes to the rescue...
+
+@example
+(parted) @kbd{rescue}
+Start? 0
+End? 8056
+Information: A ext3 primary partition was found at 0.031MB ->
+8056.030MB.  Do you want to add it to the partition table?
+Yes/No/Cancel? @kbd{y}
+(parted) @kbd{print}
+@group
+Disk geometry for /dev/hdc: 0.000-8063.507 megabytes
+Disk label type: msdos
+Minor    Start       End     Type      Filesystem  Flags
+1          0.031   8056.032  primary   ext3
+@end group
+@end example
+
+It's back!  :)
+
+@end deffn
+
+@node resize
+@subsection resize
+@cindex resize, command description
+@cindex command description, resize
+
+@deffn Command resize @var{number} @var{start} @var{end}
+
+Resizes the partition with number @var{number}.  The partition will start
+@var{start} from the beginning of the disk, and end @var{end} from the
+beginning of the disk.  resize never changes the partition number.  Extended
+partitions can be resized only so long as the new extended partition
+completely contains all logical partitions.
+
+Note that Parted can manipulate partitions whether or not they have been
+defragmented, so you do not need to both defragmenting the disk before
+using Parted.
+
+Supported file systems:
+@itemize
+@item ext2, ext3 - restriction: the new @var{start} must be the same as
+the old @var{start}.
+
+@item fat16, fat32
+@item hfs, hfs+ - restriction: the new @var{start} must be the same as
+the old @var{start} and the new @var{end} must be smaller than the old
+@var{end}. Journaled hfs+ and hfsx is not yet supported.
+@item linux-swap
+@item reiserfs (if libreiserfs is installed)
+@end itemize
+
+Example:
+
+@example
+(parted) @kbd{resize 3 200 850}
+@end example
+
+Resize partition 3, so that it begins 200 megabytes and ends 850
+megabytes from the beginning of the disk.
+@end deffn
+
+@node rm
+@subsection rm
+@cindex rm, command description
+@cindex command description, rm
+
+
+@deffn Command rm @var{number}
+
+Removes the partition with number @var{number}.  If you accidently delete
+a partition with this command, use mkpart (@emph{not} mkpartfs) to
+recover it.  Also, you can use the gpart program (@pxref{Related Software
+and Info}) to recover damaged disk labels.
+
+Note for msdos disk labels: if you delete a logical partition, all
+logical partitions with a larger partition number will be renumbered.  For
+example, if you delete a logical partition with a partition number of 6,
+then logical partitions that were number 7, 8 and 9 would be renumbered
+to 6, 7 and 8 respectively.  This means, for example, that you have to
+update @file{/etc/fstab} on GNU/Linux systems.
+
+Example:
+
+@example
+(parted) @kbd{rm 3}
+@end example
+
+Remove partition 3.
+@end deffn
+
+@node select
+@subsection select
+@cindex select, command description
+@cindex command description, select
+
+@deffn Command select @var{device}
+
+Selects the device, @var{device}, for Parted to edit.  The device can
+be a Linux hard disk device, a partition, a software RAID device or
+LVM logical volume.
+
+Example:
+
+@example
+(parted) @kbd{select /dev/hdb}
+@end example
+
+Select @file{/dev/hdb} (the slave device on the first ide controller on
+Linux) as the device to edit.
+@end deffn
+
+@node set
+@subsection set
+@cindex set, command description
+@cindex command description, set
+
+@deffn Command set @var{number} @var{flag} @var{state}
+
+Changes a flag on the partition with number @var{number}.  A flag can be
+either ``on'' or ``off''.  Some or all of these flags will be available,
+depending on what disk label you are using:
+
+@table @samp
+@item boot
+(Mac, MS-DOS, PC98) - should be enabled if you want to boot off the
+partition.  The semantics vary between disk labels.  For MS-DOS disk
+labels, only one partition can be bootable.  If you are installing LILO
+on a partition (@pxref{LILO}), then that partition must be bootable.
+For PC98 disk labels, all ext2 partitions must be bootable (this is
+enforced by Parted).
+
+@item lba
+(MS-DOS) - this flag can be enabled, to tell MS DOS, MS Windows 9x and
+MS Windows ME based operating systems to use Linear (LBA) mode.
+
+@item root
+(Mac) - this flag should be enabled if the partition is the root device
+to be used by Linux.
+
+@item swap
+(Mac) - this flag should be enabled if the partition is the swap
+device to be used by Linux.
+
+@item hidden
+(MS-DOS, PC98) - this flag can be enabled to hide partitions from
+Microsoft operating systems.
+
+@item raid
+(MS-DOS) - this flag can be enabled to tell linux the partition is a
+software RAID partition @xref{LVM and RAID}.
+
+@item LVM
+(MS-DOS) - this flag can be enabled to tell linux the partition is a
+physical volume.
+
+@item PALO
+(MS-DOS) - this flag can be enabled so that the partition can be used
+by the Linux/PA-RISC boot loader, palo.
+
+@item PREP
+(MS-DOS) - this flag can be enabled so that the partition can be used
+as a PReP boot partition on PowerPC PReP or IBM RS6K/CHRP hardware.
+
+@end table
+
+The print command displays all enabled flags for each partition.
+
+Example:
+
+@example
+(parted) @kbd{set 1 boot on}
+@end example
+
+Set the @samp{boot} flag on partition 1.
+@end deffn
+
+@node Examples
+@section Example Parted Sessions
+@cindex example parted sessions
+@cindex parted session examples
+
+These examples attempt to cover the most common circumstances, with the
+exception of disk imaging, which is covered in @ref{Disk Imaging}.
+
+@menu
+* Growing a partition into unused space::
+* Resizing an ext2 partition on a crowded disk::
+@end menu
+
+@node Growing a partition into unused space
+@subsection Example: Growing a partition into unused space
+@cindex growing a partition, example
+@cindex example, growing a partition
+
+Suppose your disk layout looks like this:
+
+@example
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/hda: 0.000-1000.000 megabytes
+Disk label type: msdos
+Minor    Start       End     Type      Filesystem  Flags
+1          0.063    500.000  primary   ext2
+2        500.000    625.000  primary   linux-swap
+@end group
+@end example
+
+@noindent There is 375 MB of free space at the end of the disk (after
+partition 2).  Partition 1 has an ext2 file system, which is the root
+device.  Partition 2 is a swap device.
+
+Suppose you wanted to use the free space at the end of the disk for the
+file system on partition 1.  You could do the following:
+
+@enumerate
+@item These steps will modify both the root file system on
+partition 1, and the swap device on partition 2.  Therefore, you
+shouldn't be using either partitions.  You should probably use a Parted
+boot disk.  @xref{Parted boot disks}.  From the boot disk, run Parted:
+
+@example
+# @kbd{parted /dev/hda}
+@end example
+
+@item Remove partition 2 (the swap partition).  Normally, you wouldn't want to
+delete a partition with data on it.  However, a swap partition doesn't
+contain data when it isn't ``swapped on'' (mounted), so you can remove it,
+and create a replacement swap partition later.
+
+@example
+(parted) @kbd{rm 2}
+@end example
+
+@item Create the new swap partition at the end of the disk:
+
+@example
+@group
+(parted) @kbd{mkpartfs primary linux-swap 875 999.9}
+(parted) @kbd{print}
+Disk geometry for /dev/hda: 0.000-1000.000 megabytes
+Disk label type: msdos
+Minor    Start       End     Type      Filesystem  Flags
+1          0.063    500.000  primary   ext2
+2        875.000   1000.000  primary   linux-swap
+@end group
+@end example
+
+@item Grow partition 1, into the adjacent free space:
+
+@example
+(parted) @kbd{resize 1 0.063 874.9}
+@end example
+
+All done!
+
+@example
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/hda: 0.000-1000.000 megabytes
+Disk label type: msdos
+Minor    Start       End     Type      Filesystem  Flags
+1          0.063    874.999  primary   ext2
+2        875.000   1000.000  primary   linux-swap
+@end group
+@end example
+@end enumerate
+
+
+@node Resizing an ext2 partition on a crowded disk
+@subsection Example: Resizing an ext2 partition on a crowded disk
+@cindex resizing a partition on crowded disk, example
+@cindex example, resizing a partition on crowded disk
+
+Suppose your disk layout looks like this:
+
+@example
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/hda: 0-8063.5 megabytes
+Disk label type: msdos
+Minor   Start     End    Type            Filesystem     Flags
+1          0.0     23.5  primary         ext2           boot
+2         23.5   8056.0  extended
+5         23.6   3545.6  logical         ext2
+6       3545.6   7067.7  logical         ext2
+7       7067.7   7326.5  logical         ext2
+8       7326.5   7585.4  logical         ext2
+9       7585.4   7844.2  logical         linux-swap
+@end group
+
+@group
+$ @kbd{df -h}
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/hda8             251M   31M  207M  13% /
+/dev/hda1              23M  2.4M   19M  11% /boot
+/dev/hda5             3.4G  577M  2.7G  18% /usr
+/dev/hda6             3.4G  289M  2.9G   9% /home
+/dev/hda7             251M   12M  226M   5% /var
+@end group
+@end example
+
+Suppose you wanted to increase the @file{/var} partition
+(@file{/dev/hda7}) to 1GB, using some space from @file{/home}
+(@file{/dev/hda6}).
+
+To resize a partition with Parted, you use the resize command:
+
+@example
+(parted) resize @var{partition_number} @var{new_start} @var{new_end}
+@end example
+
+@noindent @var{new_start} must be the same as the old start for ext2
+partitions (unfortunately).  So this process is going to be rather
+complicated.  It @emph{is} possible, though.  @footnote{If Parted
+supported moving the start of ext2 partitions (like it does with FAT
+partitions), then it would be trivial:
+
+@example
+@group
+(parted) @kbd{resize 6 3545.6 6200}
+(parted) @kbd{resize 7 6200 7326.5}
+@end group
+@end example
+}
+
+@enumerate
+@item Shrink the @file{/home} partition (@file{/dev/hda6}) by 850MB:
+
+@example
+# @kbd{parted /dev/hda}
+(parted) @kbd{resize 6 3545.6 6200}
+@end example
+
+@item Make a new partition in its place.  This is where @file{/var} will
+be, eventually.  This new partition will be numbered 10.
+
+@example
+(parted) @kbd{mkpartfs logical ext2 6200 7067.7}
+@end example
+
+@item Copy the old @file{/var} partition (@file{/dev/hda7}) to the new
+one (@file{/dev/hda10}).
+
+@example
+(parted) @kbd{cp 7 10}
+@end example
+
+@item Delete the old @file{/var}.
+
+@example
+(parted) rm 7
+@end example
+
+At this point: all logical partitions greater than 7 just changed
+number.  So 8, 9 and 10 become 7, 8 and 9 respectively.
+
+This renumbering won't take place while any partitions are mounted on
+that disk (this will happen when you reboot).  That's what that warning
+message is talking about.  So you should @emph{never} attempt to mount a
+file system touched by Parted (resized or created by Parted), before
+rebooting, if you get this message.
+
+@item Resize the new @file{/var} partition (now numbered 9), adding the
+space from the old @file{/var} partition:
+
+@example
+@group
+(parted) @kbd{resize 9 6200 7326.5}
+(parted) @kbd{quit}
+Warning: The kernel was unable to re-read the partition table on
+/dev/hda (Device or resource busy).  This means Linux knows nothing
+about any modifications you made.  You should reboot your computer
+before doing anything with /dev/hda.
+@end group
+@end example
+
+@item Since the partition numbers have changed, @file{/etc/fstab} must
+be updated.  This can be done before rebooting, because the root device
+wasn't touched by Parted.  (If you want to use Parted to do something to
+the root device, you need to use the boot disk).
+
+If the old @file{/etc/fstab} looks like this:
+
+@example
+@group
+/dev/hda8      /            ext2    defaults        1 1
+/dev/hda1      /boot        ext2    defaults        1 2
+/dev/hda6      /home        ext2    grpquota,usrquota  0  2
+/dev/cdrom     /mnt/cdrom   iso9660 noauto,owner,ro 0 0
+/dev/hda5      /usr         ext2    defaults        1 2
+/dev/hda7      /var         ext2    grpquota,usrquota  0  2
+/dev/fd0       /mnt/floppy  auto    noauto,owner    0 0
+none           /proc        proc    defaults        0 0
+none           /dev/pts     devpts  gid=5,mode=620  0 0
+/dev/hda9      swap         swap    defaults        0 0
+@end group
+@end example
+
+A few lines need to be changed:
+@itemize
+@item @file{/var} is now /dev/hda9 (because we copied it to a new
+partition)
+
+@item @file{/dev/hda8} (the root device) has been renumbered to
+@file{/dev/hda7}
+
+@item @file{/dev/hda9} (the swap device) has been renumbered to
+@file{/dev/hda8}
+@end itemize
+
+The new @file{/etc/fstab} looks like this:
+
+@example
+@group
+/dev/hda7      /            ext2    defaults        1 1
+/dev/hda1      /boot        ext2    defaults        1 2
+/dev/hda6      /home        ext2    grpquota,usrquota  0  2
+/dev/cdrom     /mnt/cdrom   iso9660 noauto,owner,ro 0 0
+/dev/hda5      /usr         ext2    defaults        1 2
+/dev/hda9      /var         ext2    grpquota,usrquota  0  2
+/dev/fd0       /mnt/floppy  auto    noauto,owner    0 0
+none           /proc        proc    defaults        0 0
+none           /dev/pts     devpts  gid=5,mode=620  0 0
+/dev/hda8      swap         swap    defaults        0 0
+@end group
+@end example
+
+@item Reboot.  That's it!
+@end enumerate
+
+@node    Firmware
+@chapter Firmware
+@cindex firmware
+
+Firmware is software that is programmed into read-only memory chips
+in the computer.  Firmware must at the very least give the computer
+the ability to boot an operating system.  In some architectures, 
+firmware also provides an interface to hardware that an operating
+system can use even after it has started.  In the PC architecture,
+the latter services are called the ``BIOS'' -- the Basic Input /
+Output System.  MS-DOS and the Windows 9x series operating systems
+make extensive use of the PC BIOS while operating systems like
+Linux make little use of the BIOS after starting.
+
+While strictly speaking BIOS is only part of a computer's firmware,
+the terms ``BIOS'' and ``firmware'' are often used interchangeably.
+In this document, no sharp distinction is drawn between BIOS and
+firmware.
+
+Because PC firmware is based on a very old design which has been
+extended many times it is very ugly and often buggy.  This is a
+serious problem because firmware is difficult to modify.  Only
+the computer manufacturer is in a position to fix bugs in this
+non-free program, and too often the bugs simply go unfixed.
+
+@menu
+* PC BIOSes::                   The BIOS of IBM PC / x86 computers
+* Macintosh OpenFirmware::      The firmware of Macintosh computers
+* PC98 BIOS::                   The BIOS of the PC98 computer
+* SGI / MIPS Firmware::         The firmware of SGI MIPS computers
+@end menu
+
+@node PC BIOSes
+@section PC BIOSes
+@cindex pc bios
+@cindex bios, pc
+
+There are a few popular PC BIOSes: AmiBIOS, Award, Phoenix, and others.
+They all work in a similar way.  None of these BIOSes understand or know
+about partition tables.  They affect partitioning indirectly.
+
+The following occurs when your computer boots up:
+
+@enumerate
+@item These BIOSes load the first part of the boot loader program,
+stored on the Master Boot Record (MBR) on the hard disk.
+
+@item The BIOS executes the first bit of the boot loader.
+
+@item The boot loader program uses the BIOS to load the rest of itself.
+
+@item The boot loader uses the BIOS to load the operating system (or, perhaps
+another boot loader, in which case you go to step 2 again).
+
+@item The operating system may or may not use the BIOS to do normal file
+system access (Windows usually does, Linux or BSD do not).
+@end enumerate
+
+@c RMK: FIXME: learn how to refer to entries in the above list, so that
+@c the following paragraphs doesn't depend on the order details of the
+@c list.
+
+Steps (3) to (5) involve programs communicating with the BIOS, to ask it
+to talk to the disks.  There are two ways of talking to the BIOS to do
+this: by using CHS (Cylinders Heads and Sectors) or LBA (Linear Block
+Addressing).  Older BIOSes will only support CHS.  New BIOSes usually
+support both LBA and CHS, although CHS support may be phased out in the
+future.  (CHS is generally considered to be a horrible legacy system.)
+
+Steps (3) and (4), performed by the boot loader, will always use the
+same access method --- either always LBA or always CHS.  In the case of
+the Windows boot loader, this is determined by the LBA flag on the
+Windows boot partition (@pxref{set} for information about about
+flags).  In the case of Linux, you will probably be using either LILO or
+GRUB as your boot loader.  GRUB uses LBA if it is available, and CHS
+otherwise.  LILO requires that you choose when you install it (with the
+linear, or lba32 options).
+
+@c RMK: FIXME: find way to refer to above steps by @-command
+Step (5) - IO done by the operating system - only MS-DOS and Windows 9x
+do its IO through the BIOS.  [We still don't know enough about the
+problems, but it seems Windows can have its own problems with CHS mode.
+People have told us about occassions where Windows corrupts its own file
+systems, etc.  It's really hard for us to know what's going on.  We
+strongly recommend you use LBA, if you can!]
+
+So, there are 3 possible situations, which are all covered here:
+
+@enumerate
+@item You are using CHS mode, and your BIOS only supports CHS mode.
+@item You are using CHS mode, and your BIOS supports both CHS and LBA.
+So, you want to convert from CHS mode to LBA mode As Soon As Possible
+@sc{tm}.
+@item You are using LBA mode already.
+@end enumerate
+
+@menu
+* Parted and CHS mode::           Using Parted with CHS mode BIOS
+* CHS to LBA mode::               Converting from CHS to LBA mode BIOS
+* Parted and LBA mode::           Using Parted with LBA mode BIOS
+@end menu
+
+@node Parted and CHS mode
+@subsection Using Parted with CHS mode BIOS
+@cindex chs mode bios
+@cindex bios, chs mode disk geometry
+
+Linux usually detects the BIOS geometry automatically.  However,
+sometimes it gets it wrong.  In this case, you should tell it yourself,
+by passing a parameter to Linux.  For example, if Linux thinks your hard
+drive @file{/dev/hda} has geometry 256/64/63, but the BIOS setup program
+says the geometry is 512/32/63, then you would pass this parameter to
+Linux:
+
+@example
+@kbd{hda=512,32,63}
+@end example
+
+Parameters are passed in different ways, depending what boot-loader
+you're using.  You are probably using LILO.  In this case, you add this
+line to @file{/etc/lilo.conf}: (You then need to run
+@command{/sbin/lilo}, and reboot for the change to take effect)
+
+@c RMK: FIXME: can't get the quotes right: texinfo double quotes ``'' don't
+@c work in example's, and keyboard double quotes "" don't look right in text.
+@example
+append="hda=512,32,63"
+@end example
+
+Parted can usually detect if Linux has detected the incorrect geometry.
+However, it cannot do this if there are no partitions on the disk.  In this
+case, you should check yourself.  It is very important that you do this.
+
+Sometimes, Parted will complain that the partitions aren't aligned to
+cylinder boundaries.  Parted will give you the option to ignore.  If you
+ignore, then Parted will do some tricks with your partition table.
+Linux will have no problems.  DOS and Windows will have no problems if
+they are using LBA mode.  If DOS/Windows is using CHS mode, then
+reinstalling the the boot loader (@pxref{MS DOS MS Windows 9x MS Windows
+ME}) should solve any problems - but switching to LBA mode is
+preferrable (see @pxref{CHS to LBA mode}).
+
+Partitions that are involved in the boot process must end before
+cylinder 1024, if CHS mode is being used.  See the section on boot
+loaders to determine if a partition is involved in the boot process.
+The typical setup is to have a small Linux @file{/boot} partition, a
+Windows partition and then the Linux partition(s).
+
+@node CHS to LBA mode
+@subsection Converting from CHS to LBA mode BIOS
+@cindex chs to lba, converting
+
+To make the Windows boot loader + operating system use LBA mode, just
+set the LBA flag on all FAT partitions @ref{set}.  You should have no
+problems.  If you do have problems booting Windows, then reinstalling
+the Windows boot loader will fix it @ref{MS DOS MS Windows 9x MS
+Windows ME}.
+
+Linux doesn't use the BIOS for IO.  However, the boot loader (LILO or
+GRUB) may.  GRUB automatically uses LBA, if it is available.  LILO
+requires the ``linear'' or ``lba32'' option.  So, if LILO still boots
+after changing @file{/etc/lilo.conf} reinstalling with
+@command{/sbin/lilo}, then everything's done!  @xref{LILO}. (If you have
+problems, just revert back to CHS, by removing ``linear'' or ``lba32'',
+and reinstalling lilo from a boot disk.)
+
+Now that you're using LBA, read on@dots{}
+
+@node Parted and LBA mode
+@subsection Using Parted with LBA mode BIOS
+@cindex lba mode bios
+@cindex bios, lba mode disk geometry
+
+LBA solves all of CHS's problems.  However, there is no reliable way for
+Linux or Parted to know that you're using LBA, so Parted may give you
+warnings about cylinders not being aligned, or the BIOS geometry being
+inconsistent, etc.  You can ignore these messages if you are using LBA
+mode.  (Old versions of Parted had problems, which have all been
+solved).
+
+When your disk is in LBA mode, Parted (and most other programs) will say
+your CHS geometry is X/255/63 - unless you have switched from CHS to
+LBA.
+
+@node Macintosh OpenFirmware
+@section OpenFirmware of the Apple Macintosh
+@cindex open firmware, macintosh
+@cindex macintosh open firmware
+
+There are two major version of the PowerMac's OpenFirmware - one used on
+``old world'', and one on ``new world'' PowerMac.  ``New world'' refers
+to coloured PowerPCs manufactured since 1999.  They have significant
+differences.  However, both understand partition maps.
+
+Both require that the user choose exactly one partition to be the boot
+partition (the partition with the boot loader).  However, they use
+different mechanisms to do this.
+
+@menu
+* Old World::
+* New World::
+@end menu
+
+@node Old World
+@subsection Old World Macintosh OpenFirmware
+@cindex old world macintosh firmware
+@cindex macintosh, old world firmware
+@cindex old world macintosh firmware
+
+The partition chosen to boot is set by various boot loaders, like Quik.
+So, you shouldn't need to do anything.  We could add support for this in
+Parted, if someone screams loudly enough@dots{}
+
+@node New World
+@subsection New World Macintosh OpenFirmware
+@cindex new world macintosh firmware
+@cindex macintosh, new world firmware
+@cindex new world macintosh firmware
+
+New world OpenFirmware requires the boot partition to be HFS and marked
+as a boot partition.  It uses a different mechanism to be marked as the
+boot partition.  This is controlled with Parted's ``boot'' flag.  For
+example:
+
+@example
+(parted) @kbd{set 2 boot on}
+@end example
+
+@node PC98 BIOS
+@section The PC98 BIOS
+@cindex pc98 bios
+
+@c RMK: completeness : should we describe what machines are likely to
+@c have a PC 98 bios?
+@c RMK: illiteracy: the only pages I found for PC98 info were in Japanese,
+@c which I can't read :(
+The PC98 BIOS allows you to mark any number of partitions as bootable.
+You can mark or unmark a partition as bootable with Parted's ``boot''
+flag.  For example:
+
+@example
+(parted) @kbd{set 2 boot off}
+@end example
+
+
+@node SGI / MIPS Firmware
+@section SGI / MIPS Firmware
+@cindex sgi firmware
+
+
+
+The SGI / MIPS firmware allows booting from special boot files, which
+are managed by the partition table.  In Parted, these boot files are
+treated as logical partitions inside an extended partition.
+
+For example:
+
+@example
+Disk label type: dvh
+Minor    Start       End     Type      Filesystem  Name        Flags
+9          0.000      2.732  extended
+17         0.002      0.002  logical               sgilabel
+18         0.003      1.162  logical               symmon
+19         1.404      1.670  logical               sash
+1          2.732   8555.212  primary   xfs                     root
+2       8555.213   8682.270  primary                           swap
+@end example
+
+Partition 9 is the extended partition (volume header in SGI/MIPS terminology)
+where the boot files may lie.  Partitions 17, 18 and 19 are the boot files.
+There names can be manipulated with parted's name command.  Partitions 1
+and 2 are normal partitions.  They can't have names.
+
+Note that Linux doesn't see the boot files as partitions (maybe it should?).
+So /dev/hda17 doesn't exist in Linux.  You should use dvhtool(8) to
+manipulate boot files.
+
+@node    Boot Loaders
+@chapter Boot Loaders
+@cindex boot loaders
+
+The boot loader is the program that allows you to select which operating
+system you want to use, and loads that operating system.  You may have
+more than one boot loader installed, especially if you have more than
+one type of operating system installed.  It is common for boot loaders
+to be able to load other boot loaders.
+
+When resizing a partition, lots of data gets moved around.  Many boot
+loaders don't understand the file system.  They just remember where on
+the disk the required boot loader information lies.  If this information
+is moved, they must be told where it has been moved.  This is done by
+reinstalling the boot loader (i.e., re-running the installer program for
+the boot loader, which usually involves issuing a single command at the
+shell).  Not all boot loaders require this.
+
+@menu
+* LILO::                                        The LInux LOader
+* GNU GRUB::                                    GNU GRand Unified Boot-loader
+* MS DOS MS Windows 9x MS Windows ME::          Older MS Software
+* MS Windows NT::                               MS Windows NT loader
+* MS Windows 2000::                             MS Windows 2000 loader
+* Quik::                                        Quik
+* Yaboot::                                      Yaboot
+
+@end menu
+
+@node LILO
+@section LILO: a bootloader for the Linux kernel
+@cindex lilo
+
+LILO is a popular boot loader for x86.  LILO's boot loader is usually
+installed with:
+
+@example
+# @kbd{/sbin/lilo}
+@end example
+
+If you are using a boot disk, then you should do this instead: (where
+@file{/dev/hda1} should be replaced with your root device)
+
+@example
+# @kbd{mount /dev/hda1 /mnt}
+# @kbd{chroot /mnt /sbin/lilo}
+# @kbd{umount /dev/hda1}
+@end example
+
+Old versions of LILO don't support LBA mode (@pxref{PC BIOSes}).  LBA
+mode is enabled with the lba32 or linear option, in
+@file{/etc/lilo.conf} (see the LILO documentation for more info).
+
+If you use LBA mode, you should have no problems, as long as
+your BIOS supports LBA.
+
+If you use CHS mode, then the partition with your @file{/boot} directory
+must finish before cylinder 1024.  So, if you have a large disk (say,
+over 8 gigabytes), you should have a @file{/boot} partition near the start of
+your disk.
+
+@node GNU GRUB
+@section GRUB: The GNU GRand Unified Bootloader
+@cindex grub
+
+GRUB is a relatively new boot loader, for x86.  Depending on how GRUB is
+installed, it may understand the file system, or simply remember where
+the boot files are stored.  It understands the file system if it's using
+``Stage1.5''.  If it's not using Stage1.5, or the partition number changes,
+then you need to reinstall Stage2 (please see the GRUB documentation).
+Otherwise, you don't need to do anything after manipulating partitions.
+
+GRUB automatically detects if LBA is available, and will use it if it is
+available (equivalent to LILO's ``lba32'' option).
+
+@node MS DOS MS Windows 9x MS Windows ME
+@section Old Microsoft Operating System Bootloaders
+@cindex w32 bootloader
+@cindex microsoft operating system bootloader
+
+DOS and Windows require you to re-install the boot loader if you change
+the FAT type (FAT16 or FAT32) of the boot partition.  Parted will warn
+you before attempting to do this.  To re-install the boot loader, you
+can either create a boot disk, or use the boot CDROM.  The boot disk
+method does not work with Windows ME.
+
+@itemize @minus
+@item BOOT DISK METHOD  (DOS/Windows 9x)
+
+@enumerate
+
+@item Create a Windows boot disk
+
+@itemize @bullet
+
+@item Boot Windows.  @emph{This implies you should make the boot disk
+before you use parted.}
+
+@item Right click on the floppy drive in Windows Explorer.
+
+@item Click on ``Format''.
+
+@item Mark ``Copy system files''.
+
+@item Click on ``Format''.
+
+@item Copy C:\WINDOWS\COMMAND\SYS.COM to A:\   Note: you might have called
+C:\WINDOWS something else, like C:\WIN98.
+
+@end itemize
+
+@item Boot off the Windows boot disk, by leaving the boot disk in the
+floppy drive when booting.  You may need to tell your BIOS to boot off
+the floppy.
+
+@item Type at the DOS prompt:
+
+@example
+A:\>@kbd{sys c:}
+@end example
+
+@end enumerate
+
+@item CDROM METHOD:  (Windows 9x/ME)
+
+@enumerate
+
+@item Insert the Windows CDROM, and boot from it.  (Select ``boot without
+CDROM support'').
+
+@item Type:
+
+@example
+A:\>@kbd{c:}
+C:\>@kbd{cd \windows\command}    (might be \win98\command, or similar)
+C:\WINDOWS\COMMAND>@kbd{sys c:}
+@end example
+
+That's all there is to it.
+
+@end enumerate
+@end itemize
+
+Also, DOS and Windows impose a few restrictions:
+
+@itemize @bullet
+
+@item The boot partition should be selected with the ``boot'' flag.  Only
+one boot partition can be selected (sometimes called the ``active''
+partition).  For example, to set partition 3 to be the boot partition,
+do:
+
+@example
+(parted) @kbd{set 3 boot on}
+@end example
+
+@item The MS DOS and MS Windows 9x/ME can only boot from the first FAT
+partition.  That is, the FAT partition with the smallest partition number,
+that isn't hidden.  Note that boot loaders like GRUB and LILO (and some
+BIOSes) can change this behaviour@dots{}
+
+@item If you are using CHS addressing (rather than LBA addressing), then
+the boot partition start must be less than cylinder 1024.  You can tell
+MS DOS to use (or not to use) LBA addressing, by enabling or disabling
+the LBA flag on the boot partition.  For example, to enable the LBA flag
+on partition 2, do:
+
+@example
+(parted) @kbd{set 2 lba on}
+@end example
+
+Note: LBA addressing is not supported in MS-DOS 6.22 and lower, as well
+as all versions of PC-DOS.
+
+Warning: some BIOSes won't enable LBA addressing, unless you enable it
+in the BIOS as well.  If for some reason, Windows doesn't boot after
+changing this flag, this is probably the problem.
+
+@item the ``real'' MS-DOS (i.e., up to version 6.22) and MS-DOS 7.0
+(i.e., Windows 95/95a) don't know about FAT32.  It's therefore possible
+to boot them from the @emph{second fat} (FAT16 only, of course) partition,
+when the @emph{first fat} partition is FAT32.  Both have to be primary
+partitions, so you'll have to set the one you want to boot from as
+active partition.
+
+@end itemize
+
+@node MS Windows NT
+@section The Microsoft Windows NT Bootloader
+@cindex microsoft windows nt bootloader
+
+Windows NT can't read or boot from FAT32 partitions.  Therefore, you
+should never convert FAT16 partitions to FAT32 partitions if you want
+to use them with Windows NT.
+
+@node MS Windows 2000
+@section The Microsoft Windows 2000 Bootloader
+@cindex microsoft windows 2000 bootloader
+
+Windows 2000 require you to re-install the boot loader if you change the
+FAT type (FAT16 or FAT32) of the system partition.  Parted will warn you
+before attempting to do this.  To re-install the boot loader, do:
+
+@enumerate
+@item Boot off the Windows 2000 CD.
+@item It will ask if you want to proceed installing.  Hit Enter.
+@item It will then ask you if you want to install a new system, or
+Repair an existing system.  Choose the later (by pressing ``R'').
+@item It will ask you if you want to do an automatic repair, or if you want
+to use the recovery console.  Choose to use the recovery console.
+@item At the console, type:
+
+@example
+C:\>@kbd{fixboot}
+@end example
+
+The system should boot successfully now.
+@end enumerate
+
+The NT/2000 boot loader also needs:
+
+@itemize @bullet
+
+@item its own boot sector code in a PRIMARY FAT12, FAT16 or NTFS
+partition (FAT32 possible with Windows 2000), which is called the
+``system partition''.  This partition should be marked with the ``boot''
+flag in Parted.
+
+@item the files NTLDR, BOOT.INI and NTDETECT.COM within the system
+partition.  BOOT.INI holds the information about the physical location
+of the primary partition or logical drive where Windows NT was installed
+to, called the ``boot partition''.  The boot partition and system
+partition may be located together in one primary partition.
+
+@c RMK: usage: ambiguous use of 'this': it refers to disk controller?
+@item optionally, the file NTBOOTDD.SYS within the system partition,
+which is the renamed disk driver for your SCSI or IDE controller, when
+this has no own BIOS (or its BIOS can't access large disks).
+
+@item with MS Windows NT, the system partition should end before cylinder
+1024, and @emph{must} start before cylinder 1024.  If it ends after
+cylinder 1024 and the files necessary to boot are moved past this border
+MS Windows NT won't start anymore!
+
+@item both the boot and system partition may be resized, without the need
+for any other changes.
+
+@item if the boot partition's number changes, then the BOOT.INI has to be
+updated.
+
+@end itemize
+
+@node Quik
+@section Quik: a bootloader for Macintosh PowerPC's
+@cindex old world macintosh bootloader
+@cindex macintosh, old world bootloader
+
+Quik is a popular boot loader for ``Old World'' Macintosh PowerPCs.  You
+need to reinstall Quik if you resize an ext2 partition, with:
+
+@example
+# @kbd{/sbin/quik}
+@end example
+
+@node Yaboot
+@section Yaboot: a boot loader for Macintosh PowerPC's
+@cindex new world macintosh bootloader
+@cindex macintosh, new world bootloader
+Yaboot is a popular boot loader for ``new world'' Macintosh PowerPCs.
+(``New-world'' refers to coloured PowerPCs manufactured since 1999.)
+
+Yaboot needs its own boot strap partition that must be at least 800k.
+So, if you are installing GNU/Linux from scratch, you would do something
+like:
+
+@example
+(parted) @kbd{mklabel mac}
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/sda: 0.000-6149.882 megabytes
+Disk label type: mac
+Minor    Start       End     Filesystem  Name          Flags
+1          0.000      0.031              Apple
+@end group
+(parted) @kbd{mkpart primary hfs 0.032 1}
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/hdb: 0.000-6149.882 megabytes
+Disk label type: mac
+Minor    Start       End     Filesystem  Name          Flags
+1          0.000      0.031              Apple
+2          0.031      1.000
+@end group
+(parted) @kbd{set 2 boot on}
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/hdb: 0.000-6149.882 megabytes
+Disk label type: mac
+Minor    Start       End     Filesystem  Name          Flags
+1          0.000      0.031              Apple
+2          0.031      1.000                            boot
+@end group
+@end example
+
+You don't need to reinstall Yaboot after resizing a partition.  Yaboot
+is installed with ybin @ref{Related Software and Info}.
+
+@node Operating Systems
+@chapter Operating Systems
+@cindex operating systems
+
+Parted only runs under GNU/Linux and GNU/Hurd, at the moment.  However,
+it can be used to resize partitions used by, or shared with other
+operating systems.
+
+When you want to resize a file system, make sure it is not mounted.
+Parted can't resize mounted partitions.  (This may change in the
+future@dots{}).
+
+If you modify the partition table of a disk that contains a partition
+that is currently mounted then you should reboot immediately; otherwise
+Linux won't know about the changes you made the partition table.
+(We may fix this later.)
+
+If you want to resize your root or boot partition, use a boot disk
+@xref{Parted boot disks}, or use Andreas Dilger's online ext2 resizer,
+included in the ext2resize package @ref{Ext2}.
+
+@menu
+* GNU/Linux and FreeBSD::            Disklabel support in these free systems
+* MS Windows and OS/2::              The disklabel supported by these systems
+* MacOS::                            The disklabel supported by MacOS
+@end menu
+
+@node GNU/Linux and FreeBSD
+@section Disk labels used by GNU/Linux and FreeBSD
+@cindex gnu/linux disk labels
+@cindex freebsd disk labels
+@cindex disk labels, freebsd
+@cindex disk labels, linux
+
+Both GNU/Linux and FreeBSD systems are rather flexible about disk
+labels, supporting many different disk label types.
+
+@c RMK: padding: added notes about disklabel support for Linux kernel
+Because it is rather unusual for a machine to use hard disks with labels
+normally used on other architectures, standard distributions of the
+Linux kernel often only support the popular disk labels for the
+architecture for which the kernel was compiled.  For example, a standard
+Linux kernel compiled for a PC will likely not have support for Mac or
+Sun disk labels.  To access the file systems on disks with unsupported
+disk labels, the kernel will have to be recompiled.
+
+FreeBSD has a disk label system that is incompatible with MS-DOS
+partition tables, and a partition slice system that is incompatible with
+MS-DOS partition tables.  Parted only supports the BSD disk label system.
+Parted is unlikely to support the partition slice system in the future
+because the semantics are rather strange, and don't work like ``normal''
+partition tables do.
+
+@node MS Windows and OS/2
+@section Disk labels supported by Microsoft systems and OS/2
+@cindex old microsoft and ibm disk labels
+@cindex disk labels, legacy microsoft and ibm
+
+MS Windows and OS/2 only supports the msdos disk label.  Therefore, if
+you create a new disk label, you should use:
+
+@example
+(parted) @kbd{mklabel msdos}
+@end example
+
+@node MacOS
+@section Macintosh Operating System Disk Label Support
+@cindex macintosh disklabels
+@cindex disk labels, macintosh
+
+@c RMK: completeness: does Mac OS X understand non-mac disklabels?
+MacOS (and OpenFirmware) only understands the mac disk label.
+Therefore, if you create a new disk label, you should use:
+
+@example
+(parted) @kbd{mklabel mac}
+@end example
+
+Note that for Mac partition maps, you should avoid leaving free space
+around, because free space regions take up entries in the partition map
+(and Linux doesn't like having more than 15 entries).  For example, if
+you do:
+
+@example
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/sda: 0.000-6149.882 megabytes
+Disk label type: mac
+Minor    Start       End     Filesystem  Name          Flags
+1          0.000      0.031              Apple
+2          0.031      1.000                            boot
+3          1.000   1000.000  ext2        root          root
+@end group
+(parted) @kbd{ mkpartfs primary ext2 1001 2000}
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/sda: 0.000-6149.882 megabytes
+Disk label type: mac
+Minor    Start       End     Filesystem  Name          Flags
+1          0.000      0.031              Apple
+2          0.031      1.000                            boot
+3          1.000   1000.000  ext2        root          root
+4       1001.000   2000.000  ext2
+@end group
+@end example
+
+There is 1 megabyte of free space between partitions 3 and 4.  You can
+avoid this, by creating partitions 0.1M apart (in which case, Parted
+automatically ``pushes'' them together).  So, in the above example, you
+should do this instead:
+
+@example
+(parted) @kbd{mkpartfs primary ext2 1000.1 2000}
+@group
+(parted) @kbd{print}
+Disk geometry for /dev/sda: 0.000-6149.882 megabytes
+Disk label type: mac
+Minor    Start       End     Filesystem  Name          Flags
+1          0.000      0.031              Apple
+2          0.031      1.000                            boot
+3          1.000   1000.000  ext2        root          root
+4       1000.000   2000.000  ext2
+@end group
+@end example
+
+@node    File Systems
+@chapter File Systems supported by Parted
+@cindex file systems
+
+@menu
+* Supported File Systems::      File systems operations supported by GNU Parted
+* Ext2::                        Linux's ext2 file system under Parted
+* FAT16 and FAT32::             Microsoft FAT file systems and Parted
+* Reiserfs::                    H. Reiser's Journalling file system and Parted
+
+@end menu
+
+@node Supported File Systems
+@section File Systems Supported by GNU Parted
+@cindex file system support
+@cindex supported file systems
+
+Parted has support for these operations:
+
+@c RMK: FIXME: can we put in nicer marks for "true", and note markers
+@c to associate notes below with entries in this table?
+
+@multitable {File system type} {detect} {create} {resize} {copy} {check}
+@item Filesystem @tab detect @tab create @tab resize @tab copy @tab check
+@item ext2 @tab * @tab * @tab *1 @tab *2 @tab *3
+@item ext3 @tab	* @tab @tab *1 @tab *2 @tab *3
+@item fat16 @tab * @tab * @tab *4 @tab *4 @tab *
+@item fat32 @tab * @tab * @tab * @tab * @tab *
+@item hfs / hfs+ @tab * @tab @tab *1,5 @tab @tab
+@item jfs @tab * @tab @tab @tab @tab
+@item linux-swap @tab * @tab * @tab * @tab * @tab *
+@item ntfs @tab * @tab @tab @tab @tab
+@item reiserfs @tab * @tab *6 @tab *1,6 @tab *6 @tab *3,6
+@item ufs @tab * @tab @tab @tab @tab
+@item xfs @tab * @tab @tab @tab @tab
+@end multitable
+
+@c RMK: note: the following is not an enumerated list, just a bunch of
+@c notes associated to entries in the above matrix.  That's bad.
+
+@noindent NOTES:
+(1) The start of the partition must stay fixed for ext2, ext3, reiserfs, hfs and
+hfs+.
+
+(2) The partition you copy to must be bigger (or exactly the same size)
+as the partition you copy from.
+
+(3) Limited checking is done when the file system is opened.  This is
+the only checking at the moment.  All commands (including resize) will
+gracefully fail, leaving the file system intact, if there are any errors.
+
+(4) The size of the new partition, after resizing or copying, is
+restricted by the cluster size for fat (mainly affects FAT16).  This is
+worse than you think, because you don't get to choose your cluster size
+(it's a bug in Windows, but you want compatibility, right?).
+
+So, in practise, you can always shrink your partition (because Parted
+can shrink the cluster size), but you may not be able to grow the
+partition to the size you want.  If you don't have any problems with
+using FAT32, you will always be able to grow the partition to the size
+you want.
+
+Summary: you can always shrink your partition.  If you can't use FAT32
+for some reason, you may not be able to grow your partition.
+
+(5) Parted can only shrink hfs and hfs+ file systems.
+
+(6) Reiserfs support is enabled if you install libreiserfs, which is available
+at @uref{http://www.namesys.com/pub/libreiserfs}.
+
+@node Ext2
+@section GNU Parted and the Second Extended File System
+@cindex ext2 file system support support
+@cindex second extended file system
+
+Parted's supports copying of ext2 and ext3 file systems only when the
+destination partition is bigger than the source partition.  There
+are other ways of copying partitions, however:
+
+@itemize
+@item Use Parted's mkfs command (or mkfs.ext2), and then run at the shell:
+
+FIXME!!! this doesn't work quite right - but it should be OK for most
+people@dots{}
+
+@example
+# @kbd{mount -t ext2 /dev/hda2 /mnt/dst}
+# @kbd{find /mnt/src -depth | cpio -pm /mnt/dst}
+@end example
+
+@item If the duplicate partition is going to bigger than the original,
+this can also be done: first, create the new ext2 partition.  Then:
+
+@example
+# @kbd{dd if=/dev/src-device of=/dev/dst-device bs=1024 count=@var{old_size}}
+# @kbd{parted /dev/hda resize 2 @var{start} @var{end}}
+@end example
+
+@noindent where @var{old_size} is the size of the original partition in
+kilobytes.  @var{start} and @var{end} are the new start and end for the
+duplicate partition, in megabytes.
+@end itemize
+
+@node FAT16 and FAT32
+@section Microsoft FAT File System Support
+@cindex fat file system support
+@cindex microsoft file system support
+
+Parted can not grow the cluster size of FAT file systems (yet).  This
+places restrictions on resizing and copying partitions.  This is often
+quite bizarre, because Parted can convert file systems between FAT16 and
+FAT32, which have different restrictions on what the cluster size can
+be.
+
+For example, lets say have a 100MB partition with a cluster size 4k.
+This partition can't be resized to 400MB, because the cluster size would
+need to be changed to 16k.  However, it can be resized to 600MB if you
+use FAT32.  The reverse is true for 600MB FAT32 file systems.
+
+Note: when you copy or resize a file system, Parted will ask you if you
+want to convert between FAT16 and FAT32 (if it is possible).  Therefore,
+if you just want to convert a partition to FAT32 (without resizing), you
+can just resize the partition to the same size.
+
+@menu
+* MS DriveSpace::                    MS DriveSpace Partitions
+@end menu
+
+
+@node MS DriveSpace
+@subsection MS DriveSpace partitions
+@cindex drivespace partition
+
+MS DriveSpace is a program that comes with MS Windows 95 that can be
+used to compress FAT file systems.  I believe this works the same way as
+DoubleSpace, so everything said here applies should apply to DoubleSpace
+as well.
+
+It is possible to use Parted to resize and copy these partitions, but
+you have to do a few extra things@dots{}
+
+@menu
+* Growing a DriveSpace partition::
+* Shrinking a DriveSpace partition::
+* Copying a DriveSpace partition::
+@end menu
+
+
+@node Growing a DriveSpace partition
+@subsubsection Growing a DriveSpace partition
+@cindex drivespace partition, growing
+
+To increase the size of a DriveSpace partition, do the following
+
+@enumerate
+@item Use Parted's resize command to grow the partition to the desired
+size.
+
+@item Use MS DriveSpace to shift the free space from the host drive to
+the compressed drive.
+
+@end enumerate
+
+@node Shrinking a DriveSpace partition
+@subsubsection Shrinking a DriveSpace partition
+@cindex drivespace partition, shrinking
+
+To decrease the size of a DriveSpace partition, do the following:
+
+@enumerate
+@item Use MS DriveSpace to shift the free space from the compressed
+drive to the host drive.  The amount of free space shifted corresponds
+to the desired amount by which to shrink the partition.
+
+@c RMK: usage: "Parted doesn't give good feedback on what the nubmers" huh?
+@item Use Parted's resize command to shrink the partition to the desired
+size.  NOTE: Parted doesn't give good feedback on what the numbers, to
+know how much to shrink the partition by.  This is on the TODO list.
+
+@end enumerate
+
+@node Copying a DriveSpace partition
+@subsubsection Copying a DriveSpace partition
+@cindex drivespace partition, copying
+
+If you want to copy a DriveSpace partition to a partition that is
+bigger, then you can follow the instructions for growing a DriveSpace
+partition, except you copy rather than resize the desired partition, and
+make sure you use the new partition in DriveSpace.
+
+However, if you want to copy a DriveSpace partition to a partition that
+is smaller, things get a bit more complicated:
+
+@enumerate
+@item Use MS DriveSpace to shift free space from the compressed drive to
+the source host drive.  The amount of space shifted should be more than
+difference between the source partition, and the desired size of the
+duplicate partition.
+
+@item Use Parted to copy the source partition to the duplicate
+partition.
+
+@item Use MS DriveSpace to shift the free space from the source host
+drive back to the compressed drive.
+
+@item Use MS DriveSpace to shift the free space from the duplicate host
+drive back to the compressed drive.
+@end enumerate
+
+
+@node Reiserfs
+@section Reiserfs Journalling File System
+@cindex reiserfs
+
+Parted supports reiserfs if libreiserfs is installed.  Parted detects
+this at runtime, and automatically enables support.  You can download
+libreiserfs from:
+
+	@uref{http://reiserfs.linux.kiev.ua}
+
+Note that libreiserfs is new software, and hasn't been tested widely
+yet.
+
+
+@node    LVM and RAID
+@chapter LVM and RAID
+@cindex lvm and raid
+@cindex raid and lvm
+
+@menu
+* LVM and RAID Overview::               Overview of LVM and RAID
+* Creating RAID or LVM partitions::     Setting up RAID and LVM partitions
+* Manipulating a RAID or LVM volume::   Operations on RAID or LVM partitions
+@end menu
+
+@node LVM and RAID Overview
+@section Logical Volume Manager and Redundant Arrays of Inexpensive Disks
+@cindex lvm and raid, overview
+@cindex lvw, overview
+@cindex raid, overview
+
+LVM (Logical Volume Manager) is an alternative system to partitioning.
+It allows logical volumes (i.e., ``virtual partitions'') to be spread
+over many physical volumes (i.e., hard disks and/or partitions).  LVM
+is supported on Linux version 2.4, and later.
+
+RAID (Redundant Array of Inexpensive Disks) is a system for using many
+disks and/or partitions together, as a ``virtual partition''.  There are a
+few different modes of utilising software RAID, that are essentially:
+
+@c RMK: if there are only two options, why not put them into a sentence?
+@itemize
+@item using multiple (small) disks for a single file system, to improve
+performance and to make the entire space available available on a single
+file system.
+@item using multiple disks to store redundant copies of information, to
+improve reliability and performance.
+@end itemize
+
+Software RAID is supported on Linux version 2.0, and later.
+
+@c RMK: usage: what does ``is supported normally by Parted'' mean?
+Hardware RAID is supported normally by Parted - so you need not read
+this section if you are using hardware RAID (as opposed to software
+RAID).
+
+LVM, software RAID and partitions are often used simultaneously, but
+they can all be used independently.  LVM and software RAID are often
+composed of partitions, rather than raw hard disks.
+
+GNU Parted does not support LVM and software RAID in full, but it is
+still useful when used in combination with their respective tools.
+Parted is useful for these tasks:
+
+@itemize
+@item creating a software RAID or LVM partition
+
+@item creating, resizing or copying a file system on a logical volume
+(or ``virtual partition'')
+@end itemize
+
+@node Creating RAID or LVM partitions
+@section Creating RAID or LVM partitions
+@cindex lvm partition creation
+@cindex raid partition creation
+
+To create a RAID or LVM partition, you must:
+@enumerate
+@item Create a partition with the mkpart command.
+@item Set the LVM or RAID flag on the partition.
+@end enumerate
+
+For example:
+
+@example
+(parted) @kbd{mkpart primary ext2 0 4000}
+(parted) @kbd{set 1 lvm on}
+@end example
+
+Note: the LVM or RAID partition will not be ready for use yet.  You
+still need to run mkraid(8) for RAID, or use the LVM tools to initialise
+the physical volume, and create logical groups, etc.
+
+@node Manipulating a RAID or LVM volume
+@section Manipulating a File System on a RAID or LVM volume
+@cindex raid partition operations
+@cindex lvm partition operations
+
+Parted can manipulate RAID and LVM logical volumes, even though it does
+not understand RAID or LVM.  It utilises Linux's support for RAID and
+LVM.  Therefore, you can only use these methods if your Linux kernel
+supports RAID and/or LVM.
+
+To manipulate a file system on a RAID or LVM logical volume (or, a raw
+partition, for that matter), you can start parted by selecting the
+logical volume (partition) device.  For example:
+
+@example
+# @kbd{parted /dev/md0}
+@end example
+
+For the rest of this chapter, ``virtual device'' will refer to the
+device Parted is editting (in our example cases, @file{/dev/md0}).
+
+@menu
+* Creating a file system on an LVM or RAID device::
+* Resizing a file system::
+* Copying a file system from a virtual device to a partition::
+* Copying a file system to a virtual device::
+@end menu
+
+@node Creating a file system on an LVM or RAID device
+@subsection Creating a File System on an LVM or RAID Virtual Device
+@cindex lvm, creating a file system
+@cindex raid, creating a file system
+
+To create a file system on an LVM volume, use the following steps:
+
+@enumerate
+@item Create a loop disk label.  This is a fake disk label, that tells
+Parted to treat the virtual device as a single file system.  With this
+fake disk label, there is either zero or one partition.
+
+@example
+(parted) @kbd{mklabel loop}
+@end example
+
+@item Create the file system, by using Parted's mkpartfs command.  You
+should make the start of the file system 0.  The partition can end
+anywhere inside the virtual device.  You can find out the size of the
+virtual device with the print command.  For example:
+
+@example
+(parted) @kbd{print}
+@group
+Disk geometry for /dev/md0: 0.000-47.065 megabytes
+Disk label type: loop
+Minor    Start       End     Filesystem  Flags
+@end group
+(parted) @kbd{mkpartfs primary ext2 0 47.065}
+(parted) @kbd{print}
+@group
+Disk geometry for /dev/md0: 0.000-47.065 megabytes
+Disk label type: loop
+Minor    Start       End     Filesystem  Flags
+1          0.000     47.065  ext2
+@end group
+@end example
+@end enumerate
+
+@node Resizing a file system
+@subsection Resizing a File System on an LVM or RAID Virtual Device
+@cindex lvm, resizing a file system
+@cindex raid, resizing a file system
+
+You usually resize the file system at the same times as you resize your
+virtual device.  If you are growing the file system and virtual device,
+you should grow the device first (with the RAID or LVM tools), and then
+grow the file system.  If you are shrinking the file system and virtual
+device, you should shrink the file system first, and then the virtual
+device afterwards.
+
+To resize the file system in Parted, use the resize command.  For example:
+
+@example
+(parted) @kbd{select /dev/md0}
+(parted) @kbd{resize 1 0 20}
+@end example
+
+@node Copying a file system from a virtual device to a partition
+@subsection Copying a File System from an LVM or RAID Virtual Device to a Partition
+@cindex lvm, copying from lvm to a partition
+@cindex raid, copying from raid to a partition
+
+To copy a file system from an LVM or RAID virtual device, just use the cp
+command.  For example:
+
+(parted) @kbd{select /dev/hda}
+(parted) @kbd{cp /dev/md0 1 3}
+
+@node Copying a file system to a virtual device
+@subsection Copying a File System to an LVM or RAID Virtual Device
+@cindex lvm, copying from a partition to lvm volume
+@cindex raid, copying from a partition to raid device
+
+To copy a file system from an LVM or RAID virtual device, use the
+following recipe:
+
+@enumerate
+@item Create the loop disk label on the virtual device.  For example:
+
+@example
+(parted) @kbd{select /dev/md0}
+(parted) @kbd{mklabel loop}
+@end example
+
+@item Create a file system on the virtual device, with the mkpartfs
+command.  For example:
+
+@example
+(parted) @kbd{mkpartfs primary ext2 0 47.065}
+@end example
+
+@item Copy the partition with the cp command:
+
+@example
+(parted) @kbd{select /dev/hda}
+(parted) @kbd{cp /dev/md0 3 1}
+@end example
+@end enumerate
+
+@node    Disk Imaging
+@chapter Disk Imaging
+@cindex disk imaging
+
+Disk imaging is a method for avoiding the tedious Windows install
+process.  For example, if you want to install Windows and Office on 1000
+machines, it'll probably take you about 5 times 1000 hours.  Things
+aren't so bad with GNU/Linux, because there are programs like Red Hat's
+kickstart, which allow you to automate the install of other programs, or
+practically anything you need to do.  Therefore, disk imaging is really
+only used for Windows machines.  Obviously, we urge you to not use
+Windows (or any non-free software) at all, but we realise that most
+organisations would find it impossible switch from Windows to GNU/Linux
+(or other free software) without a transition period, where both systems
+are available.
+
+@c FIXME: standards: the CD-Writing howto is listed as non-free by LDP
+With disk imaging, you can burn a CD with a disk image of a partition
+containing Windows and Office, and copy the partition directly onto the
+hard disks of all the computers, by sticking in a boot disk and the CD,
+and letting it fly.  But the partition on the Windows disk is probably
+going to be bigger, so the partition will also have to be resized.  I've
+had several people say that they've managed to automate this process
+with Linux boot floppies and Parted.  It is possible to use the CDROM
+only, by using the floppy as the boot image on the CD.  Read the CD
+writing HOWTO for more information.  There are a few weird things you
+have to do to get this whole thing to work (which will be fixed in the
+next stable series).  Anyway, this is the general process:
+
+@enumerate
+@item Install Windows on a machine, with the setup you want. You can
+have the partition as big as you want, so long as you don't use more
+than 640 MB, and you leave enough room for a complete Linux install, and
+another 1300 MB for two copies of the CD image.
+
+@item Install Linux on the machine.
+
+@item Make a directory for the CD image (e.g., @file{/root/cdimage})
+
+@item Create a 640 MB disk image file (e.g., @file{/root/cdimage/diskimage})
+in the CD image directory:
+
+@example
+# @kbd{dd if=/dev/zero of=/root/cdimage/diskimage bs=1M count=640}
+@end example
+
+@item Use Parted to copy the Windows partition to the disk image:
+
+@example
+# @kbd{parted /root/cdimage/diskimage mklabel msdos}
+# @kbd{parted /root/cdimage/diskimage mkpart primary fat32 0 639}
+# @kbd{parted /root/cdimage/diskimage cp /dev/hda 1 1}
+@end example
+
+@item Create the CD image from the CD image directory, and burn it to CD
+with your favourite CD writing tools.
+
+@item Compile a special version of Parted without native language
+support and readline support (or download the special RPM from
+Freshmeat):
+
+@example
+localhost:~/parted-1.0.0# @kbd{./configure --disable-nls --without-readline --disable-shared; make}
+@end example
+
+@c FIXME: standards: LDP labelled the Bootdisk HOWTO non-free.
+@item Create a Linux boot disk (see the Bootdisk HOWTO).
+
+@item Put the cut-down version of Parted on the boot disk (or a
+supplementary root disk).
+
+@item Write a shell script to do the following:
+
+@example
+@asis{mount /dev/cdrom /mnt/cdrom}
+@asis{parted --script /dev/hda mklabel msdos}
+@asis{parted --script /dev/hda mkpartfs primary fat 0 @var{some-size}}
+@asis{parted --script /dev/hda cp /mnt/cdrom/diskimage 1 1}
+@asis{parted --script /dev/hda set 1 boot on}
+@asis{/sbin/halt}
+@end example
+
+@var{some-size} is the size you desire the first partition to use.
+
+@item Start installing! Stick the floppy + CD into each computer, and
+let it roll@dots{}
+@end enumerate
+
+Obviously, I can and will make this process a lot easier. We're
+considering making a mini-distribution to do this.  I wouldn't have
+time to maintain such a thing --- any volunteers?
+
+@node Related Software and Info
+@chapter Related Software and Info
+@cindex related software
+@cindex further reading
+@cindex related documentation
+
+If you want to find out more information, feel free to send questions to
+@email{parted@@gnu.org}.  (!) indicates the information/software is
+probably included in your distribution.
+
+These files in the Parted distribution contain further information:
+
+@itemize @bullet
+
+@item ABOUT-NLS - information about using Native Language Support, and the Free Translation Project
+
+@item API - the documentation for the libparted API
+
+@item AUTHORS - who wrote what
+
+@item BUGS - unfixed bugs
+
+@item ChangeLog - record of changes made to Parted
+
+@item COPYING - the GNU General Public License, the terms under which GNU Parted may be distributed
+
+@item COPYING.DOC - the GNU Free Documentation Licence, the term under
+which Parted's documentation may be distributed.
+
+@item FAT -- information on how the FAT resizer works (for programmers)
+
+@item INSTALL --- how to compile and install Parted, and most other free software
+
+@item TODO --- planned features that are not yet implemented
+@end itemize
+
+These documents are not distributed with Parted, but you may find them
+useful.  Most of these will probably be in your distribution.  For
+example, on Red Hat Linux, look on the CD in @file{/doc/HOWTO} and
+@file{/doc/FAQ}.
+
+@itemize @bullet
+
+@c RMK: usefulness: available at the LDP -- should these urls be updated?
+@c RMK: standards: GPL'd documentation.
+@item Filesystems HOWTO   @uref{http://penguin.cz/~mhi/fs}
+
+@c RMK: usefulness: available at the LDP -- should these urls be updated?
+@c FIXME: standards: LDP labelled this non-free
+@item Hard Disk Upgrade mini-HOWTO (!):   @uref{http://sunsite.unc.edu/LDP/HOWTO}
+
+@c RMK: usefulness: available at the LDP -- should these urls be updated?
+@c FIXME: standards: LDP labelled this non-free
+@item Large Disk HOWTO   @uref{http://www.win.tue.nl/~aeb/linux/Large-Disk.html}
+
+@item LILO mini-HOWTO (!)   @uref{http://sunsite.unc.edu/LDP/HOWTO}
+
+@c RMK: usefulness: available at the LDP -- should these urls be updated?
+@item MILO HOWTO (!)   @uref{http://sunsite.unc.edu/LDP/HOWTO}
+
+@c FIXME: standards: in short, none of the following is free documenation
+@c FIXME: standards: Linux+DOS+Win95+OS2 labelled non-free by LDP
+@c FIXME: standards: Linux+FreeBSD-mini labelled non-free by LDP
+@c FIXME: reference: can't find a Linux+Win95, only Linux+Win95-mini
+@c FIXME: standards: Linux+Win95-mini labelled non-free by LDP
+@c FIXME: reference: can't find a Linux+FreeBSD, only Linux+FreeBSD-mini
+@c FIXME: reference: can't find a Linux+NT-Loader, only "NT OS Loader +
+@c Linux mini
+@c FIXME: standards: NT OS Loader + Linux mini labelled non-free by LDP
+@item Linux+OS mini-HOWTOs (!): Linux+DOS+Win95+OS2, Linux+FreeBSD-mini-HOWTO,
+Linux+Win95, Linux+FreeBSD, Linux+NT-Loader.  You can get these from: @uref{http://sunsite.unc.edu/LDP/HOWTO}
+
+@c FIXME: standards: Partition mini  labelled non-free by LDP
+@item Partition mini-HOWTO (!): @uref{http://www.linuxdoc.org/HOWTO/mini/Partition/index.html}
+
+@c RMK: standards: no clear distribution terms
+@item Partition Table HOWTO @uref{http://www.win.tue.nl/~aeb/partitions/partition_tables.html}
+
+@c FIXME: standards: no clear distribution terms
+@item Partition Types list @uref{http://www.win.tue.nl/~aeb/partitions/partition_types.html}
+
+@item Software RAID HOWTO @uref{http://linas.org/linux/Software-RAID/Software-RAID.html}
+
+@end itemize
+
+Other related programs are listed here.  Some of these also have useful
+documentation:
+
+@itemize @bullet
+
+@item Disk Drake.  Available at @uref{http://www.mandrakelinux.com/diskdrake}
+This is similar in functionality to Parted.  The FAT code in Disk Drake
+is based on our Parted code.  Here's how Disk Drake compares to Parted:
+(which we both agree to :-) Disk Drake is:
+
+@itemize @minus
+@item easier to use, protects you from making mistakes
+@item more complete solution (handles @file{/etc/fstab}, lilo, etc.)
+@item less support for FAT (can't convert FAT16<->FAT32, can't copy partitions)
+@item less support for ext2 (at the moment)
+@item less attention to compatibility between (older) DOS/Windows systems
+@item no support for non-PC architectures
+@end itemize
+
+@item dvhtool (for SGI/MIPS) (!)
+
+@c RMK: standards: unchecked
+@item dosfsck (!)
+
+@item e2fsck, resize2fs e2fsprogs (!) @uref{http://web.mit.edu/tytso/www/linux/e2fsprogs.html}
+
+@item ext2resize - uses the same code as Parted, but includes some other
+goodies as well, such as an online ext2 resizer, that doesn't require
+unmounting.   @uref{http://ext2resize.sourceforge.net}
+
+@item fdisk (!)
+
+@item FIPS (!) (First Interactive Partition Splitter) @uref{http://www.igd.fhg.de/~aschaefe/fips}
+
+@ RMK: standards: GPL'd
+@item GPart - recovers broken partition tables. @uref{http://www.stud.uni-hannover.de/user/76201/gpart}
+
+@item GNU GRUB - GRand Unified Boot-loader @uref{http://www.gnu.org/software/grub/grub.html}
+
+@item LILO (!) (LInux LOader)  @uref{ftp://tsx-11.mit.edu/pub/linux/packages/lilo}
+
+@item LVM @uref{http://linux.msede.com/lvm}
+
+@c RMK: standards: is mkdosfs Free?
+@item mkdosfs (!)  (sometimes called mkfs.msdos)
+
+@item mke2fs (!)  (sometimes called mkfs.ext2)
+
+@item mkfs (!)
+
+@item mkswap (!)
+
+@item quik (!)
+
+@item reiserfs: NOTE: a reiserfs resizer is included with normal reiserfs
+distribution.  @uref{http://devlinux.com/projects/reiserfs}
+Also, an independent reimplementation of reiserfs userland (which parted
+can utilize) @uref{http://reiserfs.linux.kiev.ua}.  This may be adopted by
+the other reiserfs people in future...
+
+@item yaboot (!)  @uref{http://ppclinux.apple.com/~benh/}
+
+@item ybin (!)  @uref{http://www.alaska.net/~erbenson/ybin/}
+
+@end itemize
+
+@node Copying This Manual
+@appendix Copying This Manual
+
+@menu
+* GNU Free Documentation License::  License for copying this manual
+@end menu
+
+@include fdl.texi
+
+@node History
+@appendix This manual's history
+@cindex  history of this manual
+
+This manual was based on the file, USER, included in GNU Parted version
+1.4.22 source distribution.  The GNU Parted source distribution is
+available at @uref{ftp.gnu.org/gnu/parted}.
+
+Texinfo formatting by Richard M. Kreuter, 2002.
+
+Maintainence by Andrew Clausen since then.
+
+This manual is distributed under the GNU Free Documentation License,
+version 1.1 or later, at your discretion, with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  @xref{Copying
+This Manual}, for details.
+
+@c FIXME: why doesn't this @ifnotplaintext work?!
+@c @ifnotplaintext
+@node Index
+@unnumbered Index
+@printindex cp
+@c @end ifnotplaintext
+
+@bye
+
+@ignore
+I've (that is, RMK) included (too much) commentary in this file.
+
+Lines of the form
+
+    FIXME:<category>:
+
+are bugs, and should be fixed.  The categories are sort of vague, but
+"standards" means that something doesnt't meet somebody's (probably
+GNU's) standards.
+
+Lines of the form:
+
+    FDL:
+
+are non-bug notes having to do with the requirements/prohibitions
+of the GNU Free Documentation License (which I endorse).
+
+Lines of the form
+
+    RMK:
+
+are non-bug comments, for future additions to this text, etc.
+
+I had intended to mark every section I changed, some of which have had
+to do with requirements of the texinfo form, some of which are spelling
+and usage corrections.  Unfortunately, I may have gone overboard with
+some corrections about comma use and spelling and "it's" versus "its" in
+English, and in the process lost track of edits.  I believe, though,
+that in substance this manual is the same as the original file.
+
+I've tried to check the license for each program and documentation
+referenced, but have missed some.  As a rule, if a Howto or mini-Howto
+has been labelled as non-free by the LDP, then I've assumed it's also
+non-Free for GNU purposes.  I've also tried to note the free software
+and documentation, since omission of such notes lead me to recheck things
+I'd forgotten I'd check, etc.
+
+Many nodes give some detailed explanation of how to use parted along
+with a non-free operating system using non-free utilities that are part
+of that system.  This may be a violation of the GNU standards,
+node/section "References".  I've marked up the text anyhow, in case the
+content is deemed acceptable by decision makers, and hope that my
+contribution here doesn't sway decisions.
+
+For what it's worth, I've noted references to non-free software as
+"acceptable" in case the reference includes a description of what the
+software can't do (e.g., not suck, not harm mankind).  This idiosyncratic
+assessment of the permissibility of reference of non-free software is
+meant partly as a joke.
+
+Note: there is a free (GPL'd) DOS compatible operating system, FreeDOS,
+that I've tested and found to work pretty well, better in many respects
+that Micros~1's DOS.  Many of the tips and tricks described in the
+manual might work with or be needed for a FreeDOS based system.  In
+principle, one could rewrite the sections of this manual to make
+reference only to 'DOS-compatible' systems, and refer people to FreeDOS.
+
+I, for one, would be happy to refer people to FreeDOS, since it's a nice
+project that could play a valuable role among free operating systems
+(actually, it does: it's the DOS kernel for DOSEMU).  But would
+reworking references to MS DOS and its progeny to refer to FreeDOS just
+be a clever hack around the GNU standards?  I dunno...
+
+<Sigh>  Screed over.
+
+Notes on possible (unimplemented!) modifications:
+
+The output samples from parted's print command, fdisk's p command, etc.,
+might be made into tables (multi-column tables) to ensure spiffy formatting.
+
+I'd like to find a way to make *entry: see *synonym type references in
+the index, so, e.g., to refer people looking for Apple to Macintosh, and
+PowerPC to Macintosh, etc.  Probably texinfo does this already; I dunno.
+
+
+Notes on general fixes:
+
+RMK: usage: eg -> e.g. ("e.g." is customarily spelled thus).
+
+RMK: usage: "its" is English possessive third person singular adjective
+(cf "sein/ihr", "son/sa/ses").  "it's" is a contraction of "it is",
+i.e., third person singular present active indicative of "to be" (cf
+"das ist", "il est").  I hope that description doesn't come off too
+snotty.  I've changed 'it's' to 'its' more times than noted above.
+
+RMK: usage (punctuation): in English, commas are only used to separate
+relative clauses when the information in the clause is deemed
+non-essential for identifying the referent of the noun on which the
+clause depends (German uses commas around every relative clause, by
+contrast).  So: "I have read the book that was assigned" doesn't have a
+comma because the clause 'that was assigned' is needed to identify which
+book is the object of 'read', whereas "I have read the book, which
+wasn't very good" implies that the fact that the book wasn't very good
+is extra information, not required for the identification of the book,
+e.g., its identity has already been established).
+
+@end ignore
+

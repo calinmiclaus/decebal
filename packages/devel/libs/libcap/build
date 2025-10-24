@@ -1,0 +1,34 @@
+NAME=libcap
+VERSION=1.10
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org/pub/linux/libs/security/linux-privs/"
+DESC="POSIX 1003.1e capabilities library."
+GROUP=libs
+LICENSE=BSDL
+SIZE="26K"
+
+SOURCES="http://www.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.4/libcap-1.10.tar.bz2
+         http://ftp.debian.org/debian/pool/main/libc/libcap/libcap_1.10-14.diff.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../libcap_1.10-14.diff
+  
+  make DESTDIR=$PKG install
+  
+  chmod 0755 $PKG/lib/libcap.so.1.10
+  
+  mkdir -p $PKG/usr/lib
+  
+  mv $PKG/lib/libcap.a $PKG/usr/lib
+  
+  ln -s ../../lib/libcap.so.1 $PKG/usr/lib/libcap.so
+  
+  rm -f $PKG/lib/libcap.so
+  
+  install_docs CHANGELOG License README
+}

@@ -1,0 +1,22 @@
+NAME=eps
+VERSION=1.5
+ARCH=i686
+RELEASE=1
+URL="http://www.inter7.com/index.php?page=eps"
+DESC="A library intended to give people the ability to write their own email processing tools."
+GROUP=mail
+LICENSE="GPLv2"
+SIZE="27K"
+
+SOURCES="http://www.inter7.com/eps/eps-1.5.tar.gz eps-makefile.diff"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  patch -p1 < ../eps-makefile.diff
+  
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ChangeLog TODO doc/*
+}

@@ -1,0 +1,43 @@
+NAME=libsdl
+VERSION=1.2.8
+ARCH=i686
+RELEASE=1
+URL="http://www.libsdl.org/"
+DESC="A library for portable low-level access to video framebuffer, audio output."
+GROUP=multimedia
+LICENSE="LGPLv2"
+SIZE="2541K"
+HUSE="arts nas static debug"
+
+SOURCES="http://www.libsdl.org/release/SDL-1.2.8.tar.gz"
+
+BUILDTIME="nasm pkgconfig"
+
+RUNTIME="xorg esound gcc alsa-lib directfb svgalib aalib"
+
+use arts && RUNTIME="RUNTIME arts"
+use nas && RUNTIME="$RUNTIME nas"
+
+build() {
+  cd $SRC/SDL-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use arts && OPTS="$OPTS --enable-arts --enable-arts-shared"
+  use nas && OPTS="$OPTS --enable-nas"
+    
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --localstatedir=/var/lib \
+	      --libexecdir=/usr/lib/$NAME \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --enable-video-directfb \
+	      --enable-video-svga \
+	      --enable-video-aalib \
+	      $OPTS	
+  make
+  make DESTDIR=$PKG install
+
+  install_docs BUGS Borland.html COPYING CREDITS INSTALL README* TODO
+}

@@ -1,0 +1,37 @@
+NAME=at
+VERSION=3.1.9
+ARCH=i686
+RELEASE=1
+URL="http://ftp.debian.org/debian/pool/main/a/at/"
+DESC="A tool for scheduled execution."
+GROUP=system
+LICENSE=GPLv2
+SIZE="95K"
+
+SOURCES="http://ftp.debian.org/debian/pool/main/a/at/at_3.1.9.tar.gz \
+         atd.init at.deny atd.sysconf"
+
+BACKUPS="etc/conf.d/atd
+         etc/at.deny"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --with-jobdir=/var/spool/atjobs \
+	      --with-atspool=/var/spool/atspool \
+	      --with-daemon_userNAME=at \
+              --with-daemon_groupNAME=at
+  make
+  make prefix=$PKG/usr install
+  
+  install -D -m 0700 ../atd.init $PKG/etc/rc.d/atd
+  install -D -m 0644 ../atd.sysconf $PKG/etc/conf.d/atd
+  install -m 0644 ../at.deny $PKG/etc/at.deny
+  
+  mkdir -p $PKG/var/spool/{atjobs,atspool}
+  
+  install_docs COPYING ChangeLog Copyright Filelist Problems README
+  rm -rf $PKG/usr/doc
+}

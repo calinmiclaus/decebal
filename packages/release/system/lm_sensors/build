@@ -1,0 +1,23 @@
+NAME=lm_sensors
+VERSION=2.9.1
+ARCH=i686
+RELEASE=1
+URL="http://secure.netroedge.com/~lm78/"
+DESC="Essential tools for monitoring the hardware health of Linux systems."
+GROUP=system
+LICENSE="GPLv2"
+SIZE="850K"
+
+SOURCES="http://secure.netroedge.com/~lm78/archive/lm_sensors-2.9.1.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  make PREFIX=/usr user
+  make user_install PREFIX=/usr DESTDIR=$PKG
+  
+  rm -rf $PKG/usr/include/linux
+  
+  install_docs BACKGROUND BUGS CHANGES CONTRIBUTORS COPYING INSTALL \
+    QUICKSTART README TODO 
+}

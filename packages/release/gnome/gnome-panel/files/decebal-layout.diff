@@ -1,0 +1,98 @@
+diff --speed-large-files --minimal -Nru gnome-panel-2.9.92.orig/gnome-panel/panel-default-setup.entries.in gnome-panel-2.9.92/gnome-panel/panel-default-setup.entries.in
+--- gnome-panel-2.10.0.orig/gnome-panel/panel-default-setup.entries.in	2005-02-18 05:49:36.000000000 +1100
++++ gnome-panel-2.10.0/gnome-panel/panel-default-setup.entries.in	2005-03-02 18:20:50.304576544 +1100
+@@ -47,7 +47,7 @@
+       <value>
+         <list type="string">
+           <value>
+-            <string>window_menu</string>
++            <string>notificationarea</string>
+           </value>
+           <value>
+             <string>mixer</string>
+@@ -316,59 +316,59 @@
+     <entry><key>objects/terminal_launcher/menu_path</key><schema_key>/schemas/apps/panel/objects/menu_path</schema_key></entry>
+     <entry><key>objects/terminal_launcher/action_type</key><schema_key>/schemas/apps/panel/objects/action_type</schema_key></entry>
+ 
+-  <!-- Window Menu Applet -->
++  <!-- Notification Area Applet -->
+ 
+     <entry>
+-      <key>applets/window_menu/object_type</key>
++      <key>applets/notificationarea/object_type</key>
+       <schema_key>/schemas/apps/panel/objects/object_type</schema_key>
+       <value>
+         <string>bonobo-applet</string>
+       </value>
+     </entry>
+     <entry>
+-      <key>applets/window_menu/toplevel_id</key>
++      <key>applets/notificationarea/toplevel_id</key>
+       <schema_key>/schemas/apps/panel/objects/toplevel_id</schema_key>
+       <value>
+         <string>top_panel</string>
+       </value>
+     </entry>
+     <entry>
+-      <key>applets/window_menu/position</key>
++      <key>applets/notificationarea/position</key>
+       <schema_key>/schemas/apps/panel/objects/position</schema_key>
+       <value>
+-        <int>0</int>
++        <int>2</int>
+       </value>
+     </entry>
+     <entry>
+-      <key>applets/window_menu/panel_right_stick</key>
++      <key>applets/notificationarea/panel_right_stick</key>
+       <schema_key>/schemas/apps/panel/objects/panel_right_stick</schema_key>
+       <value>
+         <bool>true</bool>
+       </value>
+     </entry>
+     <entry>
+-      <key>applets/window_menu/locked</key>
++      <key>applets/notificationarea/locked</key>
+       <schema_key>/schemas/apps/panel/objects/locked</schema_key>
+       <value>
+         <bool>true</bool>
+       </value>
+     </entry>
+     <entry>
+-      <key>applets/window_menu/bonobo_iid</key>
++      <key>applets/notificationarea/bonobo_iid</key>
+       <schema_key>/schemas/apps/panel/objects/bonobo_iid</schema_key>
+       <value>
+-        <string>OAFIID:GNOME_WindowMenuApplet</string>
++        <string>OAFIID:GNOME_NotificationAreaApplet</string>
+       </value>
+     </entry>
+ 
+-    <entry><key>applets/window_menu/attached_toplevel_id</key><schema_key>/schemas/apps/panel/objects/attached_toplevel_id</schema_key> </entry>
+-    <entry><key>applets/window_menu/tooltip</key><schema_key>/schemas/apps/panel/objects/tooltip</schema_key></entry>
+-    <entry><key>applets/window_menu/use_custom_icon</key><schema_key>/schemas/apps/panel/objects/use_custom_icon</schema_key></entry>
+-    <entry><key>applets/window_menu/custom_icon</key><schema_key>/schemas/apps/panel/objects/custom_icon</schema_key></entry>
+-    <entry><key>applets/window_menu/use_menu_path</key><schema_key>/schemas/apps/panel/objects/use_menu_path</schema_key></entry>
+-    <entry><key>applets/window_menu/menu_path</key><schema_key>/schemas/apps/panel/objects/menu_path</schema_key></entry>
+-    <entry><key>applets/window_menu/launcher_location</key><schema_key>/schemas/apps/panel/objects/launcher_location</schema_key></entry>
+-    <entry><key>applets/window_menu/action_type</key><schema_key>/schemas/apps/panel/objects/action_type</schema_key></entry>
++    <entry><key>applets/notificationarea/attached_toplevel_id</key><schema_key>/schemas/apps/panel/objects/attached_toplevel_id</schema_key> </entry>
++    <entry><key>applets/notificationarea/tooltip</key><schema_key>/schemas/apps/panel/objects/tooltip</schema_key></entry>
++    <entry><key>applets/notificationarea/use_custom_icon</key><schema_key>/schemas/apps/panel/objects/use_custom_icon</schema_key></entry>
++    <entry><key>applets/notificationarea/custom_icon</key><schema_key>/schemas/apps/panel/objects/custom_icon</schema_key></entry>
++    <entry><key>applets/notificationarea/use_menu_path</key><schema_key>/schemas/apps/panel/objects/use_menu_path</schema_key></entry>
++    <entry><key>applets/notificationarea/menu_path</key><schema_key>/schemas/apps/panel/objects/menu_path</schema_key></entry>
++    <entry><key>applets/notificationarea/launcher_location</key><schema_key>/schemas/apps/panel/objects/launcher_location</schema_key></entry>
++    <entry><key>applets/notificationarea/action_type</key><schema_key>/schemas/apps/panel/objects/action_type</schema_key></entry>
+ 
+   <!-- Mixer Applet -->
+ 
+@@ -444,7 +444,7 @@
+       <key>applets/clock/position</key>
+       <schema_key>/schemas/apps/panel/objects/position</schema_key>
+       <value>
+-        <int>2</int>
++        <int>0</int>
+       </value>
+     </entry>
+     <entry>

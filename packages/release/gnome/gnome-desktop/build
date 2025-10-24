@@ -1,0 +1,39 @@
+NAME=gnome-desktop
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="The GNOME desktop."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2.1 FDLv1.1"
+SIZE="1076K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-desktop-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="libgnomeui startup-notification"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # we dont want the scrollkeeper update
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      --with-gnome-distributor="Decebal" $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL HACKING \
+    NEWS README
+}

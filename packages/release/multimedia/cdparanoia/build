@@ -1,0 +1,29 @@
+NAME=cdparanoia
+VERSION=3.9.8
+ARCH=i686
+RELEASE=1
+URL="http://www.xiph.org/paranoia/"
+DESC="A CD ripping application"
+GROUP=multimedia
+LICENSE="GPLv2"
+
+SOURCES="http://www.xiph.org/paranoia/download/cdparanoia-III-alpha9.8.src.tgz
+         cdparanoia-3.9.8-gcc34-1.diff"
+
+build() {
+  cd $SRC/cdparanoia-III-alpha9.8
+
+  patch -p1 < ../cdparanoia-3.9.8-gcc34-1.diff
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc
+
+  sed -i "s:-O20:${CFLAGS}:" Makefile
+  make
+  make prefix=$PKG/usr install
+
+  chmod 755 $PKG/usr/lib/libcdda_interface.so.0.9.8
+  chmod 755 $PKG/usr/lib/libcdda_paranoia.so.0.9.8
+
+  install_docs FAQ.txt GPL README
+}

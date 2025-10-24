@@ -1,0 +1,40 @@
+NAME=sodipodi
+VERSION=0.34
+ARCH=i686
+RELEASE=1
+URL="http://www.sodipodi.com/"
+DESC="A Vector Based Graphical Tool."
+GROUP=graphics
+LICENSE="GPLv2 GLGPLv2.1"
+SIZE="2272K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/sodipodi/sodipodi-0.34.tar.gz"
+
+BUILDTIME="gettext intltool"
+
+RUNTIME="xorg >=libart_lgpl-2.3.10 >=gtk2-2.2.0 >=libxml2-2.4.24 popt freetype2
+         fontconfig >=libgnomeprint-1.116.0  >=libgnomeprintui-1.116.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --disable-embedded \
+	      --disable-qtopia \
+	      --disable-mt \
+	      --without-kde \
+	      --with-xft \
+	      --with-xinerama \
+	      --with-popt \
+	      --with-gnome-print $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog HACKING INSTALL \
+    NEWS README TODO
+}

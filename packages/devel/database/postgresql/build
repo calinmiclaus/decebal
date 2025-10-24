@@ -1,0 +1,56 @@
+NAME=postgresql
+#VERSION=8.0.3
+VERSION=8.0.1
+ARCH=i686
+RELEASE=1
+URL="http://www.postgresql.org/"
+DESC="The PostgreSQL database management system."
+GROUP=database
+LICENSE=BSDL
+SIZE="10790K"
+HUSE="nls tcl python"
+
+#SOURCES="ftp://ftp6.ro.postgresql.org/pub/mirrors/ftp.postgresql.org/source/v8.0.3/postgresql-8.0.3.tar.bz2
+#         postgresqld.init postgresqld.sysconf"
+SOURCES="ftp://ftp6.ro.postgresql.org/pub/mirrors/ftp.postgresql.org/source/v8.0.3/postgresql-8.0.1.tar.bz2
+         postgresqld.init postgresqld.sysconf"
+
+BACKUPS="etc/postgresql/postmaster.conf
+         etc/conf.d/postgresqld"
+
+use nls && BUILDTIME="gettext"
+
+RUNTIME=">=openssl-0.9.7e >=zlib-1.1.4 >=readline-5.0 >=ncurses-5.3 perl"
+
+use tcl && RUNTIME="$RUNTIME tcl"
+use python && RUNTIME="$RUNTIME python"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls"
+  use tcl && OPTS="$OPTS --with-tcl" || OPTS="$OPTS --without-tcl"
+  use python && OPTS="$OPTS --with-python" || OPTS="$OPTS --without-python"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/postgresql \
+	      --datadir=/usr/share/postgresql \
+	      --mandir=/usr/share/man \
+	      --with-openssl \
+	      --enable-innodb \
+	      --with-pgport=5432 \
+	      --with-libs="-lncurses" \
+	      --without-pam \
+	      --with-perl \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../postgresqld.init $PKG/etc/rc.d/postgresqld
+  install -D -m 0644 ../postgresqld.sysconf $PKG/etc/conf.d/postgresqld
+  
+  install_docs COPYRIGHT HISTORY INSTALL README
+  
+  mv $PKG/usr/doc/$NAME/html $PKG/usr/share/doc/$NAME-$VERSION/html
+  rm -rf $PKG/usr/doc
+}

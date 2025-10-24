@@ -1,0 +1,45 @@
+NAME=gnumeric
+VERSION=1.5.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/projects/gnumeric/"
+DESC="Gnumeric is a powerful and easy to use spreadsheet using GNOME."
+GROUP=office
+LICENSE=GPLv2
+SIZE="16545K"
+HUSE="guile nls"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/gnumeric/1.5/gnumeric-1.5.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomeui-2.0.0 >=libgsf-1.11.1 xorg perl python >=libgnomeprintui-2.8.2 >=libglade-2.3.6
+         >=pygtk-1.99.10 >=libgnomedb-1.0.1"
+
+use guile && RUNTIME="$RUNTIME guile"
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  # we dont want the scrollkeeper update
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+	    
+  use guile && OPTS="--with-guile" || OPTS="--without-guile"
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+  
+  PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --with-perl \
+	      --with-python \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BEVERAGES BUGS COPYING ChangeLog HACKING INSTALL MAINTAINERS NEWS README TODO
+}

@@ -1,0 +1,18 @@
+#
+# /etc/conf.d/posgresqld - configuration file for /etc/rc.d/init.d/postgresqld
+#
+
+# The directory where PostgreSQL will keep it's configuration files (this
+# is only for standardization, normally the configuration files are kept
+# in $DATADIR, so this is only a symlink).
+CONFDIR=/etc/postgresql
+
+# The directory where PostgreSQL will keep the data files.
+DATADIR=/var/lib/postgresql/data
+
+# The directory where PostgreSQL will keep it's logs.
+LOGDIR=/var/log/postgresql
+
+# PostgreSQL's log file.
+LOGFILE=postgresql.log
+

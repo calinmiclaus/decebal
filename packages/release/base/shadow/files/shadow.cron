@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+# /etc/cron.d/daily/shadow
+#
+
+/usr/sbin/grpconv
+/usr/sbin/pwconv

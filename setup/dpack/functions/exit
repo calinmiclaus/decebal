@@ -1,0 +1,26 @@
+#!/bin/bash
+
+pkg_clean() {
+  if [ ! "$PKG_NOCLEAN" = "1" ]
+  then
+    rm -rf $SRC $PKG
+  fi
+}
+
+pkg_exit() {
+  if [ "$DEBUG" = "yes" ]
+  then
+    echo "Debugging information:"
+    echo "Function  : $1"
+    echo "Action    : $2"
+    echo "Line      : $3"
+    echo "Retval    : $4"
+  fi
+  
+  rm -f $DPACKLOCK
+  pkg_clean
+  pkg_remove_tmp
+  exit $4
+}
+
+				

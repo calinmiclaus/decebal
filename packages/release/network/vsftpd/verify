@@ -1,0 +1,8 @@
+md5: 74936cbd8e8251deb1cd99c5fb18b6f8 vsftpd-2.0.3.tar.gz
+md5: 5f2ea18f6e7a6f4de6c01e971845402f vsftpd.logrotate
+md5: 08d53040be91644b3ce441cb700894f3 vsftpd.conf
+md5: 9cb8ac1ba1b1045445edf2478f755d2a vsftpd.init
+md5: c5c1b1bff0a5dcbe8c85865652649d9b vsftpd.pam
+md5: 74cc1c60799e0a786ac7094b532f01b1 vsftpd.user_list
+md5: d41d8cd98f00b204e9800998ecf8427e vsftpd.banned_emails
+md5: d41d8cd98f00b204e9800998ecf8427e vsftpd.chroot_list

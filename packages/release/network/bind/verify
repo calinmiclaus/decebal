@@ -1,0 +1,8 @@
+md5: fdb42fff7e345372ac52a4493b77b694 bind-9.3.0.tar.gz
+md5: 11840b84bfa88aa7253315e714a2f9f0 named.init
+md5: 810e38bed374f94d5afaf87c260eed2f named.sysconf
+md5: 15e2a572d7b8b600782e25baafc922cc 127.0.0.1
+md5: 3a112cb03c1824815f661fbc3ccfd190 bind.var.run.named.diff
+md5: 5a1cae807a98fbf639cb7ead68e8ac54 named.conf
+md5: 78f5739876ddb5dbc552c7a5f591dcf1 rndc.conf
+md5: ec0503dfe47d195e9cf2fcfef7b2c3fd root.hints

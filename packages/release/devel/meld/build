@@ -1,0 +1,23 @@
+NAME=meld
+VERSION=0.9.6
+ARCH=i686
+RELEASE=1
+URL="http://meld.sourceforge.net/"
+DESC="A visual diff and merge tool."
+GROUP=devel
+LICENSE="GPLv2"
+SIZE="281K"
+
+SOURCES="http://ftp.gnome.org/pub/gnome/sources/meld/0.9/meld-0.9.6.tar.bz2"
+
+RUNTIME=">=python-2.3 >=pygtk-2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  make prefix=/opt/gnome
+  make prefix=$PKG/opt/gnome install
+  
+  install_docs AUTHORS COPYING INSTALL README*
+}
+

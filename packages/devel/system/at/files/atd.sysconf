@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/atd - configuration file for /etc/rc.d/atd
+#
+
+# Optional atd arguments
+ATD_OPTS=""

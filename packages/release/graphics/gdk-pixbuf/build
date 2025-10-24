@@ -1,0 +1,31 @@
+NAME=gdk-pixbuf
+VERSION=0.22.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A replacement for ImLIb."
+GROUP=graphics
+LICENSE="GPLv2 LGPLv2"
+SIZE="388K"
+HUSE="static gtkdoc"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/gdk-pixbuf/0.22/gdk-pixbuf-0.22.0.tar.bz2"
+
+RUNTIME="gtk glib xorg"
+
+use gtkdoc && BUILDTIME="gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc" || OPTS="$OPTS --disable-gtk-doc"
+  
+  ./configure --prefix=/usr \
+              --with-x \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS README TODO
+}

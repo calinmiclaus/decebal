@@ -1,0 +1,38 @@
+NAME=db
+VERSION=4.3.27
+ARCH=i686
+RELEASE=1
+URL="http://www.sleepycat.com"
+DESC="Berkeley DB database system."
+GROUP=base
+LICENSE="BSDL"
+SIZE="5815K"
+
+SOURCES="ftp://ftp.sleepycat.com/releases/$NAME-$VERSION.NC.tar.gz"
+
+RUNTIME="gcc"
+
+build() {
+  cd $SRC/$NAME-$VERSION/build_unix
+  
+  use debug && OPTS="--enable-debug"
+  
+  ../dist/configure --prefix=/usr \
+                    --sysconfdir=/etc \
+	            --datadir=/usr/share \
+	            --localstatedir=/var/lib \
+	            --infodir=/usr/share/info \
+	            --mandir=/usr/share/man \
+	            --enable-compat185 \
+                    --enable-cxx \
+	            --enable-shared \
+	            --enable-static
+   make
+   make DESTDIR=$PKG install
+   
+   cd $SRC/$NAME-$VERSION
+   
+   install_docs LICENSE README
+   
+   mv $PKG/usr/docs $PKG/usr/share/doc/$NAME-$VERSION/html  
+}                

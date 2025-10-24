@@ -1,0 +1,25 @@
+NAME=unarj
+VERSION=2.63a
+ARCH=i686
+RELEASE=1
+DESC="A program that can decompress arj arhives."
+URL="ftp://ftp.std.com/pub/arj/"
+GROUP=system
+LICENSE="OL"
+SIZE="24K"
+
+SOURCES="http://ftp.nluug.nl/ibiblio/utils/compress/unarj-2.63a.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # set our cflags here.
+  sed -i "s:CFLAGS = -O2:CFLAGS = $CFLAGS:" Makefile
+      
+  mkdir -p $PKG/usr/bin
+
+  make INSTALLDIR=/usr/bin
+  make INSTALLDIR=$PKG/usr/bin install
+
+  install_docs readme.txt technote.txt unarj.txt
+}

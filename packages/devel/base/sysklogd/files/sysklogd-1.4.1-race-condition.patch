@@ -1,0 +1,13 @@
+--- sysklogd-1.4.1/syslogd.c.race	Sun Mar 11 11:40:10 2001
++++ sysklogd-1.4.1/syslogd.c	Mon Jul 29 21:24:27 2002
+@@ -1075,8 +1075,8 @@
+ 		if ( restart )
+ 		{
+ 			dprintf("\nReceived SIGHUP, reloading syslogd.\n");
+-			init();
+ 			restart = 0;
++			init();
+ 			continue;
+ 		}
+ 		if (nfds == 0) {
+

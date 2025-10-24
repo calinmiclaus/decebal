@@ -1,0 +1,21 @@
+NAME=libieee1284
+VERSION=0.2.9
+ARCH=i686
+RELEASE=1
+URL="http://cyberelk.net/tim/libieee1284"
+DESC="A library to query devices connected in parallel port."
+GROUP=multimedia
+LICENSE="GPLv2"
+
+SOURCES="http://cyberelk.net/tim/data/libieee1284/stable/libieee1284-0.2.9.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README* TODO
+}

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+pkg_strip_files() {
+  [ "$PKG_NOSTRIP" = "1" ] && return 0  
+
+  msg_verbose_nnl "stripping binaries and libraries..."
+  
+  for FILE in `find $PKG -type f | grep -ivE "\/share*|\/etc*|\/include*|\/var*|\/man*|.html$|.pl$|.pm$|.xml$|.py$|.pyc$|.pyo$"`
+  do
+    if file -b $FILE | grep -q "^ELF 32-bit LSB executable.*not stripped$"
+    then
+      if [ ! "$STRIPBINARIES" = "no" ]
+      then
+        strip --strip-all "$FILE"
+      fi
+    elif file -b $FILE | grep -q "^.*ELF.*shared object.*not stripped$"
+    then
+      if [ ! "$STRIPLIBRARIES" = "no" ]
+      then
+        strip --strip-unneeded "$FILE"
+      fi
+    elif file -b $FILE | grep -q "^current ar archive$"
+    then
+      if [ ! "$STRIPLIBRARIES" = "no" ]
+      then
+        strip --strip-debug "$FILE"
+      fi
+    else
+      true
+    fi
+  done  
+  msg_done_verbose
+}

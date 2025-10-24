@@ -1,0 +1,33 @@
+NAME=xfce4-quicklauncher-plugin
+VERSION=0.8
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="Allows to lauch applications from the Xfce4 panel."
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="1357K"
+HUSE="static debug profile"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-quicklauncher-plugin-0.8.tar.gz"
+
+BUILDTIME="gettext pkgconfig"
+
+RUNTIME=">=xfce4-panel-4.1.9.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"	
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ChangeLog TODO ABOUT-NLS AUTHORS COPYING INSTALL \
+    NEWS README
+}

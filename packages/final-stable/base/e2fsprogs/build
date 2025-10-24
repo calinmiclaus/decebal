@@ -1,0 +1,52 @@
+NAME=e2fsprogs
+VERSION=1.38
+ARCH=i686
+RELEASE=1
+URL="http://e2fsprogs.sourceforge.net/"
+DESC="The extended file system management programs."
+GROUP=base
+LICENSE=GPLv2
+SIZE="3536K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/e2fsprogs/$NAME-$VERSION.tar.gz"
+
+BUILDTIME="texinfo gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p build
+  cd build
+  
+  ../configure --prefix=/usr \
+               --sysconfdir=/etc \
+	       --with-root-prefix="" \
+	       --enable-elf-shlibs
+  make
+  make DESTDIR=$PKG install install-libs
+  
+  # Why kill so much space....make some usefull links...
+  rm -f $PKG/sbin/{fsck.ext2,fsck.ext3,mkfs.ext2,mkfs.ext3}
+  ln -sf e2fsck $PKG/sbin/fsck.ext2
+  ln -sf e2fsck $PKG/sbin/fsck.ext3
+  ln -sf mke2fs $PKG/sbin/mkfs.ext2
+  ln -sf mke2fs $PKG/sbin/mkfs.ext3
+  
+  # Relink the man pages...
+  rm -f $PKG/usr/man/man3/{uuid_generate_random.3,uuid_generate_time.3}
+  ln -sf uuid_generate.3.gz $PKG/usr/man/man3/uuid_generate_random.3
+  ln -sf uuid_generate.3.gz $PKG/usr/man/man3/uuid_generate_time.3
+  rm -f $PKG/usr/man/man8/{fsck.ext2.8,fsck.ext3.8}
+  ln -sf e2fsck.8.gz $PKG/usr/man/man8/fsck.ext2.8
+  ln -sf e2fsck.8.gz $PKG/usr/man/man8/fsck.ext3.8
+  rm -f $PKG/usr/man/man8/{mkfs.ext2.8,mkfs.ext3.8}
+  ln -sf fsck.8.gz $PKG/usr/man/man8/mkfs.ext2.8
+  ln -sf fsck.8.gz $PKG/usr/man/man8/mkfs.ext3.8
+  
+  cd ..
+  
+  install_docs ABOUT-NLS COPYING* ChangeLog INSTALL \
+    INSTALL.elfbin README RELEASE-NOTES SHLIBS
+}

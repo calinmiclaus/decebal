@@ -1,0 +1,26 @@
+NAME=wormux
+VERSION=0.4.0
+ARCH=i686
+RELEASE=1
+URL="http://www.wormux.org/"
+DESC="A Worms like game."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="9438K"
+
+SOURCES="http://download.gna.org/wormux/wormux-src-0.4.0.tgz"
+
+RUNTIME="=clanlib-0.6.5 >=libsdl-1.2.4 sdl_gfx libxml++"
+
+build() {
+  cd $SRC/$NAME/src
+  
+  make release
+  make install DIR=$PKG/usr/games/  
+  
+  find $PKG/usr/games/share -type f -exec chmod 644 {} \;
+  find $PKG/usr/games/share -type d -exec chmod 755 {} \;      
+  
+  cd $SRC/$NAME    
+  install_docs *.txt
+}

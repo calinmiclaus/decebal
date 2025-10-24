@@ -1,0 +1,27 @@
+NAME=texinfo
+VERSION=4.8
+ARCH=i686
+RELEASE=2
+URL="http://www.gnu.org/software/texinfo/"
+DESC="A documentation creation system."
+GROUP=base
+LICENSE=GPLv2
+SIZE="1486K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/texinfo/texinfo-4.8.tar.bz2"
+
+RUNTIME=">=ncurses-5.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL* \
+    INTRODUCTION NEWS README TODO
+}

@@ -1,0 +1,35 @@
+NAME=kdebindings
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="KDE bindings with other Programming Languages."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="5261K"
+HUSE="debug static"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.5.0 arts qt python"
+
+function build() {
+    OPTS=""
+    use static && OPTS="--enable-static" || OPTS="--disable-static"
+    use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+     cd $SRC/$NAME-$VERSION
+    export PATH=$PATH:/opt/kde/bin
+    
+    ./configure --prefix=/opt/kde \
+		--mandir=/opt/kde/share/man \
+		--enable-new-ldflags \
+		--disable-rpath \
+		$OPTS
+    
+    make
+    make prefix=$PKG/opt/kde install
+    
+    install_docs AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS README
+
+}

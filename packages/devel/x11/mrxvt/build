@@ -1,0 +1,36 @@
+NAME=mrxvt
+VERSION=0.4.1
+ARCH=i686
+RELEASE=1
+URL="http://materm.sourceforge.net/"
+DESC="A lightweight and powerful multi-tabbed X terminal emulator."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="492K"
+HUSE="shadow resize debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/materm/mrxvt-0.4.1.tar.gz"
+
+RUNTIME="xorg libjpeg freetype libpng"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use shadow && OPTS="--enable-text-shadow" || OPTS="--disable-text-shadow"
+  use resize && OPTS="$OPTS --enable-smart-resize" || OPTS="$OPTS --disable-smart-resize"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr \
+              --enable-menubar \
+              --enable-xft \
+	      --enable-xft \
+	      --enable-xim \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING CREDITS ChangeLog FAQ INSTALL NEWS \
+    README* TODO
+  mv $PKG/usr/share/doc/$NAME $PKG/usr/share/doc/$NAME-$VERSION
+}
+

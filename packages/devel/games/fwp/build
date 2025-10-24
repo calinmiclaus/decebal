@@ -1,0 +1,45 @@
+NAME=fwp
+VERSION=0.0.6
+ARCH=i686
+RELEASE=1
+URL="http://fightwinprevail.sourceforge.net/"
+DESC="A Multiplayer First Person Shooter."
+GROUP=games
+LICENSE="ZLIB"
+SIZE="17775K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/fightwinprevail/fwp-0.0.6.tar.gz
+         fwp.init fwp.desktop fwp.png"
+
+RUNTIME="libsdl sdl_mixer sdl_image sdl_net >=gcc-3.4.3"
+
+build() {
+  cd $SRC/$NAME/source/kdevelop/fwp
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr/games \
+              $OPTS
+  make
+
+  cd $SRC/$NAME
+  
+  install -d $PKG/usr/games/share/fwp
+        
+  cp -r arenas configs gui vehicles weapons $PKG/usr/games/share/fwp/
+  
+  find $PKG/usr/games/share -type f -exec chmod 644 {} \;
+  find $PKG/usr/games/share -type d -exec chmod 755 {} \;
+
+  install -m 0755 source/kdevelop/fwp/src/fwp $PKG/usr/games/share/fwp/fwp  
+  install -D -m 0755 ../fwp.init $PKG/usr/games/bin/fwp
+  install -D -m 0644 ../fwp.desktop $PKG/usr/share/applications/fwp.desktop
+  install -D -m 0644 ../fwp.png $PKG/usr/share/pixmaps/fwp.png
+  
+  install_docs *.txt 
+}
+      
+  
+  
+  

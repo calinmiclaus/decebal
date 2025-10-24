@@ -1,0 +1,30 @@
+NAME=reiserfsprogs
+VERSION=3.6.19
+ARCH=i686
+RELEASE=1
+URL="http://www.namesys.com"
+DESC="ReiserFS utilities."
+GROUP=base
+LICENSE=GPLv2
+SIZE="397K"
+
+SOURCES="ftp://ftp.namesys.com/pub/$NAME/reiserfsprogs-3.6.19.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+	      --infodir=/usr/share/info
+  make
+  make DESTDIR=$PKG install
+  
+  mv $PKG/usr/sbin $PKG/sbin
+
+  ln -sf reiserfsck $PKG/sbin/fsck.reiserfs
+  ln -sf mkreiserfs $PKG/sbin/mkfs.reiserfs
+  
+  install_docs AUTHORS COPYING CREDITS ChangeLog INSTALL NEWS README
+}

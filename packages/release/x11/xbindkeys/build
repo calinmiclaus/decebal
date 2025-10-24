@@ -1,0 +1,31 @@
+NAME=xbindkeys
+VERSION=1.7.2
+ARCH="i686"
+RELEASE=1
+URL="http://hocwp.free.fr/xbindkeys/xbindkeys.html"
+DESC="A program that allows you to launch shell commands with your keyboard or your mouse under X Window."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="107K"
+
+SOURCES="http://hocwp.free.fr/xbindkeys/$NAME-$VERSION.tar.gz"
+
+RUNTIME="guile xorg"
+
+use tk && RUNTIME="$RUNTIME tk"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use tk && OPTS="--enable-tk" || OPTS="--disable-tk"
+  
+  ./configure --prefix=/usr/X11R6 \
+              --with-x \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}
+	      

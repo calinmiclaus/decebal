@@ -1,0 +1,41 @@
+NAME=pwlib
+VERSION=1.8.4
+ARCH=i686
+RELEASE=1
+URL="http://www.voxgratia.org/"
+DESC="Portable Windows Libary."
+GROUP=multimedia
+LICENSE="TBWL"
+SIZE="1913K"
+HUSE="ipv6 sasl snmp"
+
+SOURCES="http://www.voxgratia.org/releases/pwlib-Mimas_rc2-src-tar.gz"
+
+RUNTIME=">=openssl-0.9.7e expat libsdl alsa-lib openldap libdv gcc libavc1394"
+
+use sasl && RUNTIME="$RUNTIME cyrus-sasl"
+use snmp && RUNTIME="$RUNTIME net-snmp"
+
+build() {
+  tar xf pwlib-Mimas_rc2-src-tar
+  cd $SRC/pwlib_Mimas_rc2
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  mkdir -p $PKG/usr/bin
+
+  use ipv6 || OPTS="--disable-ipv6"
+  use sasl || OPTS="$OPTS --disable-sasl"
+  use snmp || OPTS="$OPTS --disable-snmp"
+  
+  ./configure --prefix=/usr \
+              --libdir=/usr/lib \
+	      --enable-plugins \
+	      --enable-v4l2 $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  chmod 755 $PKG/usr/lib/libpt_linux_x86_r.so.1.8.4
+  
+  install_docs ChangeLog History.txt ReadMe.txt ReadMe_QOS.txt
+}

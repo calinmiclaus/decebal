@@ -1,0 +1,23 @@
+NAME=sys-hostname-long-perl
+VERSION=1.4
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~scott/Sys-Hostname-Long-1.4/"
+DESC="Dunno"
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SOURCES="http://search.cpan.org/CPAN/authors/id/S/SC/SCOTT/Sys-Hostname-Long-1.4.tar.gz"
+SIZE="4K"
+
+build() {
+  cd $SRC/Sys-Hostname-Long-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs Changes README MANIFEST
+}

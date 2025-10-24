@@ -1,0 +1,7 @@
+#
+# /etc/conf.d/slapd - configuration file for /etc/rc.d/init.d/slapd
+#
+
+# Additional arguments for the OpenLDAP (slapd) daemon.
+# -4 - the number of daemons to start.
+SLAPD_OPTS="-4"

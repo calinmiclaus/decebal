@@ -1,0 +1,24 @@
+NAME=strace
+VERSION=4.5.9
+ARCH=i686
+RELEASE=1
+DESC="A system call tracer"
+URL="http://www.liacs.nl/~wichert/strace/"
+GROUP=devel
+LICENSE="GPLv2"
+SIZ="412K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/strace/strace-4.5.9.tar.bz2"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/bin $PKG/usr/man/man1
+
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install
+
+  install_docs AUTHORS COPYING COPYRIGHT CREDITS ChangeLog INSTALL NEWS \
+    PORTING README* TODO
+}

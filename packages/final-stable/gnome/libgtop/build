@@ -1,0 +1,35 @@
+NAME=libgtop
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="The GNOME top libraries."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="728K"
+HUSE="gtkdoc static debug hacker"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/libgtop-2.10.0.tar.bz2"
+
+RUNTIME="glib2 popt xorg"
+
+use gtkdoc && BUILDTIME="gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gtkdoc && OPTS="--enable-gtk-doc" || OPTS="--disable-gtk-doc"
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use hacker && OPTS="$OPTS --enable-hacker-mode"
+  
+  ./configure --prefix=/opt/gnome \
+              --infodir=/opt/gnome/share/info \
+	      --with-libgtop-inodedb \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

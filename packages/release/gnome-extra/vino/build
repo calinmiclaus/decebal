@@ -1,0 +1,35 @@
+NAME=vino
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="An integrated VNC server for GNOME."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="567K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/vino-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomeui-2.0 >=zlib-1.2.1 gnutls libjpeg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debug=yes"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --enable-session-support=yes \
+	      --enable-http-server=yes \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README MAINTAINERS
+}

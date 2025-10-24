@@ -1,0 +1,26 @@
+NAME=libdvdread
+VERSION=0.9.4
+ARCH=i686
+RELEASE=1
+URL="http://www.dtek.chalmers.se/groups/dvd/downloads.shtml"
+DESC="Provides a simple foundation for reading DVD video disks"
+GROUP=multimedia
+LICENSE=GPLv2
+SIZE="250K"
+HUSE="static"
+
+SOURCES="http://www.dtek.chalmers.se/groups/dvd/dist/$NAME-$VERSION.tar.gz"
+
+RUNTIME=">=libdvdcss-1.2.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

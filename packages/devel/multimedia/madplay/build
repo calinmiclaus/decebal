@@ -1,0 +1,34 @@
+NAME=madplay
+VERSION=0.15.2b
+ARCH=i686
+RELEASE=1
+URL="http://www.underbit.com/products/mad/"
+DESC="MAD is a high-quality MPEG audio decoder."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="578K"
+HUSE="nls static debug profile"
+
+SOURCES="ftp://ftp.mars.org/pub/mpeg/madplay-0.15.2b.tar.gz"
+
+RUNTIME="libmad libid3tag"
+
+use esd && RUNTIME="$RUNTIME esound" || RUNTIME="$RUNTIME alsa-lib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls || OPTS="--disable-nls"
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debugging"
+  use profile && OPTS="$OPTS --enable-profiling"
+  use esd && OPTS="$OPTS --with-esd" || OPTS="$OPTS --with-alsa"
+  
+  ./configure --prefix=/usr \
+              --enable-shared $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS CHANGES COPYING COPYRIGHT CREDITS \
+    INSTALL README TODO VERSION
+}

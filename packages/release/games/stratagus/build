@@ -1,0 +1,33 @@
+NAME=stratagus
+VERSION=2.1
+ARCH=i686
+RELEASE=1
+URL="http://stratagus.sourceforge.net/"
+DESC="A Real Time Strategy (RTS) game engine."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="972K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/stratagus/stratagus-2.1-src.tar.gz"
+
+RUNTIME="libsdl libogg libvorbis libmikmod bzip2 lua libpng xorg flac libmad"
+
+build() {
+  cd $SRC/$NAME-040702
+  
+  mkdir -p $PKG/usr/bin    
+  
+  ./configure --prefix=/usr/games \
+              --sysconfdir=/etc \
+	      --with-mad \
+	      --with-flac \
+	      --with-opengl \
+	      --with-x \
+	      $OPTIONS
+  make
+  make PREFIX=$PKG/usr install
+  
+  install_docs README
+  
+  cp -a doc/*.html doc/*.txt $PKG/usr/share/doc/$NAME-$VERSION
+}

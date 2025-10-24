@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Ogle DVD Player
+Comment=Play video DVDs with full menu support
+Exec=ogle
+Icon=ogle.png
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=Application;AudioVideo;

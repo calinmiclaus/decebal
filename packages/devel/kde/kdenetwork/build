@@ -1,0 +1,26 @@
+NAME=kdenetwork
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="KDE Networking Programs."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="7278K"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.5.0 arts"
+
+function build() {
+    cd $SRC/$NAME-$VERSION
+    export PATH=$PATH:/opt/kde/bin
+    
+    ./configure --prefix=/opt/kde \
+	        --disable-debug \
+                --enable-final
+    make
+    make DESTDIR=$PKG install
+    install_docs AUTHORS COPYING INSTALL README
+
+}

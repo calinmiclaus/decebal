@@ -1,0 +1,10 @@
+#
+# /etc/dpack/security - configuration file for dsec.
+#
+
+# This is the mirror that dupate will use to download packages.
+#SECUPDATEMIRROR="packages.decebal.org"
+SECUPDATEMIRROR="localhost/packages"
+
+# Enable interactive mode?
+INTERACTIVE="yes"

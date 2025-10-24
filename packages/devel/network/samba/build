@@ -1,0 +1,66 @@
+NAME=samba
+#VERSION=3.0.14a
+VERSION=3.0.11
+ARCH=i686
+RELEASE=1
+DESC="Tools to access a server's filespace and printers via SMB."
+URL="http://www.samba.org/"
+GROUP=network
+LICENSE=GPLv2
+SIZE="15012K"
+
+#SOURCES="http://us1.samba.org/samba/ftp/samba-3.0.14a.tar.gz
+#         http://heanet.dl.sourceforge.net/sourceforge/openantivirus/samba-vscan-0.3.6.tar.bz2
+#         samba.init samba.logrotate"
+
+SOURCES="http://us1.samba.org/samba/ftp/samba-3.0.11.tar.gz
+         http://heanet.dl.sourceforge.net/sourceforge/openantivirus/samba-vscan-0.3.6.tar.bz2
+         samba.init samba.logrotate"
+
+BACKUPS="etc/samba/smb.conf"
+
+RUNTIME=">=openldap-2.2.19 >=popt-1.7 cups"
+
+build() {
+  cd $SRC/$NAME-$VERSION/source	 
+  
+  mkdir -p $PKG/etc/samba/private $PKG/var/{run/samba,log/samba} $PKG/usr/sbin
+  chmod 700 $PKG/etc/samba/private
+
+  use quotas && OPTS="$OPTS --with-quotas"
+  use automount && OPTS="$OPTS --with-automount"
+
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+	      --infodir=/usr/share/info \
+              --with-smbmount \
+	      --with-fhs \
+	      --with-configdir=/etc/samba \
+	      --with-lockdir=/var/run/samba \
+	      --with-piddir=/var/run/samba \
+	      --with-logfilebase=/var/log/samba \
+	      --enable-cups \
+	      --without-pam \
+	      --without-pam_smbpass \
+	      --with-acl-support \
+	      --without-spinlocks \
+	      --with-libsmbclient \
+	      --with-automount \
+	      --with-syslog \
+	      --with-idmap \
+	      --with-ldap $OPTS
+  make DATADIR=/usr/share
+  make DESTDIR=$PKG install DATADIR=/usr/share install
+  
+  rm -f $PKG/sbin/mount.smbfs
+  ln -sf /usr/bin/smbmount $PKG/sbin/mount.smbfs  
+  
+  cd ../
+   
+  install -D -m 0700 ../samba.init $PKG/etc/rc.d/samba
+  install -D -m 0755 ../samba.logrotate $PKG/etc/logrotate.d/samba
+  
+  install_docs COPYING Manifest README REVISION Read-Manifest-Now \
+    Roadmap WHATSNEW.txt
+}
+

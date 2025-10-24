@@ -1,0 +1,24 @@
+NAME=modsecurity
+VERSION=1.8.7
+ARCH=i686
+RELEASE=1
+URL="http://www.modsecurity.org/"
+DESC="An open source intrusion detection and prevention engine for web applications."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="305K"
+
+SOURCES="http://www.modsecurity.org/download/modsecurity-1.8.7.tar.gz"
+
+RUNTIME="apache"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  apxs -ci apache2/mod_security.c
+  
+  install -d  $PKG/usr/lib/httpd
+  mv /usr/lib/httpd/mod_security.* $PKG/usr/lib/httpd
+  
+  install_docs CHANGES INSTALL LICENSE README
+}

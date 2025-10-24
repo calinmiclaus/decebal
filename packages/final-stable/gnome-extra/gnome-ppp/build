@@ -1,0 +1,30 @@
+NAME=gnome-ppp
+VERSION=0.3.22
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome-ppp.org/"
+DESC="http://www.icmreza.co.yu/blogs/vladecks/?page_id=7"
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="422K"
+HUSE="static"
+
+SOURCES="http://www.icmreza.co.yu/blogs/vladecks/wp-content/projects/gnome-ppp/download/0.3/gnome-ppp-0.3.22.tar.gz"
+
+BUILDTIME="intltool gettext pkgconfig"
+
+RUNTIME=">=gtk2-2.4.0 >=libglade-2.4.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--enable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS ChangeLog COPYING INSTALL \
+    NEWS README
+}

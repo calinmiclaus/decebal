@@ -1,0 +1,45 @@
+NAME=irssi
+VERSION=0.8.10_rc5
+ARCH=i686
+RELEASE=2
+URL="http://irssi.org"
+DESC="Modular text mode IRC client with Perl scripting."
+GROUP=chat
+LICENSE=GPLv2
+SIZE="1217K"
+HUSE="ipv6 bot proxy gc"
+
+SOURCES="http://irssi.org/files/snapshots/irssi-latest.tar.gz"
+
+RUNTIME=">=openssl-0.9.7e >=ncurses-5.3 perl glib2"
+
+use gc && RUNTIME="$RUNTIME gc"
+
+build() {
+  cd $SRC/$NAME-0.8.10-rc5
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  use bot && OPTS="$OPTS --with-bot" || OPTS="$OPTS --without-bot"
+  use proxy && OPTS="$OPTS --with-proxy" || OPTS="$OPTS --without-proxy"
+  use gc && OPTS="$OPTS --with-gc" || OPTS="$OPTS --without-gc"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/irssi \
+	      --libexecdir=/usr/lib/irssi \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-textui \
+	      --with-perl=yes \
+	      --without-glib1 \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  find $PKG/usr/lib/perl5/5.8.6 -name .packlist -exec rm -f -- {} \;
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README* TODO
+  
+  mv $PKG/usr/share/doc/$NAME/* $PKG/usr/share/doc/$NAME-$VERSION/
+  rm -rf $PKG/usr/share/doc/$NAME
+}
+	   

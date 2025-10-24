@@ -1,0 +1,33 @@
+NAME=libwnck
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="Window Navigator Construction Kit (WNCK) library."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="409K"
+HUSE="gtk-doc static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/libwnck-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="gtk2 startup-notification"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"    
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README
+}

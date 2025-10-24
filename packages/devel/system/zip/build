@@ -1,0 +1,32 @@
+NAME=zip
+VERSION=2.3
+ARCH=i686
+RELEASE=1
+DESC="Creates PKZIP-compatible .zip files."
+URL="http://www.info-zip.org/pub/infozip/Zip.html"
+GROUP=system
+LICENSE="OL"
+SIZE="706K"
+
+SOURCES="ftp://ftp.info-zip.org/pub/infozip/src/zip23.tar.gz
+         ftp://ftp.info-zip.org/pub/infozip/src/zcrypt.zip"
+
+BUILDTIME="unzip"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+    
+  cp ../crypt.[hc] .
+    
+  make -f unix/Makefile LOCAL_ZIP="$CFLAGS" prefix=/usr generic
+  make -f unix/Makefile prefix=$PKG/usr install
+    
+  ln -sf zip.1.gz $PKG/usr/man/man1/zipcloak.1.gz
+  ln -sf zip.1.gz $PKG/usr/man/man1/zipnote.1.gz
+  ln -sf zip.1.gz $PKG/usr/man/man1/zipsplit.1.gz
+    
+  install_docs BUGS CHANGES INSTALL LICENSE MANUAL \
+    README TODO WHATSNEW WHERE
+}

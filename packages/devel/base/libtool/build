@@ -1,0 +1,29 @@
+NAME=libtool
+VERSION=1.5.20
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/libtool/"
+DESC="A generic library support script."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="2723K"
+
+SOURCES="http://ftp.gnu.org/gnu/libtool/$NAME-$VERSION.tar.gz
+         libtool.1 libtoolize.1"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var/lib \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog ChangeLog.0 ChangeLog.1 \
+    INSTALL NEWS README THANKS TODO    
+}

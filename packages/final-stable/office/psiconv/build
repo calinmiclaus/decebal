@@ -1,0 +1,32 @@
+NAME=psiconv
+VERSION=0.9.7
+ARCH=i686
+RELEASE=1
+URL="http://www.frodol.dds.nl/psiconv/"
+DESC="EPOC32 PSION 5(MX) file format data conversion utilities."
+GROUP=office
+LICENSE="GPLv2"
+SIZE="486K"
+HUSE="static"
+
+SOURCES="http://www.frodol.dds.nl/psiconv/psiconv-0.9.7.tar.gz
+         psiconv-0.9.7-gcc34-1.patch"
+
+RUNTIME="imagemagick"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../psiconv-0.9.7-gcc34-1.patch
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --with-imagemagick $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

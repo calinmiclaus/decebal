@@ -1,0 +1,35 @@
+NAME=gstreamer
+VERSION=0.8.9
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A framework for streaming media."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2"
+SIZE="1422K"
+HUSE="static nls"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gstreamer-0.8.9.tar.bz2"
+
+BUILDTIME="intltool bison"
+	   
+RUNTIME="libxml2 glib2 popt"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var \
+	      --disable-tests \
+              --disable-docs-build $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog DEVEL DOCBUILDING \
+    INSTALL NEWS RELEASE REQUIREMENTS README TODO
+}

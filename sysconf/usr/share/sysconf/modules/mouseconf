@@ -1,0 +1,127 @@
+#!/bin/bash
+#
+# Script for configuring your daemons
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+# parts taken from the Slackware Linux distribution
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+function serial_mouse() {
+local smbutton=0 smsel=0 mousedev
+$dialog --backtitle "$version" --title " Mouse Configuration " \
+--cancel-label "Back" --menu "\nThe mouse you selected is connected \
+to a serial port. Which port would you like to use?\n\n" 0 0 0 \
+"/dev/ttyS0" "(COM1: under DOS)" \
+"/dev/ttyS1" "(COM2: under DOS)" \
+"/dev/ttyS2" "(COM3: under DOS)" \
+"/dev/ttyS3" "(COM4: under DOS)" 2> $tmp/mouse.port
+smbutton=$?
+smsel=`cat $tmp/mouse.port`
+rm $tmp/mouse.port
+[ $smbutton -eq 0 ] && {
+    mousedev=`basename $smsel`
+    rm -f /dev/mouse
+    ln -s $mousedev /dev/mouse
+  } || main_menu
+}
+
+function main_menu() {
+local mcbutton mcsel
+$dialog --backtitle "$version" \
+--title " Mouse Configuration " --cancel-label "Back" --menu \
+"\nWhat kind of mouse do you have?\n\n" 0 0 0 \
+"usb" "USB connected mouse" \
+"ps2" "PS/2 port mouse (most desktops and laptops)" \
+"imps2" "Microsoft PS/2 Intellimouse" \
+"bare" "2 button Microsoft compatible serial mouse" \
+"ms" "3 button Microsoft compatible serial mouse" \
+"mman" "Logitech serial MouseMan and similar devices" \
+"msc" "MouseSystems serial (most 3 button serial mice)" \
+"pnp" "Plug and Play (serial mice that do not work with ms)" \
+"ms3" "Microsoft serial Intellimouse" \
+"netmouse" "Genius Netmouse on PS/2 port" \
+"logi" "Some serial Logitech devices" \
+"logim" "Make serial Logitech behave like msc" \
+"atibm" "ATI XL busmouse (mouse card)" \
+"inportbm" "Microsoft busmouse (mouse card)" \
+"logibm" "Logitech busmouse (mouse card)" \
+"ncr" "A pointing pen (NCR3125) on some laptops" \
+"twid" "Twiddler keyboard, by HandyKey Corp" \
+"genitizer" "Genitizer tablet (relative mode)" \
+"js" "Use a joystick as a mouse" \
+"wacom" "Wacom serial graphics tablet" 2> $tmp/mouse.type
+mcbutton=$?
+mcsel=`cat $tmp/mouse.type`
+rm -f $tmp/mouse.type
+[ $mcbutton -eq 0 ] && \
+case "$mcsel" in
+    'ps2')
+        (cd /dev ; rm -f mouse; ln -sf psaux mouse)
+    ;;
+    'imps2')
+        (cd /dev ; rm -f mouse; ln -sf psaux mouse)
+    ;;
+    'bare')
+        serial_mouse
+    ;;
+    'ms')
+        serial_mouse
+    ;;
+    'mman')
+        serial_mouse
+    ;;
+    'msc')
+        serial_mouse
+    ;;
+    'pnp')
+        serial_mouse
+    ;;
+    'usb')
+        (cd /dev; rm -f mouse; ln -sf input/mice mouse)
+    ;;
+    'ms3')
+        serial_mouse
+    ;;
+    'netmouse')
+        (cd /dev ; rm -f mouse; ln -sf psaux mouse)
+    ;;
+    'logi')
+        serial_mouse
+    ;;
+    'logim')
+        serial_mouse
+    ;;
+    'atibm')
+        (cd /dev ; rm -f mouse; ln -sf atibm mouse)
+    ;;
+    'inportbm')
+        (cd /dev ; rm -f mouse; ln -sf inportbm mouse)
+    ;;
+    'logibm')
+        (cd /dev ; rm -f mouse; ln -sf logibm mouse)
+    ;;
+    'ncr')
+        (cd /dev ; rm -f mouse; ln -sf psaux mouse)
+    ;;
+    'twid')
+        serial_mouse
+    ;;
+    'genitizer')
+        serial_mouse
+    ;;
+    'js')
+        (cd /dev ; rm -f mouse; ln -sf js0 mouse)
+    ;;
+    'wacom')
+        serial_mouse
+    ;;
+    esac
+}
+
+tmp=`make_tmp mouseconf`
+$1
+rm -rf $tmp

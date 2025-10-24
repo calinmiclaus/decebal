@@ -1,0 +1,30 @@
+NAME=e17genmenu
+VERSION=0.1.8
+ARCH=i686
+RELEASE=1
+URL="http://sourceforge.net/projects/e17genmenu/"
+DESC="Tool for generating e17 menus automatically."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="243K"
+HUSE="static nls"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/e17genmenu/e17genmenu-0.1.8.tar.gz"
+
+RUNTIME="e17 engrave eet evas"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+  
+  ./autogen.sh
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README
+}

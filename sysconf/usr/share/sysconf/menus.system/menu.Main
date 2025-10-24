@@ -1,0 +1,23 @@
+#Format:
+#
+#item:type:description
+#
+#where :
+#
+#item - menu entry text
+#type  - .module.function - execute function "function" from module "module"
+#      - @menu - show menu "menu"
+#       - %command - execute "command"
+^This is sysconf's main menu.
+^From here you can configure several aspects of your system.
+
+network:@Network:Configure your network
+sound:@Sound:Sound related things
+daemons:@Daemons:Configure your daemons
+login:.loginconf.main_menu:Configure the way login should behave
+console:.consoleconf.main_menu:Configure your console settings
+users:.userconf.main_menu:Configure your users
+mouse:.mouseconf.main_menu:Configure your mouse
+xorg:.xorgconf/xorgconf:Configure xorg
+xwm:.xwmconf.main_menu:X Window Manager configuration
+Howto:.howtobrowser.main_menu:Browse the howto's

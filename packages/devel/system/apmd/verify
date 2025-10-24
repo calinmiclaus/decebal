@@ -1,0 +1,8 @@
+md5: d495a2b9dc693eb75f6ebe56fbad9575 apmd_3.2.2-3.diff.gz
+md5: b1e6309e8331e0f4e6efd311c2d97fa8 apmd_3.2.2.orig.tar.gz
+md5: ea058ec109ba60c4c5c92ac6ca01d276 apmd_3.2.2_no_X.diff.gz
+md5: 9397602cd331db697a339f14cb05f96f apmd.init
+md5: 8f7feaf246a931a2ecae60d3e8bef20b apmd.sysconf
+md5: 045e6d0b154ccd0d8c37ffb6edcdc812 alsa.event
+md5: bf484bbfb82b3a651a3add0a39b50f64 usb.event
+md5: f230f0e7f7c9cd95370e6533b7b2c753 pcmcia.event

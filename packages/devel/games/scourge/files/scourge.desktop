@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Scourge
+GenericName=Scourge Dungeon Game
+Comment=A OpenGL Dungeon Game in the spirit of NetHack
+Icon=scourge.png
+FilePattern=scourge
+TryExec=scourge
+Exec=scourge
+Categories=Application;Game;ArcadeGame;

@@ -1,0 +1,40 @@
+NAME=cinelerra
+VERSION=1.2.2
+ARCH=i686
+RELEASE=1
+URL="http://heroinewarrior.com/cinelerra.php3"
+DESC="Free video editor."
+GROUP=multimedia
+LICENSE="GPLv2 BSDL"
+SIZE="22365K"
+
+SOURCES="httpp://heanet.dl.sourceforge.net/sourceforge/heroines/cinelerra-1.2.2-src.tar.bz2
+         cinelerra.desktop"
+
+BUILDTIME="nasm"
+
+RUNTIME="xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  
+  mkdir -p $PKG/usr/{bin,lib/cinelerra}
+
+  cp cinelerra/i686/cinelerra $PKG/usr/bin
+  cp plugins/i686/*.plugin $PKG/usr/lib/cinelerra
+  cp -a plugins/titler/fonts $PKG/usr/lib/cinelerra
+  cp libmpeg3/i686/{mpeg3dump,mpeg3toc,mpeg3cat} $PKG/usr/bin
+  cp mplexhi/i686/mplexhi $PKG/usr/bin
+  cp mplexlo/i686/mplexlo $PKG/usr/bin
+  cp i686/soundtest $PKG/usr/bin
+  
+  install -D -m 0644 cinelerra/data/heroine_logo10.png $PKG/usr/share/pixmaps/cinelerra.png
+  install -D -m 0644 ../cinelerra.desktop $PKG/usr/share/applications/cinelerra.desktop
+  
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION
+  
+  cp -a cinelerra/{CHANGELOG*,RELEASE_NOTES,TESTS,TODO} $PKG/usr/share/doc/$NAME-$VERSION/
+}								  

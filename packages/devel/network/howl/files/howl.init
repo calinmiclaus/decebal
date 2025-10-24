@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# /etc/rc.d/howl - control file for the howl daemons
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/howl
+
+case "$1" in
+  start)
+    msg "Starting the mDNSResponder daemon"
+    start_service /usr/bin/mDNSResponder
+    msg "Starting the nifd daemon"
+    start_service /usr/bin/nifd $NIFD_OPTS
+    ;;
+  stop)
+    msg "Stopping the mDNSResponder daemon"
+    stop_service /usr/bin/mDNSResponder
+    msg "Stopping the nifd daemon"
+    stop_service /usr/bin/nifd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/mDNSResponder
+    status_service /usr/bin/nifd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

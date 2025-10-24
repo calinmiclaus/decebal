@@ -1,0 +1,43 @@
+NAME=ogle
+VERSION=0.9.2
+ARCH=i686
+RELEASE=1
+URL="http://www.dtek.chalmers.se/~dvd/"
+DESC="A DVD player for *nix."
+GROUP=multimedia
+LICENSE=GPLv2
+
+SOURCES="http://www.dtek.chalmers.se/groups/dvd/dist/ogle-0.9.2.tar.gz
+         ogle.desktop ogle.png"
+
+RUNTIME=">=liba52-0.7.3 >=libdvdread-0.9.0 >=libdvdcss-1.2.2 libmad >=libjpeg-0.6b libxml2 alsa-lib"
+
+use mlib && RUNTIME="$RUNTIM libmlib"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use mlib && OPTS="$OPTS --with-libmlib" || OPTS="$OPTS --without-libmlib"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --enable-alsa \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  # some things are not installed...
+  use static && install -m 0644 ogle/.libs/libdvdcontrol.a $PKG/usr/lib/ogle/libdvdcontrol.a
+  install -m 0755 ogle/.libs/libdvdcontrol.lai $PKG/usr/lib/ogle/libdvdcontrol.la
+  install -m 0755 ogle/.libs/libdvdcontrol.so.9.2.0U $PKG/usr/lib/ogle/libdvdcontrol.so.9.2.0
+  
+  ( cd $PKG/usr/lib/ogle 
+    ln -s libdvdcontrol.so.9.2.0 libdvdcontrol.so
+    ln -s libdvdcontrol.so.9.2.0 libdvdcontrol.so.9 )
+      
+  install -D -m 0644 ../ogle.desktop $PKG/usr/share/applications/ogle.desktop
+  install -D -m 0644 ../ogle.png $PKG/usr/share/pixmaps/ogle.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

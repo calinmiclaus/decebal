@@ -1,0 +1,118 @@
+#!/bin/bash
+#
+# Script for configuring /etc/login.defs
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+loginconf=/etc/login.defs
+
+function showmenu()
+{
+local line first last
+[ ! -e $tmp/login.conf.tmp ] && {
+  $dialog --backtitle "$version" --title " Please wait " \
+  --infobox "\nLoading configuration... " 5 0
+cat /dev/null >$tmp/login.conf.tmp
+
+cat $loginconf|while read line;
+do
+  [ ! -z "$line" -a -z "`echo $line|grep \"^#\"`" ] && echo $line >>$tmp/login.conf.tmp
+done
+}
+
+echo "#!/bin/bash" >$tmp/mm.sh
+cat <<EOF>>$tmp/mm.sh
+$dialog --backtitle "$version" --title " login Config " \\
+--cancel-label "Back" --extra-button --extra-label "Save" \\
+--help-button --ok-label "Change" --default-item "$mmsel" \\
+--menu "\\nOn the left collumn you have the setting name and on \\
+the right collumn, its value. Choose 'Change' to change it\\n\\n" 0 0 0 \\
+EOF
+
+cat $tmp/login.conf.tmp|while read line;
+do
+  first=`echo $line|awk '{print $1}'`
+  last=`echo $line|awk '{print $2,$3,$4,$5,$6,$7}'`
+  [ ! -z "$first" ] && {
+    echo -n "\"$first\" " >>$tmp/mm.sh
+    echo -n "\"$last\" " >>$tmp/mm.sh
+  }
+done
+
+echo "2>$tmp/mmsel" >>$tmp/mm.sh
+echo "return \$?" >>$tmp/mm.sh
+. $tmp/mm.sh
+}
+
+function main_menu()
+{
+local mmbutton=0 mmsel="" changebutton val change
+
+while [ $mmbutton -ne 1 ];
+do
+showmenu
+mmbutton=$?
+mmsel=`cat $tmp/mmsel`
+rm -f $tmp/mmsel
+
+case $mmbutton in
+0)
+  local changebutton=3 change
+
+  while [ $changebutton -eq 3 ];
+  do
+  val=`cat $tmp/login.conf.tmp|grep "^$mmsel"|awk '{print $2,$3,$4,$5,$6,$7}'`
+  $dialog --backtitle "$version" --title " Change $mmsel " --extra-button \
+    --extra-label "Help" --ok-label "Save" --cancel-label "Back" \
+    --inputbox "\nYou can change here the value for '$mmsel'. Press the \
+'Help' button to see what '$mmsel' is all about.\n\n" 0 0 "$val" 2>$tmp/change
+  changebutton=$?
+
+  change=`cat $tmp/change`
+  rm -f $tmp/change
+
+  case $changebutton in
+  0)
+  cat $tmp/login.conf.tmp|replace "$mmsel " "$mmsel $change" >$tmp/tmp1
+  mv -f $tmp/tmp1 $tmp/login.conf.tmp
+  ;;
+  3) $dialog --backtitle "$version" --title " Help " --textbox $loginconf 0 0;;
+  esac
+  done
+;;
+2)$dialog --backtitle "$version" --title " Help " --textbox $loginconf 0 0;;
+3)
+  $dialog --backtitle "$version" --title " Please wait " \
+  --infobox "\nSaving configuration... " 5 0
+
+  cat $tmp/login.conf.tmp|tr "/" "^" >$tmp/tmp1
+  mv -f $tmp/tmp1 $tmp/login.conf.tmp
+
+  cat $tmp/login.conf.tmp|while read line;
+  do
+    first=`echo $line|awk '{print $1}'`
+    last=`echo $line|awk '{print $2,$3,$4,$5,$6,$7}'`
+    cat $loginconf|replace "$first " "$first $last" >$tmp/tmp1
+    mv -f $tmp/tmp1 $loginconf
+  done
+  
+  cat $loginconf|tr "^" "/" >$tmp/tmp1
+  mv -f $tmp/tmp1 $loginconf
+  $dialog --backtitle "$version" --title " Success " --msgbox \
+  "\nConfiguration saved.\n\n" 0 0
+  cat $tmp/login.conf.tmp|tr "^" "/" >$tmp/tmp1
+  mv -f $tmp/tmp1 $tmp/login.conf.tmp
+;;
+esac
+
+done
+}
+
+tmp=`make_tmp loginconf`
+$1
+rm -rf $tmp

@@ -1,0 +1,174 @@
+#!/bin/bash
+
+write_keyboard_configuration() {
+  echo "Section \"InputDevice\"" > $TMP/keyboard_configuration
+  echo "  Identifier \"Keyboard0\"" >> $TMP/keyboard_configuration
+  echo "  Driver     \"kbd\"" >> $TMP/keyboard_configuration
+  echo "  Option     \"XkbRules\"   \"xorg\"" >> $TMP/keyboard_configuration
+  
+  local LAYOUT=`cat $TMP/layout`
+  if [ "`echo $LAYOUT | awk '{print $2}'`" = "" ]
+  then
+    LAYOUT=${LAYOUT#\"}
+    LAYOUT=${LAYOUT%\"}
+    echo "  Option     \"XkbLayout\"   \"$LAYOUT\"" >> $TMP/keyboard_configuration
+  else
+    LAYOUTS=""
+    for ITEM in $LAYOUT
+    do
+      ITEM=${ITEM#\"}
+      ITEM=${ITEM%\"}
+      LAYOUTS="${LAYOUTS}$ITEM,"
+     done
+     echo "  Option   \"XkbLayout\"   \"${LAYOUTS%,}\"" >> $TMP/keyboard_configuration
+     echo "  Option   \"XKbOptions\"  \"grp:alt_shift_toggle\"" >> $TMP/keyboard_configuration
+  fi
+  echo "EndSection" >> $TMP/keyboard_configuration
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+         --msgbox "`cat $TMP/keyboard_configuration`" 0 0
+  if [ $? -eq 0 ]
+  then
+     main
+  else
+     handle_exit "write_mouse_configuration()" "ESC pressed." "$LINENO" "1"
+  fi				      
+}
+
+select_xkb_layout() {
+  dialog --backtitle "$BACKTITLE" \
+         --title "$TITLE" \
+	 --cancel-label "Exit" \
+	 --ok-label "Forward" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --help-button \
+	 --checklist \
+"\n\nSelect keyboard layout." 20 50 10 \
+"us" "U.S. English" "on" \
+"en_us" "U.S. English w/ ISO9995-3" "off" \
+"al" "Albanian" "off" \
+"ar" "Arabic" "off" \
+"az" "Azerbaijani" "off" \
+"by" "Belarusian" "off" \
+"be" "Belgian" "off" \
+"ben" "Bengali" "off" \
+"bs" "Bosnian" "off" \
+"br" "Brazilian" "off" \
+"bg" "Bulgarian" "off" \
+"mm" "Burmese" "off" \
+"ca" "Canadian" "off" \
+"hr" "Croatian" "off" \
+"hr_us" "Croatian (US)" "off" \
+"cz" "Czech" "off" \
+"cz_qwerty" "Czech (qwerty)" "off" \
+"dk" "Danish" "off" \
+"dvorak" "Dvorak" "off" \
+"ee" "Estonian" "off" \
+"fi" "Finnish" "off" \
+"fr" "French" "off" \
+"fr_CH" "French (alternative)" "off" \
+"ge_la" "Georgian (latin)" "off" \
+"ge_ru" "Georgian (russian)" "off" \
+"de" "German" "off" \
+"guj" "Gujarati" "off" \
+"gur" "Gurmukhi" "off" \
+"" "Hindi" "off" \
+"hu" "Hungarian" "off" \
+"hu_qwerty" "Hungarian (qwerty)" "off" \
+"is" "Icelandic" "off" \
+"ir" "Iranian" "off" \
+"il" "Israeli" "off" \
+"it" "Italian" "off" \
+"jp" "Japanese" "off" \
+"kan" "Kannada" "off" \
+"lao" "Lao" "off" \
+"la" "Latin America" "off" \
+"lt" "Lithuanian qwerty \"numeric\"" "off" \
+"lt_std" "Lithuanian azerty standard" "off" \
+"lv" "Latvian" "off" \
+"mk" "Macedonian" "off" \
+"ml" "Malayalam" "off" \
+"mt" "Maltese" "off" \
+"mt_us" "Maltese (US layout)" "off" \
+"no" "Norwegian" "off" \
+"ori" "Oriya" "off" \
+"pl" "Polish" "off" \
+"pl2" "Polish (qwertz)" "off" \
+"pt" "Portuguese" "off" \
+"ro" "Romanian" "off" \
+"ro_US" "Romanian (US)" "off" \
+"ru" "Russian" "off" \
+"se_NO" "Northern Saami (Finland)" "off" \
+"sami" "Northern Saami (Norway)" "off" \
+"se_SE" "Northern Saami (Sweden)" "off" \
+"sr" "Serbian (Cyrillic)" "off" \
+"si" "Slovenian" "off" \
+"sk" "Slovak" "off" \
+"sk_qwerty" "Slovak (qwerty)" "off" \
+"es" "Spanish" "off" \
+"se" "Swedish" "off" \
+"tj" "Tajik" "off" \
+"tml" "Tamil" "off" \
+"tel" "Telugu" "off" \
+"th" "Thai (Kedmanee)" "off" \
+"th_tis" "Thai (TIS-820.2538)" "off" \
+"th_pat" "Thai (Pattachote)" "off" \
+"tr" "Turkish" "off" \
+"tr_f" "Turkish (F)" "off" \
+"ua" "Ukrainian" "off" \
+"gb" "United Kingdom" "off" \
+"uz" "Uzbek" "off" \
+"vn" "Vietnamese" "off" 2>$TMP/layout
+  local RETVAL=$?
+  local SELECTION=`cat $TMP/layout`
+  case "$RETVAL" in
+    0) write_keyboard_configuration ;;
+    1) handle_exit "select_xkb_layout()" "Exit pressed." "$LINENO" "1" ;;
+    2) show_xkb_layout_help ;;
+    3) configure_keyboard ;;
+   -1) handle_exit "select_xkb_layout()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}
+
+configure_keyboard() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " $TITLE " \
+	 --cancel-label "Exit" \
+	 --ok-label "Select" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --help-button \
+	 --menu \
+"\n  Please select one of the following keyboard types that
+is the better description of your keyboard. If nothing really
+matches, choose \"Generic 101-key PC\".\n\n" 21 50 10 \
+"generic101" "Generic 101-key PC" \
+"generic102" "Generic 102-key (Intl) PC" \
+"generic104" "Generic 104-key PC" \
+"generic105" "Generic 105-key (Intl) PC" \
+"dell" "Dell 101-key PC" \
+"unknown" "Everex STEPnote" \
+"keytronic" "Keytronic FlexPro" \
+"microsoft" "Microsoft Natural" \
+"northgate" "Northgate OmniKey 101" \
+"winbook" "Winbook Model XP5" \
+"pc" "Japanese 106-key" \
+"unknown" "PC-98xx Series" \
+"unknown" "Brazilian ABNT2" \
+"unknown" "Acer AirKey V" \
+"unknown" "ACPI Standard" \
+"unknown" "Azona RF2300 wireless Internet Keyboard" 2>$TMP/keyboard
+  local RETVAL=$?
+  local SELECTION=`cat $TMP/keyboard`
+  case "$RETVAL" in
+    0)
+      KEYBOARD="$SELECTION"
+      select_xkb_layout
+      ;;
+    1) handle_exit "configure_keyboard()" "Exit pressed." "$LINENO" "1" ;;
+    2) show_keyboard_help ;;
+    3) main ;;
+   -1) handle_exit "configure_keyboard()" "ESC pressed." "$LINENO" "1" ;;
+  esac
+}

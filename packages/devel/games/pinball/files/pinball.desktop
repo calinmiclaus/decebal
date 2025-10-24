@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Pinball
+GenericName=Pinball Game
+Comment=Pinball is free OpenGL game of playing pinball
+Icon=pinball.png
+FilePattern=pinball
+TryExec=pinball
+Exec=pinball
+Categories=Application;Game;AmusementGame;

@@ -1,0 +1,28 @@
+NAME=obconf
+VERSION=1.5
+ARCH=i686
+RELEASE=1
+URL="http://icculus.org/openbox/obconf"
+DESC="Openbox preferences manager."
+GROUP="x11"
+LICENSE=BSDL
+SIZE="159K"
+
+SOURCES="http://icculus.org/openbox/obconf/obconf-1.5.tar.gz"
+
+RUNTIME=">=openbox-3.0
+         gtk2
+	 libglade"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/openbox \
+              --sysconfdir=/etc/opt/openbox \
+	      --localstatedir=/var/opt/openbox \
+	      --mandir=/opt/openbox/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING README TODO 
+}

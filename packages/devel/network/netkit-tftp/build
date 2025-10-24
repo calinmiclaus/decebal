@@ -1,0 +1,29 @@
+NAME=netkit-tftp
+VERSION=0.17
+ARCH=i686
+RELEASE=1
+DESC="This is netkit-tftp for Linux."
+URL="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/"
+GROUP=network
+LICENSE=PD
+SIZE="23K"
+
+SOURCES="ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-tftp-$VERSION.tar.gz"
+
+RUNTIME=">=netkit-base-0.17"
+
+build() {
+  cd $SRC/netkit-tftp-$VERSION
+  
+  mkdir -p $PKG/usr/{bin,sbin,man/man{1,8}}
+  
+  ./configure --prefix=$PKG/usr
+  make
+  make DESTDIR=$PKG install
+  
+  rm -rf $PKG/usr/{bin,man/man1}
+  
+  ln -sf in.tftpd $PKG/usr/sbin/tftpd
+  
+  install_docs BUGS ChangeLog MRULES README
+}

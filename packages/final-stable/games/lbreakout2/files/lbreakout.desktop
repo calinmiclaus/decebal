@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=LBreakout2
+GenericName=Breakout-Style Game
+Comment=A breakout-style arcade game for Linux
+Icon=lbreakout.png
+FilePattern=lbreakout2
+TryExec=lbreakout2
+Exec=lbreakout2
+Categories=Application;Game;ArcadeGame;

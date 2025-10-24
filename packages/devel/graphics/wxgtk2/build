@@ -1,0 +1,39 @@
+NAME=wxgtk2
+VERSION=2.6.0
+ARCH=i686
+RELEASE=1
+URL="http://wxwidgets.org/"
+DESC="An open source C++ GUI framework (GTK2 version)."
+GROUP=graphics
+LICENSE=GLGPLv2
+SIZE="K"
+HUSE="opengl gtk"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wxwindows/wxGTK-2.6.0.tar.bz2"
+
+RUNTIME=">=libpng-1.2.8 >=libjpeg-0.6b >=libtiff-3.7.1 xorg >=zlib-1.2.1"
+
+use gtk && RUNTIME="$RUNTIME >=gtk-1.2.7" || RUNTIME="$RUNTIME gtk2"
+
+build() {
+  cd $SRC/wxGTK-$VERSION
+  
+  use opengl && OPTS="--enable-opengl"
+  use gtk && OPTS="$OPTS --with-gtk --disable-gtk2" || OPTS="--with-gtk2"
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+	      --enable-opengl \
+	      --enable-unicode \
+	      --with-libpng \
+	      --with-libjpeg \
+	      --with-libtiff \
+	      --with-libxpm \
+	      --with-sdl \
+	      $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs CHANGES-GTK.txt CHANGES.txt COPYING.LIB INSTALL.txt \
+    LICENCE.txt README-GTK.txt README.txt TODO.txt
+}

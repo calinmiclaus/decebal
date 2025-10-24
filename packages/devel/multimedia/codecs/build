@@ -1,0 +1,24 @@
+NAME=codecs
+VERSION=0.2
+ARCH=i386
+RELEASE=1
+URL="http://www.mplayerhq.hu/"
+DESC="Non-linux and linux native codec pack Win32, Real9, QuickTime, Xanim)."
+GROUP=multimedia
+LICENSE="OL"
+SIZE="10583K"
+
+SOURCES="http://www1.mplayerhq.hu/MPlayer/releases/codecs/rp8codecs.tar.bz2
+         http://www1.mplayerhq.hu/MPlayer/releases/codecs/win32codecs.tar.bz2
+         http://www1.mplayerhq.hu/MPlayer/releases/codecs/qt6dlls.tar.bz2
+         http://www1.mplayerhq.hu/MPlayer/releases/codecs/qtextras.tar.bz2
+         http://www1.mplayerhq.hu/MPlayer/releases/codecs/xanimdlls.tar.bz2"
+
+build() {
+  mkdir -p $PKG/usr/lib/win32
+  cp -a $SRC/qt6dlls/* $PKG/usr/lib/win32/
+  cp -a $SRC/qtextras/* $PKG/usr/lib/win32/
+  cp -a $SRC/rp8codecs/* $PKG/usr/lib/win32/
+  cp -a $SRC/win32codecs/* $PKG/usr/lib/win32/
+  cp -a $SRC/xanimdlls/* $PKG/usr/lib/win32/
+}

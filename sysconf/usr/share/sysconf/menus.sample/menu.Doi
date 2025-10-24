@@ -1,0 +1,4 @@
+Primo:%echo "3 comenzi cu ;";echo "press enter";read:menu 2 item 1
+Secondo:%echo "3 comenzi cu ;";echo "press enter";read:menu 2 item 2
+Terta:%echo "3 comenzi cu ;";echo "press enter";read:menu 2 item 3
+Quadro:%echo "3 comenzi cu ;";echo "press enter";read:menu 2 item 4

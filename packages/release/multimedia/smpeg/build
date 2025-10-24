@@ -1,0 +1,28 @@
+NAME=smpeg
+VERSION=0.4.4
+ARCH=i686
+RELEASE=1
+URL="http://www.lokigames.com/development/smpeg.php3"
+DESC="A general purpose MPEG video/audio player for Linux based on the mpeg_play and SPLAY MPEG decoders."
+GROUP=multimedia
+LICENSE="LGPLv2"
+SIZE="307K"
+
+SOURCES="http://mirrors.sunsite.dk/lokigames/open-source/smpeg/$NAME-$VERSION.tar.gz"
+
+RUNTIME="gtk libsdl alsa-lib gcc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+	      --sysconfdir=/etc \
+	      --localstatedir=/var/lib \
+    	      --libexecdir=/usr/lib/$NAME \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+
+  install_docs CHANGES COPYING README README.SDL_mixer TODO
+}

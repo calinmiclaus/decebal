@@ -1,0 +1,32 @@
+NAME=libgnomeprint
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Printing routines for the GNOME Desktop."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2"
+SIZE="706K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/libgnomeprint-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=pango-1.5.0 >=libart_lgpl-2.3.7 >=popt-1.7 >=libgnomecups-0.2.0 >=libxml2-2.4.23"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/opt/gnome \
+	      --with-cups \
+              --disable-gtk-doc $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog* INSTALL NEWS README OChangeLog*
+}

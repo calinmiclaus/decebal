@@ -1,0 +1,36 @@
+Submitted By: Jim Gifford (patches at jg555 dot com)
+Date: 2003-08-15
+Initial Package Version: 1.1.7
+Origin: Jim Gifford
+Description: Fixes for GCC 3.3
+
+diff -Naur cdrdao-1.1.7.orig/pccts/sorcerer/lib/sintstack.c cdrdao-1.1.7/pccts/sorcerer/lib/sintstack.c
+--- cdrdao-1.1.7.orig/pccts/sorcerer/lib/sintstack.c	1999-06-30 13:08:06.000000000 +0000
++++ cdrdao-1.1.7/pccts/sorcerer/lib/sintstack.c	2003-08-15 23:26:04.000000000 +0000
+@@ -29,11 +29,7 @@
+ #include <stdio.h>
+ #include <setjmp.h>
+ 
+-#ifdef PCCTS_USE_STDARG
+ #include <stdarg.h>
+-#else
+-#include <varargs.h>
+-#endif
+ 
+ #include "CASTBase.h"
+ #include "sintstack.h"
+diff -Naur cdrdao-1.1.7.orig/pccts/sorcerer/lib/sorlist.c cdrdao-1.1.7/pccts/sorcerer/lib/sorlist.c
+--- cdrdao-1.1.7.orig/pccts/sorcerer/lib/sorlist.c	1999-06-30 01:15:56.000000000 +0000
++++ cdrdao-1.1.7/pccts/sorcerer/lib/sorlist.c	2003-08-15 23:26:04.000000000 +0000
+@@ -29,11 +29,7 @@
+ #include <stdio.h>
+ #include <setjmp.h>
+ 
+-#ifdef PCCTS_USE_STDARG
+ #include <stdarg.h>
+-#else
+-#include <varargs.h>
+-#endif
+ 
+ #include "CASTBase.h"
+ #include "sorlist.h"

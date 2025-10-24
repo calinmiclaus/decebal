@@ -1,0 +1,21 @@
+NAME=cdlabelgen
+VERSION=1.5.0
+ARCH=i686
+RELEASE=1
+URL="http://www.red-bean.com/~bwf/software/cdlabelgen/"
+DESC="Label a CD."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="86K"
+
+SOURCES="http://www.red-bean.com/fitz/software/cdlabelgen/cdlabelgen-1.5.0.tar.gz"
+
+RUNTIME="perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  make BASE_DIR=$PKG/usr install
+    
+  install_docs COPYING INSTALL README
+}

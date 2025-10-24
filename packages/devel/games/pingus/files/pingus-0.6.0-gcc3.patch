@@ -1,0 +1,101 @@
+--- pingus-0.6.0/src/blitter.cxx
++++ pingus-0.6.0/src/blitter.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <config.h>
+ #include <stdio.h>
+ #include "pingus_error.hxx"
+--- pingus-0.6.0/src/col_map.cxx
++++ pingus-0.6.0/src/col_map.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <iostream>
+ #include <ClanLib/Display/SurfaceProviders/canvas.h>
+ #include "gui/graphic_context.hxx"
+--- pingus-0.6.0/src/console.cxx
++++ pingus-0.6.0/src/console.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <config.h>
+ #include <ClanLib/Display/Display/display.h>
+ #include <ClanLib/Display/Font/font.h>
+--- pingus-0.6.0/src/demo_recorder.cxx
++++ pingus-0.6.0/src/demo_recorder.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <time.h>
+ #include <iostream>
+ #include "system.hxx"
+--- pingus-0.6.0/src/editor/generic_property_frame.cxx
++++ pingus-0.6.0/src/editor/generic_property_frame.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <iostream>
+ #include <ClanLib/GUI/label.h>
+ #include <ClanLib/GUI/inputbox.h>
+--- pingus-0.6.0/src/gui/root_gui_manager.cxx
++++ pingus-0.6.0/src/gui/root_gui_manager.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include "root_gui_manager.hxx"
+ #include "../input/controller.hxx"
+ 
+--- pingus-0.6.0/src/pingu_holder.cxx
++++ pingus-0.6.0/src/pingu_holder.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <iostream>
+ #include "pingu_holder.hxx"
+ #include "pingu.hxx"
+--- pingus-0.6.0/src/savegame_manager.cxx
++++ pingus-0.6.0/src/savegame_manager.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <iostream>
+ #include <fstream>
+ #include "system.hxx"
+--- pingus-0.6.0/src/worldmap/dot.cxx
++++ pingus-0.6.0/src/worldmap/dot.cxx
+@@ -17,6 +17,7 @@
+ //  along with this program; if not, write to the Free Software
+ //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++#include <assert.h>
+ #include <iostream>
+ #include "../xml_file_reader.hxx"
+ #include "dot.hxx"
+--- pingus-0.6.0/src/worldmap/graph.hxx
++++ pingus-0.6.0/src/worldmap/graph.hxx
+@@ -20,6 +20,8 @@
+ #ifndef HEADER_GRAPH_HXX
+ #define HEADER_GRAPH_HXX
+ 
++#include <assert.h>
+ #include <algorithm>
+ #include <vector>
++#include <iostream>
+ 

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Battle Of Survival
+GenericName=Real Time Strategy Game
+Comment=A Real Time Strategy Game with a Tech look
+Icon=bos.png
+FilePattern=bos
+TryExec=bos
+Exec=bos
+Categories=Application;Game;StrategyGame;

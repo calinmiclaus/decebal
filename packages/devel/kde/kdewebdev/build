@@ -1,0 +1,35 @@
+NAME=kdewebdev
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="WEB Development package for KDE"
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2 LGPLv2"
+SIZE="5880K"
+HUSE="debug static"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+BUILTIME="arts >=kdebase-3.5.0"
+
+build() {
+    use static && OPTS="--enable-static" || OPTS="--disable-static"
+    use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+    cd $NAME-$VERSION
+    ./configure --prefix=/opt/kde \
+                --localstatedir=/var/opt/kde \
+		--with-xinerama \
+		$OPTS
+    make
+    make DESTDIR=$PKG install
+
+#  If you are experiencing build problems related to .moc files, try
+#  rm *.moc*
+#  make force-reedit
+#  in the source directory where the build system complains.
+    
+    install_docs AUTHORS COPYING ChangeLog INSTALL INSTALL.docs \
+      NEWS PACKAGING README TODO VERSION
+}

@@ -1,0 +1,24 @@
+NAME=mailtools-perl
+VERSION=1.66
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~markov/MailTools-1.66/"
+DESC="A set of perl modules related to mail applications."
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SIZE="45K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/M/MA/MARKOV/MailTools-1.66.tar.gz"
+
+build() {
+  cd $SRC/MailTools-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs ChangeLog README* MANIFEST
+}

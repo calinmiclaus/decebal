@@ -1,0 +1,21 @@
+NAME=decebal-builds
+VERSION=0.9.0rc2
+ARCH=noarch
+RELEASE=1
+URL="http://people.decebal.org/~trog/projects/builds"
+DESC="Decebal Linux package builds"
+GROUP=base
+LICENSE=GPLv2
+SIZE="6361K"
+
+SOURCES="http://people.decebal.org/~trog/packages/binaries/base/decebal-builds/release.tar.bz2
+         http://people.decebal.org/~trog/packages/binaries/base/decebal-builds/devel.tar.bz2"
+
+RUNTIME="dpack"
+
+build() {
+  mkdir -p $PKG/usr/src/packages
+  cd $SRC
+  cp -Rf devel $PKG/usr/src/packages
+  cp -Rf release $PKG/usr/src/packages
+}

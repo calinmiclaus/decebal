@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 75 postgresql &>/dev/null
+  /usr/sbin/useradd -g postgresql -u 75 -d /var/lib/postgresql -s /bin/bash postgresql &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 75 postgresql &>/dev/null
+  /usr/sbin/useradd -g postgresql -u 75 -d /var/lib/postgresql -s /bin/bash postgresql &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel postgresql &> /dev/null
+  /usr/sbin/groupdel postgresql &> /dev/null
+}

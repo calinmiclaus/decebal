@@ -1,0 +1,55 @@
+NAME=grsecurity
+VERSION=0.0.2
+ARCH=i686
+RELEASE=1
+URL="http://grsecurity.net/"
+DESC="Utilities needed for grsecurity (chpax, paxctl, gradm)."
+GROUP=base
+LICENSE=GPLv2
+SIZE="64K"
+
+SOURCES="http://pax.grsecurity.net/paxctl-0.3.tar.gz
+         http://pax.grsecurity.net/chpax-0.7.tar.gz
+         http://grsecurity.net/gradm-2.1.5-200504081812.tar.gz
+	 grsecurity.init grsecurity.sysconf"
+
+BACKUPS="etc/conf.d/grsecurity
+         etc/grsec/policy"
+
+#BUILDTIME="virtual/kernel-sources"
+
+build() {
+  cd $SRC/chpax-0.7
+  
+  sed -i "s:-Wall -W -g3:-Wall -W -g3 $CFLAGS:" Makefile
+  
+  make
+  make DESTDIR=$PKG install
+  
+  cp Changelog $SRC/Changelog.chpax
+  cp README $SRC/README.chpax
+  
+  cd $SRC/paxctl-0.3
+  
+  sed -i "s:-Wall -W -O2:-Wall -W $CFLAGS:" Makefile
+  
+  make
+  make DESTDIR=$PKG install
+  
+  cp ChangeLog $SRC/ChangeLog.paxctl
+  cp README $SRC/README.paxctl 
+  
+  cd $SRC/gradm2
+  
+  sed -i "s:CFLAGS \:\= \$(OPT_FLAGS):CFLAGS \:\= \$(OPT_FLAGS) $CFLAGS:" Makefile
+  
+  make
+  make DESTDIR=$PKG install
+  
+  cd $SRC
+  
+  install -D -m 0700 grsecurity.init $PKG/etc/rc.d/grsecurity
+  install -D -m 0600 grsecurity.sysconf $PKG/etc/conf.d/grsecurity
+  
+  install_docs Changelog.chpax ChangeLog.paxctl README*
+}

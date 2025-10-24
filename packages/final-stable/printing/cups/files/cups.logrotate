@@ -1,0 +1,5 @@
+/var/log/cups/*log {
+   missingok
+   notifempty
+   delaycompress
+}

@@ -1,0 +1,35 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="optimize.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="creating.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Smash Stack Protector</h1>
+<p>When you build a package <b><code>dsrc</code></b> will automatically enable the Smash Stack Protector for
+packages that support it. The SSP extension consists from two flags, <b><code>-fstack-protector</code></b> and
+<b><code>-fstack-protector-all</code></b> which are passed to the compiler with the <b><code>CFLAGS</code></b> and <b><code>CXXFLAGS</code></b> flags.<br><br>
+A short explanation of these flags (from the gcc man page):<br>
+<b><code>Generate code to protect an application from a stack smashing attack. The features are (1) the insertion of random
+value next to the frame pointer to detect the integrity of the stack, (2) the reordering of local variables to place
+buffers after pointers to avoid the corruption of pointers that could be used to further corrupt arbitrary memory
+locations, (3) the copying of pointers in function arguments to an area preceding local variable buffers to prevent
+the corruption of pointers that could be used to further corrupt arbitrary memory locations, and the (4) omission of
+instrumentation code from some functions to decrease the performance overhead.  If the integrity would be broken,
+the program is aborted.  If no-stack-protector is specified, instrumentation codes are generated at every functions.</b></code><br><br>
+So using these flags will improve the security of the system at the cost of unnotable performance lost.
+If you plan to use <b><code>dsrc</code></b> on a system that doesnt have the SSP expension installed, then you should
+download the patch <b><code><a href="http://www.research.ibm.com/trl/projects/security/ssp/gcc3_3_2/protector-3.3.2-3.tar.gz">protector-3.3.2-3.tar.gz</a></b></code> and
+install it as explained on the <a href="http://www.research.ibm.com/trl/projects/security/ssp/">Smash Stack Protector</a> site.<br></p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="optimize.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="creating.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Optimizing build</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Creating your own package builds</td></tr></table>
+</body>
+</html>

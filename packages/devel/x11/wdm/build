@@ -1,0 +1,18 @@
+NAME=wdm
+VERSION=1.28
+ARCH=i686
+RELEASE=1
+URL="http://voins.program.ru/wdm/"
+DESC="WDM is a modification of XFree86's xdm package for graphically handling authentication and system login."
+GROUP=x11
+LICENSE=""
+SIZE="372K"
+
+SOURCES="http://voins.program.ru/wdm/wdm-1.28.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL \
+    NEWS README* TODO 
+}

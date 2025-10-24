@@ -1,0 +1,63 @@
+NAME=gpm
+VERSION=1.20.1
+ARCH=i686
+RELEASE=1
+URL="http://linux.schottelius.org/gpm/"
+DESC="A mouse server for the console and xterm."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="551K"
+
+SOURCES="ftp://arcana.linux.it/pub/gpm/gpm-1.20.1.tar.bz2
+	 gpm-1.20.1-segfault.patch mouse.init mouse.sysconf"
+
+BACKUPS="etc/gpm-root.conf
+         etc/gpm-syn.conf
+         etc/gpm-twiddler.conf
+         etc/conf.d/mouse"
+
+BUILDTIME="texinfo"
+
+RUNTIME="ncurses"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../gpm-1.20.1-segfault.patch
+  
+  ./configure --prefix=/usr \
+              --libdir=/lib \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make ROOT=$PKG install
+  
+  cp conf/{gpm-root.conf,gpm-syn.conf,gpm-twiddler.conf} $PKG/etc/
+
+  cd doc
+  sed -i "s:\/usr\/bin\/sed:\/bin\/sed:" infofilter
+  ./infofilter gpm.info > gpm.info
+  ./manpager doc.gpm.in
+  cp gpm-root.1 mouse-test.1 $PKG/usr/share/man/man1
+  cp gpm-types.7 $PKG/usr/share/man/man7
+  cp gpm.8 $PKG/usr/share/man/man8
+  
+  cd ..
+  
+  mkdir -p $PKG/usr/lib
+  
+  mv $PKG/lib/libgpm.a $PKG/usr/lib/
+  
+  rm -f $PKG/lib/libgpm.so
+  
+  ln -s libgpm.so.1.19.0 $PKG/lib/libgpm.so.1
+  ln -s ../../lib/libgpm.so.1 $PKG/usr/lib/libgpm.so
+  
+  chmod 755 $PKG/lib/libgpm.so.1.19.0
+  
+  install -D -m 0700 ../mouse.init $PKG/etc/rc.d/mouse
+  install -D -m 0644 ../mouse.sysconf $PKG/etc/conf.d/mouse
+  
+  install_docs BUGS COPYING Changelog Changes MANIFEST README TODO
+}

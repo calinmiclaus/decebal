@@ -1,0 +1,33 @@
+NAME=mjpegtools
+VERSION=1.6.2
+ARCH=i686
+RELEASE=1
+URL="http://mjpeg.sourceforge.net/"
+DESC="A set of tools that can do recording of videos and playback."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="1226K"
+HUSE="static"
+
+SOURCES="http://unc.dl.sourceforge.net/sourceforge/mjpeg/mjpegtools-1.6.2.tar.gz
+         mjpegtools-1.6.2-gcc34.patch"
+
+BUILDTIME=">=gtk-1.2.10 >=libdv-0.103 >=libsdl-1.0.7 >=glib-1.2.10 >=libpng-1.2.6
+	   >=zlib-1.1.4 alsa-lib xorg gcc"
+
+build() {
+  cd $NAME-$VERSION
+  
+  patch -p1 < ../mjpegtools-1.6.2-gcc34.patch
+    
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS CHANGES COPYING ChangeLog HINTS \
+    INSTALL NEWS PLANS README TODO
+}

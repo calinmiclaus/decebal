@@ -1,0 +1,29 @@
+NAME=enscript
+VERSION=1.6.1
+ARCH=i686
+RELEASE=1
+URL="http://people.ssh.fi/mtr/genscript/index.html"
+DESC="Convert ASCII files to PostScript suitable for printing."
+GROUP=printing
+LICENSE=GPLv2
+
+SOURCES="http://ftp.gnu.org/gnu/enscript/enscript-1.6.1.tar.gz"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/enscript \
+	      --localstatedir=/var \
+	      --with-media=Letter \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs 8859*.txt ABOUT-NLS AUTHORS COPYING ChangeLog FAQ.html \
+    INSTALL NEWS README* TODO THANKS
+}

@@ -1,0 +1,31 @@
+NAME=arc
+VERSION=5.21
+ARCH=i686
+RELEASE=1
+DESC="This is a Linux port of SEA arc for MS-DOS"
+URL="http://sources.isc.org"
+GROUP=system
+LICENSE=OL
+SIZE="142K"
+
+SOURCES="http://sources.isc.org/archiver/arc-5.21.tar.gz
+         arc521e-linux.diff"
+	 
+RUNTIME="glibc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+    
+  patch -p1 <../arc521e-linux.diff
+  
+  # activate our cflags here.
+  sed -i "s:CFLAGS \= \$(OPT) \$(SYSTEM):CFLAGS \= \$(OPT) \$(SYSTEM) $CFLAGS:" Makefile
+  
+  make
+    
+  install -D -m 0755 arc $PKG/usr/bin/arc
+  install -m 0755 marc $PKG/usr/bin/marc
+  install -D -m 0644 arc.1 $PKG/usr/share/man/man1/arc.1
+
+  install_docs Arc521.doc Arcinfo Changes.521 MANIFEST PATCHLEVEL README
+}

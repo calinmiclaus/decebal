@@ -1,0 +1,27 @@
+NAME=divx4linux
+VERSION=5.10
+ARCH=i386
+RELEASE=1
+URL="http://www.divx.com/divx/linux"
+DESC="DivX libraries (nonfree)"
+GROUP=multimedia
+LICENSE="OwnLicense"
+SIZE="405K"
+
+SOURCES="http://download.divx.com/divx/divx4linux-std-20030428.tar.gz"
+
+build() {
+    cd $SRC/$NAME-20030428
+    
+    mkdir -p $PKG/usr/{lib,include}
+    cp *.so $PKG/usr/lib
+    cp *.h $PKG/usr/include
+    chown -R root.root $PKG/usr/lib $PKG/usr/include
+    chmod 755 $PKG/usr/lib/*
+
+    #fix: divx5 tries to write to c:\trace_b.txt.
+    perl -pi -e 's|c:\\trace_b.txt|/dev/null\0\0\0\0\0|' $PKG/usr/lib/libdivxencore.so
+    
+    ln -s libdivxdecore.so $PKG/usr/lib/libdivxdecore.so.0
+    ln -s libdivxencore.so $PKG/usr/lib/libdivxencore.so.0
+}

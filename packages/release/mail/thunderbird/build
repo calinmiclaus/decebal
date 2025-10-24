@@ -1,0 +1,85 @@
+NAME=thunderbird
+VERSION=1.0.2
+ARCH=i686
+RELEASE=1
+DESC="Open Source email client from Mozilla."
+URL="http://www.mozilla.org"
+GROUP=mail
+LICENSE="MPLv1.1"
+SIZE="32475K"
+
+SOURCES="http://ftp.mozilla.org/pub/mozilla.org/thunderbird/releases/1.0.2/source/thunderbird-1.0.2-source.tar.bz2
+	 http://downloads.mozdev.org/enigmail/src/enigmail-0.90.1.tar.gz
+         http://downloads.mozdev.org/enigmail/src/ipc-1.1.2.tar.gz
+	 thunderbird.desktop thunderbird.png thunderbird.sh thunderbird-ft2.patch"
+
+RUNTIME=">=libidl-0.8.3 gtk2 >=libjpeg-6b >=libpng-1.2.8 expat gnupg desktop-file-utils"
+
+build() {
+  cp -aR $SRC/enigmail $SRC/mozilla/extensions/
+  cp -aR $SRC/ipc $SRC/mozilla/extensions/
+  chown -R root.root $SRC/mozilla
+  cd $SRC/mozilla
+  
+  patch -p0 < ../thunderbird-ft2.patch
+    
+  export BUILD_OFFICIAL="1"
+  export MOZILLA_OFFICIAL="1"
+  export MOZ_THUNDERBIRD="1"
+  
+  ./configure --prefix=/opt/thunderbird \
+              --with-default-mozilla-five-home=/opt/thunderbird/lib/thunderbird \
+	      --enable-application=mail \
+	      --enable-toolkit-gtk2 \
+	      --enable-default-toolkit=gtk2 \
+	      --disable-toolkit-qt \
+	      --disable-toolkit-xlib \
+	      --disable-toolkit-gtk \
+	      --with-system-jpeg \
+	      --with-system-png \
+	      --with-system-zlib \
+	      --with-system-mng \
+	      --enable-crypto \
+	      --enable-strip \
+	      --enable-xft \
+	      --enable-xinerama	\
+	      --disable-freetype2 \
+	      --disable-debug \
+	      --disable-tests \
+	      --disable-logging \
+	      --disable-installer \
+	      --disable-mathml \
+	      --disable-pedantic \
+	      --enable-single-profile \
+	      --disable-profilesharing \
+	      --disable-necko-disk-cache \
+	      --enable-necko-protocols=http,file,jar,viewsource,res,data \
+	      --enable-extensions=wallet,spellcheck,xmlextras,webservices \
+	      --enable-image-decoders=png,gif,jpeg \
+	      --enable-optimize="$CFLAGS"
+  make
+  build/autoconf/make-makefile extensions/ipc extensions/enigmail
+  make -C extensions/ipc
+  make -C extensions/enigmail
+  make DESTDIR=$PKG install
+  make -C extensions/ipc DESTDIR=$PKG install
+  make -C extensions/enigmail DESTDIR=$PKG install
+  
+  mkdir -p $PKG/opt/thunderbird/include/$NAME-$VERSION/nss
+  cp -Lf dist/private/nss/*.h dist/public/nss/*.h $PKG/opt/thunderbird/include/$NAME-$VERSION/nss/
+  
+  cd $PKG/opt/thunderbird/lib/thunderbird-1.0
+  export LD_LIBRARY_PATH="$PWD"
+  export MOZILLA_FIVE_HOME="$PWD"
+  ./regxpcom
+  ./regchrome
+  touch `find . -name *.rdf`
+  
+  cd $SRC/mozilla
+  
+  install -D -m 0644 ../thunderbird.desktop $PKG/usr/share/applications/thunderbird.desktop
+  install -D -m 0644 ../thunderbird.png $PKG/usr/share/pixmaps/thunderbird.png
+  install -D -m 0644 ../thunderbird.sh $PKG/etc/profile.d/thunderbird.sh
+  
+  install_docs LEGAL LICENSE README.txt
+}

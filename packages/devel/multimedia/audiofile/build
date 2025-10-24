@@ -1,0 +1,27 @@
+NAME=audiofile
+VERSION=0.2.6
+ARCH=i686
+RELEASE=1
+URL="http://www.68k.org/~michael/audiofile/"
+DESC="Silicon Graphics Audio File Library."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="365K"
+HUSE="static"
+
+SOURCES="http://www.68k.org/~michael/audiofile/audiofile-0.2.6.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static"
+
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs ACKNOWLEDGEMENTS AUTHORS COPYING* ChangeLog \
+    INSTALL NEWS NOTES README TODO
+}

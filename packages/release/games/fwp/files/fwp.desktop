@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Fight Win Prevail
+GenericName=Action Game
+Comment=A Inovative First Person Shooter
+Icon=fwp.png
+FilePattern=fwp
+TryExec=fwp
+Exec=fwp
+Categories=Application;Game;ActionGame;

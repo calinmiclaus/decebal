@@ -1,0 +1,25 @@
+#!/bin/bash
+
+pkg_create_tmp() {
+  local NAME=${0##*/}
+  
+  if [ ! -d $PKG_ROOT/tmp ]
+  then
+    mkdir -p $PKG_ROOT/tmp
+    chmod 1777 $PKG_ROOT/tmp
+  fi
+  
+  TMP=$(mktemp -d $PKG_ROOT/tmp/$NAME.XXXXXXXXXX 2>/dev/null)
+  if [ ! -d $TMP ]
+  then
+    TMP=$PKG_ROOT/tmp/${NAME}.$$
+    mkdir -p $TMP
+  fi
+}
+
+pkg_remove_tmp() {
+  if [ -d $TMP ]
+  then
+    rm -rf $TMP
+  fi
+}

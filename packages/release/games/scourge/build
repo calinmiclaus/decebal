@@ -1,0 +1,43 @@
+NAME=scourge
+VERSION=0.9
+ARCH=i686
+RELEASE=1
+URL="http://scourge.sourceforge.net/"
+DESC="A OpenGL Dungeon Game in the spirit of NetHack."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="15386K"
+HUSE="debug profile"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/scourge/scourge-0.9.tar.gz
+         scourge-0.9-gcc34-1.diff scourge.desktop scourge.png"
+
+RUNTIME=">=libsdl-1.0.1 sdl_mixer sdl_net freetype2 xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  patch -p1 < ../scourge-0.9-gcc34-1.diff
+    
+  find ./ -name .DS_Store -exec rm -f \{\} \;
+  find ./data -type f -exec chmod a-x \{\} \;
+  
+  use debug && OPTS="--enable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+  
+  ./configure --prefix=/usr/games \
+              --with-data-dir=/usr/games/share/scourge $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/usr/games/share/scourge
+  cp -r data/* $PKG/usr/games/share/scourge/
+  
+  install -D -m 0644 ../scourge.desktop $PKG/usr/share/applications/scourge.desktop
+  install -D -m 0644 ../scourge.png $PKG/usr/share/pixmaps/scourge.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

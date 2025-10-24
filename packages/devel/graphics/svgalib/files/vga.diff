@@ -1,0 +1,16 @@
+--- vga.c.orig	2001-05-29 09:37:55.000000000 -0500
++++ vga.c	2005-08-06 06:01:24.000000000 -0500
+@@ -1953,10 +1953,13 @@
+     };
+     __vga_mmap();
+ 
++/*
++//dirty hack, dont know how to bypass this. trog@decebal.org
+     if ((long) GM < 0) {
+ 	printf("svgalib: mmap error rrr\n");
+ 	exit(1);
+     }
++*/
+     /* disable video */
+     vga_screenoff();
+ 

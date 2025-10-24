@@ -1,0 +1,26 @@
+NAME=tripwire
+VERSION=0.9
+ARCH=i686
+RELEASE=1
+URL="http://www.frenchfries.net/paul/tripwire/"
+DESC="A tool that checks to see what has changed on your system."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="869K"
+
+SOURCES="http://www.frenchfries.net/paul/tripwire/tripwire-portable-0.9.tar.gz"
+
+build() {
+  cd $SRC/${NAME}-portable-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING ChangeLog INSTALL MAINTAINERS \
+    README Release_Notes TRADEMARK WISHLIST
+}

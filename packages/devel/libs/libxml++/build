@@ -1,0 +1,35 @@
+NAME=libxml++
+VERSION=1.0.4
+ARCH=i686
+RELEASE=1
+URL="http://libxmlplusplus.sourceforge.net/"
+DESC="A C++ wrapper for the libxml XML parser library."
+GROUP=libs
+LICENSE="GLGPLv2.1"
+SIZE="275K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/libxml++/1.0/libxml++-1.0.4.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=libxml2-2.5.8"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --with-gnu-ld \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  ( cd $PKG/usr/include
+    ln -s libxml++-1.0/libxml++ libxml++ )
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+

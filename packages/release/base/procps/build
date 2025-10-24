@@ -1,0 +1,37 @@
+NAME=procps
+VERSION=3.2.5
+ARCH=i686
+RELEASE=1
+URL="http://procps.sf.net/"
+DESC="Miscellaneous proc FS tools fuser, killall, pidof, and pstree."
+GROUP=base
+LICENSE="GPLv2 LGPLv2"
+
+SOURCES="http://procps.sourceforge.net/procps-3.2.5.tar.gz
+         sysctl.conf sysctl.init"
+
+BACKUPS="etc/sysctl.conf"
+
+RUNTIME=">=ncurses-5.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p PKG/{bin,sbin,etc,lib,usr/share/man/{man1,man5,man8}}
+  
+  sed -i "s:CFLAGS \:= -O2 -g3:CFLAGS \:= -g3 $CFLAGS:" Makefile
+  
+  make
+  make DESTDIR=$PKG MANDIR=/usr/share/man install
+  
+  install -D -m 0700 ../sysctl.init $PKG/etc/rc.d/sysctl
+  install -D -m 0644 ../sysctl.conf $PKG/etc/sysctl.conf
+  
+  ln -sf pgrep $PKG/usr/bin/pkill
+  ln -sf skill $PKG/usr/bin/snice
+  
+  rm -f $PKG/bin/kill $PKG/usr/share/man/man1/kill.1
+  rm -f $PKG/usr/bin/uptime $PKG/usr/share/man/man1/uptime.1
+  
+  install_docs AUTHORS BUGS COPYING COPYING.LIB NEWS README README.top TODO
+}

@@ -1,0 +1,20 @@
+post_install() {
+  /usr/sbin/groupadd -g 62 cups &>/dev/null
+  /usr/sbin/useradd -g 62 -u 62 -c "CUPS Daemon" -d /var/spool/cups -s/bin/false cups &>/dev/null
+  /bin/chown cups.cups /usr/bin/lppasswd
+  /bin/chown cups.cups /var/spool/cups 
+  /bin/chown cups.cups /var/log/cups 
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 62 cups &>/dev/null
+  /usr/sbin/useradd -g 62 -u 62 -c "CUPS Daemon" -d /var/spool/cups -s/bin/false cups &>/dev/null
+  /bin/chown cups.cups /usr/bin/lppasswd
+  /bin/chown cups.cups /var/spool/cups 
+  /bin/chown cups.cups /var/log/cups 
+}
+
+pre_remove() {
+  /usr/sbin/userdel cups &>/dev/null
+  /usr/sbin/groupdel cups &>/dev/null
+}

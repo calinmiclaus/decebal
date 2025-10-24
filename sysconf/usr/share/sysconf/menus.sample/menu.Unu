@@ -1,0 +1,5 @@
+Unu:%echo "3 comenzi cu ;";echo "press enter";read:menu 1 item 1
+Doi:%echo "3 comenzi cu ;";echo "press enter";read:menu 1 item 2
+Trei:%echo "3 comenzi cu ;";echo "press enter";read:menu 1 item 3
+Patru:%echo "3 comenzi cu ;";echo "press enter";read:menu 1 item 4
+Meniu3:@Trei:intra in meniul trei

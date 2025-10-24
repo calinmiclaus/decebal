@@ -1,0 +1,44 @@
+NAME=readline
+VERSION=5.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/directory/readline.html"
+DESC="The GNU readline library."
+GROUP=base
+LICENSE=GPLv2
+SIZE="1766K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/readline/readline-5.0.tar.gz
+         inputrc"
+
+BUILDTIME=">=bash-2.05b"
+
+RUNTIME=">=ncurses-5.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --libdir=/lib \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-curses
+  make SHLIB_XLDFLAGS=-lncurses
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/lib
+  
+  mv $PKG/lib/{libhistory.a,libreadline.a} $PKG/usr/lib/
+  
+  rm -f $PKG/lib/{libhistory.so,libreadline.so}
+  
+  ln -s ../../lib/libhistory.so.5 $PKG/usr/lib/libhistory.so
+  ln -s ../../lib/libreadline.so.5 $PKG/usr/lib/libreadline.so
+  
+  chmod 755 $PKG/lib/{libhistory.so.5.0,libreadline.so.5.0}
+      
+  install -D -m 0644 ../inputrc $PKG/etc/inputrc
+  
+  install_docs CHANGELOG CHANGES COPYING INSTALL MANIFEST README USAGE
+}

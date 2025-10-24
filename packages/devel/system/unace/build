@@ -1,0 +1,27 @@
+NAME=unace
+VERSION=1.2b
+ARCH=i686
+RELEASE=1
+DESC="A program that can decompress ace arhives."
+URL="ftp://ftp.leo.org/pub/comp/os/unix/linux/sunsite/utils/compress/"
+GROUP=system
+LICENSE="OL"
+SIZE="42K"
+
+SOURCES="ftp://ftp.leo.org/pub/comp/os/unix/linux/sunsite/utils/compress/unace-1.2b.tar.gz"
+
+RUNTIME="glibc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # set out cflags here.
+  sed -i "s:\-O3 \-fno-strength-reduce \-fomit-frame-pointer:\-fno-strength-reduce $CFLAGS:" Makefile
+  
+  make clean
+  make
+    
+  install -D -m 0755 unace $PKG/usr/bin/unace
+    
+  install_docs unix/readme.txt
+}

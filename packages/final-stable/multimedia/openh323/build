@@ -1,0 +1,28 @@
+NAME=openh323
+VERSION=1.15.3
+ARCH=i686
+RELEASE=1
+URL="http://www.openh323.org/"
+DESC="Library for communicating over H.323."
+GROUP=multimedia
+LICENSE=BSDL
+SIZE="3679K"
+
+SOURCES="http://www.voxgratia.org/releases/openh323-Mimas_rc2-src-tar.gz"
+
+RUNTIME="pwlib"
+
+build() {
+  tar xf openh323-Mimas_rc2-src-tar
+  cd $SRC/openh323_Mimas_rc2
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  ./configure --prefix=/usr --enable-localspeex
+  make opt
+  make DESTDIR=$PKG install  
+ 
+  chmod 755 $PKG/usr/lib/libh323_linux_x86_r.so
+
+  install_docs ChangeLog ReadMe.txt
+}

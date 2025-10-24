@@ -1,0 +1,299 @@
+#!/bin/bash
+#
+# Script for configuring your default console settings.
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+
+consolefile="/etc/conf.d/console"
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+function configure_font()
+{
+local opt="" cur button=0 short i
+$dialog --backtitle "$version" --title " Working " --infobox \
+"\nLoading font list ...\n" 5 0
+
+for i in /usr/share/kbd/consolefonts/*.gz; do
+  short=`basename $i`
+  opt="$opt $short -"
+done
+
+. $consolefile
+
+cur=$FONT
+
+if [ -z "`echo $cur|grep \".gz$\"`" ];
+then
+  cur="$cur.gz"
+fi
+
+while [ $button -eq 0 ];
+do
+  $dialog --backtitle "$version" \
+  --title " Console Font Selection " --default-item "$cur" \
+  --extra-button --extra-label "Save" --cancel-label "Back" \
+  --ok-label "Try" \
+  --menu '\nSelect desired console font: \n\n' 0 0 0 \
+  $opt 2>$tmp/font
+  
+  button=$?
+  cur=`cat $tmp/font`
+  rm -f $tmp/font
+
+  case $button in
+  0) setfont $cur ;;
+  1) break ;;
+  3) 
+    cat $consolefile|replace "FONT=" "FONT=$cur">$tmp/consolefile
+    mf -f $tmp/consolefile $consolefile
+echo $consolefile
+echo $tmp
+echo     
+    $dialog --backtitle "$version" --title " Console Font Selection " \
+    --msgbox "\nYour slection was saved.\n\n" 0 0
+    break
+  ;;
+  esac
+done
+}
+
+function configure_keymap()
+{
+local opt="" cwd all i ii button
+cwd=`pwd`
+
+cd /usr/share/kbd/keymaps
+all=`find . -name *.map.gz|cut -b 3-`
+
+cd $cwd
+
+#CUR=`cat $consolefile|grep -v "#"|grep "keymap="|cut -f 2 -d "="`
+. $consolefile
+local cur=$KEYMAP
+
+$dialog --backtitle "$version" --title " Working " --infobox \
+"\nLoading keymap list ...\n" 5 0
+
+for i in $all; do
+  opt="$opt $i -"
+  ii=`echo $i|grep "/$cur"`
+  [ ! -z "$ii" ] && cur=$i
+done
+
+button=0
+while [ $button -ne 1 ];
+do
+  $dialog --backtitle "$version" \
+  --title " Keymap Selection " --default-item "$cur" \
+  --cancel-label "Back" \
+  --extra-button --extra-label "Set" --ok-label "Save" \
+  --menu '\nSelect desired keymap: \n\n' 0 0 0 \
+  $opt 2>$tmp/keymap
+  
+  button=$?
+
+  cur=`cat $tmp/keymap`
+
+  rm -f $tmp/keymap
+
+  case $button in
+  3) /usr/bin/loadkeys $cur ;;
+  1) break ;;
+  0) local cur1=`basename $cur`
+    cat $consolefile|replace "KEYMAP=" "KEYMAP=$cur1">$tmp/consolefile
+    mv -f $tmp/consolefile $consolefile
+    $dialog --backtitle "$version" --title " Keymap Selection " \
+    --msgbox "\nYour slection was saved.\n\n" 0 0
+    break
+  ;;
+  esac
+done
+}
+
+function configure_keyboard()
+{
+local ckbutton=0 cksel=""
+
+while [ $ckbutton -ne 1 ];
+do
+  . $consolefile
+
+  local KBDRATE=$KEYBOARD_RATE
+  local KBDDELAY=$KEYBOARD_DELAY
+
+  $dialog --backtitle "$version" --title " Keyboard Configuration " \
+  --default-item "$cksel" \
+  --cancel-label "Back" --menu "\nSelect what you want to configure.\n\n" 0 0 0 \
+  "Repeat" "Set your keyboard repeat rate" \
+  "Delay" "Set your keyboard delay time" \
+  "Apply" "Apply the settings" \
+  "View" "View your settings" \
+  2>$tmp/cksel
+
+  ckbutton=$?
+  cksel=`cat $tmp/cksel`
+  rm -f $tmp/cksel
+  
+  [ $ckbutton -eq 0 ] && \
+    case $cksel in
+    "Repeat")
+      $dialog --backtitle "$version" --default-item "$KBDRATE" \
+      --title " Keyboard Rate " \
+      --cancel-label "Back" --ok-label "Save" \
+      --menu "\nPlease select one of the following keyboard repeat rates: \n\n" \
+      0 0 0 \
+      "30.0" "Fast" "26.7" " " "24.0" " " "21.8" " " "20.0" " " "18.5" " " \
+      "17.1" " " "16.0" " " "15.0" " " "13.3" " " "12.0" " " "10.9" " " \
+      "10.0" " " "9.2" " " "8.6" " " "8.0" " " "7.5" " " "6.7" " " "6.0" " " \
+      "5.5" " " "5.0" " " "4.7" " " "4.3" " " "4.0" " " "3.7" " " "3.3" " " \
+      "3.0" " " "2.7" " " "2.5" " " "2.3" " " "2.1" " " "2.0" "Slow " \
+      2> $tmp/keyboard_rate
+      local button=$?
+
+      KBDRATE=`cat $tmp/keyboard_rate`
+      rm -f $tmp/keyboard_rate
+      
+      [ $button -eq 0 ] && {
+      cat $consolefile|replace "KEYBOARD_RATE=" "KEYBOARD_RATE=$KBDRATE">$tmp/consolefile
+      mv -f $tmp/consolefile $consolefile
+
+      $dialog --backtitle "$version" --title " Keyboard Rate " \
+      --msgbox "\nYour slection was saved.\n\n" 0 0
+      }
+    ;;
+    "Delay")
+      $dialog --backtitle "$version" --default-item "$KBDDELAY" \
+      --title " Keyboard Delay " \
+      --cancel-label "Back" --ok-label "Save" \
+      --menu "\nPlease select one of the following keyboard delay times \
+      (milliseconds): \n\n" 0 0 0 \
+      "250" "Fast" "500" " " "750" " " "1000" "Slow" 2> $tmp/keyboard_delay
+      local button=$?
+      
+      KBDDELAY=`cat $tmp/keyboard_delay`
+      rm -f $tmp/keyboard_delay
+      
+      [ $button -eq 0 ] && {
+      cat $consolefile|replace "KEYBOARD_DELAY=" "KEYBOARD_DELAY=$KBDDELAY">$tmp/consolefile
+      mv -f $tmp/consolefile $consolefile
+      $dialog --backtitle "$version" --title " Keyboard Delay " \
+      --msgbox "\nYour selection was saved.\n\n" 0 0
+      }
+    ;;
+    "View")
+    . $consolefile
+    
+    $dialog --backtitle "$version" --title " Keyboard settings " --msgbox \
+    "\nThe following settings are in $consolefile :\n\n\
+  keyboard repeat rate = $KEYBOARD_RATE\n\
+  keyboard delay time  = $KEYBOARD_DELAY\n\n" 0 0
+    ;;
+    "Apply")
+      . $consolefile
+      $dialog --backtitle "$version" --title " Working " \
+      --infobox "\nSetting keyboard speed ...\n" 5 0
+      
+      kbdrate -s -r $KEYBOARD_RATE -d $KEYBOARD_DELAY
+  
+      $dialog --backtitle "$version" --title " Keyboard settings " --msgbox \
+      "\nThe following settings were applied :\n\n\
+  keyboard repeat rate = $KEYBOARD_RATE\n\
+  keyboard delay time  = $KEYBOARD_DELAY\n\n" 0 0
+    ;;
+    esac
+done
+}
+
+function configure_blank()
+{
+local cbbutton=0 cbsel=""
+
+while [ $cbbutton -ne 1 ];
+do
+  $dialog --backtitle "$version" --title " Screen Blanking Delay " \
+  --default-item "$cbsel" \
+  --menu "\nSelect what you want to configure.\n\n" 0 0 0 \
+  "Set" "Set the screen blanking delay" \
+  "Apply" "Apply the screen blanking delay" \
+  "View" "View the screen blanking delay" 2>$tmp/cbsel
+  cbbutton=$?
+
+  cbsel=`cat $tmp/cbsel`
+  rm -f $tmp/cbsel
+
+  [ $cbbutton -eq 0 ] && \
+  case $cbsel in
+  "Set")
+    . $consolefile
+  
+    $dialog --backtitle "$version" --title " Screen Blanking Delay " \
+    --inputbox "\nPlease select the amount of time of inactivity after \
+which your screen will be blanked, using APM or ACPI if available \
+(in minutes, 0-60) :\n\n" 0 0 "$BLANK_DELAY" \
+    2>$tmp/blank
+
+    local blank_delay=`cat $tmp/blank`
+    rm -f $tmp/blank
+
+    cat $consolefile|replace "BLANK_DELAY=" "BLANK_DELAY=$blank_delay" >$tmp/consolefile
+    mv -f $tmp/consolefile $consolefile
+    
+    $dialog --backtitle "$version" --title " Blank Delay " \
+    --msgbox "\nYour selection was saved.\n\n" 0 0
+  ;;
+  "Apply")
+    . $consolefile
+    setterm -blank $blank_delay
+    $dialog --backtitle "$version" --title " Screen Blanking Delay " \
+    --msgbox "\nYour screen blanking time is now $blank_delay minutes.\n\n" 0 0
+  ;;
+  "View")
+    . $consolefile
+    $dialog --backtitle "$version" --title " Screen Blanking Delay " \
+    --msgbox "\nYour screen blanking time is $BLANK_DELAY minutes.\n\n" 0 0
+  ;;
+  esac
+done
+}
+
+function main_menu()
+{
+local mm_but=0 mm_sel=""
+
+until [ $mm_but -eq 1 ];
+do
+  $dialog --backtitle "$version" --default-item "$mm_sel" \
+  --title " Console Configuration " \
+  --cancel-label "Back" --ok-label "Ok" \
+  --menu "\nSelect what you want to configure." 0 0 0 \
+  "Console font" "Set your console font" \
+  "Keyboard" "Set your keyboard repeat rate and delay" \
+  "Keymap" "Set your keyboard map" \
+  "Blank delay" "Set your screen blanking time" \
+  "Mouse" "Configure your mouse" \
+  "Exit" "Exit console configuration" \
+  2> $tmp/mainmenu
+  mm_but=$?
+  
+  mm_sel=`cat $tmp/mainmenu`
+  rm -f $tmp/mainmenu
+  
+  [ $mm_but -eq 0 ] && \
+  case $mm_sel in
+  "Console font") configure_font ;;
+  "Keyboard") configure_keyboard ;;
+  "Keymap") configure_keymap ;;
+  "Blank delay") configure_blank ;;
+  "Mouse") show_conf Mouse ;;
+  "Exit") mm_but=1
+  esac
+done
+}
+
+tmp=`make_tmp console`
+$1
+rm -rf $tmp

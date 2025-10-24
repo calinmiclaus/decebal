@@ -1,0 +1,35 @@
+NAME=gthumb
+VERSION=2.6.2
+ARCH=i686
+RELEASE=1
+URL="http://gthumb.sourceforge.net/"
+DESC="Image browser and viewer for the GNOME Desktop."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="1992K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/gthumb/2.6/gthumb-2.6.2.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="libgphoto2 >=libgnomeui-2.6.0 >=libgnomeprintui-2.6.0 xorg libexif scrollkeeper"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/bin \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO
+}

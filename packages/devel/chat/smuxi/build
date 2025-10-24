@@ -1,0 +1,11 @@
+NAME=smuxi
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://smuxi.meebey.net/"
+DESC="The IRC client for advanced users."
+GROUP=chat
+LICENSE=""
+SIZE=""
+
+SOURCES=""

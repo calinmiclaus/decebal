@@ -1,0 +1,33 @@
+NAME=bzflag
+VERSION=2.0.2.20050318
+ARCH=i686
+RELEASE=1
+URL="http://www.bzflag.org/"
+DESC="BZFlag is a multiplayer 3D tank battle game."
+GROUP=games
+LICENSE="LGPLv2.1"
+SIZE="2799K"
+HUSE="debug"
+
+SOURCES="http://ftp.bzflag.org/bzflag/bzflag-2.0.2.20050318.tar.bz2
+         bzflag.desktop bzflag.png"
+
+RUNTIME=">=xorg-6.8.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  
+  ./configure --prefix=/usr/games \
+              --mandir=/usr/games/share/man \
+	      --with-x $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../bzflag.desktop $PKG/usr/share/applications/bzflag.desktop
+  install -D -m 0644 ../bzflag.png $PKG/usr/share/pixmaps/bzflag.png
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog DEVINFO INSTALL \
+    NEWS PORTING README* TODO RELNOTES TODO
+}

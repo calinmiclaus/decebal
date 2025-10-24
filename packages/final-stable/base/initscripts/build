@@ -1,0 +1,25 @@
+NAME=initscripts
+VERSION=0.1.6
+ARCH=noarch
+RELEASE=1
+URL="http://devel.decebal.org/projects/initscripts/"
+DESC="System initialization scripts."
+GROUP=base
+LICENSE=GPLv2
+SIZE="141K"
+
+SOURCES="http://people.decebal.org/~slider/code/initscripts/initscripts-0.1.6.tar.bz2"
+
+BACKUPS="etc/rc.d/local
+         etc/conf.d/network
+	 etc/conf.d/init"
+
+RUNTIME="bash coreutils"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  DESTDIR=$PKG ./bootstrap
+  
+  install_docs AUTHORS COPYRIGHT README ChangeLog
+}

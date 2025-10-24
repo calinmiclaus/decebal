@@ -1,0 +1,28 @@
+NAME=screem
+VERSION=0.14.1
+ARCH=i686
+RELEASE=1
+URL="http://www.screem.org/"
+DESC="A website development environment."
+GROUP=devel
+LICENSE="GPLv2.1 FDLv1.1"
+SIZE="3854K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/screem/screem-0.14.1.tar.gz"
+
+BUILDTIME="gettext pkgconfig >=intltool-0.29"
+
+RUNTIME=">=glib2-2.5.6 libgnomeui libcroco"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --enable-dbus
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS BUGS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

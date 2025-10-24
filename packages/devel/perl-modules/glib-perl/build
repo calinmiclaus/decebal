@@ -1,0 +1,27 @@
+NAME=glib-perl
+VERSION=1.080
+ARCH=i686
+RELEASE=1
+URL="http://gtk2-perl.sourceforge.net/"
+DESC="Perl bindings for Glib."
+GROUP=perl-modules
+LICENSE="LGPLv2.1"
+SIZE="202K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/bindings/2.10/2.10.0/sources/perl/Glib-1.080.tar.gz"
+
+RUNTIME="perl extutils-depends-perl extutils-pkgconfig-perl"
+
+build() {
+  cd $SRC/Glib-$VERSION
+  
+  perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+  
+  rm $PKG/usr/lib/perl5/*/$CARCH-linux-thread-multi/perllocal.pod
+  rm $PKG/usr/lib/perl5/site_perl/*/$CARCH-linux-thread-multi/auto/Glib/.packlist
+  
+  install_docs AUTHORS ChangeLog LICENSE MANIFEST* NEWS \
+    README* TODO
+}

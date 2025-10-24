@@ -1,0 +1,40 @@
+NAME=seahorse
+VERSION=0.7.6
+ARCH=i686
+RELEASE=1
+URL="http://seahorse.sourceforge.net/"
+DESC="A GNOME application for managing PGP keys."
+GROUP=gnome-extra
+LICENSE="GPLv2 FDLv1.1"
+SIZE="1063K"
+HUSE="debug"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/seahorse/0.7/seahorse-0.7.6.tar.bz2
+         $NAME.diff"
+
+BUILDTIME="intltool gettext pkgconfig"
+
+RUNTIME=">=libgnomeui-2.0 >=gnupg-1.2 >=gpgme-1.0 openldap"
+
+use gedit && RUNTIME="$RUNTIME =gedit-2.8"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../$NAME.diff
+  
+  use debug && OPTS="--enable-debug"
+  use gedit || OPTS="$OPTS --disable-gedit"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  sed -i "s:Categories=Application;Cryptography;:Categories=Application;System;Cryptography;:" \
+    $PKG/opt/gnome/share/applications/seahorse.desktop
+    
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README THANKS TODO
+}

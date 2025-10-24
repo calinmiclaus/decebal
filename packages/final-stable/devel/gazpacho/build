@@ -1,0 +1,23 @@
+NAME=gazpacho
+VERSION=0.5.3
+ARCH=i686
+RELEASE=1
+URL="http://gazpacho.sicem.biz/"
+DESC="GTK+ GUI Designer for python."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="254K"
+
+SOURCES="http://ftp.acc.umu.se/pub/GNOME/sources/gazpacho/0.5/gazpacho-0.5.3.tar.bz2"
+
+RUNTIME="gtk2 pygtk"
+
+build() {
+  cd $SRC/Gazpacho-$VERSION
+  
+  python setup.py build
+  python setup.py install --root $PKG
+  
+  install_docs AUTHORS CONTRIBUTORS COPYING NEWS \
+    PKG-INFO README RELEASES
+}

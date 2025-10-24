@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Gringotts
+GenericName=Electronic "Strongbox"
+Comment=An electronic strongbox
+Icon=/usr/share/pixmaps/gringotts.xpm
+Exec=gringotts
+Terminal=false
+Type=Application
+TryExec=gringotts
+Categories=Application;System;Cryptography;

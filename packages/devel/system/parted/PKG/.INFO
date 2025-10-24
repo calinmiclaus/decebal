@@ -1,0 +1,12 @@
+NAME=parted
+VERSION=1.6.23
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/parted/parted.html"
+DESC="A program for creating, destroying, resizing, checking and copying partitions."
+GROUP=system
+LICENSE="GPLv2"
+MAINTAINER="Calin Bogdan Miclaus <trog@decebal.org>"
+USEFLAGS=""
+SIZE="1.5M"
+BUILDDATE="Tue Sep 27 02:08:56 2005"

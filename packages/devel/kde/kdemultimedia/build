@@ -1,0 +1,65 @@
+NAME=kdemultimedia
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="KDE Multimedia Programs."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="5390K"
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+HUSE="debug static"
+
+BUILDTIME=">=kdebase-3.5.0 cdparanoia lame flac libmusicbrainz taglib \
+libvorbis xine-lib polypaudio speex"
+
+# why me ?
+#**************************************************
+#*
+#* You do not seem to have GStreamer >= 0.8 installed.
+#* Without this aRts output will be used exclusively.
+#*
+#* JuK supports GStreamer output but will also
+#* work with aRts.
+#*
+#**************************************************
+#**************************************************
+#*
+#* You do not seem to have libmusicbrainz and
+#* libtunepimp.  JuK will be compiled without
+#* will be compiled without MusicBrainz support and
+#* automatic song recognition will not be supported.
+#* Please download libmusicbrainz 2.x and libtunepimp
+#* 0.3.x from:
+#* http://www.musicbrainz.org/products/client/download.html
+#* http://www.musicbrainz.org/products/tunepimp/download.html
+#*
+#**************************************************
+
+
+function build() {
+    OPTS=""
+    use static && OPTS="--enable-static" || OPTS="--disable-static"
+    use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+    cd $SRC/$NAME-$VERSION
+    export PATH=$PATH:/opt/kde/bin
+
+    ./configure --prefix=/opt/kde \
+	--enable-audio=alsa,oss \
+	--sysconfdir=/etc/opt/kde \
+        --with-alsa \
+	--disable-debug \
+	--with-lame \
+	--with-vorbis \
+        --with-cdparanoia=/usr/bin \
+        --disable-dependency-tracking \
+	--enable-final \
+	--with-polypaudio \
+	$OPTS
+
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs AUTHORS COPYING INSTALL README
+}

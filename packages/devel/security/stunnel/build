@@ -1,0 +1,37 @@
+NAME=stunnel
+VERSION=4.08
+ARCH=i686
+RELEASE=1
+URL="http://www.stunnel.org/"
+DESC="An SSL encryption wrapper between remote client and local or remote servers."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="476K"
+HUSE="ipv6"
+
+SOURCES="http://www.stunnel.org/download/stunnel/src/stunnel-4.08.tar.gz
+         stunnel-nopem.diff stunnel.init stunnel.cnf"
+
+RUNTIME=">=openssl-0.9.7e tcp-wrappers"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../stunnel-nopem.diff
+  
+  use ipv6 && OPTS="--enable-ipv6"
+  
+  ./configure --prefix=/usr \
+             --sysconfdir=/etc \
+             --localstatedir=/var/lib \
+	     --with-tcp-wrappers $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/var/{lib/stunnel,run/stunnel}
+  
+  install -D -m 0755 ../stunnel.init $PKG/etc/rc.d/stunnel
+  install -m 0644 ../stunnel.cnf $PKG/etc/stunnel/stunnel.cnf
+  
+  mv $PKG/usr/share/doc/$NAME $PKG/usr/share/doc/$NAME-$VERSION  
+}

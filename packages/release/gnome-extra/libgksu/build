@@ -1,0 +1,33 @@
+NAME=libgksu
+VERSION=1.2.5a
+ARCH=i686
+RELEASE=1
+URL="http://www.nongnu.org/gksu/index.html"
+DESC="A gksu authorization library."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="547"
+HUSE="static nls gtkdoc"
+
+SOURCES="http://people.debian.org/~kov/gksu/libgksu1.2/libgksu1.2-1.2.5a.tar.gz"
+
+RUNTIME="glib2"
+
+use nls BUIDLTIME="gettext"
+use gtkdoc BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/${NAME}1.2-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+  use gtkdoc || OPTS="$OPTS --disable-gtk-doc"
+  
+  ./configure --prefix=/opt/gnome \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL
+}
+

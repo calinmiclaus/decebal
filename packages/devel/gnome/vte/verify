@@ -1,0 +1,9 @@
+md5: 2a9c7cf110342b7c5f414343d2ecffc1 vte-0.11.12.tar.bz2
+md5: 8e3e4a3f84ca226153ae90b76294c20a 01_vtemodule.patch
+md5: c40d4e4c31431fb0e5cb13480cb65c12 04_dsp_non_alias.patch
+md5: 68388d4856e9266acc48402ca9fabc69 07_set_backspace_to_utf8.patch
+md5: cbc1825fd12cc46a7965dcd13de4ab40 08_multiscreen_safe.patch
+md5: 592f8974d0a76e465119c62a389c4927 10_hide_pageup_behavior.patch
+md5: 8d0e4dc408ccce51ff9b1b408f8d35c4 configure.patch
+md5: be7993063d254a761e6f862144923dba src_pty.c.patch
+md5: 3805528034f3d01fa27e24f600618c0d vte-line-scroll.patch

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+pkg_sync() {
+  local RSYNCOPTS=""
+
+  msg_start_nnl "Syncing the package update database..."
+  
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    rsync --verbose --recursive --links --perms \
+      --times --devices --delete --timeout=300 \
+      rsync://$RSYNCMIRROR/update $DATABASEDIR/update
+  else
+    rsync --quiet --recursive --links --perms \
+      --times --devices --delete --timeout=300 \
+      rsync://$RSYNCMIRROR/update $DATABASEDIR/update 2>/dev/null
+  fi
+
+  if [ $? -ne 0 ]
+  then
+    msg_failed
+    msg_error "syncing the package update database failed (rsync error)."
+    pkg_exit "pkg_sync()" "sync_the_update_database" "$LINENO" 1
+  fi
+  msg_done
+}

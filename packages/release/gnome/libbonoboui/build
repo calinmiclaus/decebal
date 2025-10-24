@@ -1,0 +1,34 @@
+NAME=libbonoboui
+VERSION=2.8.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="API for libbonobo."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2"
+SIZE="997K"
+HUSE="static gtkdoc"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/sources/libbonoboui/2.8/libbonoboui-2.8.1.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomecanvas-2.8.0 >=libgnome-2.8.0 >=gnome-vfs-2.8.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  sed -i -e "s,/gnome/head/INSTALL,/opt/gnome," \
+     $PKG/opt/gnome/lib/bonobo/servers/Bonobo_Sample_Controls.server
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS README
+}

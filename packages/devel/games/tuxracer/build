@@ -1,0 +1,46 @@
+NAME=tuxracer
+VERSION=0.61
+ARCH=i686
+RELEASE=1
+URL="http://tuxracer.sourceforge.net/"
+DESC="Tux Racer lets you take on the role of Tux the Linux Penguin as he races down steep, snow-covered mountains."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="621K"
+
+SOURCES="http://download.sourceforge.net/tuxracer/tuxracer-0.61.tar.gz
+         http://ftp.debian.org/debian/pool/main/t/tuxracer/tuxracer_0.61-6.4.diff.gz
+	 http://download.sourceforge.net/tuxracer/tuxracer-data-0.61.tar.gz
+	 tuxracer.desktop tuxracer.png"
+
+RUNTIME="xorg >=libsdl-1.0.1 sdl_mixer gcc libvorbis smpeg libmikmod"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # Debian ruleaza:)
+  patch -p1 < ../tuxracer_0.61-6.4.diff
+  
+  use debug && OPTS="--enable-debug"
+  use profile && OPTS="--enable-profile"
+  
+  ./configure --prefix=/usr/games \
+              --with-tcl-lib-name=tcl8.4 \
+	      --with-tcl-header=tcl.h \
+	      --with-data-dir=/usr/share/tuxracer $OPTS
+  make
+  make prefix=$PKG/usr/games install
+      
+  mkdir -p $PKG/usr/games/share/tuxracer
+  
+  cp -a $SRC/tuxracer-data-$VERSION/* $PKG/usr/games/share/tuxracer
+  
+  install -D -m 0644 ../tuxracer.desktop $PKG/usr/share/applications/tuxracer.desktop
+  install -D -m 0644 ../tuxracer.png $PKG/usr/share/pixmaps/tuxracer.png
+  
+  find $PKG/usr/games/share -type f -exec chmod 644 {} \;
+  find $PKG/usr/games/share -type d -exec chmod 755 {} \;
+      
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

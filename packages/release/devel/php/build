@@ -1,0 +1,113 @@
+NAME=php
+VERSION=5.0.4
+ARCH=i686
+RELEASE=1
+URL="http://www.php.net"
+DESC="A high-level scripting language."
+GROUP=devel
+LICENSE="PHPv3.0"
+SIZE="3940K"
+HUSE="nohardened"
+
+SOURCES="http://ro.php.net/distributions/php-5.0.4.tar.bz2
+         http://www.hardened-php.net/hardened-php-5.0.4-0.2.7.patch.gz
+         php.conf php.ini"
+
+BACKUPS="etc/httpd/mod.d/php.conf
+         etc/php/php.ini"
+
+BUILDTIME=">=flex-2.5.4"
+
+RUNTIME=">=openssl-0.9.7e >=libjpeg-6b freetype2 libpng libxml2 apache gmp fam openldap libxslt pcre
+	 libexif mm curl readline bzip2 libtiff mysql postgresql uw-imap mhash gd"
+	      
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nohardened || {
+    patch -p1 < ../hardened-php-5.0.4-0.2.7.patch
+  }
+  
+  # i really dont know why...but php wants httpd.conf in
+  # the package so we satisfy this...
+  mkdir -p $PKG/etc/httpd
+  cp /etc/httpd/httpd.conf $PKG/etc/httpd/httpd.conf
+  
+  mkdir -p $PKG/usr/lib/apache
+      
+  export EXTENSION_DIR=/usr/lib/php/extensions 
+  
+  ./configure --with-apxs2 \
+              --prefix=/usr \
+              --sysconfdir=/etc/php \
+	      --localstatedir=/var \
+	      --mandir=/usr/share/man \
+	      --with-layout=PHP \
+	      --enable-magic-quotes \
+	      --with-config-file-path=/etc/php/php.ini \
+	      --with-config-file-scan-dir=/etc/php \
+	      --enable-discard-path \
+	      --enable-safe-mode \
+	      --with-openssl=/usr \
+	      --enable-bcmath \
+	      --enable-calendar \
+	      --with-mime-magic \
+	      --with-bz2 \
+	      --with-zlib=/usr \
+	      --with-jpeg-dir=/usr \
+	      --with-tiff-dir=/usr \
+	      --with-png-dir=/usr \
+	      --with-gettext=/usr \
+	      --with-gmp=/usr \
+	      --with-curl=/usr \
+	      --with-ldap=/usr \
+	      --with-mhash=/usr \
+	      --with-mysql=/usr \
+	      --with-mysql-sock=/var/run/mysql/mysql.socket \
+	      --with-pgsql=/usr \
+	      --with-pgsql-sock=/var/lib/postgresql/postgresql.socket \
+	      --without-db2 \
+	      --without-db3 \
+	      --with-db4=/usr \
+	      --with-gdbm=/usr \
+	      --with-mm=/usr \
+	      --enable-sockets \
+	      --enable-yp \
+	      --enable-memory-limit \
+	      --with-gd \
+	      --enable-gd-native-ttf \
+	      --with-ttf \
+	      --enable-exif \
+	      --with-exif \
+	      --with-libexpat-dir=/usr \
+	      --with-dom \
+	      --enable-shared \
+	      --enable-shmop \
+	      --with-fam=/usr \
+	      --with-imap=/usr/lib \
+	      --enable-posix \
+	      --enable-session \
+	      --enable-sysvsem \
+	      --enable-sysvshm \
+	      --with-regex=php \
+	      --with-libxml-dir=/usr \
+	      --with-freetype-dir=/usr \
+	      --enable-ftp \
+	      --with-readline
+  make
+  make INSTALL_ROOT=$PKG install
+  
+  sed -i "s|-i -a -n php5|-i -n php5|g" Makefile
+  
+  make INSTALL_ROOT=$PKG install-cli
+  
+  rm -rf $PKG/etc/httpd
+  
+  install -D -m 0644 ../php.conf $PKG/etc/httpd/mod.d/php.conf
+  install -D -m 0644 php.ini-dist $PKG/etc/php/php.ini-dist
+  install -m 0644 php.ini-recommended $PKG/etc/php/php.ini-recommended
+  install -m 0644 ../php.ini $PKG/etc/php/php.ini
+  
+  install_docs CODING_STANDARDS EXTENSIONS INSTALL LICENSE NEWS \
+    README.* TODO*
+}

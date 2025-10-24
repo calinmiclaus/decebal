@@ -1,0 +1,37 @@
+#!/bin/bash
+
+pkg_sysinfo() {
+  source /etc/dpack/build
+  source /etc/dpack/common
+  
+  if [ -f /etc/decebal-version ]
+  then
+    head -n 1 /etc/decebal-version
+  fi
+  
+  PRINT_DPACK_VERSION=1 dpack
+  
+  echo
+  echo "$(uname -snrmpo)"
+  echo "=============================================================="
+  echo "glibc              : $(pkg_query --info glibc | grep ^VERSION | awk '{print $3}')"
+  echo "gcc                : $(pkg_query --info bash | grep ^VERSION | awk '{print $3}')"
+  echo "binutils           : $(pkg_query --info binutils | grep ^VERSION | awk '{print $3}')"
+  echo "linux-libc-headers : $(pkg_query --info linux-libc-headers | grep ^VERSION | awk '{print $3}')"
+  echo "autoconf           : $(pkg_query --info autoconf | grep ^VERSION | awk '{print $3}')"
+  echo "automake           : $(pkg_query --info automake | grep ^VERSION | awk '{print $3}')"
+  echo "libtool            : $(pkg_query --info libtool | grep ^VERSION | awk '{print $3}')"
+  echo "bash               : $(pkg_query --info bash | grep ^VERSION | awk '{print $3}')"
+  echo 
+  echo "CC                 : $CC"
+  echo "CXX                : $CXX"
+  echo "CARCH              : $CARCH"
+  echo "CHOST              : $CHOST"
+  echo "CFLAGS             : $CFLAGS"
+  echo "CXXFLAGS           : $CXXFLAGS"
+  echo "LDFLAGS            : $LDFLAGS"
+  echo "CPPFLAGS           : $CPPFLAGS"
+  echo "MAKEFLAGS          : $MAKEFLAGS"
+  echo
+  echo "USE FLAGS          : $GLOBALUSE"
+}

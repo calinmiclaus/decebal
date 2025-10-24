@@ -1,0 +1,52 @@
+NAME=clanlib
+VERSION=0.6.5
+ARCH=i686
+RELEASE=1
+URL="http://www.clanlib.org/"
+DESC="A cross platform C++ framework (primary focus is on games)."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="2131K"
+HUSE="debug profile"
+
+SOURCES="http://gentoo.math.bme.hu/distfiles/ClanLib-0.6.5-1.tar.gz
+         clanlib-0.6.5-DirectFB-update.patch
+	 clanlib-0.6.5-freetype.patch
+	 clanlib-0.6.5-gcc3.patch"
+
+RUNTIME=">=libjpeg-6b xorg libpng >=libmikmod-3.1.9 >=freetype2-2.0 libvorbis directfb"
+
+build() {
+  cd $SRC/ClanLib-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+  use lua && OPTS="$OPTS --enable-lua"
+    
+  # Patches from Gentoo.
+  patch -p0 < ../clanlib-0.6.5-gcc3.patch
+  patch -p1 < ../clanlib-0.6.5-DirectFB-update.patch
+  patch -p0 < ../clanlib-0.6.5-freetype.patch
+  sed -i 's:@comp_mode@::' Setup/Unix/clanlib-config.in
+  
+  ./configure --prefix=/usr \
+              --enable-x11 \
+	      --enable-directfb \
+	      --enable-joystick \
+	      --enable-opengl \
+	      --enable-clansound \
+	      --enable-network \
+	      --enable-asm386 \
+	      --enable-dyn \
+	      --enable-gui \
+	      --enable-mikmod \
+	      --enable-png \
+	      --enable-jpeg \
+	      --enable-vorbis \
+	      --enable-ttf $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs BUGS CODING_STYLE COPYING CREDITS HARDWARE INSTALL* \
+    NEWS PATCHES PORTING README* ROADMAP 
+}

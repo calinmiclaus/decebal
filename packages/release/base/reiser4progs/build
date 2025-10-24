@@ -1,0 +1,42 @@
+NAME=reiser4progs
+VERSION=1.0.4
+ARCH=i686
+RELEASE=1
+URL="http://www.namesys.com/"
+DESC="The library for reiser4 filesystem access and manipulation and reiser4 utilities."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="850K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.namesys.com/pub/reiser4progs/reiser4progs-1.0.4.tar.gz"
+
+RUNTIME="libaal readline"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-full-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr \
+              --with-uuid \
+	      --with-readline \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/lib
+  mv $PKG/usr/lib/{libreiser4-1.0.so.4,libreiser4-1.0.so.4.0.0} $PKG/lib/
+  mv $PKG/usr/lib/{libreiser4-minimal-1.0.so.4,libreiser4-minimal-1.0.so.4.0.0} $PKG/lib/
+  mv $PKG/usr/lib/{librepair-1.0.so.4,librepair-1.0.so.4.0.0} $PKG/lib/
+  
+  ln -sf ../../lib/libreiser4-1.0.so.4.0.0 $PKG/usr/lib/libreiser4.so
+  ln -sf ../../lib/libreiser4-minimal-1.0.so.4.0.0 $PKG/usr/lib/libreiser4-minimal.so
+  ln -sf ../../lib/librepair-1.0.so.4.0.0 $PKG/usr/lib/librepair.so
+  
+  mv $PKG/usr/sbin $PKG/
+  
+  install_docs AUTHORS BUGS COPYING CREDITS CUSTOM_INSTALL_README \
+    ChangeLog INSTALL* NEWS README TODO THANKS
+}

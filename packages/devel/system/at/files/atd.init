@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# /etc/rc.d/atd - control file for the atd daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/atd
+
+pidfile="/var/run/atd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the at daemon"
+    start_service /usr/sbin/atd $ATD_OPTS
+    ;;
+  stop)
+    msg "Stopping the at daemon"
+    stop_service /usr/sbin/atd
+    ;;
+  reload)
+    msg "Reloading the at daemon"
+    reload_service /usr/sbin/atd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/atd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

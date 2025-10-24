@@ -1,0 +1,36 @@
+NAME=tcsh
+VERSION=6.14.00
+ARCH=i686
+RELEASE=1
+DESC="Enhanced version of the Berkeley C shell"
+URL="http://www.tcsh.org"
+GROUP=system
+LICENSE=GPLv2
+SIZE="839K"
+
+SOURCES="ftp://ftp.astron.com/pub/tcsh/$NAME-$VERSION.tar.gz"
+
+RUNTIME="ncurses"
+
+build() {
+    cd $SRC/$NAME-$VERSION
+    
+    LDFLAGS="$LDFLAGS -lncurses"
+    
+    ./configure --prefix=/ \
+                --mandir=/usr/share/man \
+                --sysconfdir=/etc \
+		--libexecdir=/usr/lib
+		
+    make
+    
+    make DESTDIR=$PKG install
+    make DESTDIR=$PKG install.man
+    
+#    mkdir -p $PKG/etc
+    
+#    cp ../csh.login $PKG/etc
+#    cp ../csh.logout $PKG/etc
+    
+    install_docs BUGS FAQ Fixes Ported NewThings README* WishList Y2K
+}

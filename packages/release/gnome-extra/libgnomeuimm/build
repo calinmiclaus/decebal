@@ -1,0 +1,31 @@
+NAME=libgnomeuimm
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gtkmm.sourceforge.net/"
+DESC="C++ bindings for libgnomeui."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="309K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/bindings/2.10/2.10.0/sources/c++/libgnomeuimm-2.10.0.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=libgnomeui-2.7.1 >=libgnomemm-2.6.0 >=libglademm-2.4.0 >=gconfmm-2.6.0 >=libgnomecanvasmm-2.6.0 >=gnome-vfsmm-2.6.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  ln -s libgnomeuimm-2.6.pc $PKG/opt/gnome/lib/pkgconfig/libgnomeuimm-2.0.pc
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

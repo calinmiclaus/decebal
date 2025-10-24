@@ -1,0 +1,30 @@
+NAME=libmpeg2
+VERSION=0.4.0b
+ARCH=i686
+RELEASE=1
+URL="http://libmpeg2.sourceforge.net/"
+DESC="A free MPEG-2 video stream decoder."
+GROUP=multimedia
+LICENSE=GPLv2
+SIZE="462K"
+HUSE="static debug"
+
+SOURCES="http://libmpeg2.sourceforge.net/files/mpeg2dec-0.4.0b.tar.gz"
+
+RUNTIME="alsa-lib xorg libsdl gcc"
+
+build() {
+  cd $SRC/mpeg2dec-0.4.0
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+    
+  ./configure --prefix=/usr \
+              --enable-shared $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING CodingStyle ChangeLog \
+    NEWS README TODO
+}
+

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ ! -d ~/.transfusion ]
+then
+  mkdir -p ~/.transfusion
+fi
+
+for FILE in transfusion-glx basetf
+do
+  if [ ! -L ~/.transfusion/$FILE ]
+  then
+    ln -sf /usr/games/share/transfusion/$FILE ~/.transfusion/$FILE
+  fi
+done
+
+( cd ~/.transfusion ; ./transfusion-glx )

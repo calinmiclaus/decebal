@@ -1,0 +1,10 @@
+#!/bin/bash
+
+pkg_dump_db() {
+  if [ -n "$(get_installed_pkg $1)" ]
+  then
+    cat ${PKG_ROOT}${DATABASEDIR}/db/$IPKG
+  else
+    echo "package database entry not found."
+  fi
+}

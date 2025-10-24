@@ -1,0 +1,25 @@
+NAME=unrar
+VERSION=2.71
+ARCH=i686
+RELEASE=1
+DESC="A program that can extract, view and test rar arhives."
+URL="ftp://metalab.unc.edu/pub/Linux/utils/compress"
+GROUP=system
+LICENSE="OL"
+SIZE="30K"
+
+SOURCES="ftp://metalab.unc.edu/pub/Linux/utils/compress/unrar-2.71.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # set our cflags here
+  sed -i "s:-O2 -fomit-frame-pointer:$CFLAGS:" Makefile
+      
+  mkdir -p $PKG/usr/bin
+
+  make BINDIR=/usr/bin
+  make BINDIR=$PKG/usr/bin install
+
+  install_docs license.txt readme.txt
+}

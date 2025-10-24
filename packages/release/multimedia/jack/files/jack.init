@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# /etc/rc.d/jack - configuration file for the Jack-Audio-Connection-Kit Daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/jack
+
+case "$1" in
+  start)
+    msg "Starting the Jack-Audio-Connection-Kit Daemon"
+    start_service /usr/bin/jackd $SERVER_PARAMS -d $DRIVER_PARAMS &
+    ;;
+  stop)
+    msg "Stopping the Jack-Audio-Connection-Kit Daemon"
+    stop_service /usr/bin/jackd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/jackd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

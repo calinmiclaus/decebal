@@ -1,0 +1,57 @@
+NAME=dbus
+VERSION=0.23.4
+ARCH=i686
+RELEASE=1
+URL="www.freedesktop.org/Software/dbus"
+DESC="A message bus system for applications."
+GROUP=system
+LICENSE=AFL
+SIZE="1258K"
+HUSE="qt mono selinux x"
+
+SOURCES="http://dbus.freedesktop.org/releases/dbus-0.23.4.tar.gz
+         dbus.init"
+
+RUNTIME=">=glib2-2.4.2 >=gtk2-2.4.7 >=pkgconfig-0.15.0 >=libxml2-2.6.10 >=pyrex-0.9 python"
+
+use qt && RUNTIME="$RUNTIME qt"
+use mono && RUNTIME="$RUNTIME mono"
+use selinux && RUNTIME="$RUNTIME selinux"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use qt && OPTS="--enable-qt" || OPTS="--disable-qt"
+  use mono && OPTS="$OPTS --enable-mono" || OPTS="$OPTS --disable-mono"
+  use selinux && OPTS="$OPTS --enable-selinux" || OPTS="$OPTS --disable-selinux"
+  use x && OPTS="$OPTS --with-x"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var \
+	      --mandir=/usr/share/man \
+              --enable-glib \
+	      --enable-asserts \
+	      --with-session-socket-dir=/tmp \
+	      --with-system-socket=/var/lib/dbus/system_bus_socket \
+	      --with-system-pid-file=/var/run/dbus.pid \
+	      --disable-qt \
+	      --disable-gcj \
+	      --disable-mono \
+	      --with-xml=libxml \
+	      --with-init-scripts=redhat \
+	      --disable-xml-docs \
+	      --disable-mono-docs \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  rm -rf $PKG/etc/rc.d/init.d
+  
+  install -D -m 0700 ../dbus.init $PKG/etc/rc.d/dbus
+  
+  mkdir -p $PKG/var/lib/dbus $PKG/usr/lib/dbus-1.0/services $PKG/usr/share/dbus-1/services
+  
+  install_docs AUTHORS COPYING ChangeLog HACKING INSTALL \
+    NEWS README
+}

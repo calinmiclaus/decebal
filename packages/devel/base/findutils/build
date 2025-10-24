@@ -1,0 +1,32 @@
+NAME=findutils
+VERSION=4.2.25
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/findutils/"
+DESC="The GNU findutils - find and xargs."
+GROUP=base
+LICENSE=GPLv2
+SIZE="1016K"
+
+SOURCES="http://ftp.gnu.org/pub/gnu/findutils/$NAME-$VERSION.tar.gz"
+
+BUILDTIME="gettext"
+
+RUNTIME="libc bash"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var \
+	      --libexecdir=/usr/lib/find
+  make
+  make prefix=$PKG/usr install
+  
+  rm -rf $PKG/usr/var $PKG/usr/bin/{locate,updatedb}
+  rm -rf $PKG/usr/man/man1/{locate.1,updatedb.1} $PKG/usr/man/man5
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README* THANKS TODO
+}

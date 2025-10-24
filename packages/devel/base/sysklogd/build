@@ -1,0 +1,47 @@
+NAME=sysklogd
+VERSION=1.4.1
+ARCH=i686
+RELEASE=1
+URL="http://www.infodrom.org/projects/sysklogd/"
+DESC="Linux system logging utilities."
+GROUP=base
+LICENSE=GPLv2
+
+SOURCES="http://www.infodrom.org/projects/sysklogd/download/sysklogd-1.4.1.tar.gz
+	 sysklogd-1.4.1-race-condition.patch sysklogd-1.4.1-signal-1.patch
+         syslogd.init syslog.logrotate syslog.conf syslogd.sysconf
+         sysklogd-1.4.1-kernel_headers-1.patch klogd.init klogd.sysconf"
+
+BUILDTIME="kernel-headers"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../sysklogd-1.4.1-race-condition.patch
+  patch -p1 < ../sysklogd-1.4.1-signal-1.patch
+  patch -p1 < ../sysklogd-1.4.1-kernel_headers-1.patch
+  
+  # activate our flags here
+  sed -i "s:\$(RPM_OPT_FLAGS):$CFLAGS:" Makefile
+  
+  mkdir -p $PKG/{sbin,usr/share/man/{man5,man8},var/log}
+  
+  make
+  make BINDIR=$PKG/sbin MANDIR=$PKG/usr/share/man install
+  
+  install -D -m 0700 ../syslogd.init $PKG/etc/rc.d/syslogd
+  install -m 0700 ../klogd.init $PKG/etc/rc.d/klogd
+  install -D -m 0644 ../syslogd.sysconf $PKG/etc/conf.d/syslogd
+  install -m 0644 ../klogd.sysconf $PKG/etc/conf.d/klogd
+  install -m 0644 ../syslog.conf $PKG/etc/syslog.conf
+  install -D -m 0755 ../syslog.logrotate $PKG/etc/logrotate.d/syslog
+  
+  mkdir -p $PKG/var/log/{mail,news}
+  touch $PKG/var/log/lastlog
+  touch $PKG/var/log/mail/{mail.err,mail.info,mail.log,mail.warn}
+  touch $PKG/var/log/news/{news.crit,news.err,news.notice}
+  
+  
+  install_docs ANNOUNCE CHANGES COPYING INSTALL MANIFEST \
+    NEWS README.1st README.linux
+}

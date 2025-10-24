@@ -1,0 +1,30 @@
+NAME=nail
+VERSION=11.22
+ARCH=i686
+RELEASE=1
+URL="http://nail.sourceforge.net"
+DESC="A mail user agent derived from Berkeley Mail."
+GROUP=mail
+LICENSE="BSDL MPLv1.1"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/nail/nail-11.22.tar.bz2"
+
+RUNTIME=">=openssl-0.97e"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i 's|/etc/nail.rc|/usr/etc/nail.rc|' nail.1
+  echo 'set PAGER=/usr/bin/less' >> nail.rc
+
+  make install \
+       PREFIX=/usr \
+       SYSCONFDIR=/usr/etc \
+       MANDIR=/usr/share/man \
+       SENDMAIL=/usr/sbin/sendmail \
+       MAILSPOOL=/var/spool/mail \
+       UCBINSTALL=/usr/bin/install \
+       DESTDIR=$PKG
+
+  install_docs AUTHORS COPYING INSTALL README TODO
+}

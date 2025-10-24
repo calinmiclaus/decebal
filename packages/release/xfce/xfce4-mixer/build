@@ -1,0 +1,38 @@
+NAME=xfce4-mixer
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A mixer plugin for the XFCE panel."
+GROUP=xfce
+LICENSE=GPLv2
+SIZE="568K"
+HUSE="oss static debug profile"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/xfce4-mixer-4.2.2.tar.gz"
+
+BUILDTIME="gettext >=pkgconfig-0.9.0"
+
+RUNTIME=">=xfce4-panel-4.2.0"
+
+use oss || RUNTIME="$RUNTIME >=alsa-lib-0.9.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+  use oss && OPTS="$OPTS --with-sound=oss" || OPTS="$OPTS --with-sound=alsa"
+
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --with-locales-dir=/usr/share/locale \
+	      --enable-final \
+              $OPTS	      
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO ABOUT-NLS NOTES
+}

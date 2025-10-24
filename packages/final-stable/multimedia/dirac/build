@@ -1,0 +1,30 @@
+NAME=dirac
+VERSION=0.5.0
+ARCH=i686
+RELEASE=1
+URL="http://dirac.sourceforge.net/"
+DESC="General-purpose video compression and decompression tools."
+GROUP=multimedia
+LICENSE=MPLv1.1
+SIZE="623K"
+HUSE="static debug profile"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/dirac/dirac-0.5.0.tar.gz"
+
+RUNTIME="gcc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}
+

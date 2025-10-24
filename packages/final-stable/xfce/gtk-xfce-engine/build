@@ -1,0 +1,30 @@
+NAME=gtk-xfce-engine
+VERSION=2.2.7
+ARCH=i686
+RELEASE=1
+DESC="Bindings for GTK+ and XFCE."
+URL="http://www.xfce.org/"
+GROUP=xfce
+LICENSE=GPLv2
+SIZE="373K"
+HUSE="static"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/gtk-xfce-engine-2.2.7.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=gtk2-2.0.0 >=glib2-2.0.0 xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+

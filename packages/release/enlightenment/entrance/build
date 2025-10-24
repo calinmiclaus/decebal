@@ -1,0 +1,37 @@
+NAME=entrance
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="A login/display manager for Linux XFree86 systems."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="10684K"
+HUSE="static"
+
+SOURCES="entrance-21052005.tar.bz2 entrance.init"
+
+RUNTIME="=evas-21052005 =ecore-21052005 >=edje-21052005 =edje-21052005 shadow =edb-21052005"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./autogen.sh --with-ecore=/opt/enlightenment
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment \
+	      --with-edb-prefix=/opt/enlightenment \
+              --with-ecore=/opt/enlightenment \
+	      --with-auth-mode=shadow $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  rm -rf $PKG/etc/opt/enlightenment/{init.d,pam.d}
+  
+  install -D -m 0700 ../entrance.init $PKG/etc/rc.d/entrance.init
+  
+  install_docs AUTHORS COPYING INSTALL ChangeLog \
+    NEWS README* TODO
+}

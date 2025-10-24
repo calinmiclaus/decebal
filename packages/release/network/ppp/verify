@@ -1,0 +1,9 @@
+md5: 848f6c3cafeb6074ffeb293c3af79b7c ppp-2.4.3.tar.gz
+md5: d166dfb51a6e7fa6a5a05120817dbccd fixes-from-upstream-cvs.patch
+md5: f1a623897655a8550dc09c7879b8479f ppp_flags.patch
+md5: da9562650aea2f75a7afdfb39350bb8b ip-down
+md5: 46c527ebd4fee764cf819abaf7bc8574 ip-up
+md5: 5ef2a9153007c54baa5da1e7dd3bf011 options
+md5: 17d65a099d9f4568b188dba04756e415 ppp-off
+md5: 44480d9ceb3c2a164b3a84dd32edf13b ppp-on
+md5: fba987805a3205f1b28c2317e9f018bc ppp.init

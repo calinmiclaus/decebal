@@ -1,0 +1,48 @@
+NAME=totem
+VERSION=1.0
+ARCH=i686
+RELEASE=1
+URL="http://www.hadess.net/totem.php3"
+DESC="A GNOME2 integrated movie player based on Gstreamer."
+GROUP=multimedia
+LICENSE="GPLv2 GLGPLv2"
+SIZE="1369K"
+HUSE="lirc gstreamer nvtv vanity static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/totem-1.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="nautilus-cd-burner"
+
+use grstreamer && RUNTIME="$RUNTIME grstreamer" || RUNTIME="$RUNTIME xine-lib"
+use lirc && RUNTIME="$RUNTIME lirc"
+use nvtv && RUNTIME="$RUNTIME nvtv"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  use lirc && OPTS="--enable-lirc" || OPTS="--disable-lirc"
+  use gstreamer && OPTS="$OPTS --enable-gstreamer"
+  use nvtv && OPTS="$OPTS --enable-nvtv" || OPTS="$OPTS --disable-nvtv"
+  use vanity && OPTS="$OPTS --enable-vanity"
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --disable-debug"    	 
+  
+  PKG_CONFIG_PATH=/opt/gnome/lib/pkgconfig ./configure --prefix=/opt/gnome \
+				    	               --sysconfdir=/etc/opt/gnome \
+						       --mandir=/opt/gnome/share/man \
+						       --libexecdir=/opt/gnome/bin \
+						       --localstatedir=/var/lib \
+						       $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

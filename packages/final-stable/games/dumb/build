@@ -1,0 +1,30 @@
+NAME=dumb
+VERSION=0.9.2
+ARCH=i686
+RELEASE=1
+URL="http://dumb.sourceforge.net/"
+DESC="Dynamic Universal Music Bibliotheque."
+GROUP=games
+LICENSE="BSDL"
+SIZE="142K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/dumb/dumb-0.9.2-fixed.tar.gz
+         config.txt dumb-0.9.2-PIC.patch"
+
+RUNTIME="allegro"
+
+build() {
+  cd $SRC/$NAME
+  
+  # create a shared library (patch from Gentoo)
+  patch -p1 < ../dumb-0.9.2-PIC.patch
+  
+  install -m 0644 ../config.txt make/config.txt
+  
+  mkdir -p $PKG/usr/{bin,include,lib}
+  
+  make OFLAGS="$CFLAGS" PREFIX=$PKG/usr
+  make OFLAGS="$CFLAGS" PREFIX=$PKG/usr install
+  
+  install_docs licence.txt readme.txt release.txt
+}

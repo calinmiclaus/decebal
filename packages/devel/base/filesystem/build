@@ -1,0 +1,32 @@
+NAME=filesystem
+VERSION=0.2
+ARCH=noarch
+RELEASE=1
+URL="http://www.decebal.org/filesistem/"
+DESC="The core filesystem for DECEBAL Linux."
+GROUP=base
+LICENSE=GPLv2
+SIZE="1K"
+
+build() {
+  mkdir -p $PKG/{bin,boot,etc/{opt,rc.d},home,lib,mnt,proc,sys,tmp,dev}
+  mkdir -p $PKG/media/{cdrom,cdrw,dvdrom,floppy,zip}
+  mkdir -p $PKG/{sbin,usr/local,var,opt,srv,root}
+  mkdir -p $PKG/usr/{bin,sbin,lib,include,src}
+  mkdir -p $PKG/usr/share/{info,doc,man/man{1,2,3,4,5,6,7,8}}
+  mkdir -p $PKG/usr/local/{bin,sbin,include,share/{info,doc,man/man{1,2,3,4,5,6,7,8}}}
+  mkdir -p $PKG/var/{tmp,lock,run/services,spool/mail,log,tmp,opt,cache,misc,local}
+  mkdir -p $PKG/var/lib/pkg/{db,virtual,update,security,preserve}
+      
+  chmod 1777 $PKG/var/spool/mail $PKG/tmp $PKG/var/tmp
+  chmod 0700 $PKG/root
+  
+  ln -sf share/man $PKG/usr/man
+  ln -sf share/doc $PKG/usr/doc
+  ln -sf share/info $PKG/usr/info
+  ln -sf spool/mail $PKG/var/mail
+  
+  mknod -m 666 $PKG/dev/null c 1 3
+  mknod -m 600 $PKG/dev/console c 5 1
+  mknod -m 666 $PKG/dev/zero c 1 5
+}

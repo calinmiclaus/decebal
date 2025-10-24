@@ -1,0 +1,28 @@
+NAME=bug-buddy
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A graphical bug reporting tool."
+GROUP=gnome-extra
+LICENSE="GPLv2 XLLv1.0"
+SIZE="701K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/bug-buddy-2.10.0.tar.bz2"
+
+BUILDTIME="intltool gnome-doc-utils"
+
+RUNTIME="gnome-desktop gnome-menus"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

@@ -1,0 +1,45 @@
+NAME=glest
+VERSION=1.0.10
+ARCH=i686
+RELEASE=1
+URL="http://www.glest.org/"
+DESC="Glest (a 3D RTS strategy game) unofficial linux port."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="42550K"
+
+SOURCES="http://www.stud.uni-karlsruhe.de/~uxsm/glest-1.0.10-r7-source.tar.bz2
+         http://www.stud.uni-karlsruhe.de/~unatc/glest/glest-1.0.10-data.tar.bz2
+	 glest glest.desktop glest.png"
+
+BUILDTIME=">=jam-2.5"
+
+RUNTIME=">=libsdl-1.2.5 libvorbis libogg xorg openal xerces-c >=gcc-3.4.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use profile && OPTS="$OPTS --enable-profile"
+  
+  ./autogen.sh
+  ./configure --prefix=/usr/games \
+              --enable-optimize \
+              --with-vorbis \
+	      --with-ogg $OPTS
+  jam
+  
+  install -D -m 0755 ../glest $PKG/usr/games/bin/glest
+  install -D -m 0755 glest $PKG/usr/games/share/glest/glest
+  install -D -m 0644 glest.ini $PKG/usr/games/share/glest/glest.ini
+  install -m 0644 configuration.xml $PKG/usr/games/share/glest/configuration.xml
+  install -m 0644 glest.url $PKG/usr/games/share/glest/glest.url
+  install -D -m 0644 out/i686-pc-linux-gnu/opt/lib/sources/libglestlib.a $PKG/usr/games/share/glest/out/i686-pc-linux-gnu/opt/lib/sources/libglestlib.a
+       
+  cp -r Tech data map tileset screens $PKG/usr/games/share/glest/
+  
+  install -D -m 0644 ../glest.desktop $PKG/usr/share/applications/glest.desktop
+  install -D -m 0644 ../glest.png $PKG/usr/share/pixmaps/glest.png
+  
+  install_docs ChangeLog README TODO 
+}

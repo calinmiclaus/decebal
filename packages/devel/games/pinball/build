@@ -1,0 +1,30 @@
+NAME=pinball
+VERSION=0.1.2
+ARCH=i686
+RELEASE=1
+URL="http://pinball.sourceforge.net/"
+DESC="Emilia Pinball is free OpenGL game of playing pinball."
+GROUP=games
+LICENSE=GPLv2
+SIZE="1416K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/pinball/pinball-0.1.2.tar.gz
+         pinball.desktop pinball.png"
+
+RUNTIME="libsdl sdl_image sdl_mixer >=allegro-4.0.0 xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr/games \
+              --with-allegro \
+	      --with-x
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../pinball.desktop $PKG/usr/share/applications/pinball.desktop
+  install -D -m 0644 ../pinball.png $PKG/usr/share/pixmaps/pinball.png
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

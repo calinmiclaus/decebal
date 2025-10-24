@@ -1,0 +1,49 @@
+NAME=evolution-data-server
+VERSION=1.2.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="Specifications for the GNOME menu."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="7253K"
+HUSE="ipv6 gtkdoc ldap static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/evolution-data-server-1.2.0.tar.bz2
+         http://www.sleepycat.com/update/4.2.52/patch.4.2.52.1
+	 http://www.sleepycat.com/update/4.2.52/patch.4.2.52.2"
+
+BUILDTIME="intltool"
+
+RUNTIME="libsoup libgnome openssl"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+use ldap && RUNTIME="$RUNTIME openldap"
+use ssl && RUNTIME="$RUNTIME mozilla"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+# need to download new version of eds to apply these patches
+#  cd libdb
+#  patch -p0 < ../../patch.4.2.52.1
+#  patch -p0 < ../../patch.4.2.52.2
+#  cd ..
+  
+  use ipv6 && OPTS="--enable-ipv6=yes" || OPTS="--enable-ipv6=no"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  use ldap && OPTS="$OPTS --with-openldap=yes" || OPTS="$OPTS --with-openldap=no"
+  use ssl && OPTS="$OPTS --enable-nss=yes --enable-smime=yes" || OPTS="$OPTS --enable-nss=no --enable-smime=no"
+  use static && OPTS="$OPTS --enable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --localstatedir=/var/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL HACKING \
+    NEWS README MAINTAINERS TODO
+}

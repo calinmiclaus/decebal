@@ -1,0 +1,37 @@
+NAME=gawk
+VERSION=3.1.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/gawk/gawk.html"
+DESC="Pattern scanning and processing language."
+GROUP=base
+LICENSE=GPLv2
+SIZE="1715K"
+
+SOURCES="http://ftp.gnu.org/gnu/gawk/$NAME-$VERSION.tar.bz2"
+
+BUILDTIME="gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --libexecdir=/usr/lib \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  rm -f $PKG/usr/bin/{gawk,pgawk}
+  ln -sf gawk-$VERSION $PKG/usr/bin/gawk
+  ln -sf pgawk-$VERSION $PKG/usr/bin/pgawk
+  
+  rm -f $PKG/usr/share/man/man1/{awk.1,pgawk.1}
+  ln -sf gawk.1.gz $PKG/usr/share/man/man1/awk.1.gz
+  ln -sf gawk.1.gz $PKG/usr/share/man/man1/pgawk.1.gz
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog FUTURES INSTALL \
+    LIMITATIONS NEWS POSIX.STD PROBLEMS README
+}

@@ -1,0 +1,9 @@
+^
+^Cards scans your hardware for sound cards and loads
+^the appropiate kernel modules.
+^
+^You can also change the sound volume (after your
+^soundcards are configured)
+^
+cards:%alsaconf:Configure your sound cards
+volume:%alsamixer:Change sound volume

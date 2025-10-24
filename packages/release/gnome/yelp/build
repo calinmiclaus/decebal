@@ -1,0 +1,31 @@
+NAME=yelp
+VERSION=2.6.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="The GNOME help browser."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="638K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/yelp-2.6.5.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgtkhtml-2.1.2 >=libgnomeui-1.103.0 scrollkeeper gnome-doc-utils"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

@@ -1,0 +1,31 @@
+NAME=nautilus-sendto
+VERSION=0.3
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A sento module for Nautilus."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="244K"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/nautilus-sendto/0.3/nautilus-sendto-0.3.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomeui-2.7.0 >=nautilus-2.8.0 evolution gaim"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/lib/gaim
+  ln -s ../../../opt/gnome/lib/gaim/nautilus.la $PKG/usr/lib/gaim/nautilus.la
+  ln -s ../../../opt/gnome/lib/gaim/nautilus.so $PKG/usr/lib/gaim/nautilus.so
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

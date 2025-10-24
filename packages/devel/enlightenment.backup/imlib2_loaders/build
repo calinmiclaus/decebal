@@ -1,0 +1,29 @@
+NAME=imlib2_loaders
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="Additional loaders for Imlib2."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="35K"
+HUSE="static nls"
+
+SOURCES="imlib2_loaders-21052005.tar.bz2"
+
+RUNTIME=" =eet-21052005 >=edb-21052005 imlib2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README
+}

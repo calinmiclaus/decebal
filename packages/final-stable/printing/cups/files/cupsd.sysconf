@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/cups - configuration file for /etc/rc.d/cupsd
+#
+
+# Additional cupsd arguments
+CUPSD_OPTS=""

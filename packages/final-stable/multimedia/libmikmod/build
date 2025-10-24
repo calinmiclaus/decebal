@@ -1,0 +1,36 @@
+NAME=libmikmod
+VERSION=3.1.11
+ARCH=i686
+RELEASE=1
+URL="http://mikmod.raphnet.net/"
+DESC="A portable sound library."
+GROUP=multimedia
+LICENSE="LGPLv2.1"
+SIZE="597K"
+HUSE="static debug"
+
+SOURCES="http://mikmod.raphnet.net/files/libmikmod-3.1.11.tar.gz
+	 http://mikmod.raphnet.net/files/libmikmod-3.1.11-a.diff"
+
+RUNTIME=">=esound-0.2.6 alsa-lib"
+
+build() {
+  cd $SRC/libmikmod-3.1.11
+
+  patch -p1 <../libmikmod-3.1.11-a.diff
+
+  use debug && OPTS="--enable-debug"
+  use static || OPTS="$OPTS --disable-static"
+
+  ./configure --prefix=/usr \
+              --enable-alsa \
+	      --enable-esd \
+	      --enable-oss $OPTS	      
+  make
+  make prefix=$PKG/usr install
+
+  chmod 0755 $PKG/usr/lib/libmikmod.so.2.0.4
+
+  install_docs AUTHORS COPYING.LESSER COPYING.LIB INSTALL NEWS \
+    README TODO
+}

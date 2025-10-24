@@ -1,0 +1,29 @@
+NAME=psutils
+VERSION=17
+ARCH=i686
+RELEASE=1
+DESC="Useful utilities for manipulating PostScript files."
+URL="http://gershwin.ens.fr/vdaniel/Doc-Locale/Outils-Gnu-Linux/PsUtils/"
+GROUP=printing
+LICENSE=BSDL
+SIZE="60K"
+
+SOURCES="http://gd.tuwien.ac.at/publishing/tex/tex-utils/psutils/psutils-p17.tar.gz"
+
+RUNTIME="libc"
+
+build () { 
+  cd $SRC/$NAME
+  
+  mkdir -p $PKG/usr/{bin,share/{man/man1,psutils}}
+        
+  cat Makefile.unix | sed -e 's/\/usr\/local/\/usr/g' >Makefile
+  
+  # set our CFLAGS here
+  sed -i "s:-DUNIX -O -Wall:-DUNIX -Wall $CFLAGS:" Makefile
+  
+  make
+  make BINDIR=$PKG/usr/bin MANDIR=$PKG/usr/share/man/man1 INCLUDEDIR=$PKG/usr/share/psutils install
+  
+  install_docs LICENSE README
+}

@@ -1,0 +1,25 @@
+NAME=m4
+VERSION=1.4.3
+ARCH=i686
+RELEASE=1
+URL="http://www.seindal.dk/rene/gnu/"
+DESC="An implementation of the traditional Unix macro processor."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="374K"
+
+SOURCES="http://ftp.madnom.com/gnu/m4/m4-1.4.3.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr mandir=$PKG/usr/share/man install
+  
+  install_docs BACKLOG COPYING ChangeLog INSTALL NEWS README \
+        THANKS TODO
+}
+  

@@ -1,0 +1,25 @@
+NAME=dvd+rw-tools
+VERSION=5.19.4.9.7
+ARCH=i686
+RELEASE=1
+URL="http://fy.chalmers.se/~appro/linux/DVD+RW/tools/"
+DESC="Tools for DVD's under Linux."
+GROUP=multimedia
+LICENSE=GPLv2
+SIZE="95K"
+
+SOURCES="http://fy.chalmers.se/~appro/linux/DVD+RW/tools/dvd+rw-tools-5.19-1.4.9.7.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  make
+  
+  install -D -m 0755 dvd+rw-booktype $PKG/usr/bin/dvd+rw-booktype
+  install -m 0755 dvd+rw-format $PKG/usr/bin/dvd+rw-format
+  install -m 0755 dvd+rw-mediainfo $PKG/usr/bin/dvd+rw-mediainfo
+  install -m 0755 growisofs $PKG/usr/bin/growisofs
+  install -D -m 0644 growisofs.1 $PKG/usr/share/man/man1/growisofs.1
+  
+  install_docs index.html LICENSE
+}

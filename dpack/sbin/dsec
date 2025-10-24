@@ -1,0 +1,300 @@
+#!/bin/bash
+#
+# /sbin/dsec - update/build packages that have security problems
+#
+# Copyright (C) 2004-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+BASEDIR=$(pwd)
+
+FUNCTIONSDIR="/usr/share"
+CONFDIR="/etc/dpack"
+
+source $CONFDIR/security
+source $CONFDIR/common
+source $FUNCTIONSDIR/dpack/tmp
+source $FUNCTIONSDIR/dpack/exit
+source $FUNCTIONSDIR/dpack/msg
+source $FUNCTIONSDIR/dpack/pkg
+source $FUNCTIONSDIR/dpack/depend
+
+handle_signal() {
+  echo "user interrupt...all operations aborted."
+  rm -rf $TMP
+  pkg_exit "handle_signal()" "execute_these_comands_if_user_exits" "$LINENO" 1
+}
+	    
+trap "handle_signal" SIGHUP SIGINT SIGQUIT SIGTERM
+
+usage() {
+  cat << EOF
+usage: dsec [options] <action>
+options:
+  -d, --nodeps      - skip all dependencies checks
+  -D, --deps        - automatically resolve missing dependencies
+  -i, --info        - print information about the system
+  -v, --verbose     - be more verbose
+  -V, --version     - print name, version and license
+  -h, --help        - print this message and exit
+actions:
+  <sync>            - update the package security database
+  <update>          - upgrade packages with dupdate (precompiled)
+  <build>           - upgrade packages with dsrc (sources)
+
+NOTE: you cannot use 'update' and 'build' at the same time.
+
+For a detalied help see dsec (8).
+EOF
+}
+
+version() {
+  cat << EOF
+dsec v0.1.0 (dpack v0.1.6)
+
+Copyright (C) 2004-2005 Teodor Adrian Florin <slider@decebal.org>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+PKG_DEPS=0
+PKG_NODEPS=0
+PKG_INFO=0
+PKG_VERBOSE=0
+
+DSRC_OPTS=""
+DUPDATE_OPTS=""
+
+if [ $# -eq 0 ]
+then
+  echo "error: dsec needs at least one action (sync,update or build)." >&2
+  usage >&2
+  pkg_exit "main()" "check_if_we_have_arguments" "$LINENO" 1
+fi
+
+while [ $# -ne 0 ]
+do
+  case "$1" in
+    --nodeps)
+      PKG_NODEPS=1
+      DSRC_OPTS="$DSRC_OPTS -d"
+      DUPDATE_OPTS="$DUPDATE_OPTS -d"
+      ;;
+    --deps)
+      PKG_DEPS=1
+      DSRC_OPTS="$DSRC_OPTS -b"
+      DUPDATE_OPTS="$DUPDATE_OPTS -D"
+      ;;
+    --info) PKG_INFO=1 ;;
+    --verbose)
+      PKG_VERBOSE=1
+      DSRC_OPTS="$DSRC_OPTS -v"
+      DUPDATE_OPTS="$DUPDATE_OPTS -v"
+      ;;
+    --version)
+      version
+      exit 0
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --*)
+      echo "error: unrecogniez option." >&2
+      usage >&2
+      pkg_exit "main()" "get_arguments" "$LINENO" 1
+      ;;
+    -*)
+      while getops "dDivVh" OPT
+      do
+        case "$OPT" in
+	  d)
+	    PKG_NODEPS=1
+	    DSRC_OPTS="$DSRC_OPTS -d"
+	    DUPDATE_OPTS="$DUPDATE_OPTS -d"
+	    ;;
+	  D)
+	    PKG_DEPS=1
+	    DSRC_OPTS="$DSRC_OPTS -b"
+	    DUPDATE_OPTS="$DUPDATE_OPTS -D"
+	    ;;
+	  i) PKG_INFO=1 ;;
+	  v)
+	    PKG_VERBOSE=1
+	    DSRC_OPTS="$DSRC_OPTS -v"
+	    DUPDATE_OPTS="$DUPDATE_OPTS -v"
+	    ;;
+	  V)
+	    version
+	    exit 0
+	    ;;
+	  h)
+	    usage
+	    exit 0
+	    ;;
+	  *)
+	    usage >&2
+	    pkg_exit "main()" "get_arguments" "$LINENO" 1
+	    ;;
+	esac
+      done
+    *)
+      PKG_ARGS="$1"
+      shift 1
+      while [ -n "$1" ]
+      do
+        PKG_ARGS="$PKG_ARGS $1"
+        shift 1
+      done
+      ;;
+  esac
+  shift 1
+done				 
+
+if [ -z "$PKG_ARGS" -a ! "$PKG_INFO" = "1" ]
+then
+  echo "error: dsrc needs at least one action (sync, update or build)." >&2
+  usage >&2
+  pkg_exit "main()" "check_if_we_have_actions" "$LINENO" 1
+fi
+
+if echo $PKG_ARGS | grep -q update \
+  && echo $PKG_ARGS | grep -q build
+then
+  echo "error: you cannot use 'build' and 'update' at the same time." >&2
+  usage >&2
+  pkg_exit "main()" "check_if_we_have_build_and_update" "$LINENO" 1
+fi
+
+pkg_create_tmp
+
+[ "$PKG_VERBOSE" = "1" ] && SYNC_OPTS="-v" || SYNC_OPTS=""
+
+upgrade_security_packages() {
+  local RETVAL=0
+  if [ "$ACTION" = "build" ]
+  then
+    dsrc $SYNC_OPTS sync
+    for PKG in $(cat $TMP/packages)
+    do
+      dsrc $DSRC_OPTS $PKG
+      RETVAL=$(($RETVAL + $?))
+    done
+  elif [ "$ACTION" = "update" ]
+    dupdate $SYNC_OPTS sync
+    for PKG in $(cat $TMP/packages)
+    do
+      dupdate $DUPDATE_OPTS $PKG
+      RETVAL=$(($RETVAL + $?))
+    done
+  fi
+  return $RETVAL
+}
+
+pkg_security_info() {
+  local TOTAL=0
+  local UPGRADE=0
+  
+  echo -n "Getting information [takes some time]..."
+  for PKG in $DATABASEDIR/db/*
+  do
+    PKG="${PKG##*/}"
+    INAME=$(pkgname $PKG)
+    IVER=$(pkgversion $PKG)
+    IREL=$(pkgrelease $PKG)
+    if [ -f $DATABASEDIR/security/$INAME ]
+    then
+      source $DATABASEDIR/security/$NAME 2>/dev/null
+      if [ ! "$IVER" = "$SVER" -o ! "$IREL" = "$SREL" ]
+      then
+        if [ "$PKG_INFO" = "1" ]
+	then
+	  echo -e "\t$INAME-$IVER-i686-$IREL -> $INAME-$SVER-i686-$SREL (advisory: $ADVISORY)" >> $TMP/info
+	else
+	  echo "$INAME-$SVER-i686-$SREL" >> $TMP/packages
+	fi
+	UPGRADE=$(($UPGRADE + 1))
+      fi
+    fi
+    TOTAL=$(($TOTAL + 1))
+  done
+  
+  echo "[ DONE ]"
+    
+  if [ $UPGRADE -ne 0 ]
+  then
+    echo "Total installed packages: $TOTAL"
+    echo "Total security upgrades : $UPGRADE"
+    echo "Packages that need upgrade:"
+    cat $TMP/info
+  fi  
+    
+  if [ ! "$PKG_INFO" = "1" ]
+  then
+    if [ "$INTERACTIVE" = "yes" ]
+    then
+      echo
+      echo "Do you want to upgrade now? [YES/NO]: "
+      read ANSWER
+      if [ "$ANSWER" = "yes" ]
+      then
+        upgrade_security_packages
+      else
+        echo
+        echo "!!! WARNING: your system is not up to date !!!!"
+      fi            
+    else
+      upgrade_security_packages
+    fi
+  fi
+}
+
+if [ "$PKG_INFO" = "1" ]
+then
+  pkg_security_info
+fi
+
+for ARG in $PKG_ARGS
+do
+  if echo $PKG_ARGS | grep -q sync
+  then
+    sync_security_database
+  elif echo $PKG_ARGS | grep -q update
+  then
+    ACTION="update"
+    pkg_security_info
+  elif echo $PKG_ARGS | grep -q build
+    ACTION="build"
+    pkg_security_info
+  fi
+done
+
+cd $BASEDIR
+
+exit $RETVAL

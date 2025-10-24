@@ -1,0 +1,6 @@
+md5: 7d2778e3beebc07dd7c74668f6887c6f svgalib-1.4.3.tar.gz
+md5: e9b4c8a77d0a424561d253b64f4adf72 svgalib-1.4.3.patch
+md5: 052a991680d55582a70cda4da2f3aaa0 svgalib-gcc-33.patch
+md5: a5d3fcd7f19bc96be55a4ddd2e99894b mach32.diff
+md5: f4261f47ce6dffd251c89ac7f6b5de6f s3.diff
+md5: a54c017ec1fcd06d5d4696b9cc61508f vga.diff

@@ -1,0 +1,28 @@
+NAME=mdadm
+VERSION=1.9.0
+ARCH=i686
+RELEASE=1
+URL="http://www.cse.unsw.edu.au/~neilb/source/mdadm/"
+DESC="A tool for creating, maintaining, and monitoring Linux Software RAID."
+GROUP=base
+LICENSE=GPLv2
+SIZE="122K"
+
+SOURCES="http://cgi.cse.unsw.edu.au/~neilb/source/mdadm/$NAME-$VERSION.tgz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # put our cflags here
+  sed -i "s:CWFLAGS = -Wall -Werror -Wstrict-prototypes:CWFLAGS = -Wall -Werror -Wstrict-prototypes $CFLAGS:" Makefile
+  
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 mdadm.conf-example $PKG/etc/mdadm.conf
+  
+  install_docs ANNOUNCE-* COPYING ChangeLog INSTALL TODO
+}
+  

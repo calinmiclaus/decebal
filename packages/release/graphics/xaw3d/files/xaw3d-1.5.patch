@@ -1,0 +1,28 @@
+diff -Nru Xaw3d-1.5/xc/lib/Xaw3d/Imakefile Xaw3d-1.5-jue/xc/lib/Xaw3d/Imakefile
+--- Xaw3d-1.5/xc/lib/Xaw3d/Imakefile	Tue Oct 15 16:41:19 1996
++++ Xaw3d-1.5-jue/xc/lib/Xaw3d/Imakefile	Wed Oct  3 12:43:05 2001
+@@ -41,7 +41,7 @@
+ 
+ #  EXTRA_DEFINES = -DARROW_SCROLLBAR -DUSEGRAY
+ 
+-#  EXTRA_INCLUDES = -I.
++EXTRA_INCLUDES = -I.
+ 
+ HEADERS = \
+ 	AllWidgets.h \
+diff -Nru Xaw3d-1.5/xc/lib/Xaw3d/XawI18n.h Xaw3d-1.5-jue/xc/lib/Xaw3d/XawI18n.h
+--- Xaw3d-1.5/xc/lib/Xaw3d/XawI18n.h	Tue Oct 15 16:41:26 1996
++++ Xaw3d-1.5-jue/xc/lib/Xaw3d/XawI18n.h	Wed Oct  3 12:43:29 2001
+@@ -29,10 +29,12 @@
+ 
+ #ifdef HAS_WCTYPE_H
+ #include <wctype.h>
++/*
+ #include <widec.h>
+ #define wcslen(c) wslen(c)
+ #define wcscpy(d,s) wscpy(d,s)
+ #define wcsncpy(d,s,l) wsncpy(d,s,l)
++*/
+ #endif
+ 
+ #ifdef HAS_WCHAR_H

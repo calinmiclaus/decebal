@@ -1,0 +1,36 @@
+NAME=redland
+VERSION=1.0.0
+ARCH=i686
+RELEASE=1
+URL="http://www.redland.opensource.ac.uk/"
+DESC="A library that provides a high-level interface for the RDF."
+GROUP=web
+LICENSE="GPLv2 GLGPLv2.1"
+SIZE="2518K"
+HUSE="static expat mysql dmalloc"
+
+SOURCES="http://download.librdf.org/source/redland-1.0.0.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME="db >=openssl-0.9.7e sqlite libxml2"
+
+use mysql && RUNTIME="$RUNTIME mysql"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use mysql || OPTS="$OPTS --without-mysql"
+  use dmalloc && OPTS="$OPTS --with-dmalloc"
+  
+  ./configure --prefix=/usr \
+              --with-bdb=/usr \
+	      --with-sqlite-version=2 \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog* FAQS.html INSTALL* \
+    LICENSE* NEWS* NOTICE README* RELEASE.html TODO*
+}

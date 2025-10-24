@@ -1,0 +1,21 @@
+NAME=pychm
+VERSION=0.8.2
+ARCH=i686
+RELEASE=1
+URL="http://gnochm.sourceforge.net/pychm.html"
+DESC="A Python interface for chmlib."
+GROUP=doc-tools
+LICENSE="GPLv2"
+SIZE="27K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gnochm/pychm-0.8.2.tar.gz"
+
+RUNTIME=">=python-2.2 chmlib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  python setup.py build install --root=$PKG
+    
+  install_docs COPYING ChangeLog NEWS PKG-INFO README
+}

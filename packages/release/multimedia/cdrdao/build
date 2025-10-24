@@ -1,0 +1,30 @@
+NAME=cdrdao
+VERSION=1.2.0
+ARCH=i686
+RELEASE=1
+DESC="Records audio/data CD-Rs in disk-at-once (DAO) mode."
+URL="http://cdrdao.sourceforge.net/"
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="1544K"
+HUSE="gui"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/cdrdao/cdrdao-1.2.0.tar.gz"
+
+RUNTIME="lame libao"
+
+use gui && RUNTIME="$RUNTIME =gtkmm2-2.2 =libgnomeuimm-2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gui && OPTS="--with-xdao" || OPTS="--without-xdao"
+  
+  PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs COPYING CREDITS INSTALL README*
+}

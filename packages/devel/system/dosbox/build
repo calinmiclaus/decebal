@@ -1,0 +1,27 @@
+NAME=dosbox
+VERSION=0.63
+ARCH=i686
+RELEASE=1
+URL="http://dosbox.sourceforge.net"
+DESC="DOS emulator with graphical capabilities."
+GROUP=system
+LICENSE="GPLv2"
+SIZE="633K"
+
+SOURCES="http://belnet.dl.sourceforge.net/sourceforge/dosbox/dosbox-0.63.tar.gz"
+
+RUNTIME="libpng
+	 xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --enable-shots
+	      
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README THANKS
+}
+

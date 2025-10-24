@@ -1,0 +1,7 @@
+#
+# /etc/vimrc - core vim configuration file
+#
+
+set columns=80
+set wrapmargin=8
+set ruler

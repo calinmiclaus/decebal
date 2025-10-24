@@ -1,0 +1,22 @@
+NAME=pkgconfig
+VERSION=0.15.0
+ARCH=i686
+RELEASE=1
+URL="http://www.freedesktop.org/software/pkgconfig/"
+DESC="A package configuration system for compile/link flags."
+GROUP=devel
+LICENSE=GPLv2
+
+SOURCES="http://www.freedesktop.org/software/pkgconfig/releases/pkgconfig-0.15.0.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+    
+  install_docs AUTHORS COPYING INSTALL ChangeLog \
+    NEWS README README.win32
+}
+

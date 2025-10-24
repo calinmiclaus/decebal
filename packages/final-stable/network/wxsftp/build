@@ -1,0 +1,22 @@
+NAME=wxsftp
+VERSION=0.3
+ARCH=i686
+RELEASE=1
+URL="http://home.gna.org/wxsftp"
+DESC="A GTK2 frontent for sftp."
+GROUP=network
+LICENSE="GPLv2"
+SIZE="46K"
+
+SOURCES="http://download.gna.org/wxsftp/wxSFTP-0.3.tar.bz2"
+
+RUNTIME="python wxpython"
+
+build() {
+  cd $SRC/wxSFTP-$VERSION
+  
+  python setup.py install --root=$PKG
+    
+  install_docs COPYING ChangeLog INSTALL PKG-INFO \
+    README TODO
+}

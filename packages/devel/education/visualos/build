@@ -1,0 +1,9 @@
+NAME=visualos
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://visualos.sourceforge.net/"
+DESC="An visual simulator of and operating system."
+GROUP=education
+LICENSE="GPLv2"
+SIZE="1041K"

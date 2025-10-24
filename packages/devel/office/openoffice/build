@@ -1,0 +1,40 @@
+NAME=openoffice
+VERSION=1.1.4
+ARCH=i686
+RELEASE=1
+URL="http://www.openoffice.org/"
+DESC="A free and complete Office Suite."
+GROUP=office
+LICENSE=BSDL
+SIZE="78566K"
+
+SOURCES="ftp://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.openoffice.org/stable/1.1.4/OOo_${VERSION}_LinuxIntel_install.tar.gz
+         openoffice.sh calc.desktop draw.desktop impress.desktop math.desktop printeradmin.desktop writer.desktop
+	 ftp://ftp.iasi.roedu.net/pub/mirrors/openoffice.org/contrib/rc/1.1.4secpatch/libsot645li.so"
+
+#ftp://ftp.iasi.roedu.net/pub/mirrors/openoffice.org/developer/680_m100/OOo_1.9.100_LinuxIntel_install.tar.gz
+
+#BUILDTIME="grsecurity"
+
+RUNTIME="xorg gtk2 bash java"
+
+build() {
+  cd $SRC/OOo_${VERSION}_LinuxIntel_install
+  
+  ./install --prefix=$PKG/opt
+  
+#  chpax -permsx $PKG/opt/OpenOffice.org${VERSION}/program/soffice.bin
+  
+  install -D -m 0644 ../openoffice.sh $PKG/etc/profile.d/openoffice.sh
+  
+  install -D -m 0644 ../calc.desktop $PKG/usr/share/applications/calc.desktop
+  install -m 0644 ../draw.desktop $PKG/usr/share/applications/draw.desktop
+  install -m 0644 ../impress.desktop $PKG/usr/share/applications/impress.desktop
+  install -m 0644 ../math.desktop $PKG/usr/share/applications/math.desktop
+  install -m 0644 ../printeradmin.desktop $PKG/usr/share/applications/printeradmin.desktop
+  install -m 0644 ../writer.desktop $PKG/usr/share/applications/writer.desktop
+
+  cp -f ../libsot645li.so $PKG/opt/OpenOffice.org${VERSION}/program/
+
+  install_docs LICENSE* README* THIRDPARTYLICENSEREADME.html
+}

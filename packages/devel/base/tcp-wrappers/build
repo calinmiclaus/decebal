@@ -1,0 +1,46 @@
+NAME=tcp-wrappers
+VERSION=7.6
+ARCH=i686
+RELEASE=1
+DESC="A TCP/IP daemon wrapper."
+URL="ftp://ftp.porcupine.org/pub/security/index.html"
+GROUP=base
+LICENSE=BSDL
+SIZE="97K"
+
+# TODO: add ipv6 support (no time)	 
+SOURCES="ftp://ftp.porcupine.org/pub/security/tcp_wrappers_7.6.tar.gz
+         http://ftp.debian.org/debian/pool/main/t/tcp-wrappers/tcp-wrappers_7.6-9.diff.gz
+	 tcp-wrappers-gcc-34.diff tcp-wrappers-7.6-decebal.diff
+         hosts.allow hosts.deny try-from.8 safe_finger.8"
+
+BACKUPS="etc/hosts.allow
+         etc/hosts.deny"
+
+RUNTIME="bash libc"
+			   
+build() {
+  cd $SRC/tcp_wrappers_$VERSION
+    
+  patch -p1 < ../tcp-wrappers-7.6-decebal.diff
+
+  # set our cflags here
+  sed -i "s:= -O2 -g -DFACILITY=:= $CFLAGS -g -DFACILITY=:" Makefile
+      
+  make linux
+  make DESTDIR=$PKG install
+      
+  install -m 0644 ../try-from.8 $PKG/usr/share/man/man8/try-from.8
+  install -m 0644 ../safe_finger.8 $PKG/usr/share/man/man8/safe_finger.8
+        
+  (cd $PKG/usr/share/man/man3
+  rm -f hosts_ctl.3 request_init.3 request_set.3
+  ln -sf hosts_access.3.gz hosts_ctl.3.gz
+  ln -sf hosts_access.3.gz request_init.3.gz
+  ln -sf hosts_access.3.gz request_set.3.gz)
+  
+  install -D -m 0644 ../hosts.allow $PKG/etc/hosts.allow
+  install -m 0644 ../hosts.deny $PKG/etc/hosts.deny
+      
+  install_docs BLURB CHANGES DISCLAIMER README README.IRIX README.NIS
+}

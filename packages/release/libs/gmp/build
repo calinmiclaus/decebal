@@ -1,0 +1,35 @@
+NAME=gmp
+VERSION=4.1.4
+ARCH=i686
+RELEASE=2
+URL="http://www.swox.com/gmp/"
+DESC="A free library for arbitrary precision arithmetic."
+GROUP=libs
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="1641K"
+HUSE="optimize static profile"
+
+SOURCES="http://ftp.sunet.se/pub/gnu/gmp/gmp-4.1.4.tar.bz2"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use profile && OPTS="--enable-profiling"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  use optimize || MPN_PATH="x86 generic" 
+  
+  # Fix a very ugly bug...when compilling on a p4 procesor gmp uses by
+  # default the sse2 functions...the problem is if you want to use gmp
+  # on a p2,p3 or amd it will not work...so we use only x86 generic functions
+  MPN_PATH="$MPN_PATH" ./configure --prefix=/usr \
+            			   --enable-cxx \
+			           --enable-mpfr \
+			           $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING COPYING.LIB ChangeLog INSTALL* \
+    NEWS README
+}

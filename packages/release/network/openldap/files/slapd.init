@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/slapd - control file for the OpenLDAP daemon
+#
+
+. /etc/init.d/functions
+. /etc/conf.d/slapd
+
+pidfile="/var/run/splapd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the OpenLDAP server"
+    start_service /usr/sbin/slapd $SLAPD_OPTS
+    ;;
+  stop)
+    msg "Stopping the OpenLDAP server"
+    stop_service /usr/sbin/slapd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/slapd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

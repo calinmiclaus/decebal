@@ -1,0 +1,38 @@
+NAME=a2ps
+VERSION=4.13b
+ARCH=i686
+RELEASE=1
+URL="www.infres.enst.fr/~demaille/a2ps/"
+DESC="A utility that can convert different files to PostScript."
+GROUP=printing
+LICENSE=GPLv2
+SIZE="1898K"
+
+SOURCES="http://ftp.gnu.org/gnu/a2ps/a2ps-4.13b.tar.gz
+         a2ps-4.13b-gcc3.4-1.diff"
+
+BACKUPS="etc/a2ps-site.cfg
+         etc/a2ps.cfg"
+
+BUILDTIME="gettext"
+
+RUNTIME=">=psutils-17"
+
+build() {
+  cd $SRC/$NAME-4.13
+  
+  patch -p1 < ../a2ps-4.13b-gcc3.4-1.diff
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/a2ps \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+              --with-gnu-gettext
+  make
+  make DESTDIR=$PKG install
+  
+  mv $PKG/{a2ps-print.el,a2ps.el} $PKG/usr/share/a2ps/
+  
+  install_docs ABOUT-NLS ANNOUNCE AUTHORS COPYING ChangeLog FAQ \
+    INSTALL NEWS README THANKS TODO
+}

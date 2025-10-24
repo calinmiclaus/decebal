@@ -1,0 +1,39 @@
+NAME=libgnomeui
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="The GUI part of libgnome."
+GROUP=gnome
+LICENSE="LGPLv2"
+SIZE="1613K"
+HUSE="gtkdoc static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/libgnomeui-2.10.0.tar.bz2"
+
+BUILDTIME=">=libgnome-2.0.0 >=gconf-1.1.11 intltool"
+
+RUNTIME=">=libbonoboui-2.8.0 >=gnome-keyring-0.4.0"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+        
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+              --libexecdir=/opt/gnome/sbin \
+	      $OPTS
+  make 
+  make DESTDIR=$PKG install
+
+  mkdir -p $PKG/usr/lib
+  mv $PKG/opt/gnome/lib/gtk-2.0 $PKG/usr/lib
+  
+  install_docs AUTHORS COPYING.LIB ChangeLog INSTALL NEWS README 
+}

@@ -1,0 +1,28 @@
+NAME=sdl_mixer
+VERSION=1.2.6
+ARCH=i686
+RELEASE=1
+URL="http://www.libsdl.org/projects/SDL_mixer/"
+DESC="An SDL mixer."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="1120K"
+HUSE="static"
+
+SOURCES="http://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.6.tar.gz"
+
+RUNTIME="libsdl libogg libvorbis libmikmod smpeg"
+
+build() {
+  cd $SRC/SDL_mixer-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES COPYING README
+}
+

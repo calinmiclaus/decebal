@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# /etc/rc.d/xdm
+# 
+
+. /etc/rc.d/functions
+. /etc/conf.d/xdm
+
+error() {
+  echo
+  echo "Could not find the $MESSAGE. Please check"
+  echo "root rights and location ($MANAGER)."
+  echo
+  echo "Sleeping 5 seconds..."
+  echo
+  exit 1
+}
+
+case "$DISPLAYMANAGER" in
+  kdm|kde|KDM|KDE)
+    MESSAGE="KDE Display Manager"
+    MANAGER=/opt/kde/bin/kdm
+    [ -x $MANAGER ] || error
+    ;;
+  gdm|gnome|GDM|GMNOME)
+    MESSAGE="GNOME Display Manager"
+    MANAGER=/opt/gnome/bin/gdm
+    [ -x $MANAGER ] || error
+    ;;
+  wdm|WDM)
+    MESSAGE="WING Display Manager"
+    MANAGER=/usr/X11R6/wdm
+    [ -x $MANAGER ] || error 
+    ;;
+  console|tty|vt)
+    exit 0
+    ;;
+  *)
+    MESSAGE="X11 Display Manager"
+    MANAGER=/usr/X11R6/bin/xdm
+    [ -x $MANAGER ] || error
+    ;;
+esac
+
+case "$1" in
+  start)
+    msg "Starting the $MESSAGE"
+    if ! check_proc $MANAGER
+    then
+      run $MANAGER
+    else
+      already_running
+    fi
+    ;;
+  stop)
+    msg "Stopping the $MESSAGE"
+    if check_proc $MANAGER
+    then
+      stop_service $MANAGER
+    else
+      not_running
+    fi
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service $MANAGER
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

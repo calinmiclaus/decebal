@@ -1,0 +1,26 @@
+NAME=sidplay2
+VERSION=2.0.9
+ARCH=i686
+RELEASE=1
+URL="http://sidplay2.sourceforge.net/"
+DESC="A C64 audio files player."
+GROUP=multimedia
+LICENSE="GPLV2"
+SIZE=""
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/sidplay2/sidplay-2.0.9.tar.gz"
+
+RUNTIME="libsidplay2"
+
+build() {
+   cd $SRC/$NAME-$VERSION
+   
+   ./configure --prefix=/usr
+   make
+   make DESTDIR=$PKG install
+   
+   install_docs AUTHORS COPYING ChangeLog INSTALL \
+     README TODO
+}
+
+   

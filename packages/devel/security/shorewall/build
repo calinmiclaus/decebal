@@ -1,0 +1,30 @@
+NAME=shorewall
+VERSION=2.2.3
+ARCH=noarch
+RELEASE=1
+URL="http://www.shorewall.net/"
+DESC="A high-level tool for configuring Netfilter (iptables)."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="123K"
+HUSE="docs"
+
+SOURCES="http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.3/shorewall-2.2.3.tgz
+         firewall.init"
+
+use doc && SOURCES="$SOURCES http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.3/shorewall-docs-html-2.2.3.tgz"
+
+RUNTIME="libc >=iptables-1.2.4 iproute2 bash"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  PREFIX="$PKG" ./install.sh
+  
+  # We dont want this.
+  rm -rf $PKG/etc/init.d/shorewall
+  
+  install -D -m 0700 ../firewall.init $PKG/etc/rc.d/firewall
+  
+  install_docs COPYING INSTALL
+}

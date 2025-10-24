@@ -1,0 +1,15 @@
+NAME=webmin
+VERSION=1.200
+ARCH=i686
+RELEASE=1
+URL="http://www.webmin.com/"
+DESC=""
+GROUP=system
+LICENSE=""
+SIZE="http://heanet.dl.sourceforge.net/sourceforge/webadmin/webmin-1.200.tar.gz"
+
+SOURCES=""
+
+build() {
+
+}

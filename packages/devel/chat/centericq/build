@@ -1,0 +1,37 @@
+NAME=centericq
+VERSION=4.20.0
+ARCH=i686
+RELEASE=1
+URL="http://thekonst.net/centericq/"
+DESC="A text mode menu and window-driven IM interface."
+GROUP=chat
+LICENSE=GPLv2
+SIZE="1256K"
+HUSE="gpgme libjpeg nls"
+
+SOURCES="http://thekonst.net/download/centericq-4.20.0.tar.bz2"
+
+RUNTIME=">=openssl-0.9.7e >=ncurses-5.3 fribidi curl"
+
+use nls && BUILDTIME="gettext"
+use gpgme && RUNTIME="$RUNTIME gpgme"
+use libjpeg && RUNTIME="$RUNTIME libjpeg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gpgme && OPTS="$OPTS --with-gpgme" || OPTS="$OPTS --without-gpgme"
+  use libjpeg && OPTS="$OPTS --with-libjpeg" || OPTS="$OPTS --without-libjpeg"
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+              --with-fribidi \
+	      --with-ssl \
+	      $OPTIONS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog FAQ INSTALL \
+    NEWS README THANKS TODO
+}

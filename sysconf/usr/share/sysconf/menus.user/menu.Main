@@ -1,0 +1,18 @@
+#Format:
+#
+#item:type:description
+#
+#where :
+#
+#item - cum se numeste, titlul in meniu, fara spatii
+#type  - .module.function - sa execute functia "function" din modulu "module"
+#      - @menu - deschide meniul "menu"
+#       - %command - executa comanda "command"
+^
+^This is sysconf's main menu.
+^From here you can configure several aspects of your system.
+^
+^Run sysconf as root to have access to more sysconf modules.
+
+Xwm:.xwmconf.main_menu:X Window Manager configuration
+Howto:.howtobrowser.main_menu:Browse the howto's

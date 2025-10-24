@@ -1,0 +1,33 @@
+NAME=xfce4-sensors-plugin
+VERSION=0.3.0
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="Reads your hardware sensor values and displays them in your panel."
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="199K"
+HUSE="static debug profile"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-sensors-plugin-0.3.0.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=xfce4-panel-4.0.0 lm_sensors"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"        
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --with-locales-dir=/usr/share/locale \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README NEWS TODO
+}

@@ -1,0 +1,33 @@
+NAME=swfdec
+VERSION=0.3.4
+ARCH=i686
+RELEASE=1
+URL="http://www.schleef.org/swfdec/"
+DESC="A decoder/renderer library for Macromedia Flash animations."
+GROUP=multimedia
+LICENSE=GPLv2
+
+SOURCES="http://www.schleef.org/swfdec/download/swfdec-0.3.4.tar.gz
+         http://www.schleef.org/swfdec/download/libswfdec-0.1.1.tar.gz"
+
+RUNTIME=">=libart_lgpl-2.0 >=gtk2-2.0 >=zlib-1.1.4 >=liboil-0.2.0 >=libmad-0.15.0b >=gstreamer-0.8.0"
+
+have gimp && RUNTIME="$RUNTIME >=gimp-2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  rm -rf $PKG/usr/lib/{gimp,mozilla}
+  
+  ( cd $PKG/usr/lib/pkgconfig ; ln -sf swfdec-0.3.pc swfdec.pc)
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README RELEASE TODO
+}

@@ -1,0 +1,49 @@
+NAME=inetutils
+VERSION=1.4.2
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/inetutils/inetutils.html"
+DESC="A distribution of common networking utilities and servers."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="1018K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/inetutils/inetutils-1.4.2.tar.gz
+        inetutils-1.4.2-no_server_man_pages-1.patch
+        inetutils-1.4.2-telnetd-1.patch
+        inetutils-1.4.2-ping-1.patch
+        inetutils-1.4.2-typos-1.patch
+        inetutils-1.4.2-talk-1.patch
+        inetutils-1.4.2-telnet-1.patch"
+
+RUNTIME="ncurses"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  patch -p1 <../inetutils-1.4.2-telnet-1.patch
+  patch -p1 <../inetutils-1.4.2-no_server_man_pages-1.patch
+  patch -p1 <../inetutils-1.4.2-ping-1.patch
+  patch -p1 <../inetutils-1.4.2-typos-1.patch
+  patch -p1 <../inetutils-1.4.2-talk-1.patch
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --libexecdir=/usr/sbin \
+	      --localstatedir=/var \
+	      --disable-logger \
+	      --disable-servers \
+	      --disable-whois \
+	      --enable-encryption
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/bin
+  
+  mv $PKG/usr/bin/ping $PKG/bin/ping
+  
+  install_docs AUTHORS COPYING ChangeLog ChangeLog.0 INSTALL NEWS \
+    README* THANKS TODO
+  
+  rm -rf $PKG/usr/sbin $PKG/usr/man/man5
+}

@@ -1,0 +1,30 @@
+NAME=glib2
+VERSION=2.6.4
+ARCH=i686
+RELEASE=1
+URL="http://www.gtk.org/"
+DESC="Common C routines used by Gtk+ and GNOME."
+GROUP=libs
+LICENSE=GLGPLv2.1
+SIZE"2321K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.gtk.org/pub/gtk/v2.6/glib-$VERSION.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+build() {
+  cd $SRC/glib-$VERSION
+  
+  remove_flags -fstack-protector -fstack-protector-all
+      
+  use debug && OPTS="--enable-debug=yes"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL NEWS* README*
+}

@@ -1,0 +1,31 @@
+NAME=libjpeg
+VERSION=6b
+ARCH=i686
+RELEASE=2
+URL="http://www.ijg.org/"
+DESC="Library of JPEG support functions."
+GROUP=graphics
+LICENSE=BSD
+SIZE="598K"
+HUSE="static"
+
+SOURCES="ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v6b.tar.gz"
+
+build() {
+  cd $SRC/jpeg-$VERSION
+  
+  mkdir -p $PKG/usr/{bin,lib,include,man/man1}
+  
+  use static && OPTS="--enable-static"
+    
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --enable-shared $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs README coderules.doc filelist.doc install.doc \
+    jconfig.doc libjpeg.doc structure.doc wizard.doc
+}     
+    

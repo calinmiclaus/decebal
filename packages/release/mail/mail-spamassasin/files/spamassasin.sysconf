@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/spamassasin - configuration file for /etc/rc.d/spamd
+#
+
+# Additional spamd options.
+SPAMD_OPTS="-d -c -m5 -H"

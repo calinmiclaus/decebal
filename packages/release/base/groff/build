@@ -1,0 +1,33 @@
+NAME=groff
+VERSION=1.19.1
+ARCH=i686
+RELEASE=1
+DESC="The GNU troff text-formatting system."
+URL="http://www.gnu.org/software/groff/groff.html"
+GROUP=base
+LICENSE="GPLv2"
+SIZE="2567K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/groff/groff-1.19.1.tar.gz"
+
+RUNTIME="gcc perl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr
+  
+  ./configure --prefix=/usr
+  
+  make
+  make prefix=$PKG/usr install
+  
+  ln -sf eqn $PKG/usr/bin/geqn
+  ln -sf tbl $PKG/usr/bin/gtbl
+  ln -sf soelim $PKG/usr/bin/zsoelim
+    
+  install_docs BUG-REPORT COPYING ChangeLog FDL INSTALL INSTALL.gen \
+    MANIFEST MORE.STUFF NEWS PROBLEMS PROJECTS README README.CVS \
+    REVISION TODO VERSION
+  mv $PKG/usr/share/doc/$NAME $PKG/usr/share/doc/$NAME-$VERSION/
+}

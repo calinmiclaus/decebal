@@ -1,0 +1,68 @@
+#!/bin/bash
+
+pkg_check_dependencies() {
+  [ "$PKG_NODEPS" = "1" ] && return 0
+
+  local MISSINGDEPENDENCIES=""
+
+  msg "checking dependencies..."
+  
+  if [ -n "$UDEPENDS" ]
+  then
+    for DEP in $(echo -E ${UDEPENDS[@]})
+    do
+      msg_child "$DEP..."
+      if ! check_depend $(echo -E $DEP)
+      then
+        msg_updating_depend
+	MISSINGDEPENDENCIES="$MISSINGDEPENDENCIES $DEP"
+      else
+        msg_ok
+        verbose_msg_ok
+      fi
+    done
+
+    if [ -n "$MISSINGDEPENDENCIES" ]
+    then
+      if [ "$PKG_DEPS" = "1" ]
+      then
+        echo "==> updating $NAME dependencies <=="
+        for DEP in $(echo -E $MISSINGDEPENDENCIES)
+        do
+          dupdate $DUPDATE_OPTS $(get_dep_name $DEP)
+        done
+      
+        local REMAININGDEPENDENCIES=""
+      
+        for DEP in $(echo -E ${UDEPENDS[@]})
+        do
+          if ! check_depend $(echo -E $DEP)
+	  then
+	    REMAININGDEPENDENCIES="$REMAININGDEPENDENCIES $DEP"
+	  fi
+        done
+      
+        if [ -n "$REMAININGDEPENDENCIES" ]
+        then
+          msg_failed
+	  msg_error "Following dependencies could not be installed:"
+	  for DEP in $REMAININGDEPENDENCIES
+	  do
+	    echo -e "\t $DEP"
+	  done
+	  pkg_exit "pkg_check_dependencies()" "check_dependencies" "$LINENO" 1
+        fi
+      else
+        msg_failed
+	msg_error "Missing dependencies:"
+	for DEP in $MISSINGDEPENDENCIES
+	do
+	  echo -e "\t $DEP"
+	done
+	pkg_exit "pkg_check_dependencies()" "print_missing_dependencies" "$LINENO" 1
+      fi
+    fi
+  else
+    echo -e "${GREEN}[ ${YELLOW}NONE ${GREEN}]${NORMAL}"
+  fi
+}

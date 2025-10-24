@@ -1,0 +1,41 @@
+NAME=blackbox
+VERSION=0.70.0
+ARCH=i686
+RELEASE=1
+URL="http://blackboxwm.sourceforge.net/"
+DESC="A window manager for X11 written in C++."
+GROUP=x11
+LICENSE=BSDL
+SIZE="423K"
+HUSE="nls static debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/blackboxwm/blackbox-0.70.0.tar.bz2
+         xinitrc.blackbox blackbox.sh blackbox.desktop"
+
+RUNTIME="xorg"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+ 
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+ 
+  ./configure --prefix=/opt/blackbox \
+              --sysconfdir=/etc/opt/blackbox \
+	      --localstatedir=/var/lib \
+              --mandir=/opt/blackbox/share/man \
+	      --enable-shared \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+ 
+  install -D -m 0755 ../xinitrc.blackbox $PKG/etc/X11/xinit/xinitrc.blackbox
+  install -D -m 0644 ../blackbox.sh $PKG/etc/profile.d/blackbox.sh
+  install -D -m 0755 ../blackbox.desktop $PKG/etc/X11/Sessions/blackbox.desktop
+ 
+  install_docs AUTHORS COMPLIANCE ChangeLog* INSTALL LICENSE \
+    README* TODO
+}

@@ -1,0 +1,11 @@
+md5: 8131cd7ea1e4566e6e05c438a93fcfe1 X11R6.8.2-src.tar.bz2
+md5: 1592380a7f252bf61727290b26e54e84 x11-linux_config.patch
+md5: 8d5e1ea5be303d03ad15cf469d311259 x11-xterm.patch
+md5: e028c3356fd7ae306332c03953253a7a startx
+md5: f2cc77252050e677cf85bcc6978be6ad xsession
+md5: 331f466a4efd98705c19dd9b37dd623b xdm.init
+md5: 7ec80455f8f85e85384b81663b364ae1 xdm.sysconf
+md5: ec952d471265671fb4bbc4f7ff4c9fc9 xorg.sh
+md5: 597415429c2c9fccbd097744171ff0ba x11.startwithblackscreen.diff.gz
+md5: 09581d99809d6e273dea0e827c47f1a1 x11.libxf86config-monitor-freq.diff.gz
+md5: a67a1df80cffdc8ea3911c0422a267fd x11.hr.diff.gz

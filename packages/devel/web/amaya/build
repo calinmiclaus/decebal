@@ -1,0 +1,35 @@
+NAME=amaya
+VERSION=9.1
+ARCH=i686
+RELEASE=1
+URL="http://www.w3.org/Amaya/"
+DESC="A environment for testing and evaluating new proposals for Web standards and formats."
+GROUP=web
+LICENSE="GPLv2"
+SIZE="22832K"
+
+SOURCES="http://www.w3.org/Amaya/Distribution/amaya-fullsrc-9.1.tgz"
+
+RUNTIME="ncurses"
+
+use gtk RUNTIME="$RUNTIME gtk" || RUNTIME="$RUNTIME wxwidgets"
+
+build() {
+  cd $SRC/Amaya
+  
+  use gtk && OPTS="--with-gtk" || OPTS="--with-wx"
+  
+  mkdir -p build-amaya
+  cd build-amaya
+  ../configure --prefix=/usr \
+               --enable-system-redland \
+	       --enable-bookmarks \
+	       --without-gl \
+	       --with-dav $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  cd ..
+  
+  install_docs README*
+}

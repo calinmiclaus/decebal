@@ -1,0 +1,30 @@
+NAME=gtksourceview-sharp
+VERSION=0.5
+ARCH=i686
+RELEASE=1
+URL="http://www.go-mono.com/"
+DESC="C# binding to gtksourceview."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="337K"
+
+SOURCES="http://www.go-mono.com/archive/1.0/gtksourceview-sharp-0.5.tar.gz"
+
+RUNTIME=">=gtksourceview-1.0 >=mono-1.0 >=gtk-sharp-1.0 >=monodoc-1.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  export PKG_CONFIG_PATH="/opt/mono/lib/pkgconfig:/opt/gnome/lib/pkgconfig"
+  export PATH="$PATH:/opt/mono/bin"
+  ./configure --prefix=/opt/mono \
+              --sysconfdir=/etc/opt \
+	      --enable-monodoc
+  make
+  make GACUTIL="/opt/mono/bin/gacutil /root $PKG/opt/mono/lib" DESTDIR=$PKG install
+  
+  rm -f $PKG/opt/gnome/share/gtksourceview-1.0/language-specs/{vbnet.lang,nemerle.lang}
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

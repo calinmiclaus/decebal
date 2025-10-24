@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# /etc/rc.d/nfsd - control file for the NFS server system
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/nfsd
+
+[ -r /etc/exports ] || exit 6
+
+case "$1" in
+  start)
+    depend portmap
+    msg "Exporting NFS directories"
+    run /usr/sbin/exportfs -r
+    
+    if [ "$RQUOTAD" = "yes" ]
+    then
+      pidfile="/var/run/rpc.rquoatad.pid"
+      msg "Starting the NFS quota daemon"
+      start_service /usr/sbin/rpc.rquotad
+    fi
+    
+    pidfile="/var/run/rpc.nfsd.pid"
+    msg "Starting the NFS daemon"
+    start_service /usr/sbin/rpc.nfsd $NFSD_THREADS
+    
+    pidfile="/var/run/rpc.mountd.pid"
+    msg "Starting the NFS mount daemon"
+    start_service /usr/sbin/rpc.mountd $MOUNTD_OPTS
+    
+    if [ "$LOCKD" = "yes" ]
+    then
+      pidfile="/var/run/rpc.lockd.pid"
+      msg "Starting the NFS locking daemon"
+      start_service /usr/sbin/rpc.lockd
+    fi
+    
+    if [ "$STATD" = "yes" ]
+    then
+      pidfile="/var/run/rpc.statd.pid"
+      msg "Starting the NFS status daemon"
+      start_service /usr/sbin/rpc.statd
+    fi
+    ;; 
+  stop)
+    msg "Stopping the NFS status daemon"
+    stop_service /usr/sbin/rpc.statd
+    
+    msg "Stopping the NFS locking daemon"
+    stop_service lockd
+    
+    msg "Stopping the NFS quota daemon"
+    stop_service /usr/sbin/rpc.rquotad
+    
+    msg "Stopping the NFS mount daemon"
+    stop_service /usr/sbin/rpc.mountd
+    
+    msg "Stopping the NFS daemon"
+    stop_service nfsd
+    
+    msg "Unexporting NFS directories"
+    run /usr/sbin/exportfs -au
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/rpc.rquotad
+    status_service /usr/sbin/rpc.nfsd
+    status_service /usr/sbin/rpc.mountd
+    status_service /usr/sbin/rpc.lockd
+    status_service /usr/sbin/rpc.statd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

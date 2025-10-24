@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+# /etc/rc.d/named - control file for the Domain Name Service daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/named
+
+# Exit if /etc/named/named.conf is not present!!!
+[ -r /etc/named/named.conf ] || exit 6
+
+prepare_chroot() {
+  if [ "$CHROOTED" = "yes" ]
+  then
+    if [ ! -d $CHROOTDIR ]
+    then
+      mkdir -p $CHROOTDIR/dev
+      mkdir -p $CHROOTDIR/etc/named
+      mkdir -p $CHROOTDIR/var/{lib/named,run/named}
+      
+      cp /etc/named/named.conf $CHROOTDIR/etc/named/named.conf
+      cp -a /var/lib/named/* $CHROOTDIR/var/lib/named/
+      cp /etc/localtime $CHROOTDIR/etc/localtime
+      
+      mknod -m 666 $CHROOTDIR/dev/null c 1 3
+      mknod -m 666 $CHROOTDIR/dev/random c 1 8
+      
+      chown named.named $CHROOTDIR
+      chmod 700 $CHROOTDIR
+      chown -R named.named $CHROOTDIR/var/lib/named
+      chown -R named.named $CHROOTDIR/var/run/named
+      chmod 1770 $CHROOTDIR/var/lib/named
+      
+      (cd $CHROOTDIR ; chattr +i etc etc/localtime var)
+    fi
+  fi
+}
+
+check_named() {
+  if [ ! -d /var/lib/named ]
+  then
+    mkdir -p /var/lib/named
+    chown named.named /var/lib/named
+    chmod 1770 /var/lib/named
+  fi
+
+  if [ ! -d /var/run/named ]
+  then
+    mkdir -p /var/run/named
+    chown named.named /var/run/named
+  fi
+}
+
+check_chroot() {
+  if [ "$CHROOTED" = "yes" ]
+  then
+    NAMED_OPTS="-t $CHROOTDIR -c /etc/named/named.conf"
+  else
+    NAMED_OPTS=""
+  fi
+}
+
+case "$1" in
+  start)
+    prepare_chroot
+    check_named
+    check_chroot
+    msg "Starting the Domain Name Service daemon"
+    start_service /usr/sbin/named $NAMED_OPTS -u named 
+    ;;
+  stop)
+    msg "Stopping the Domain Name Service daemon"
+    stop_service /usr/sbin/named
+    ;;
+  reload)
+    msg "Reloading the Domain Name Service daemon"
+    run /usr/bin/rndc reload
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/named
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

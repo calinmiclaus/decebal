@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+# /etc/rc.d/modules - update (calculate) module dependencies and load
+#                     modules from /etc/conf.d/modules
+#
+
+. /etc/rc.d/functions
+
+MODULEDIR=/lib/modules/`uname -r`
+MODPROBECONF=/etc/modprobe.conf
+
+case "$1" in
+  start)
+    if [ -f $MODULEDIR/modules.dep ]
+    then
+      if [ $MODULESDIR/modules.dep -nt $MODPROBECONF ]
+      then
+        NEWMODULES=`find $MODULEDIR -type f -newer $MODPROBECONF 2>/dev/null`
+	if [ -n "$NEWMODULES" ]
+	then
+	  msg "Updating modules dependencies"
+          run depmod -a
+	fi
+      fi
+    else
+      msg "Calculating modules dependencies"
+      run depmod -A
+    fi
+    
+    # Load modules from /etc/conf.d/modules
+    if [ -f /etc/conf.d/modules ]
+    then
+      echo "Loading modules from /etc/conf.d/modules"
+      
+      (
+        while read LINE
+	do
+	  if [ "`echo $LINE | grep -vE '^[[:space:]]*(#|$)'`" != "" ]
+	  then
+	    vmsg "\t* $LINE"
+	    run modprobe $LINE
+	  fi
+	done
+	
+	exec 0>&1
+      ) < /etc/conf.d/modules
+    fi
+    
+    touch /var/lock/subsys/modules
+    ;;
+  stop)
+    # Unload modules listed in /etc/conf.d/modules (!!!dangerous!!!)
+    if [ -f /etc/conf.d/modules ]
+    then
+      echo "Unloading modules listed in /etc/conf.d/modules"
+      
+      (
+        while read LINE
+	do
+	  if [ "`echo $LINE | grep -vE '^[[:space:]]*(#|$)'`" != "" ]
+	  then
+	    vmsg "\t* $LINE"
+	    run modprobe -r $LINE
+	  fi
+	done
+	
+	exec 0>&1
+      ) < /etc/conf.d/modules
+    fi
+    
+    rm -f /var/lock/subsys/modules
+    ;;
+  status)
+    if [ -r /var/lock/subsys/modules ]
+    then
+      echo "modules loaded and configured."
+    else
+      echo "modules are not configured."
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+
+    

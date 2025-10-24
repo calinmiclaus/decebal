@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 31 sshd &>/dev/null
+  /usr/sbin/useradd -g sshd -u 31 -c "OpenSSH Daemon" -d /dev/null -s/bin/false sshd &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 31 sshd &>/dev/null
+  /usr/sbin/useradd -g sshd -u 31 -c "OpenSSH Daemon" -d /dev/null -s/bin/false sshd &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel sshd  &>/dev/null
+  /usr/sbin/groupdel sshd &/dev/null
+}

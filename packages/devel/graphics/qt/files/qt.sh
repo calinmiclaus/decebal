@@ -1,0 +1,15 @@
+#!/bin/sh
+
+QTDIR=/usr/lib/qt
+MANPATH=$MANPATH:$QTDIR/doc/man
+PATH=$PATH:$QTDIR/bin
+
+if [ ! "$CPLUS_INCLUDE_PATH" = "" ]
+then
+    CPLUS_INCLUDE_PATH=$QTDIR/include:$CPLUS_INCLUDE_PATH
+else
+    CPLUS_INCLUDE_PATH=$QTDIR/include
+fi
+
+export QTDIR MANPATH PATH CPLUS_INCLUDE_PATH
+    

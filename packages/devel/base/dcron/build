@@ -1,0 +1,42 @@
+NAME=dcron
+VERSION=2.3.3
+ARCH=i686
+RELEASE=2
+URL="http://apollo.backplane.com/FreeSrc/"
+DESC="A simple and working cron daemon."
+GROUP=base
+LICENSE=GPLv2
+SIZE="22K"
+
+SOURCES="http://www.ibiblio.org/pub/linux/system/daemons/cron/dcron-2.3.3.tar.gz
+         dcron-2.3.3.patch crond.init root run-parts.c run-parts.8"
+
+RUNTIME="sysklogd
+         >=bash-2.5b
+         psmisc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../$NAME-$VERSION.patch
+  
+  make
+  make DESTDIR=$PKG install
+  
+  chown root.25 $PKG/usr/bin/crontab
+  chmod 4755 $PKG/usr/bin/crontab
+  
+  mkdir -p $PKG/etc/cron.d/{hourly,daily,weekly,monthly}
+  mkdir -p $PKG/var/{spool/cron/crontabs,log}
+  
+  gcc ../run-parts.c -o ../run-parts
+  
+  install -m 0755 ../run-parts $PKG/usr/bin/run-parts
+  install -m 0644 ../run-parts.8 $PKG/usr/share/man/man8/run-parts.8
+  install -D -m 0600 ../root $PKG/var/spool/cron/crontabs/root
+  install -D -m 0700 ../crond.init $PKG/etc/rc.d/crond
+  
+  touch $PKG/var/log/cron
+  
+  install_docs CHANGES COPYING README
+}  

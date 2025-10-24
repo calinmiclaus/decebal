@@ -1,0 +1,38 @@
+NAME=xine-lib
+VERSION=1.0.1
+ARCH=i686
+RELEASE=1
+URL="http://xinehq.de"
+DESC="A free video player for Unix."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="7211K"
+HUSE="nls ipv6 arts static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/xine/xine-lib-1.0.1.tar.gz"
+
+RUNTIME=">=aalib-1.4 >=libcaca-0.3 >=libsdl-1.1.5 >=esound-0.2.8 >=alsa-lib-0.9.0rc4 libfame faad2 speex
+         libpng libvorbis libogg codecs libdvdnav freetype2 directfb vcdimager"
+
+use nls && BUILDTIME="gettext"
+use arts && RUNTIME="$RUNTIME arts"
+
+has gnome-vfs && RUNTIME="$RUNTIME gnome-vfs"
+
+build() {
+  cd $SRC/xine-lib-$VERSION
+
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  use static && OPTS="$OPTS --enable-static"
+  use arts && OPTS="$OPTS --enable-arts" || OPTS="$OPTS --disable-arts"
+  use samba && OPTS="$OPTS --enable-samba" || OPTS="$OPTS --disable-samba"
+  
+  ./configure --prefix=/usr \
+	      --with-w32-path=/usr/lib/win32 \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs ABOUT-NLS AUTHORS COPYING CREDITS ChangeLog INSTALL NEWS \
+    README TODO
+}

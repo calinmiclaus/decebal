@@ -1,0 +1,44 @@
+NAME=xsane
+VERSION=0.97
+ARCH=i686
+RELEASE=1
+DESC="XSane is a GTK-based X11 frontend for SANE."
+URL="http://www.xsane.org/index.html"
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="3124K"
+HUSE="gimp"
+
+SOURCES="ftp://ftp.sane-project.org/pub/sane/xsane/xsane-0.97.tar.gz
+         xsane.desktop xsane.png"
+
+RUNTIME="gtk2 gimp >=libjpeg-6b libpng >=libtiff-3.7.1 sane"
+
+use gimp && RUNTIME="$RUNTIME gimp"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  use gimp && OPTS="--enable-gimp2" || OPTS="--disable-gimp2 --disable-gimptest"
+  
+  ./configure --prefix=/usr \
+	      --enable-gtk2 \
+	      --enable-gimp2 \
+	      --enable-jpeg \
+	      --enable-png \
+	      --enable-tiff \
+	      $OPTS
+
+  make
+  make prefix=$PKG install
+  
+  install -D -m 0644 ../xsane.desktop $PKG/usr/share/applications/xsane.destkop
+  install -D -m 0644 ../xsane.png $PKG/usr/share/pixmaps/xsane.png    
+  
+  install_docs xsane-WIN32-README.txt xsane-WIN32-compilation.txt \
+    xsane-WIN32-compilation.txt.old xsane.ACCELKEYS xsane.AUTHOR \
+    xsane.BACKENDS xsane.BEGINNERS-INFO xsane.BUGS xsane.CHANGES \
+    xsane.COPYING xsane.FAQ xsane.INSTALL xsane.LANGUAGES xsane.LOGO \
+    xsane.NEWS xsane.ONLINEHELP xsane.PROBLEMS xsane.REMOVE xsane.ROOT \
+    xsane.RPM xsane.TODO xsane.VENDOR-STRINGS
+}

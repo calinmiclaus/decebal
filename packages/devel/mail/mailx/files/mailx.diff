@@ -1,0 +1,39 @@
+diff -Naur mailx-8.1.2-0.20031014cvs.orig/Makefile mailx-8.1.2-0.20031014cvs.orig.new/Makefile
+--- mailx-8.1.2-0.20031014cvs.orig/Makefile	2005-01-14 18:02:57.000000000 -0600
++++ mailx-8.1.2-0.20031014cvs.orig.new/Makefile	2005-01-14 18:02:04.000000000 -0600
+@@ -52,6 +52,10 @@
+ 	rm -f $(PROG) $(OBJS) *~ core
+  
+ install:
++	mkdir -p $(DESTDIR)/usr/bin
++	mkdir -p $(DESTDIR)/usr/share/mailx
++	mkdir -p $(DESTDIR)/usr/share/man/man1
++	mkdir -p $(DESTDIR)/etc
+ 	install -p -c -m 755 $(PROG) $(DESTDIR)/usr/bin/
+ 	install -p -c -m 644 $(MFILES) $(DESTDIR)/usr/share/man/man1/
+ 	cd misc && install -p -c -m 644 $(EFILES) $(DESTDIR)/etc/
+diff -Naur mailx-8.1.2-0.20031014cvs.orig/pathnames.h mailx-8.1.2-0.20031014cvs.orig.new/pathnames.h
+--- mailx-8.1.2-0.20031014cvs.orig/pathnames.h	2005-01-14 18:02:57.000000000 -0600
++++ mailx-8.1.2-0.20031014cvs.orig.new/pathnames.h	2005-01-14 17:59:15.000000000 -0600
+@@ -39,10 +39,10 @@
+ #define _PATH_SHELL	"/bin/sh"
+ #endif
+ #ifndef _PATH_PAGER
+-#define _PATH_PAGER	"/usr/bin/pager"
++#define _PATH_PAGER	"/usr/bin/less"
+ #endif
+ #ifndef _PATH_EX
+-#define _PATH_EX	"/usr/bin/editor"
++#define _PATH_EX	"/bin/ed"
+ #endif
+ #ifndef _PATH_VI
+ #define _PATH_VI	"/usr/bin/vi"
+@@ -69,7 +69,7 @@
+ 
+ /* mail runtime files */
+ #ifndef _PATH_MAILDIR
+-#define _PATH_MAILDIR	"/var/mail"
++#define _PATH_MAILDIR	"/var/spool/mail"
+ #endif
+ 
+ /* directories & files */

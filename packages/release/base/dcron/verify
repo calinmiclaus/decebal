@@ -1,0 +1,6 @@
+md5: 537cda2dff7dfaf87660fee91b2cf78f dcron-2.3.3.tar.gz
+md5: 24ed9bbf39c3c9ea12e13812184490e3 dcron-2.3.3.patch
+md5: 43f6c2647355f45d058bacd755be5670 crond.init
+md5: 44dc8e37d1febd4310a3b7b1c2d928c4 root
+md5: 187b78edbeb9a6c9db22e61207286874 run-parts.c
+md5: 6b09b7815baa85291b41a2be101875d7 run-parts.8

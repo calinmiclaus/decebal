@@ -1,0 +1,7 @@
+NAME=chronium
+VERSION=0.9.12
+ARCH=i686
+RELEASE=1
+URL="http://www.reptilelabour.com/software/chromium/"
+DESC="A fast paced, arcade-style, top-scrolling space shooter."
+

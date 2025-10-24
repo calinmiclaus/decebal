@@ -1,0 +1,36 @@
+NAME=dillo
+VERSION=0.8.4
+ARCH=1
+RELEASE=1
+URL="http://www.dillo.org/"
+DESC="Lightweight browser alternative for those running Unix."
+GROUP=web
+LICENSE="GPLv2"
+SIZE="423106K"
+HUSE="ipv6 profile"
+
+SOURCES="http://www.dillo.org/download/dillo-0.8.4.tar.bz2
+         dillo.desktop dillo.png"
+
+BACKUPS="etc/dillo/dillorc
+         etc/dillo/dpidrc"
+
+RUNTIME=">=glib-1.2.0 >=gtk-1.2.0 >=zlib-1.2.1 libpng libjpeg libungif >=openssl-0.9.7e"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="--enable-ipv6"
+  use profile && OPTS="$OPTS --enable-gprof"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/dillo $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../dillo.desktop $PKG/usr/share/applications/dillo.desktop
+  install -D -m 0644 ../dillo.png $PKG/usr/share/pixmaps/dillo.png
+                  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL \
+    NEWS README
+}

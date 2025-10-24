@@ -1,0 +1,40 @@
+NAME=xchat
+VERSION=2.4.4
+ARCH=i686
+RELEASE=1
+URL="http://www.xchat.org/"
+DESC="A GTK+ based IRC client."
+GROUP=chat
+LICENSE=GPLv2
+SIZE="1256K"
+HUSE="nls ipv6 socks tcl"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/xchat/xchat-2.4.4.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME="openssl >=xorg-6.7 >=gtk2-2.0.3 >=perl-5.8.0 python >=glib2-2.0.3"
+
+use nls && BUILDTIME="$BUILDTIME gettext"
+use tcl && RUNTIME="$RUNTIME tcl"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="$OPTS --enable-nls" || OPTS="$OPTS --disable-nls"
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  use socks && OPTS="$OPTS --enable-socks" || OPTS="$OPTS --disable-socks"
+  use tcl && OPTS="$OPTS --enable-tcl" || OPTS="$OPTS --disable-tcl"
+        
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/xchat \
+	      --enable-openssl=/usr \
+	      --enable-xft \
+	      --enable-shm \
+	      --enable-python \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL* HACKING README
+}

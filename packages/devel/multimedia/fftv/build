@@ -1,0 +1,18 @@
+NAME=fftv
+VERSION=0.8.2
+ARCH=i686
+RELEASE=1
+URL="http://fftv.sourceforge.net/"
+DESC=""
+GROUP=multimedia
+LICENSE=""
+SIZE="1506K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/fftv/fftv-0.8.2.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  install_docs COPYING CREDITS* Changelog* INSTALL README*
+}
+

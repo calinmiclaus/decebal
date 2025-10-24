@@ -1,0 +1,87 @@
+NAME=qt
+VERSION=4.0.0
+ARCH=i686
+RELEASE=1
+URL="http://www.trolltech.com/products/qt/index.html"
+DESC="The QT gui toolkit."
+GROUP=graphics
+LICENSE="GPLv2 QPLv1"
+SIZE="15270K"
+HUSE="cups nas ipv6 static debug"
+
+#SOURCES="http://ftp.iasi.roedu.net/mirrors/ftp.trolltech.com/qt/sources/qt-x11-free-3.3.4.tar.bz2
+SOURCES="ftp://ftp.trolltech.com/qt/source/qt-x11-opensource-desktop-4.0.0.tar.bz2
+        qt.sh qt-mt.pc qt.pc"
+
+#http://clc.berlios.de/projects/specialports/qt3/qt3-3.3.3.patch
+#qt.mysql.h.diff"
+
+RUNTIME=">=zlib-1.1.4 mysql libjpeg libpng libmng xorg freetype2 cups"
+
+build() {
+  cd qt-x11-opensource-desktop-$VERSION
+
+#  patch -p1 <../qt.mysql.h.diff
+
+  # fix qmake installation
+#  sed -i -e 's/-cp -P -f/-cp -L -f/' qmake/Makefile.unix
+
+  export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:`pwd`/lib"
+  rm -rf {doc/html,examples,tutorial}
+#  sed -i "s:sub-tutorial sub-examples: :" Makefile
+  sed -i "s:-O2:$CFLAGS:" mkspecs/linux-g++/qmake.conf
+  sed -i "s:-I. :$CFLAGS -I. :" qmake/Makefile.unix
+  sed -i "s:read acceptance:acceptance=yes:" configure
+    
+  use debug && OPTS="-debug" || OPTS="-release"
+  use cups && OPTS="$OPTS -cups" || OPTS="$OPTS -no-cups"
+  use static && OPTS="$OPTS -static"
+  use ipv6 && OPTS="$OPTS -ipv6" || OPTS="$OPTS -no-ipv6"
+  use nas && OPTS="$OPTS -system-nas-sound" || OPTS="$OPTS -no-nas-sound"
+#  use sm && OPTS="$OPTS -sm" || OPTS="$OPTS -sm"
+    
+    ./configure -prefix /usr/lib/qt \
+                -bindir /usr/bin \
+                -headerdir /usr/include/qt \
+                -libdir /usr/lib \
+                -plugindir /usr/lib/qt \
+                -platform linux-g++ \
+		-shared \
+		-thread \
+		-sm \
+                -tablet \
+		-nis \
+		-verbose \
+		-system-zlib \
+                -qt-gif \
+		-system-libpng \
+		-system-libmng \
+		-system-libjpeg \
+                -qt-imgfmt-jpeg \
+		-qt-imgfmt-mng \
+		-qt-imgfmt-png \
+                -no-g++-exceptions \
+		-xcursor \
+		-xft \
+		-xinerama \
+		-xkb \
+		-xrandr \
+		-xrender \
+		-no-stl \
+		-xft \
+		-plugin-sql-mysql \
+		$OPTS
+
+#  make src-moc sub-src
+  make
+  find . -name Makefile -exec sed -i "s:,/usr/lib,:`pwd`/lib:" {} \;
+  make sub-tools
+  make INSTALL_ROOT=$PKG install
+
+  install -D -m 755 ../qt.sh $PKG/etc/profile.d/qt.sh
+  install -D -m 0644 ../qt-mt.pc $PKG/usr/lib/pkgconfig/qt-mt.pc
+  install -m 0644 ../qt.pc $PKG/usr/lib/pkgconfig/qt.pc
+
+  install_docs FAQ INSTALL LICENSE.GPL LICENSE.QPL MANIFEST PLATFORMS README \
+    README-QT.TXT
+}

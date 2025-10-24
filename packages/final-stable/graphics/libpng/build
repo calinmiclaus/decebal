@@ -1,0 +1,31 @@
+NAME=libpng
+VERSION=1.2.8
+ARCH=i686
+RELEASE=1
+URL="http://www.libpng.org/pub/png/libpng.html"
+DESC="A collection of routines used to create PNG format graphics files."
+GROUP=graphics
+LICENSE=BSDL
+SIZE="375K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libpng/libpng-1.2.8.tar.bz2"
+
+RUNTIME=">=zlib-1.2.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  cp scripts/makefile.gcmmx makefile
+  
+  sed -i "s:-O3 \$(ALIGN) -funroll-loops:$CFLAGS \$(ALIGN) -funroll-loops:" makefile
+  sed -i "s:^ZLIBLIB\=..\/zlib:ZLIBLIB\=\/usr\/lib:" makefile
+  sed -i "s:^ZLIBINC\=..\/zlib:ZLIBINC\=\/usr\/include:" makefile
+  
+  mkdir $PKG/usr
+  
+  make
+  make DESTDIR=$PKG prefix=/usr install
+  
+  install_docs ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE \
+    README TODO Y2KINFO
+}

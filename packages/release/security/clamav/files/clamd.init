@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# /etc/rc.d/clamd
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/clamd
+
+pidfile="/var/run/clamd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Clam Antivirus daemon"
+    start_service /usr/sbin/clamd
+    if [ "$STARTFRESHCLAM" = "yes" ]
+    then
+      msg "Starting the Clam Antivirus update daemon"
+      start_service /usr/bin/freshclam --daemon
+    fi
+    ;;
+  stop)
+    msg "Stopping the Clam Antivirus daemon"
+    stop_service /usr/sbin/clamd
+    msg "Stopping the Clam Antivirus update daemon"
+    stop_service /usr/bin/freshclam
+    ;;
+  reload)
+    msg "Reloading the Clam Antivirus daemon"
+    reload_service /usr/sbin/clamd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/clamd
+    status_service /usr/bin/freshclam
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

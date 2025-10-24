@@ -1,0 +1,9 @@
+#
+# /etc/dpack/update - configuration file for dupdate.
+#
+
+CACHEDIR=/var/cache/dupdate
+
+# This is the mirror that dupate will use to download packages.
+#UPDATEMIRROR="packages.decebal.org"
+UPDATEMIRROR="localhost/packages"

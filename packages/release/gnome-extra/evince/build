@@ -1,0 +1,33 @@
+NAME=evince
+VERSION=0.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/projects/evince/"
+DESC="A document viewer for multiple document formats like pdf, postscript, and many others."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="656K"
+HUSE="static debug"
+
+SOURCES="http://ftp.gnome.org/pub/gnome/sources/evince/0.2/evince-0.2.1.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=libgnomeui-2.4.0 libgnomeprintui espgs >=poppler-0.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

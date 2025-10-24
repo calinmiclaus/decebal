@@ -1,0 +1,25 @@
+NAME=unzip
+VERSION=5.51
+ARCH=i686
+RELEASE=1
+DESC="Unpacks .zip archives such as those made by PKZIP."
+URL="http://www.info-zip.org/pub/infozip/"
+GROUP=system
+LICENSE="Own License"
+SIZE="1086K"
+
+SOURCES="ftp://ftp.info-zip.org/pub/infozip/src/unzip551.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+    
+  make -f unix/Makefile LOCAL_UNZIP="$CFLAGS" prefix=/usr linux
+  make -f unix/Makefile prefix=$PKG/usr install
+  
+  rm -f $PKG/usr/bin/zipinfo && ln -s unzip $PKG/usr/bin/zipinfo
+      
+  install_docs BUGS COPYING.OLD Contents History.550 INSTALL \
+    LICENSE README ToDo WHERE
+}

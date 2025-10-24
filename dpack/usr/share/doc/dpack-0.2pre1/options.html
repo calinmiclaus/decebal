@@ -1,0 +1,304 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="building.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="verbose.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Options</h1>
+<p>Options that can be used when building packages:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhots:~]# dsrc -h<br>
+usage: dsrc [options] &lt;argument1&gt; &lt;argument2&gt; ...<br>
+options:<br>
+&nbsp;&nbsp;-b, --builddeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - build package dependencies from source<br>
+&nbsp;&nbsp;-c, --noclean  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - do not remove work files<br>
+&nbsp;&nbsp;-C, --continue &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - use work files (continue with them) (dangerous)<br>
+&nbsp;&nbsp;-d, --nodeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - skip package dependencies checks<br>
+&nbsp;&nbsp;-D, --download &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - only download sources, do not compile them<br>
+&nbsp;&nbsp;-e, --sysinfo &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - print information about dsrc<br> 
+&nbsp;&nbsp;-f, --force &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - overwrite existing package<br>
+&nbsp;&nbsp;-g, --genmd5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - genearate MD5 messages<br>
+&nbsp;&nbsp;-i, --noinstall &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - do not install package<br>
+&nbsp;&nbsp;-I, --info &lt;package&gt; &nbsp; - print package information (from build file)<br>
+&nbsp;&nbsp;-k, --keep &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - keep created package<br>
+&nbsp;&nbsp;-n, --nostrip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - do not strip binaries and libraries<br>
+&nbsp;&nbsp;-o, --optimize &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - optimize code for running system<br>
+&nbsp;&nbsp;-p, --nossp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - do not use Smash Stack Protector (Propolice)<br>
+&nbsp;&nbsp;-P, --pretend &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - only show actions, do not run them (not working)<br>
+&nbsp;&nbsp;-r, --rmdeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - remove installed dependencies<br>
+&nbsp;&nbsp;-R, --rebuild &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - rebuild package (even if package is installed)<br>
+&nbsp;&nbsp;-s, --syncdeps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - install package dependencies using dupdate<br>
+&nbsp;&nbsp;-S, --search &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - search &lt;package&gt; or &lt;expression&gt; in database<br>
+&nbsp;&nbsp;-u, --upgrade &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - upgrade installed packages (used for groups)<br>
+&nbsp;&nbsp;-w, --write &lt;dir&gt; &nbsp;&nbsp;&nbsp;&nbsp; - save package to &lt;dir&gt;<br>
+&nbsp;&nbsp;-v, --verbose &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - be more verbose<br>
+&nbsp;&nbsp;-V, --version &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - print name, version and license<br>
+&nbsp;&nbsp;-H, --howto &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - a short howto with some examples<br>
+&nbsp;&nbsp;-h, --help &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - print this message<br>
+arguments:<br>
+&nbsp;&nbsp;  &lt;package&gt; &nbsp;- build/rebuild the package<br>
+&nbsp;&nbsp;  &lt;group&gt; &nbsp;&nbsp; - build/rebuild entire group<br>
+&nbsp;&nbsp;  &lt;sync&gt; &nbsp;&nbsp;&nbsp; - sync package builds database<br>
+&nbsp;&nbsp;  &lt;world&gt; &nbsp;&nbsp; - build/rebuild the world<br><br>  
+For a detailed help please see dpack (8).<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+And the detailed version here:<br><br>
+<b><code>-b, --builddeps</code></b><ul>normally <b><code>dsrc</code></b> will check if dependencies are satisfied before building a package, and
+exit with and error message (with the missing dependencies). Using this option will make
+<b><code>dsrc</code></b> try to build missing dependencies before building the package.</ul>
+<b><code>-c, --noclean</code></b><ul>when you build a package the source files will be unpackaged in the <b><code>SRC</code></b> directory (usually
+<b><code>$PACKAGESDIR/$THREE/group/name/SRC</code></b>, where <b><code>PACKAGESDIR</code></b> and <b><code>THREE</code></b> are defined in <b><code>/etc/dpack/build</code></b>) and
+the package contents are saved in the <b><code>PKG</code></b> directory (usually <b><code>$PACKAGESDIR/$THREE/group/name/PKG</code></b>), but
+these two directories are removed after a successfull build. Using this option will make <b><code>dsrc</code></b> keep
+these directories.</ul>
+<b><code>-C, --continue</code></b><ul>if a package build faills or you stop it with <b><code>CTRL+C</code></b>, then you can use this option to continue the
+<b><code>build</code></b>, with the sources available in <b><code>$PACKAGESDIR/$THREE/group/name/SRC</code></b> (since the sources are only kept
+when you use <b><code>-c</code></b> option, the <b><code>-C</code></b> option is only usefull when you use it together with the <b><code>-c</code></b> option).</ul>
+<b><code>-d, --nodeps</code></b><ul>before building a package <b><code>dsrc</code></b> will check if all dependencies are satisfied, using this option
+will make <b><code>dsrc</code></b> skip this step. This option should only be used if you know what you doing and since
+allmost all packages have dependencies, they will not build correctly or not build at all if you
+use this option.</ul>
+<b><code>-D, --download</code></b><ul>this option will make <b><code>dsrc</code></b> download the source files and save them in <b><code>$CACHEDIR</code></b> which is defined
+in <b><code>/etc/dpack/common</code></b> (usually <b><code>/var/cache/dsrc</code></b>) but it will not build the package. Usefull if you want to
+download the sources and compile whenever you want.</ul>
+<b><code>-f, --force</code></b><ul>if you want to build a package that has already been built (with the <b><code>-k</code></b> option) and saved
+in <b><code>$PACKAGESDIR/$THREE/group/name/package/name-version-arch-release.tbz2</code></b> the <b><code>dsrc</code></b> will exit with a warning
+message (eg: <b><code>[WARNING]: package name-version-arch-release.tbz2 already built.</code></b>). If you want to
+rebuild the package and overwite the saved one use this option.</ul>
+<b><code>-g, --genmd5</code></b><ul>every package has its own integrity file (a file containing md5sum messages for earch source
+file), which is generated by the packager, so if you want build your own packages you sould use
+this option. It can also be used if you want to build a package that didn't pass the integrity check.</ul>
+<b><code>-i, --noinstall</code></b><ul>normally <b><code>dsrc</code></b> will build the package, and if this operation is successsull it will install
+it too, using this option will make <b><code>dsrc</code></b> build the package but dont install it</ul>
+<b><code>-I, --info</code></b><ul>this option will print information about a package (the information is gathered from the build
+file) and will contain the following variables: latest available package, installed package, license,
+homepage, description, download location, size, time needed to build the package (depending on
+the bogomips of your CPU) and package dependencies.</ul>
+<b><code>-k, --keep</code></b><ul>after you build a package <b><code>dsrc</code></b> will install it and delete the built packagem, if you use this
+option the package will be saved in <b><code>$PACKAGESDIR/$THREE/group/name/package/name-version-arch-release.tbz2</code></b></ul>
+<b><code>-n, --nostrip</code></b><ul>the files (only libraries and binaries) of a package are striped before building it, if you use this
+option <b><code>dsrc</code></b> will not strip the files. This is usefull if you want to debug the created code (in most
+cases strip will remove the debug functions from the binary).</ul>
+<b><code>-o, --optimize</code></b><ul>this option will overide the compiler optimization flags (from <b><code>/etc/dpack/build</code></b>), and add
+optimized flags for your system. A more detailed explanation for this option can be found
+here: <a href="optimize.html">Optimizing build</a></ul>
+<b><code>-p, --nossp</code></b><ul>this option will deactivate the gcc Smash Stack Protector Extension (formelly know as Propolice).
+There are only a few packages that dont build with this extension (<b><code>glibc</code></b>, <b><code>xorg</code></b> and <b><code>kernel-*</code></b>) and
+<b><code>dsrc</code></b> will automatically deactive SSP for these packages, so this option should only be used if you
+really dont want SSP support. This option is only provided for the user's freedom of choice and
+<a href="ssp.html">here</a> you can find information about SSP and why you should use this option everytime it is possible.</ul>
+<b><code>-P, --pretend</code></b><ul>this option will show actions that the command will do but dont execute them (this is usefull
+for testing).</ul>
+<b><code>-r, --rmdeps</code></b><ul>when <b><code>dsrc</code></b> installs a package and you provided the <b><code>-b</code></b> or <b><code>-s</code></b> option, then if you provide
+this option it will remove the installed dependecies (it doesnt matter if they were
+installed with <b><code>dsrc</code></b> or <b><code>dupdate</code></b>). This option should be used only if you <b>really</b> know what
+you are doing, the package will 100% not work if the dependencies are removed.</ul>
+<b><code>-R, --rebuild</code></b><ul>if you want to build a package that is already installed (same version and release) then
+<b><code>dsrc</code></b> will exit with an error message (eg: package <b><code>NAME</code></b> already installed (<b><code>NAME-VERSION</code></b>)). Use this
+option if you really want rebuild/reinstall the package. Usefull if you want to optimize your system.</ul>
+<b><code>-s, --syncdeps</code></b><ul>this option will tell <b><code>dsrc</code></b> to install missing dependencies with <b><code>dupdate</code></b>. Usefull if you
+want to install a package that is not available in a precompiled from. More informations
+about <b><code>dupdate</code></b> can be found <a href="updating.html">here</a>.</ul>
+<b><code>-S, --search</code></b><ul>use this option if you want for to search for a package in the builds database, but you
+dont know the exactly name of the package (it will search for packages containing <b><code>*argument*</code></b>)</ul>
+<b><code>-u, --update</code></b><ul>if you want to build/install a package and you want the latest version you should use
+this option. It will get the latest build file from <b><code>$RSYNCMIRROR</code></b> (defined in <b><code>/etc/dpack/build</code></b>).
+</ul><b><code>-w, --write</code></b><ul>nomally <b><code>dsrc</code></b> will save the package (if used together with the <b><code>-k</code></b> option) in
+<b><code>$PACKAGESDIR/$TREE/group/name/package</code></b>, if you want to save the package to another directory
+the use this option.</ul>
+<b><code>-v, --verbose</code></b><ul>this tells <b><code>dsrc</code></b> to be more verbose. More information about this option can be found <a href="verbose.html">here</a>.</ul>
+<b><code>-H, --howto</code></b><ul>you can allways read this entire page in a text version if you provide this option.</ul>
+The arguments are:<br>
+<b><code>&lt;package&gt;</code></b><ul>this should be pretty self explanatory (just in case its only the name of the package)<<br></ul>
+<b><code>&lt;group&gt;</code></b><ul>this is the name of a group. At the moment of the writing following groups are available:<br>
+base, chat, devel, doc-tools, editor, games, gnome, gnome-extra, graphics, kde, kde-extra,
+kde-i8n, kernels, libs, mail, multimedia, network, office, perl-modules, printing, security,
+system, web, x11, xfce and xfce-extra. If you provide a group as an argument <b><code>dsrc</code></b> will
+build the entire group and use the options described on this page.</ul>
+<b><code>&lt;sync&gt;</code></b><ul>if there are changes in the builds database (new builds are added or security updates) the you can
+use this option argument to sync the builds database. If will use <b><code>rsync</code></b> to fetch the latest build files.</ul>
+<b><code>&lt;world&gt;</code></b><ul>now this option will really let your rebuild the world as you want.Let say
+you want to uptimize your system, or you want builds to use specific configurations (provided
+in <b><code>/etc/dpack/build</code></b> as <b><code>USE</code></b> variables), the you should really use this option. It will use the options
+described here for each package it builds/rebuilds.</ul>
+Some important locations (defaults):<br>
+<b><code>/usr/src/packages/release/</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - the package database builds<br>
+<b><code>/usr/src/packages/realase/name/</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - the directory containing the build and verify files<br>
+<b><code>/usr/src/packages/release/name/files/</code></b> &nbsp;&nbsp; - the directory where patches, initscripts and configuration files<br>
+<b><code>/usr/src/packages/release/name/package/</code></b> - the directory where the package is saved<br>
+<b><code>/usr/src/packages/release/name/SRC/</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - the unpacked (compiled) sources<br>
+<b><code>/usr/src/packages/release/name/PKG/</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - the unpacked package contents<br>
+<b><code>/var/cache/dsrc/</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - here are the sources<br>
+<br>And now some examples:<br><br>
+Build and install irssi (normal mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dsrc irssi<br>
+[+] building irssi...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package irssi-0.8.5_rc5-i686-1.tbz2...[OK]<br>
+[+] installing irssi...[OK]<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Build and install clamav and print missing dependencies (normal mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]$ dsrc clamav<br>
+[+] building clamav...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[FAILED]<br>
+[ERROR]: missing dependencies:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;curl<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Build and install clamav, also build/install dependencies (normal mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]$ dsrc -b clamav<br>
+[+] building clamav...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[BUILDING]<br>
+==&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; building <b>clamav</b> dependencies &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;==<br>
+[+] building curl<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package curl-7.13.0-i686-1.tbz2...[OK]<br>
+[+] installing curl...[OK]<br>
+==&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; continue <b>clamav</b> build &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;==<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package clamav-0.83-i686-1.tbz2...[OK]<br>
+[+] installing clamav...[OK]<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Building libcroco (printing already installed message), and rebuilding it with the following:<br>
+options: <b><code>-k</code></b>, <b><code>-i</code></b>, <b><code>-w /packages</code></b> (this options
+will only build libcroco, dont install it and save the package in <b><code>/packages</code></b>):
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dsrc -ki -w /packages libcroco<br>
+package libcroco already installed (use --rebuild).<br>
+[root@localhost:~]# dsrc --rebuild -ki -w /packages libcroco<br>
+[+] building libcroco...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package libcroco-0.6.0-i686-1.tbz2...[OK]<br>
+[root@localhost:~]# ls -la /packages<br>
+total 240<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:15 .<br>
+drwxr-xr-x &nbsp;&nbsp; 21 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:15 ..<br>
+-rw-r--r-- &nbsp;&nbsp;&nbsp; 1 &nbsp; root &nbsp; root &nbsp; 229610 2005-04-04 09:15 libcroco-0.6.0-i686-1.tbz2<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Building whois and then rebuilding it with <b><code>-c</code></b> (normal mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dsrc -ki whois<br>
+[+] building whois...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package whois-4.6.26-i686-1.tbz2...[OK]<br>
+[root@localhost:~]# ls -la /usr/src/packages/network/whois<br>
+total 20<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:25 .<br>
+drwxr-xr-x &nbsp;&nbsp; 21 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-03-29 02:59 ..<br>
+-rw-r--r-- &nbsp;&nbsp;&nbsp; 1 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp;&nbsp; 418 2005-03-29 02:59 build<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:25 package<br>
+-rw-r--r-- &nbsp;&nbsp;&nbsp; 1 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 58 2005-03-29 02:59 verify<br>
+[root@localhost:~]# ls -la /usr/src/packages/network/whois/package<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:25 .<br>
+drwxr-xr-x &nbsp;&nbsp; 21 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-03-29 09:25 ..<br>
+-rw-r--r-- &nbsp;&nbsp;&nbsp; 1 &nbsp; root &nbsp; root &nbsp;&nbsp; 23950 2005-04-04 09:25 whois-4.6.26-i686-1.tbz2<br>
+[root@localhost:~]# dsrc -kic whois<br>
+[+] building whois...<br>
+[WARNING]: package already built.<br>
+[root@localhost:~]# dsrc -kicf whois<br>
+[+] building whois...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package whois-4.6.26-i686-1.tbz2...[OK]<br>
+[root@localhots:~]# ls -la /usr/src/packages/release/network/whois<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:25 .<br>
+drwxr-xr-x &nbsp;&nbsp; 21 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-03-29 02:59 ..<br>
+-rw-r--r-- &nbsp;&nbsp;&nbsp; 1 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp;&nbsp; 418 2005-03-29 02:59 build<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:25 package<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:25 PKG<br>
+drwxr-xr-x &nbsp;&nbsp;&nbsp; 2 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp; 4096 2005-04-04 09:25 SRC<br>
+-rw-r--r-- &nbsp;&nbsp;&nbsp; 1 &nbsp; root &nbsp; root &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 58 2005-03-29 02:59 verify<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Getting information for latest available gcc package (NOTE: it will also print<br>
+available version, but until now <b><code>dsrc</code></b> can only build latest version):
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dsrc --info gcc<br>
+LATEST &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : gcc-3.3.5-i686-1<br>
+INSTALLED &nbsp;&nbsp;&nbsp; : gcc-3.3.4-i686-1<br>
+LICENSE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : GPLv2<br>
+HOMEPAGE &nbsp;&nbsp;&nbsp;&nbsp; : http://gcc.gnu.org/<br>
+DESCRIPTION &nbsp; : The GNU Compiler Collection (GCC).<br>
+DOWNLOAD &nbsp;&nbsp;&nbsp;&nbsp; : http://ftp.gnu.org/gnu/gcc/gcc-3.3.5/gcc-3.3.5.tar.bz2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://www.research.ibm.com/trl/projects/security/ssp/gcc3_3_2/protector-3.3.2-3.tar.gz<br>
+SIZE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : gcc-3.3.5.tar.bz2 - 23M<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp protector-3.3.2-3.tar.gz - 28K<br>
+BUILD TIME &nbsp;&nbsp; : <br>
+DEPENDENCIES &nbsp;: &gt;=zlib-1.1.4 &gt;texinfo-4.2<br><br>
+VERSIONS &nbsp;&nbsp;&nbsp;&nbsp; : 3.3.3-1 3.3.4-1<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Search for <b>ftp</b> related packages:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dsrc --search ftp<br>
+lftp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Complex ftp client.<br>
+ncftp &nbsp;&nbsp;&nbsp;&nbsp; - A set of free tools implementing FTP.<br>
+gftp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - A GTK+ FTP client.<br>
+proftpd &nbsp;&nbsp; - A performant and multifunctional FTP server.<br>
+vsftpd &nbsp;&nbsp;&nbsp; - A Very Secure (VS) FTP server.<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Syncing the package builds database (normal mode):<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dsrc sync<br>
+[+] syncing the builds database...[DONE]<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+And now some verbose enabled examples (only in text mode):<br>
+<a href="exmaples/whois">whois</a> - a verbose enabled whois build<br>
+<a href="examples/ed">ed-optimized</a> - a verbose and optimized ed build<br>
+<a href="examples/ed">ed-nossp</a> - a verbose and optimized ed build (with no SSP)<br>
+<a href="examples/xfce-extra">xfce-extra</a> - normal mode xfce-extra (group) build<br>
+
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="building.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="verbose.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Building packages</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Verbose or not</td></tr></table>
+</body>
+</html>

@@ -1,0 +1,29 @@
+NAME=nas
+VERSION=1.7
+ARCH=i686
+RELEASE=1
+URL="http://nas.codebrilliance.com/"
+DESC="A network-transparent, client/server audio transport system."
+GROUP=multimedia
+LICENSE="MIT"
+SIZE="1258K"
+
+SOURCES="http://nas.codebrilliance.com/nas/nas-1.7.src.tar.gz"
+
+RUNTIME="xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  xmkmf
+  make Makefiles
+  make includes
+  make depend
+  make
+  make DESTDIR=$PKG install install.man  
+
+  mv $PKG/etc/nas/nasd.conf.eg $PKG/etc/nas/nasd.conf
+
+  install_docs BUGS BUILDNOTES FAQ HISTORY README* \
+    RELEASE TODO
+}

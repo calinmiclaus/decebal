@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# ip-down script. is run after a ppp connection is closed.
+#
+# restores /etc/resolv.conf. see /etc/ppp/ip-up
+#
+# bugs and comments to <trog@decebal.org> please
+# Calin Miclaus
+#
+
+if [ -a /etc/resolv.conf.backup ];
+then
+  mv -f /etc/resolv.conf.backup /etc/resolv.conf
+fi
+
+#if you have a firewall then you cand stop the firewall here
+#
+#if [ -x /etc/rc.d/firewall ]; then
+#  /etc/rc.d/firewall stop
+#fi

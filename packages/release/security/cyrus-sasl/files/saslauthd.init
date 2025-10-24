@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/saslauthd - control file for the SASL authentification daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/saslauthd
+
+pidfile=""
+
+case "$1" in
+  start)
+    msg "Starting the SASL authentification daemon"
+    start_service /usr/sbin/saslauthd $SASLAUTHD_OPTS
+    ;;
+  stop)
+    msg "Stopping the SASL authentification daemon"
+    stop_service /usr/sbin/saslauthd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/saslauthd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

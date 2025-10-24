@@ -1,0 +1,115 @@
+===============================================================================
+		GNU Parted FAQ
+===============================================================================
+
+      Copyright (C) 2001 Free Software Foundation, Inc.
+
+      Permission is granted to copy, distribute and/or modify this document
+      under the terms of the GNU Free Documentation License, Version 1.1
+      or any later version published by the Free Software Foundation;
+      with the no Invariant Sections, with the no Front-Cover Texts, and
+      with no Back-Cover Texts.  A copy of the license is included in the
+      file, COPYING.DOC.
+
+
+Tradução pelo Bernardo João Torres da Silveira <bernardojts@ig.com.br>
+
+CONTEÚDO
+--------
+
+1. Quando se redimensiona ele sempre faz isso sem danos?
+2. O que acontece quando você tenta diminuir muito uma partição?
+3. Como eu devo usar o Parted para diminuir o Windows e instalar o GNU/Linux?
+4. Existe alguma maneira de fazer uma busca na lista de emails (bug-parted)?
+
+
+RESPOSTAS
+-------
+
+
+1. Quando se redimensiona ele sempre faz isso sem danos? 
+----------------------------------------------------------
+Sim.
+
+
+2. O que acontece quando você tenta diminuir muito uma partição?
+----------------------------------------------------------
+O redimensionador do Parted e o código da partição usa restrições.
+Isto é, o redimensionador de sistemas de arquivos diz que você pode
+fazer (seguramente), e do mesmo modo o código da partição.
+
+A ação só vai prosseguir se todas as restrições forem satisfeitas.
+Contudo, o Parted tenta achar a solução mais próxima que satisfaz
+todas as restrições.
+
+Vamos dizer que você tenha uma partição que tem 20Gb de espaço
+usado nela, e você tenta diminuí-la para 100Mb, o Parted vai tentar
+satisfazer a restrição (que o sistemas de aquivo tem que ser capaz
+de ter todos os 20Gb de dados para achar a solução mais próxima. Esta
+"solução mais próxima" irá muito longe - ao invés de restringir para
+100Mb, ela vai diminuir para 20Gb.
+
+O Parted silenciosamente usa a solução mais próxima. A solução sempre
+deve existir, porque a partição existe! Então a solução mais próxima
+deve ser o que você já tem!!!
+
+3. Como eu devo usar o Parted para diminuir o Windows e instalar o GNU/Linux?
+--------------------------------------------------------------------
+Com o Parted, é possível redimensionar a sua partição Windows para
+criar espaço para instalar o GNU/Linux. Esse processo não deve resultar
+em nenhum dano para o Windows, apesar de nós não garantirmos nada ;-)
+Note que isso só será possível se a sua partição Windows é FAT16 ou
+FAT32. Se o Parted não puder alcançar o objetivo que ele quer, então
+ele irá lhe dizer, melhor do que prejudicar seus dados (de novo,
+nenhuma garantia).
+
+O método mais fácil é usar o disco de boot do Parted
+
+ (1) Cria e faça o boot com o disco de boot do Parted. (veja a seção
+1.5 da documentação para instruções)
+
+ (2) inicie o parted:
+
+	# parted
+
+  O Parted vai mostrar a seguinte mensagem:
+
+  Parted will display this message:
+ 
+Warning: The operating system thinks the geometry on /dev/hdb is 2586/240/63.
+Therefore, cylinder 1024 ends at 7559.999M.  You should check that this matches
+the BIOS geometry before using this program.
+
+  Você pode ignorar isso, depois siga o passo 3.
+
+ (3) dê uma olhada na tabela de partições
+
+	(parted) print
+	Disk geometry for /dev/hdb: 0.000-19092.937 megabytes
+	Disk label type: msdos
+	Minor    Start       End     Type      Filesystem  Flags
+	1          0.031  19091.953  primary   FAT         lba
+
+  Isto indica que há uma única partição FAT de 19 gigabytes.
+
+  O "lba" indica que o Windows está usando o modo LBA (linear). Se
+  você não vê isso, então as coisas ficam muito mais complicadas, e
+  você deve toda a documentação do Parted. Se você proceder, você pode
+  danificar algum dado sem aviso. (O aviso no início era para checar
+  se a geometria na sua BIOS era igual à do Parted)
+  
+ (4) redimensione a partição para o tamanho que você quer (neste
+  exemplo, 10Gb)
+
+ 	(parted) resize 1 0 10000
+
+ (5) saia do parted:
+
+ 	(parted) quit
+
+ (6) é isso! você pode reiniciar o seu computador e começar a instalar o GNU/Linux.
+
+4. Existe alguma maneira de fazer uma busca na lista de emails (bug-parted)?
+------------------------------------------------------------
+Os sites de busca já pesquisam dentro da bug-parted, então você pode fazer isso dentro delas ("procura por bug-parted e qualquer outra palavra-chave").
+

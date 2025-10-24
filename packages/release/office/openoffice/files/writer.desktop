@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=0.92
+Encoding=UTF-8
+Name=OpenOffice.org Writer
+MultipleArgs=false
+Terminal=false
+Icon=/opt/OpenOffice.org1.1.4/share/icons/ooo_writer.png
+Exec=/opt/OpenOffice.org1.1.4/program/swriter
+Type=Application
+Categories=Application;Office;

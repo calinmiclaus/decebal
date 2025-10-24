@@ -1,0 +1,62 @@
+#
+# /etc/dpack/build - configuration file for dsrc
+#
+
+# You can have more than one package trees (lets say you have
+# the package builds for the current release, and builds downloaded
+# for another rsync server).
+TREE=release
+
+# Directory where the package build files are kept (dont touch this
+# unless you know what you are doing!!!).
+PACKAGEDIR=/usr/src/packages/$TREE
+
+# In case something doesnt work as we expect it to do, dsrc will print
+# an error message containing the last lines from the compilation log,
+# this variable defines how many lines you want dsrc to print (use 0
+# to show all log).
+ERRORLINES=50
+
+# Do you want to strip libraries and binaries (set this to no if you
+# want to debug programs created with dsrc).
+STRIPBINARIES=yes
+STRIPLIBRARIES=yes
+
+# If you plan to create your own package builds, and you dont want to
+# include PACKAGER=... in each build the set MAINTAINER here.
+MAINTAINER="Calin Bogdan Miclaus <trog@decebal.org>"
+
+# If you set this to \"yes\" then all packages will be built
+# with -fstack-protector and -fstack-protector-all activated (in the
+# near future PIE will also be activated).
+HARDENED="yes"
+
+# If you build more then one package at a time (passed as arguments to
+# dsrc) then normally dsrc will exit if one package doesnt build
+# successfully. Set this to yes if you want dsrc continue building
+# even if one of the packages didnt build.
+CONTINUE=yes
+
+# This is the rsync server that dsrc will use to update package builds.
+RSYNCMIRROR="people.decebal.org"
+
+# This the URL containing the sources for building packages. You can
+# use this instead of the original locations.
+#SOURCESMIRROR="http://sources.decebal.org"
+#SOURCESMIRROR="ftp://sources.decebal.org" 
+
+# Enviroment variables and compiler optimizations.
+CC=gcc
+CXX=g++
+CARCH="i686"
+CHOST="i686-pc-linux-gnu"
+CFLAGS="-march=i686 -mtune=pentium4 -O2 -pipe"
+CXXFLAGS="-march=i686 -mtune=pentium4 -O2 -pipe"
+LDFLAGS=""
+CPPFLAGS=""
+MAKEFLAGS=""
+
+# Global USE flags (will be used for all built packages that support it).
+# nls - will disable nls (Native Language Support)
+# x   - will enable Xorg (X11) (--with-x)
+GLOBALUSE="nls ipv6"

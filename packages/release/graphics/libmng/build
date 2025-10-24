@@ -1,0 +1,27 @@
+NAME=libmng
+VERSION=1.0.8
+ARCH=i686
+RELEASE=1
+URL="http://gjuyn.xs4all.nl/libmng/download.html"
+DESC="A library for MNG files."
+GROUP=graphics
+LICENSE=BSDL
+SIZE="497K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libmng/libmng-$VERSION.tar.gz"
+
+RUNTIME=">=zlib-1.1.4 libjpeg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  cp libmng_types.h libmng_types.h.orig
+  
+  export OPTIMIZE="$CFLAGS"
+
+  sh autogen.sh --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES LICENSE README*
+}

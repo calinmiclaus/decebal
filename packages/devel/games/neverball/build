@@ -1,0 +1,35 @@
+NAME=neverball
+VERSION=1.4.0
+ARCH=i686
+RELEASE=1
+URL="http://icculus.org/neverball/"
+DESC="Tilt the floor to roll a  ball through an obstacle course within the given time."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="11049K"
+
+SOURCES="http://0day.icculus.org/neverball/neverball-1.4.0.tar.gz
+         neverball.desktop neverputt.desktop"
+
+RUNTIME="sdl_mixer sdl_image sdl_ttf libsdl libvorbis libogg smpeg libmikmod"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i -e '/CONFIG_DATA/s:"\./data":"'/usr/games/share/neverball'":g' share/config.h
+  sed -i "s:^CFLAGS= \-Wall \-O3:CFLAGS= \-Wall $CFLAGS:" Makefile
+  
+  mkdir -p $PKG/usr/games/{bin,share/{neverball,icons/neverball}}
+  
+  make
+  
+  install -m 0755 {neverball,neverputt} $PKG/usr/games/bin
+  
+  cp -r icon/* $PKG/usr/games/share/icons/neverball
+  cp -r data/* $PKG/usr/games/share/neverball
+  
+  install -D -m 0644 ../neverball.desktop $PKG/usr/share/applications/neverball.desktop
+  install -D -m 0644 ../neverputt.desktop $PKG/usr/share/applications/neverputt.desktop
+  
+  install_docs CHANGES COPYING README
+}

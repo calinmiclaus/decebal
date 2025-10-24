@@ -1,0 +1,39 @@
+NAME=libgnome
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Essential libraries for the Gnome Desktop."
+GROUP=gnome
+LICENSE="LGPLv2"
+SIZE="850K"
+HUSE="gtkdoc static debug"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/libgnome-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=gconf-2.8.0 >=gnome-vfs-2.8.0 >=esound-0.2.34 >=gnome-common-2.4.0-5"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  export GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+      
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --disable-schemas-install $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  unset GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL
+
+  install_docs AUTHORS COPYING.LIB ChangeLog INSTALL NEWS README
+}

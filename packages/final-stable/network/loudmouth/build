@@ -1,0 +1,31 @@
+NAME=loudmouth
+VERSION=0.17
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="A lightweight and easy-to-use C library for programming with the Jabber protocol."
+GROUP=network
+LICENSE=LGPLv2.1
+SIZE="276K"
+HUSE="gtkdoc"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/loudmouth/0.17/loudmouth-0.17.tar.bz2"
+
+RUNTIME=">=gtk2-2.0 >=gnutls-1.0.0"
+
+use gtkdoc && BUILDTIME="gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gtkdoc && OPTS="--enable-gtk-doc"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+
+

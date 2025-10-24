@@ -1,0 +1,30 @@
+NAME=mtr
+VERSION=0.69
+ARCH=i686
+RELEASE=1
+DESC="A single network diagnostic tool that combines traceroute and ping."
+URL="http://www.bitwizard.nl/mtr/"
+GROUP=network
+LICENSE="GPLv2"
+SIZE="178K"
+HUSE="gtk ipv6"
+
+SOURCES="ftp://ftp.bitwizard.nl/mtr/mtr-0.69.tar.gz"
+
+RUNTIME=">=ncurses-5.3"
+
+use gtk && RUNTIME="$RUNTIME gtk" || RUNTIME="$RUNTIME >=gtk2-2.0.0"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+
+  use gtk || OPTS="$OPTS --enable-gtk2"
+  use ipv6 || OPTS="$OPTS --disable-ipv6"
+
+  ./configure --prefix=/usr $OPTS              
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog FORMATS INSTALL NEWS README \
+    SECURITY TODO
+}

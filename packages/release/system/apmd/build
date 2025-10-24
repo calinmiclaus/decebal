@@ -1,0 +1,55 @@
+NAME=apmd
+VERSION=3.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.worldvisions.ca/~apenwarr/apmd/"
+DESC="Set of tools for managing notebook power consumption."
+GROUP=system
+LICENSE=GPLv2
+SIZE="71K"
+HUSE="x"
+
+SOURCES="http://ftp.debian.org/debian/pool/main/a/apmd/apmd_3.2.2-3.diff.gz
+         http://ftp.debian.org/debian/pool/main/a/apmd/apmd_3.2.2.orig.tar.gz
+	 apmd_3.2.2_no_X.diff.gz
+	 apmd.init apmd.sysconf alsa.event usb.event pcmcia.event"
+
+
+BACKUPS="etc/conf.d/apmd"
+
+use x && RUNTIME="$RUNTIME xorg"
+
+build() {
+  cd $SRC/$NAME-${VERSION}.orig
+  
+  patch -p1 < ../apmd_3.2.2-3.diff
+  use x || {
+    sed -e 's:\(EXES=.*\)xapm:\1:' \
+      -e 's:\(.*\)\$(LT_INSTALL).*xapm.*$:\1echo:' \
+      -i Makefile						  
+  }
+  
+  # activate our cflags here
+  sed -i "s:XTRACFLAGS=-Wall -pipe:XTRACFLAGS=-Wall:" Makefile
+  sed -i "s:CFLAGS=-O -g:CFLAGS=-g $CFLAGS:" Makefile
+  sed -i "s:\-I/usr/src/linux/include::" Makefile
+  
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 debian/apmd_proxy $PKG/etc/apm/apmd_proxy
+  install -m 0644 debian/apmd_proxy.conf $PKG/etc/apm/apmd_proxy.conf
+  
+  chmod 755 $PKG/usr/lib/libapm.so.1.0.0
+  
+  install -D -m 0700 ../apmd.init $PKG/etc/rc.d/apmd
+  install -D -m 0644 ../apmd.sysconf $PKG/etc/conf.d/apmd
+  install -D -m 0755 ../alsa.event $PKG/etc/apm/event.d/alsa
+  install -m 0755 ../usb.event $PKG/etc/apm/event.d/usb
+  install -m 0755 ../pcmcia.event $PKG/etc/apm/event.d/pcmcia
+  
+  mkdir -p $PKG/etc/apm/{suspend.d,resume.d,other.d,scripts.d}
+  
+  install_docs AUTHORS COPYING ChangeLog LSM README \
+    apmlib.COPYING apmsleep.README
+}

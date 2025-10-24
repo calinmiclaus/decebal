@@ -1,0 +1,16 @@
+#!/bin/bash
+
+pkg_owns() {
+  local PACKAGE=""
+  local STRING="${1#/*}"
+  local SEARCH=$(grep -H =\"$STRING\" ${PKG_ROOT}${DATABASEDIR}/db/* 2>/dev/null)
+  
+  if [ -n "$SEARCH" ]
+  then
+    PACKAGE=$(echo $SEARCH | cut -f 1 -d ':')
+    PACKAGE=${PACKAGE##*/}
+    echo "$1 is owned by $PACKAGE"
+  else
+    echo "$1 is not owned by any packages."
+  fi
+}

@@ -1,0 +1,31 @@
+NAME=raptor
+VERSION=1.2.0
+ARCH=i686
+RELEASE=1
+URL="http://raptorv2.sourceforge.net/"
+DESC="Clone of Raptor, with improved land size."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="6027K"
+
+SOURCES="http://games.linux.sk/files/raptor-1.2.0.tar.gz
+         raptor"
+
+RUNTIME="allegro dumb" 
+ 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr/games
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 $PKG/usr/games/bin/raptor $PKG/usr/games/share/raptor/raptor
+  
+  cp -r data $PKG/usr/games/share/raptor/
+  
+  install -m 0755 ../raptor $PKG/usr/games/bin/raptor 
+   
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

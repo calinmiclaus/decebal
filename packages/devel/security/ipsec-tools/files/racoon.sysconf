@@ -1,0 +1,12 @@
+#
+# /etc/conf.d/racoon - configuration file for /etc/rc.d/racoon
+#
+
+# Additional racoon options.
+RACOON_OPTS="-v"
+
+# Additional flags uset when inserting SPD rules.
+SETKEY_OPTS=""
+
+# Flags to flush SPD on racoon exit.
+SETKEY_FLUSH_OPTS="-FP"

@@ -1,0 +1,31 @@
+NAME=libzvt
+VERSION=2.0.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Where can i find information about this package?"
+GROUP=gnome-extra
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="245K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/libzvt/2.0/libzvt-2.0.1.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=glib2-1.3.11 >=gtk2-1.3.11 >=libart_lgpl-2.3.5"
+				
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --libexecdir=/opt/gnome/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README
+}

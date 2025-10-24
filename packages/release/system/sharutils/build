@@ -1,0 +1,24 @@
+NAME=sharutils
+VERSION=4.5.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/sharutils/"
+DESC="GNU shar makes so-called shell archives out of many files."
+GROUP=system
+LICENSE=GPLv2
+SIZE="622K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/sharutils/REL-4.5.1/$NAME-$VERSION.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --disable-nls
+  make
+  make prefix=$PKG/usr install
+  make prefix=$PKG/usr install-man
+  
+  install_docs ABOUT-NLS AUTHORS BACKLOG COPYING ChangeLog* INSTALL NEWS \
+    README* THANKS TODO
+}

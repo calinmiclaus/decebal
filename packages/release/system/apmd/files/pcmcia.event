@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# /etc/apm/event.d/pcmcia
+#
+
+case "$1" in
+  suspend)
+    /sbin/cardctl eject 2>/dev/null
+    ;;
+  resume)
+    /sbin/cardctl insert 2>/dev/null
+    ;;
+esac
+

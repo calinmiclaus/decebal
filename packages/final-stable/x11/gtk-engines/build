@@ -1,0 +1,27 @@
+NAME=gtk-engines
+VERSION=2.6.2
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Three sample theme engines for GTK+."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="433K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/sources/gtk-engines/2.6/gtk-engines-2.6.2.tar.bz2"
+
+RUNTIME=">=gtk2-2.4.7"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="$OPTS --enable-static"
+    
+  ./configure --prefix=/usr \
+              --libexecdir=/usr/lib/gtk-engines $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README*
+}

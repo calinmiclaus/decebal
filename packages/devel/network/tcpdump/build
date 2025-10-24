@@ -1,0 +1,31 @@
+NAME=tcpdump
+VERSION=3.8.3
+ARCH=i686
+RELEASE=1
+URL="http://www.tcpdump.org/"
+DESC="A performant packet logger/sniffer."
+GROUP=network
+LICENSE=BSD
+SIZE="553K"
+HUSE="ipv6 smb"
+
+SOURCES="http://www.tcpdump.org/release/tcpdump-3.8.3.tar.gz"
+
+RUNTIME="libpcap"
+
+use smb && RUNTIME="$RUNTIME samba"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+  use smb && OPTS="$OPTS --enable-smb" || OPTS="$OPTS --disable-smb"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES CREDITS FILES INSTALL LICENSE PLATFORMS \
+    README Readme.Win32 TODO VERSION
+}

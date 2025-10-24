@@ -1,0 +1,12 @@
+#
+# /etc/conf.d/acpid - configuration file for /etc/rc.d/acpid
+#
+
+# Optional acpid arguments.
+ACPID_OPTS=""
+
+# Modules that /etc/init.d/acpid should not load.
+DONT_LOAD="toshiba_acpi asus_acpi ibm_acpi"
+
+# Modules that /etc/init.d/acpid should not unload.
+DONT_UNLOAD=""

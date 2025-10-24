@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Powermanga
+GenericName=Arcade Game
+Comment=Arcade 2D shoot-em-up game
+Icon=powermanga.png
+FilePattern=powermanga
+TryExec=powermanga
+Exec=powermanga
+Categories=Application;Game;ArcadeGame;

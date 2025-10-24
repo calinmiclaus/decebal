@@ -1,0 +1,11 @@
+#!/bin/sh
+# 
+# /etc/cron/daily/logrotate - rotate logs every day
+#
+
+/usr/sbin/logrotate /etc/logrotate.conf
+
+if [ $? -ne 0 ]
+then
+  /usr/bin/logger -t logrotate "exited abnormally with exit value $?"
+fi

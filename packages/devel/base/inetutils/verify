@@ -1,0 +1,7 @@
+md5: df0909a586ddac2b7a0d62795eea4206 inetutils-1.4.2.tar.gz
+md5: 95d72f73086fcdad4beca893855006e2 inetutils-1.4.2-no_server_man_pages-1.patch
+md5: f49e7524500a06172b76a416eee31990 inetutils-1.4.2-telnetd-1.patch
+md5: 854faa127eb970b7c634655cddac64b8 inetutils-1.4.2-ping-1.patch
+md5: 882abb07a77ab3763651afe1b8642f4f inetutils-1.4.2-typos-1.patch
+md5: 47af667dfe736d8e472215bb058c4674 inetutils-1.4.2-talk-1.patch
+md5: 025b73c48b82126041f8a13f78ad2083 inetutils-1.4.2-telnet-1.patch

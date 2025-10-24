@@ -1,0 +1,30 @@
+NAME=libmad
+VERSION=0.15.1b
+ARCH=i686
+RELEASE=1
+URL="http://sourceforge.net/projects/mad/"
+DESC="A high-quality MPEG audio decoder."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="491K"
+HUSE="static debug profile"
+
+SOURCES="ftp://ftp.mars.org/pub/mpeg/libmad-0.15.1b.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static || OPTS="--disable-static" 
+  use profile && OPTS="$OPTS --enable-profiling"
+  use debug && OPTS="$OPTS --enable-debugging"
+
+  ./configure --prefix=/usr \
+              --enable-speed \
+	      --enable-sso $OPTS
+	      
+  make
+  make DESTDIR=$PKG install
+
+  install_docs CHANGES COPYING COPYRIGHT CREDITS INSTALL README \
+    TODO VERSION
+}

@@ -1,0 +1,37 @@
+NAME=gksu
+VERSION=1.2.4
+ARCH=i686
+RELEASE=1
+URL="http://www.nongnu.org/gksu/index.html"
+DESC="A GTK frontend for su."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="531K"
+HUSE="static nls gtkdoc"
+
+SOURCES="http://people.debian.org/~kov/gksu/gksu1.2/gksu-1.2.4.tar.gz"
+
+RUNTIME="libgksu libgksuui xorg"
+
+use nls BUIDLTIME="gettext"
+use gtkdoc BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i -e 's|/usr/share/pixmaps/||g' -e 's|/usr/bin/x-terminal-emulator|gnome-terminal|g' *.desktop
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use nls || OPTS="$OPTS --disable-nls"
+  use gtkdoc || OPTS="$OPTS --disable-gtk-doc"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+    
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

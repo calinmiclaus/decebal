@@ -1,0 +1,32 @@
+NAME=iproute2
+VERSION=2.6.11_050330
+ARCH=i686
+RELEASE=1
+URL="http://developer.osdl.org/dev/iproute2/"
+DESC="Utilisties for configuring network interfaces."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="338K"
+
+SOURCES="http://developer.osdl.org/dev/iproute2/download/iproute2-2.6.11-050330.tar.gz
+         iproute2-makefile.diff"
+
+BUILDTIME="kernel-headers"
+
+RUNTIME=">=db-4.2.52"
+
+build () { 
+  cd $SRC/$NAME-2.6.11-050330
+  
+  patch -p1 < ../iproute2-makefile.diff
+    
+  ./configure
+  make
+  make DESTDIR=$PKG install
+  
+  ( cd $PKG/usr/share/man/man8 
+    rm -f tc-bfifo.8 && ln -s tc-pbfifo.8.gz tc-bfifo.8
+    rm -f tc-pfifo.8 && ln -s tc-pbfifo.8.gz tc-pfifo.8 )
+  
+  install_docs COPYING README* RELNOTES
+}

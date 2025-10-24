@@ -1,0 +1,36 @@
+#
+# /etc/at.deny - this files contains the users that are not allowed 
+#                to use atrun (man at_deny) 
+#               
+
+bin
+daemon
+adm
+lp
+sync
+shutdown
+halt
+mail 
+news
+man
+nobody
+operator
+games
+ftp
+lp
+irc
+www
+apache
+named
+mysql
+postgresql
+postfix
+proftpd
+vsftpd
+stunnel
+squid
+popa3d
+sshd
+oindentd
+slapd
+snmp

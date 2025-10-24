@@ -1,0 +1,46 @@
+NAME=openbox
+VERSION=3.2
+ARCH=i686
+RELEASE=1
+URL="http://openbox.org"
+DESC="A lightweight and highly-configurable window manager with pwm-like tabs."
+GROUP="x11"
+LICENSE=BSDL
+SIZE="562K"
+HUSE="static nls"
+
+SOURCES="http://openbox.org/releases/openbox-3.2.tar.gz
+         xinitrc.openbox openbox.sh"
+
+BUILDTIME="pkgconfig"
+
+use nls && BUILDTIME="$BUILDTIME gettext"
+
+RUNTIME=">=xorg-6.7 >=startup-notification-0.7 glib2"
+
+use nls && BUILDTIME="$BUILDTIME gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use static || OPTS="$OPTS --disable-static"
+  
+  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/usr/X11R6/lib/pkgconfig"
+  
+  ./configure --prefix=/opt/openbox \
+              --sysconfdir=/etc/opt/openbox \
+	      --localstatedir=/var/opt/openbox \
+	      --mandir=/opt/openbox/share/man \
+	      --enable-session-management \
+	      --with-x \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0755 ../xinitrc.openbox $PKG/etc/X11/xinit/xinitrc.openbox
+  install -D -m 0644 ../openbox.sh $PKG/etc/profile.d/openbox.sh
+  
+  install_docs ABOUT-NLS AUTHORS COMPLIANCE COPYING \
+    README
+}

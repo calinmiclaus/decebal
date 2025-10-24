@@ -1,0 +1,17 @@
+post_install() {
+  /sbin/ldconfig &>/dev/null
+  rm -f /var/cache/gstreamer-0.8/{compreg,registry}.xml
+  /opt/gnome/bin/gst-compprep >/dev/null 2>&1
+  /opt/gnome/bin/gst-register >/dev/null 2>&1
+}
+
+post_upgrade() {
+  /sbin/ldconfig &>/dev/null
+  rm -f /var/cache/gstreamer-0.8/{compreg,registry}.xml
+  /opt/gnome/bin/gst-compprep >/dev/null 2>&1
+  /opt/gnome/bin/gst-register >/dev/null 2>&1
+}
+
+post_remove() {
+  rm -rf /var/cache/gstreamer-0.8
+}

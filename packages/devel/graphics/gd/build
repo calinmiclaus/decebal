@@ -1,0 +1,32 @@
+NAME=gd
+VERSION=2.0.33
+ARCH=i686
+RELEASE=1
+URL="http://www.boutell.com/gd/"
+DESC="A library for creating and reading PNG, JPEG, GIF, and WBMP images."
+GROUP=graphics
+LICENSE=OL
+SIZE="573K"
+HUSE="x static"
+
+SOURCES="http://www.boutell.com/gd/http/gd-2.0.33.tar.gz"
+
+RUNTIME=">=zlib-1.2.1 >=libjpeg-6b freetype2 fontconfig"
+
+use x && RUNTIME="$RUNTIME xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # gd is used by php, and since php is a server package we dont provide
+  # a xorg linked gd package...enable this is you want xpm support in gd
+  use x && OPTS="--with-x" || OPTS="--without-x --without-xpm"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING INSTALL README*
+}

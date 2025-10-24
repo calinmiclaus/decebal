@@ -1,0 +1,16 @@
+post_install() {
+  /usr/sbin/groupadd -g 86 stunnel &>/dev/null
+  /usr/sbin/useradd -g 86 -u 86 -d /var/lib/stunnel -s /bin/false stunnel &>/dev/null
+  /bin/chown stunnel.stunnel /var/lib/stunnel &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 86 stunnel &>/dev/null
+  /usr/sbin/useradd -g 86 -u 86 -d /var/lib/stunnel -s /bin/false stunnel &>/dev/null
+  /bin/chown stunnel.stunnel /var/lib/stunnel &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel stunnel &>/dev/null
+  /usr/sbin/groupdel stunnel &>/dev/null
+}

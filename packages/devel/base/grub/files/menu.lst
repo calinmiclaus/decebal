@@ -1,0 +1,30 @@
+#
+# /boot/grub/menu.lst - GRUB configuration file
+#
+#   BOOT DEVICE NAMEING
+#
+#   /dev/fd0    (fd0)
+#   /dev/hda    (hd0)
+#   /dev/hdb2   (hd1,1)
+#   /dev/hda3   (hd0,2)
+#   /dev/sda4   (hd0,3)
+#
+#   FRAMEBUFFER SETTINGS
+#
+# +-------------------------------------------------+
+#      | 640x480    800x600    1024x768   1280x1024
+#  ----+--------------------------------------------
+#  256 | 0x301=769  0x303=771  0x305=773   0x307=775
+#  32K | 0x310=784  0x313=787  0x316=790   0x319=793
+#  64K | 0x311=785  0x314=788  0x317=791   0x31A=794
+#  16M | 0x312=786  0x315=789  0x318=792   0x31B=795
+# +-------------------------------------------------+
+#
+# For more information see the man pages or use grubconf.
+#
+
+default 0
+timeout 30
+fallback 1
+
+color green/black

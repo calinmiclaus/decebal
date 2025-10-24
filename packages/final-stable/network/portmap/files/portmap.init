@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# /etc/rc.d/portmap - control file for the RPC portmapper (portmap)
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/portmap.pid"
+
+case "$1" in
+    start)
+	msg "Starting the RPC daemon"
+	start_service /usr/sbin/portmap
+	;;
+    stop)
+	msg "Stopping the RPC daemon"
+	stop_service /usr/sbin/portmap
+	;;
+    reload)
+	msg "Reloading the RPC daemon"
+	reload_service /usr/sbin/portmap
+	;;
+    restart|force-reload)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+    status)
+	status_service /usr/sbin/portmap
+	;;
+    *)
+        echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+        exit 1
+        ;;
+esac

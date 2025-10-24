@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# /etc/profile.d/gnome.sh - enviroment and variables for GNOME
+#
+
+GNOME_PREFIX=/opt/gnome
+GNOME_LIBCONFIG_PATH=/usr/lib:$GNOME_PREFIX/lib
+PATH="$PATH:$GNOME_PREFIX/bin:$GNOME_PREFIX/sbin"
+MANPATH="$MANPATH:$GNOME_PREFIX/share/man"
+
+if [ -n "$PKG_CONFIG_PATH" ]
+then
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$GNOME_PREFIX/lib/pkgconfig"
+else
+  PKG_CONFIG_PATH="$GNOME_PREFIX/lib/pkgconfig"
+fi
+
+if [ -n "$LIBGLADE_MODULE_PATH" ]
+then
+  LIBGLADE_MODULE_PATH="$LIBGLADE_MODULE_PATH:$GNOME_PREFIX/lib/libglade/2.0"
+else
+  LIBGLADE_MODULE_PATH="$GNOME_PREFIX/lib/libglade/2.0"
+fi
+
+XDG_DATA_HOME=$HOME/.local/share
+XDG_CONFIG_HOME=$HOME/.config
+XDG_CACHE_HOME=$HOME/.cache
+
+if [ -n "$XDG_DATA_DIRS" ]
+then
+  XDG_DATA_DIRS="$XDG_DATA_DIRS:$GNOME_PREFIX/share"
+else
+  XDG_DATA_DIRS="/usr/share:$GNOME_PREFIX/share"
+fi
+
+if [ -n "$XDG_CONFIG_DIRS" ]
+then
+  XDG_CONFIG_DIRS="$XDG_CONFIG_DIRS:/etc/opt/gnome/xdg"
+else
+  XDG_CONFIG_DIRS="/usr/share:/etc/opt/gnome/xdg"
+fi
+
+export GNOME_PREFIX GNOME_LIBCONFIG_PATH PATH MANPATH PKG_CONFIG_PATH LIBGLADE_MODULE_PATH \
+  XDG_DATA_HOME XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_DIRS XDG_CONFIG_DIRS

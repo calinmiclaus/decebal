@@ -1,0 +1,28 @@
+NAME=iptables
+VERSION=1.3.1
+ARCH=i686
+RELEASE=1
+URL="http://www.netfilter.org"
+DESC="A Linux kernel packet control tool."
+GROUP=base
+LICENSE=GPLv2
+SIZE="153K"
+
+SOURCES="http://www.netfilter.org/files/iptables-1.3.1.tar.bz2
+         iptables-makefile.diff"
+
+BUILDTIME="kernel-headers"
+
+RUNTIME="libc"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../iptables-makefile.diff  
+
+  make PREFX=/usr
+  make PREFIX=$PKG/usr install
+  make PREFIX=$PKG/usr install-devel
+  
+  install_docs COPYING INCOMPATIBILITIES INSTALL
+}

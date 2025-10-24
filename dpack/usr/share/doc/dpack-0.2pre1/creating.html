@@ -1,0 +1,158 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="ssp.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="updating.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Building your own package builds</h1>
+<p>Until now there are about 600 package builds, if you want to contribute or
+you want to write your own package builds then here is the right place to learn about
+this. First thing you need to know is how to install a program from sources (eg:
+<b><code>./configure && make && make install</code></b>), after that thing can
+stand in your way.<br><br>
+Here is a sample build file:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+# Description: Description for example.<br>
+# Homepage: http://some.host.org/<br>
+# Required: >=prog1, >=lib1, prog2 lib2<br>
+# Optional: xxx and yyylib<br>
+# Packager: Your Name Here<br>
+# Release: 3<br><br>
+NAME=example<br>
+VERSION=0.1<br>
+ARCH=i686<br>
+RELEASE=1<br>
+URL="http://some.host.org/"<br>
+DESC="Description for example."<br>
+GROUP=base<br>
+LICENSE="GPLv2 BSDL"<br><br>
+SOURCES="http://some.host.org/example-0.1.tar.bz2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; example.diff"<br><br>
+BACKUPS="etc/example.conf"<br><br>
+BUILDTIME="some-program"<br>
+RUNTIME="=>prog1-1.2 >=lib1-2.4 prog2 lib2"<br><br>
+use xxx && RUNTIME="$RUNTIME xxx"<br>
+use yyy && RUNTIME="$RUNTIME yyylib"<br><br>
+build() {<br>
+&nbsp;&nbsp;cd $SRC/$NAME-$VERSION<br><br>
+&nbsp;&nbsp;patch -p1 < ../example.diff<br><br>
+&nbsp;&nbsp;use xxx && OPTS="--enable-xxx" || OPTS="--disable-xxx"<br>
+&nbsp;&nbsp;use yyy && OPTS="$OPTS --enable-yyy" || OPTS="$OPTS --disable-yyy"<br><br>
+&nbsp;&nbsp;./configure --prefix=/usr \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--sysconfdir=/etc \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--infodir=/usr/share/info \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--mandir=/usr/share/man \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$OPTS<br>
+&nbsp;&nbsp;make<br>
+&nbsp;&nbsp;make DESTDIR=$PKG install<br><br>
+&nbsp;&nbsp;install_docs AUTHORS COPYING INSTALL README TODO<br>}
+</code></font></td></tr></table><br>
+The detailed version:<br><br>
+<b><code>NAME</code></b><ul>is the name of the package, in most cases it will be the name
+of the source archive (eg:<b><code>NAME=example</code></b> and source <b><code>example-0.1.tar.bz2</code></b>).
+The <b><code>NAME</code></b> can contain any LITERA, CIFRA and - or _.<br></ul>
+<b><code>VERSION</code></b><ul>is the version of the package, it cannot contain '-'.<br></ul>
+<b><code>ARCH</code></b><ul>a package can be built for a specific CPU (with optimization flags) so this would be
+the CPU type and it can't contain any '-'. Examples: <b><code>i686</code></b>,
+<b><code>pentium4</code></b>, <b><code>athlonxp</code></b>...<br></ul>
+<b><code>RELEASE</code></b><ul>represents the patch-level of the package, lets say you create
+the first package and after a while you apply a patch and rebuild the package (same <b><code>VERSION</code></b>)
+it will be the second release<br></ul>
+<b><code>URL</code></b><ul>this variable contains the homepage of the package, and it
+should be in this form <b><code>"http://some.host.org/"</code></b></ul>
+<b><code>DESC</code></b><ul>a short description of the package, it should be in this form
+<b><code>"Desccription for the example package."</code></b> and less that 60 characters<br></ul>
+<b><code>GROUP</code></b><ul>the group of this package (at the momment of this writting, following
+groups are available: base, chat, devel, doc-tools, editor, games, gnome, gnome-extra, graphics, kde, kde-extra,
+kde-i8n, kernels, libs, mail, multimedia, network, office, perl-modules, printing, security,
+system, web, x11, xfce and xfce-extra).<br></ul>
+<b><code>LICENSE</code></b><ul>The license of the program, can be:<br>
+&nbsp;&nbsp;&nbsp;<b><code>GPLv1</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - GNU General Public License v1<br>
+&nbsp;&nbsp;&nbsp;<b><code>GPLv2</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - GNU General Public License v2<br>
+&nbsp;&nbsp;&nbsp;<b><code>LGPLv2.1</code></b> &nbsp;&nbsp;&nbsp; - GNU Lesser General Public License v2.1<br>
+&nbsp;&nbsp;&nbsp;<b><code>FDLv1.2</code></b> &nbsp;&nbsp;&nbsp;&nbsp; - GNU Free Documentation License 1.2<br>
+&nbsp;&nbsp;&nbsp;<b><code>BSD</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - BSD License<br>
+&nbsp;&nbsp;&nbsp;<b><code>BSDL</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - BSD Like License<br> 
+&nbsp;&nbsp;&nbsp;<b><code>Apachev2.0</code></b> - Apache License v2.0<br>
+&nbsp;&nbsp;&nbsp;<b><code>Artistic</code></b> &nbsp;&nbsp; - The Artistic License<br><br>
+or any other FREE license.</ul>
+<b><code>SOURCES</code></b><ul>the location where the sources for the package can be found. it can
+contain the <b><code>http</code></b> and <b><code>ftp</code></b>, othe patches are usually found in
+<b><code>$PACKAGESDIR/$TREE/group/package/files/</code></b> and the downloaded sources in <b><code>$CACHEDIR/dsrc/</code></b>.</ul>
+<b><code>BACKUPS</code></b><ul>this variable contains the backup files, usually configuration files, or any
+other file that needs to be kept when upgrading a package, the files should be in this form:
+<b><code>dir1/dir2/.../file</code></b>, without the first <b><code>/</code></b>, this is needed for
+the <b><code>-r, --root</code></b> option to work.<br></ul>
+<b><code>RUNTIME</code></b><ul>contains the package that are needed for the build process of the
+package (only for this purpose) and they can be in this form:<br>
+<ul><b><code>>=pkg-1.0</code></b> - the package <b>pkg</b> must be installed,
+and th installed version must be greather or equal then 1.0<br>
+<b><code><=pkg-1.0</code></b> - the package <b>pkg</b> must be installed, and the installed
+version must be lower or equal then 1.0<br>
+<b><code>=pkg-1.0</code></b> &nbsp;- the package <b>pkg</b> must be installed, and the installed
+version must be equal with 1.0<br>
+<b><code>pkg</code></b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - the package <b>pkg</b> must be installed<br></ul></ul>
+<b><code>RUNTIME</code></b><ul> contains the package dependencies that are need when the
+package is installed (at runtime) and can have the same form as the <b><code>BUILDTIME</code></b>
+variable (NOTE: if a package is needed for both, buildtime and runtime, it should only be
+set as a runtime dependency)<br></ul>
+<b><code>build</code></b><ul>this is a function that will actually, patch the sources (if needed)
+compile and install them.<br></ul>
+What are those <b><code>use</code></b> comands there, they can personalize your package, and should
+be optional, and it works like this: you have a configure option for the package (passed to
+<b><code>./configure</code></b>, something like <b><code>--enable-xxx</code></b>), and a dependency that will be added when you compile
+the package with this option enabled.<br><br>
+Here is a build file for xchat:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+# Description: A GTK+ based IRC client.<br>
+# Homepage: http://www.xchat.org/<br>
+# Required: >=gtk2-2.4.7, >=openssl-0.9.7e, xorg ,perl<br>
+# Optional: python and nls<br>
+# Packager: Teodor Adrian Florin<br>
+# Release: 1<br><br>
+NAME=xchat<br>
+VERSION=2.4.2<br>
+ARCH=i686<br>
+RELEASE=1<br>
+URL="http://www.xchat.org/"<br>
+DESC="A GTK+ based IRC client."<br>
+GROUP=chat<br>
+LICENSE="GPLv2"<br><br>
+SOURCES="http://xchat.sourceforge.net/files/source/2.4/xchat-2.4.2.tar.bz2"<br><br>
+RUNTIME="=>gtk2-2.4.7 >=openssl-0.9.7e xorg perl"<br><br>
+use nls && BUILDTIME="$BUILDTIME nls"<br>
+use python && RUNTIME="$RUNTIME python"<br><br>
+build() {<br>
+&nbsp;&nbsp;cd $SRC/$NAME-$VERSION<br><br>
+&nbsp;&nbsp;use nls && OPTS="--enable-nls" || OPTS="--disable-nls"<br>
+&nbsp;&nbsp;use python && OPTS="$OPTS --enable-python" || OPTS="$OPTS --disable-python"<br>
+&nbsp;&nbsp;use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"<br>
+&nbsp;&nbsp;use socks && OPTS="$OPTS --enable-socks" || OPTS="$OPTS --disable-socks"<br><br>
+&nbsp;&nbsp;./configure --prefix=/usr \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--sysconfdir=/etc/xchat \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--enable-openssl=/usr \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--enable-xft \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--enable-shm \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$OPTS<br>
+&nbsp;&nbsp;make<br>
+&nbsp;&nbsp;make DESTDIR=$PKG install<br><br>
+&nbsp;&nbsp;install_docs AUTHORS COPYING ChangeLog INSTALL* HACKING README<br>}
+</code></font></td></tr></table><br>
+You can find a lot of build files in <b><code>$PACKAGESDIR/$TREE/</code></b> that should
+help you how the build process works and how to write your own build files.
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="ssp.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="updating.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Smash Stack Protector</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Updating packages</td></tr></table>
+</body>
+</html>

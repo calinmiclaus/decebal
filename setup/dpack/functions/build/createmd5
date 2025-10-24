@@ -1,0 +1,15 @@
+#!/bin/bash
+
+pkg_create_md5sum() {
+  msg_nnl "creating verify file..."
+  
+  > $1/verify
+  for FILE in $SOURCES
+  do
+    local LOCALFILE=$(stripurl $FILE)
+    local MD5SUM=$(md5sum "$SRC/$LOCALFILE" | awk '{print $1}')
+    echo "md5: $MD5SUM $LOCALFILE" >> $1/verify
+  done
+  msg_done
+  msg_done_verbose
+}

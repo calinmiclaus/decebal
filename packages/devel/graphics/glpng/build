@@ -1,0 +1,30 @@
+NAME=glpng
+VERSION=1.45
+ARCH=i686
+RELEASE=1
+URL="http://www.wyatt100.freeserve.co.uk/download.htm"
+DESC="A library for loading PNG graphics files and bind them to an OpenGL."
+GROUP=graphics
+LICENSE="BSDL"
+SIZE="302K"
+
+SOURCES="http://www.wyatt100.freeserve.co.uk/glpng.zip
+         http://ftp.debian.org/debian/pool/main/libg/libglpng/libglpng_1.45-3.diff.gz"
+
+BUILDTIME="unzip"
+
+RUNTIME="xorg libpng"
+
+build() {
+  cd $SRC/
+  
+  patch -p1 < libglpng_1.45-3.diff
+  
+  make
+  
+  install -D -m 0644 libglpng.a $PKG/usr/lib/libglpng.a
+  install -m 0755 libglpng.so.1.45 $PKG/usr/lib/libglpng.so.1.45
+  ln -s libglpng.so.1.45 $PKG/usr/lib/libglpng.so
+  
+  install -D -m 0644 include/GL/glpng.h $PKG/usr/X11R6/include/GL/glpng.h
+}

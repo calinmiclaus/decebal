@@ -1,0 +1,12 @@
+NAME=zlib
+VERSION=1.2.3
+ARCH=i686
+RELEASE=1
+URL="http://www.zlib.org"
+DESC="A general purpose data compression library."
+GROUP=base
+LICENSE="ZLIB"
+MAINTAINER="Calin Bogdan Miclaus <trog@decebal.org>"
+USEFLAGS=""
+SIZE="342K"
+BUILDDATE="Thu Sep  8 11:26:58 2005"

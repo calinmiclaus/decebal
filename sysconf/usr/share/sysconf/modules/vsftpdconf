@@ -1,0 +1,110 @@
+#!/bin/bash
+#
+# Script for configuring the vsftp daemon
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+ftpconf=/etc/vsftpd.conf
+
+function showmenu()
+{
+local first last
+[ ! -e $tmp/vsftpd.conf.tmp ] && cat $ftpconf|grep -v "^#" >$tmp/vsftpd.conf.tmp
+
+echo "#!/bin/bash" >$tmp/mm.sh
+cat <<EOF>>$tmp/mm.sh
+$dialog --backtitle "$version" --title " vsftpd Config " \\
+--cancel-label "Back" --extra-button --extra-label "Save" \\
+--help-button --ok-label "Change" --default-item "$mmsel" \\
+--menu "\\nOn the left collumn you have the setting name and on \\
+the right collumn, its value. Choose 'Change' to change it." 0 0 0 \\
+EOF
+
+cat $tmp/vsftpd.conf.tmp|while read line;
+do
+  first=`echo $line|cut -f 1 -d "="`
+  last=`echo $line|cut -f 2- -d "="`
+  echo -n "\"$first\" " >>$tmp/mm.sh
+  echo -n "\"$last\" " >>$tmp/mm.sh
+done
+
+echo "2>$tmp/mmsel" >>$tmp/mm.sh
+echo "return \$?" >>$tmp/mm.sh
+. $tmp/mm.sh
+}
+
+function main_menu()
+{
+local mmbutton=0 mmsel="" val
+
+while [ $mmbutton -ne 1 ];
+do
+showmenu
+mmbutton=$?
+
+mmsel=`cat $tmp/mmsel`
+rm -f $tmp/mmsel
+
+case $mmbutton in
+0)
+  local changebutton=3 change
+  while [ $changebutton -eq 3 ];
+  do
+  val=`cat $tmp/vsftpd.conf.tmp|grep "^$mmsel"|cut -f 2- -d "="`
+  $dialog --backtitle "$version" --title " Change $mmsel " --extra-button \
+  --extra-label "Help" --ok-label "Save" --cancel-label "Back" \
+  --inputbox "\nYou can change here the value for '$mmsel'. Press the \
+'Help' button to see what '$mmsel' is all about.\n\n" 0 0 "$val" 2>$tmp/change
+  changebutton=$?
+  
+  change=`cat $tmp/change`
+  rm -f $tmp/change
+
+  case $changebutton in
+  0)
+    cat $tmp/vsftpd.conf.tmp|replace "$mmsel=" "$mmsel=$change" >$tmp/tmp1
+    mv -f $tmp/tmp1 $tmp/vsftpd.conf.tmp
+  ;;
+  3) $dialog --backtitle "$version" --title " Help " --textbox $ftpconf 0 0;;
+  esac
+
+  done
+;;
+2)$dialog --backtitle "$version" --title " Help " --textbox $ftpconf 0 0;;
+3)
+  $dialog --backtitle "$version" --title " Please wait " \
+  --infobox "\nSaving configuration... " 5 0
+
+  cat $tmp/vsftpd.conf.tmp|tr "/" "%" >$tmp/tmp1
+  mv -f $tmp/tmp1 $tmp/vsftpd.conf.tmp
+
+  cat $tmp/vsftpd.conf.tmp|while read line;
+  do
+    first=`echo $line|cut -f 1 -d "="`
+    last=`echo $line|cut -f 2- -d "="`
+    cat $ftpconf|replace "$first=" "$first=$last" >$tmp/tmp1
+    mv -f $tmp/tmp1 $ftpconf
+  done
+
+  cat $ftpconf|tr "%" "/" >$tmp/tmp1
+  mv -f $tmp/tmp1 $ftpconf
+
+  cat $tmp/vsftpd.conf.tmp|tr "%" "/" >$tmp/tmp1
+  mv -f $tmp/tmp1 $tmp/vsftpd.conf.tmp
+
+  $dialog --backtitle "$version" --title " Success " --msgbox \
+  "\nConfiguration saved.\n\n" 0 0
+;;
+esac
+
+done
+}
+
+tmp=`make_tmp vsftpd`
+$1
+rm -rf $tmp

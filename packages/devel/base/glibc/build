@@ -1,0 +1,109 @@
+NAME=glibc
+VERSION=2.3.5
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/libc/"
+DESC="The GNU C library (Linuxthreads and NTPL)."
+GROUP=base
+LICENSE=GPLv2
+SIZE="12903K"
+
+SOURCES="http://ftp.gnu.org/gnu/glibc/glibc-2.3.5.tar.bz2
+         http://ftp.gnu.org/gnu/glibc/glibc-linuxthreads-2.3.5.tar.bz2
+	 http://ftp.gnu.org/gnu/glibc/glibc-libidn-2.3.5.tar.bz2
+	 glibc-2.3.5-headers.diff
+	 glibc-2.3.5-pax.diff
+	 glibc-2.3.5-pax-support.diff
+	 glibc-2.3.2-propolice-guard-functions-v3.patch
+	 glibc-2.3.5-frandom.diff
+	 ssp.c nscd.conf nscd.init ld.so.conf"
+
+#	 glibc-2.3.5-localedef-fix-trampoline.diff"
+
+BACKUPS="etc/ld.so.conf etc/nscd.conf"
+
+BUILDTIME="binutils gcc glibc"
+
+PROVIDES="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  remove_flags -fstack-protector -fstack-protector-all -fomit-frame-pointer -malign-double
+  
+  # Smash Stack Protector patches.
+  patch -p1 < ../glibc-2.3.2-propolice-guard-functions-v3.patch
+  patch -p1 < ../glibc-2.3.5-frandom.diff
+  install -m 644 ../ssp.c sysdeps/unix/sysv/linux/ssp.c
+  
+  # PAX patches.
+  patch -p1 < ../glibc-2.3.5-pax-support.diff
+  patch -p1 < ../glibc-2.3.5-pax.diff
+  
+  # Headers?
+  patch -p1 < ../glibc-2.3.5-headers.diff
+  
+  mv ../linuxthreads ./
+  mv ../linuxthreads_db ./
+  
+  # Build a linuxthreads enabled glibc.
+  mkdir -p glibc-build
+  cd glibc-build
+          
+  ../configure --prefix=/usr \
+               --sysconfdir=/etc \
+	       --libexecdir=/usr/lib \
+	       --infodir=/usr/share/info \
+	       --mandir=/usr/share/man \
+	       --with-headers=/usr/include \
+	       --without-cvs \
+	       --disable-profile \
+	       --without-tls \
+	       --without-__thread \
+	       --without-gd \
+	       --enable-kernel=2.4.0 \
+	       --enable-add-ons=linuxthreads 
+  make
+  make install_root=$PKG install
+  make install_root=$PKG localedata/install-locales
+  
+  cd ..
+  
+  # Build a NPTL enabled glibc.
+  mkdir -p glibc-ntpl-build
+  cd glibc-ntpl-build
+  
+  ../configure --prefix=/usr \
+               --sysconfdir=/etc \
+	       --libexecdir=/usr/lib \
+	       --infodir=/usr/share/info \
+	       --mandir=/usr/share/man \
+	       --with-headers=/usr/include \
+	       --without-cvs \
+	       --disable-profile \
+	       --with-tls \
+	       --with-__thread \
+	       --without-gd \
+	       --enable-kernel=2.6.0 \
+	       --enable-add-ons=nptl
+  make
+  make install_root=$PKG/NTPL install
+  
+  mv $PKG/NTPL/lib $PKG/lib/tls
+  
+  rm -rf $PKG/NTPL
+  
+  cd ..
+  
+  install -D -m 0644 ../ld.so.conf $PKG/etc/ld.so.conf
+  install -D -m 0700 ../nscd.init $PKG/etc/rc.d/nscd
+  install -m 0644 ../nscd.conf $PKG/etc/nscd.conf
+  
+  # This is no longer used so we remove the suid bit form it.
+  chmod 755 $PKG/usr/lib/pt_chown
+  
+  install_docs BUGS CANCEL-F* CONFORMANCE COPYING* ChangeLog* \
+    FAQ INSTALL INTERFACE LICENSES NAMESPACE NEWS NOTES \
+    PROJECTS README*
+}
+                 

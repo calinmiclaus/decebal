@@ -1,0 +1,23 @@
+NAME=syslinux
+VERSION=3.07
+RELEASE=1
+ARCH=i686
+DESC="A collection of boot loaders for Linux."
+URL="http://syslinux.zytor.com/"
+GROUP=system
+LICENSE=GPLv2
+SIZE="1021K"
+
+SOURCES="http://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-3.07.tar.bz2"
+
+RUNTIME="nasm"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  make
+  make INSTALLROOT=$PKG install
+
+  install_docs BUGS COPYING NEWS README TODO comboot.doc isolinux.doc \
+    keytab-lilo.doc pxelinux.doc syslinux.doc
+}

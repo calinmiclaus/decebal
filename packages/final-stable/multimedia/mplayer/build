@@ -1,0 +1,185 @@
+NAME=mplayer
+VERSION=1.0pre7try2
+ARCH=i686
+RELEASE=1
+DESC="THE video player"
+URL="http://www.mplayerhq.hu/"
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="6230K"
+HUSE="runtime smb xmms nas lirc nls jack arts nogui ipv6"
+
+#	 http://www4.mplayerhq.hu/MPlayer/patches/ad_pcm_fix_20050826.diff
+SOURCES="ftp://ftp5.mplayerhq.hu/mplayer/releases/MPlayer-1.0pre7try2.tar.bz2
+	 http://ftp5.mplayerhq.hu/mplayer/releases/fonts/font-arial-cp1250.tar.bz2
+	 http://ftp5.mplayerhq.hu/mplayer/releases/fonts/font-arial-iso-8859-2.tar.bz2
+	 mplayer.desktop mplayer.png
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Abyss-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/AlienMind-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/avifile-1.6.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Blue-1.4.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/BlueHeart-1.5.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Blue-small-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Canary-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Corelian-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/CornerMP-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/CornerMP-aqua-1.4.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Cyrus-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/disappearer-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Dushku-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/DVDPlayer-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/gnome-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/handheld-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/hayraphon-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/hwswskin-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Industrial-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/iTunes-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/iTunes-mini-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/JiMPlayer-1.4.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/KDE-0.3.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/krystal-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/mentalic-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/MidnightLove-1.6.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/mini-0.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/moonphase-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/mplayer_red-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/neutron-1.5.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/new-age-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Orange-1.3.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/OSX-Brushed-2.3.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/OSX-Mod-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/phony-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/plastic-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/PowerPlayer-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/proton-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/QPlayer-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/sessene-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/slim-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/softgrip-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/Terminator3-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/trium-1.3.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/tvisor-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/ultrafina-1.1.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/WMP6-2.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/xanim-1.6.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/XFce4-1.0.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/xine-lcd-1.2.tar.bz2
+        http://ftp5.mplayerhq.hu/mplayer/Skin/xmmplayer-1.1.tar.bz2"
+
+RUNTIME="directfb xorg libpng >=libjpeg-6b aalib libcaca svgalib >=freetype2-2.0.9 liba52 libmpeg2 faad2
+         ladspa xvidcore lame libungif libtheora lzo codecs libmad libdv libdvdread polypaudio libsdl"
+
+use nls && BUILDTIME="gettext"
+use smb && RUNTIME="$RUNTIME samba"
+use xmms && RUNTIME="$RUNTIME xmms"
+use nogui || RUNTIME="$RUNTIME gtk"
+use jack && RUNTIME="$RUNTIME jack"
+use lirc && RUNTIME="$RUNTIME lirc"
+use nas && RUNTIME="$RUNTIME nas"
+use arts && RUNTIME="$RUNTIME arts"
+
+build () { 
+   cd $SRC/MPlayer-$VERSION
+
+#   patch -p0 <../ad_pcm_fix_20050826.diff
+   
+   use runtime && OPTS="$OPTS --enable-runtime-cpudetection"
+   use smb && OPTS="$OPTS --enable-smb" || OPTS="$OPTS --disable-smb"
+   use xmms && OPTS="$OPTS --enable-xmms" || OPTS="$OPTS --disable-xmms"
+   use nls && OPTS="$OPTS --enable-i18n" || OPTS="$OPTS --disable-i18n"
+   use jack && OPTS="$OPTS --enable-jack" || OPTS="$OPTS --disable-jack"
+   use ipv6 && OPTS="$OPTS --disable-inet6"
+   use nogui || OPTS="$OPTS --enable-gui"
+   use lirc && OPTS="$OPTS --enable-lirc" || OPTS="$OPTS --disable-lirc"
+   use arts || OPTS="$OPTS --disable-arts"
+   use nas || OPTS="$OPTS --disable-nas"
+   use profile && OPTS="$OPTS --enable-profile"
+   use debug && OPTS="$OPTS --enable-debug=3"
+   
+   ./configure --prefix=/usr \
+	       --enable-aa \
+               --confdir=/etc/mplayer \
+	       --mandir=/usr/share/man \
+	       --enable-menu \
+	       --disable-external-faad \
+	       --enable-sdl \
+	       --enable-x11 \
+	       --enable-liblzo \
+	       --enable-svga \
+	       --enable-gif \
+	       --enable-png \
+	       --enable-jpeg \
+	       --enable-caca \
+	       --enable-directfb \
+	       --disable-aa \
+	       --with-win32libdir=/usr/lib/win32 \
+	       --with-xanimlibdir=/usr/lib/win32 \
+	       --with-reallibdir=/usr/lib/win32 \
+	       $OPTS
+  make
+  make DESTDIR=$PKG install;
+
+  cp -a etc/{codecs.conf,dvb-menu.conf,example.conf,input.conf,menu.conf} $PKG/etc/mplayer/
+
+  mkdir -p $PKG/usr/share/$NAME
+  cp -a etc/mplayer.ico $PKG/usr/share/$NAME/
+#  cp -aR ../blue $PKG/usr/share/$NAME/Skin/
+  cp -aR ../font-arial-cp1250 $PKG/usr/share/mplayer/font/
+  cp -aR ../font-arial-iso-8859-2 $PKG/usr/share/mplayer/font/
+
+    cd $SRC
+
+    for i in Abyss AlienMind avifile Blue BlueHeart Blue Canary;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    for i in Corelian CornerMP CornerMP Cyrus disappearer;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    for i in Dushku DVDPlayer gnome handheld hayraphon hwswskin Industrial;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    for i in iTunes iTunes JiMPlayer KDE krystal mentalic MidnightLove mini;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    for i in moonphase mplayer_red neutron new-age Orange OSX-Brushed OSX-Mod;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    for i in phony plastic PowerPlayer proton QPlayer sessene slim softgrip;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    for i in Terminator3 trium tvisor ultrafina WMP6;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    for i in xanim XFce4 xine-lcd xmmplayer;
+    do
+    cp -R $i $PKG/usr/share/mplayer/Skin/
+    done
+
+    cp -R font-arial-cp1250 $PKG/usr/share/mplayer/font/
+    cp -R font-arial-iso-8859-2 $PKG/usr/share/mplayer/font/
+  
+  use nogui || {
+    install -D -m 0644 $SRC/mplayer.desktop $PKG/usr/share/applications/mplayer.desktop
+    install -D -m 0644 $SRC/mplayer.png $PKG/usr/share/pixmaps/mplayer.png
+  }
+        
+#  install_docs ChangeLog Copyright LICENSE README DOCS/HTML/*
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION
+  
+  cd $SRC/MPlayer-$VERSION
+  cp -R AUTHORS ChangeLog Copyright LICENSE README DOCS/HTML/* $PKG/usr/share/doc/$NAME-$VERSION
+}

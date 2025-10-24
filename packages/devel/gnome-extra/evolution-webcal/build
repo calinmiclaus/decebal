@@ -1,0 +1,29 @@
+NAME=evolution-webcal
+VERSION=2.2.0
+ARCH=i686
+RELEASE=1
+URL="http://www.ximian.com"
+DESC="Evolution Web Calendar"
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="135K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/evolution-webcal-2.2.0.tar.bz2"
+
+BUILDTIME="intltool gettext"
+
+RUNTIME="libgnomeui evolution-data-server"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/bin \
+	      --disable-schemas-install
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

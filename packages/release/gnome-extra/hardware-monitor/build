@@ -1,0 +1,30 @@
+NAME=hardware-monitor
+VERSION=1.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.cs.aau.dk/~olau/hardware-monitor/"
+DESC="A monitor applet for the Gnome panel."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="290K"
+
+SOURCES="http://www.cs.aau.dk/~olau/hardware-monitor/source/hardware-monitor-1.2.1.tar.bz2"
+
+RUNTIME="pkgconfig intltool gettext"
+
+RUNTIME="lm_sensors >=libgnomeuimm-2.6.0 >=gconfmm-2.6.0 >=gtkmm2-2.4.0 >=libgnomecanvasmm-2.6.0
+         >=libglademm-2.4.0 >=libgtop-2.6.0 >=gnome-panel-2.0.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --localstatedir=/var/lib
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    MAINTAINERS NEWS README
+}

@@ -1,0 +1,38 @@
+NAME=grubconf
+VERSION=0.5.1
+ARCH=i686
+RELEASE=1
+URL="http://grubconf.sourceforge.net/"
+DESC="A graphical GRUB configuration editor."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="357K"
+HUSE="nls static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/grubconf/grubconf-0.5.1.tar.gz
+         grubconf-0.5.1-makefile-1.patch"
+
+RUNTIME="libgnomeui scrollkeeper"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls || OPTS="--disable-nls"
+  use static || OPTS="$OPTS --disable-static"
+  
+  patch -p1 < ../grubconf-0.5.1-makefile-1.patch
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --disable-splashimage
+  make
+  make DESTDIR=$PKG install
+  
+  cp $PKG/opt/gnome/share/gnome/apps/Applications/grubconf.desktop $PKG/opt/gnome/share/applications
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

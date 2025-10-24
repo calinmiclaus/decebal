@@ -1,0 +1,12 @@
+#
+# This directories will never be removed.
+#
+
+NOREMOVE="var/lib/pkg/db
+          var/lib/pkg/virtual
+	  var/lib/pkg/rejected
+	  var/lib/pkg/preserve
+	  usr/share/doc
+	  usr/share/man
+	  usr/share/info
+	  tmp"

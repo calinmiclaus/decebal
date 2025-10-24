@@ -1,0 +1,199 @@
+#!/bin/bash
+#
+# /sbin/pkg_query - print information about installed packages (renamed pkg_info)
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+CONFDIR="/etc/dpack"
+FUNCTIONSDIR="/usr/share"
+
+source $CONFDIR/common
+source $FUNCTIONSDIR/dpack/pkg
+
+usage() {
+  cat << EOF
+usage: pkg_query [options] <package> , <group> or <file>
+options:
+  -a, --all       - show all installed packages
+  -d, --dump      - dump package database entry
+  -g, --group     - show all package in group
+  -i, --info      - show package meta information
+  -l, --list      - list files contained by package
+  -o, --owns      - print package thats owns file
+  -r, --root      - use alternate query path
+  -V, --version   - print name, version and license
+  -h, --help      - print this message
+		    
+For a detailed help see pkg_info (8).
+EOF
+}
+
+version() {
+  cat << EOF
+pkg_query v0.0.2 (dpack v0.1.6)
+  
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+  
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+  
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+PKG_ALL=0
+PKG_ALL=0
+PKG_DUMP=0
+PKG_GROUP=0
+PKG_INFO=0
+PKG_LIST=0
+PKG_OWNS=0
+
+PKG_ROOT=""
+PKG_ARGS=""
+
+while [ "$#" -ne 0 ]
+do
+  case "$1" in
+    --all) PKG_ALL=1 ;;
+    --dump) PKG_DUMP=1 ;;
+    --group) PKG_GROUP=1 ;;
+    --info) PKG_INFO=1 ;;
+    --list) PKG_LIST=1 ;;
+    --owns) PKG_OWNS=1 ;;
+    --root)
+      PKG_ROOT="$2"
+      shift 1
+      ;;
+    --version)
+      version
+      exit 0
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --*)
+      echo "error: unrecongnized option ($1)" >&2
+      usage >&2
+      exit 1
+      ;;
+    -*)
+      while getopts "adgiloVhr:-" OPT
+      do
+        case "$OPT" in
+          a) PKG_ALL=1   ;;
+          d) PKG_DUMP=1  ;;
+          g) PKG_GROUP=1 ;;
+          i) PKG_INFO=1  ;;
+          l) PKG_LIST=1  ;;
+          o) PKG_OWNS=1  ;;
+          V)
+            version
+            exit 0
+            ;;
+          h)
+            usage
+            exit 0
+            ;;
+          r)
+            PKG_ROOT="$OPTARG"
+	    shift 1
+	    ;;
+	  -)
+	    OPTBIND=0
+	    break
+	    ;;
+	  *)
+	    echo "error: urecongnized option ($OPT)" >&2
+	    usage >&2
+            exit 1
+            ;;
+        esac
+     done
+     ;;
+   *)
+     PKG_ARGS="$1"
+     shift 1
+     for ARG in 1 2 3 4 5 6 7 8 9 10
+     do
+       PKG_ARGS="$PKG_ARGS $1"
+       shift 1
+     done
+     ;;
+  esac
+  shift 1
+done
+
+if [ "$PKG_ARGS" = "" -a ! "$PKG_ALL" = "1" ]
+then
+  echo "error: pkg_query needs an argument (package or file)." >&2
+  usage >&2
+  exit 1
+fi
+
+if [ "$PKG_ALL" = "1" ]
+then
+  for PKG in $(ls ${PKG_ROOT}${DATABASEDIR}/db 2>/dev/null)
+  do
+    echo $PKG
+  done
+fi
+
+for ARG in $PKG_ARGS
+do
+  if [ "$PKG_DUMP" = "1" ]
+  then
+    source /usr/share/dpack/{dump,pkg}
+    pkg_dump_dbetry $ARG
+  elif [ "$PKG_GROUP" = "1" ]
+  then
+    source /usr/share/dpack/group
+    pkg_group $ARG
+  elif [ "$PKG_INFO" = "1" ]
+  then
+    source /usr/share/dpack/{info,pkg}
+    pkg_info $ARG
+  elif [ "$PKG_LIST" = "1" ]
+  then
+    source /usr/share/dpack/{list,pkg}
+    pkg_info_list_contents $ARG
+  elif [ "$PKG_OWNS" = "1" ]
+  then
+    source /usr/share/dpack/owns
+    pkg_owns $ARG
+  else # never reached
+    usage >&2
+    exit 1
+  fi
+done
+
+cd $BASEDIR
+
+exit 0
+									
+								  

@@ -1,0 +1,30 @@
+NAME=embryo
+VERSION=0.9.1.013
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="A library for loading and controling interpreted programs."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="426K"
+HUSE="static"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=embryo-0.9.1.013.tar.gz
+SOURCES="$NAME-$VERSION.tar.gz"
+
+BUILDTIME=">=gcc-3.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL NEWS README
+}

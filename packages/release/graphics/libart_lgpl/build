@@ -1,0 +1,31 @@
+NAME=libart_lgpl
+VERSION=2.3.17
+ARCH=i686
+RELEASE=1
+DESC="A library for high-performance 2D graphics"
+URL="http://www.levien.com/libart/"
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="282K"
+HUSE="static"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/libart_lgpl/2.3/libart_lgpl-2.3.17.tar.bz2"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/libart_lgpl-$VERSION
+
+  use static || OPTS="--disable-static"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --localstatedir=/var/lib \
+	      --libexecdir=/usr/lib/$NAME \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

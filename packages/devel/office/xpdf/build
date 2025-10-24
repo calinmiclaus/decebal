@@ -1,0 +1,51 @@
+NAME=xpdf
+VERSION=3.00
+RELEASE=1
+ARCH=i686
+URL="http://www.foolabs.com/xpdf/"
+DESC="Xpdf is a viewer for Portable Document Format (PDF) files."
+GROUP=office
+LICENSE=GPLv2
+SIZE="522K"
+
+SOURCES="ftp://ftp.foolabs.com/pub/xpdf/xpdf-3.00.tar.gz
+         xpdf_3.00-8ubuntu1.1.diff.gz xpdf-3.00pl2.patch
+	 xpdf-3.00pl3.patch xpdf.desktop"
+
+RUNTIME="freetype2 lesstif >=zlib-1.2.1 gcc xorg"
+
+BACKUPS="etc/xpdf/xpdfrc"
+
+build() {
+    cd $SRC/$NAME-$VERSION
+ 
+    patch -p1 < ../xpdf_3.00-8ubuntu1.1.diff
+    ( cd xpdf ; patch -p0 < ../xpdf-3.00pl2.patch )
+    ( cd xpdf ; patch -p0 < ../xpdf-3.00pl3.patch )
+    
+    ./configure \
+	--prefix=/usr \
+	--enable-freetype2 \
+	--sysconfdir=/etc/xpdf \
+	--with-freetype2-library=/usr/lib \
+	--with-freetype2-includes=/usr/include/freetype2/freetype \
+	--x-includes=/usr/X11R6/include \
+	--with-Xm-library=/usr/X11R6/lib \
+	--with-Xm-includes=/usr/X11R6/include
+
+    # mess with configure and freetype2
+    cd splash
+    sed -i 's|/usr/include/freetype2/freetype|/usr/include/freetype2|' Makefile
+    sed -i 's|#include <freetype/freetype.h>|#include <ft2build.h>\n#include FT_FREETYPE_H\n#include <freetype/freetype.h>|' SplashFTFont.h
+    sed -i 's|#include <freetype/freetype.h>|#include <ft2build.h>\n#include FT_FREETYPE_H\n#include <freetype/freetype.h>|' SplashFTFontFile.h
+    sed -i 's|#include <freetype/freetype.h>|#include <ft2build.h>\n#include FT_FREETYPE_H\n#include <freetype/freetype.h>|' SplashFTFontEngine.h
+
+    cd ..
+    make || return 1
+    make DESTDIR=$PKG install
+   
+   install -D -m 0644 xpdf/xpdfIcon.xpm $PKG/usr/share/icons/xpdfIcon.xpm
+   install -D -m 0644 $SRC/xpdf.desktop $PKG/usr/share/applications/xpdf.desktop
+   
+   install_docs ANNOUNCE CHANGES COPYING INSTALL README
+}

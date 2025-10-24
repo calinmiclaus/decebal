@@ -1,0 +1,36 @@
+NAME=bc
+VERSION=1.06
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/bc/bc.html"
+DESC="An arbitrary precision calculator language."
+GROUP=system
+LICENSE="GPLv2"
+SIZE="272K"
+
+SOURCES="http://www.ibiblio.org/pub/gnu/bc/bc-1.06.tar.gz
+        bc-1.06-flex-invocation.patch
+        bc-1.06-readline.patch
+        bc-1.06-fixes-1.patch
+        bc-1.06-info.patch"
+
+RUNTIME="readline"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  patch -p1 <../bc-1.06-flex-invocation.patch
+  patch -p1 <../bc-1.06-readline.patch
+  patch -p1 <../bc-1.06-fixes-1.patch
+  patch -p1 <../bc-1.06-info.patch
+    
+  ./configure --prefix=/usr \
+              --with-readline \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-readline
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING* ChangeLog FAQ INSTALL NEWS README
+}

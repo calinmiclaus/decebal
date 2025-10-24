@@ -1,0 +1,36 @@
+NAME=libpcap
+VERSION=0.8.3
+ARCH=i686
+RELEASE=1
+URL="http://www.tcpdump.org/"
+DESC="A system-independent interface for user-level packet capture."
+GROUP=network
+LICENSE=BSDL
+SIZE="295K"
+HUSE="ipv6"
+
+SOURCES="http://www.tcpdump.org/release/libpcap-0.8.3.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  gcc -Wl,-soname,libpcap.so.0 -shared -fPIC -o libpcap.so.0.6 *.o
+  install -D -m 0755 libpcap.so.0.6 $PKG/usr/lib/libpcap.so.0.6
+  ln -sf libpcap.so.0.6 $PKG/usr/lib/libpcap.so
+  ln -sf libpcap.so.0.6 $PKG/usr/lib/libpcap.so.0
+
+  mkdir -p $PKG/usr/include/net
+  
+  ( cd $PKG/usr/include/net
+    ln -sf ../pcap-bpf.h bpf.h)
+  
+  install_docs CHANGES CREDITS FILES INSTALL.txt LICENSE \
+    README* TODO VERSION
+}     

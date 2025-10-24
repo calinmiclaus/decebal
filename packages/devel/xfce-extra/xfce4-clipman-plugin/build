@@ -1,0 +1,32 @@
+NAME=xfce4-clipman-plugin
+VERSION=0.4.1
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A simple cliboard history for XFCE4 Panel."
+GROUP=xfce-extra
+LICENSE=BSDL
+SIZE="298K"
+HUSE="static debug profile"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-clipman-plugin-0.4.1.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=xfce4-panel-0.10.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README
+}

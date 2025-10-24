@@ -1,0 +1,30 @@
+NAME=grep
+VERSION=2.5.1a
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/grep/grep.html"
+DESC="GNU grep, egrep and fgrep."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="515K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/grep/grep-2.5.1a.tar.bz2"
+
+BUILDTIME="gettext"
+
+RUNTIME=">=pcre-4.5"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+ 
+  ./configure --prefix=/usr \
+              --bindir=/bin \
+              --with-included-regex \
+              --infodir=/usr/share/info \
+              --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README* THANKS TODO
+}

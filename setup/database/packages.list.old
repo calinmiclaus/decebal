@@ -1,0 +1,35 @@
+pkg_name[1]="dclib"
+pkg_desc[1]="A utility that can convert different files to PostScript."
+pkg_file[1]="dclib-0.3.7-i686-1.tbz2"
+pkg_ver[1]="0.3.7"
+pkg_usize[1]="3000000"
+pkg_cd[1]=1
+pkg_depends[1]=""
+pkg_conflicts[1]=""
+pkg_group[1]=libs
+pkg_types[1]=""
+selected[1]="on"
+
+pkg_name[2]="openssl"
+pkg_desc[2]="Library used for audio decoding."
+pkg_file[2]="openssl-0.9.7g-i686-1.tbz2"
+pkg_ver[2]="0.9.7g"
+pkg_usize[2]="199000"
+pkg_cd[2]=1
+pkg_depends[2]=""
+pkg_conflicts[2]=""
+pkg_group[2]=base
+pkg_types[2]=""
+selected[2]="on"
+
+pkg_name[3]="valknut"
+pkg_desc[3]="AAlib is a low level gfx library."
+pkg_file[3]="valknut-0.3.7-i686-1.tbz2"
+pkg_ver[3]="0.3.7"
+pkg_usize[3]="505000"
+pkg_cd[3]=1
+pkg_depends[3]="dclib"
+pkg_conflicts[3]=""
+pkg_group[3]=network
+pkg_types[3]=""
+selected[3]="on"

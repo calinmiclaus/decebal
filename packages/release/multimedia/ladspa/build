@@ -1,0 +1,18 @@
+NAME=ladspa
+VERSION=1.12
+ARCH=noarch
+RELEASE=1
+URL="http://www.ladspa.org/"
+DESC="A a standard audio development API for Linux."
+GROUP=multimedia
+LICENSE=GPLv2
+
+SOURCES="http://www.ladspa.org/download/ladspa_sdk_1.12.tgz"
+
+build() {
+  cd $SRC/ladspa_sdk
+  
+  install -D -m 0644 src/ladspa.h $PKG/usr/include/ladspa.h
+  
+  install_docs README
+}

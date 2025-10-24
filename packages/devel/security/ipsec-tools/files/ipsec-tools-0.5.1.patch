@@ -1,0 +1,26 @@
+diff -Nru ipsec-tools-0.5rc2/src/racoon/isakmp.h ipsec-tools-0.5rc2-orig/src/racoon/isakmp.h
+--- ipsec-tools-0.5rc2/src/racoon/isakmp.h	2005-01-23 18:16:50.000000000 +0100
++++ ipsec-tools-0.5rc2-orig/src/racoon/isakmp.h	2005-02-07 00:15:41.260408585 +0100
+@@ -43,6 +43,9 @@
+ #define GENERATE	1
+ #define VALIDATE	0
+ 
++/* UDP encapsulation types */
++#define UDP_ENCAP_ESPINUDP_NON_IKE	1 /* draft-ietf-ipsec-nat-t-ike-00/01 */
++
+ /* 3.1 ISAKMP Header Format
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+         +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+diff -Nru ipsec-tools-0.5rc2/src/racoon/nattraversal.h ipsec-tools-0.5rc2-orig/src/racoon/nattraversal.h
+--- ipsec-tools-0.5rc2/src/racoon/nattraversal.h	2005-01-23 18:16:51.000000000 +0100
++++ ipsec-tools-0.5rc2-orig/src/racoon/nattraversal.h	2005-02-07 00:15:17.373395373 +0100
+@@ -52,6 +52,9 @@
+ #define NATT_ON		TRUE	/* = 1 */
+ #define NATT_FORCE	2
+ 
++/* UDP encapsulation types */
++#define UDP_ENCAP_ESPINUDP_NON_IKE	1 /* draft-ietf-ipsec-nat-t-ike-00/01 */
++
+ struct ph1natt_options {
+   int		version;
+   u_int16_t	float_port;

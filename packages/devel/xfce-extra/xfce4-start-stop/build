@@ -1,0 +1,33 @@
+NAME=xfce4-start-stop
+VERSION=0.2
+ARCH=i686
+RELEASE=1
+URL="http://www.loculus.nl/xfce/index.php?wiki=DownLoads"
+DESC="Start/Stop XFCE4 components."
+GROUP=xfce-extra
+LICENSE="GPLv2"
+SIZE="307K"
+HUSE="static debug profile"
+
+SOURCES="http://www.loculus.nl/xfce/files/xfce4-start-stop-0.2.tar.gz"
+
+BUILDTIME="pkgconfig gettext"
+
+RUNTIME=">=libxfcegui4-4.1.27"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+          
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --with-locales-dir=/usr/share/locale \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+}
+
+

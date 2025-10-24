@@ -1,0 +1,23 @@
+post_install() {
+  /usr/sbin/groupadd -g 43 avirus &>/dev/null
+  /usr/sbin/useradd -g avirus -u 43 -c "Amavis Daemon" -d /var/lib/amavis -s /bin/false amavis &>/dev/null
+  /bin/chown -R amavis.avirus /var/lib/amavis &>/dev/null
+  /bin/chmod 750 /var/lib/amavis &>/dev/null
+  /bin/chown amavis.avirus /var/spool/virusmails &>/dev/null
+  /bin/chmod 750 /var/spool/virusmails &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 43 avirus &>/dev/null
+  /usr/sbin/useradd -g avirus -u 43 -c "Amavis Daemon" -d /var/lib/amavis -s /bin/false amavis &>/dev/null
+  /bin/chown -R amavis.avirus /var/lib/amavis &>/dev/null
+  /bin/chmod 750 /var/lib/amavis &>/dev/null
+  /bin/chown amavis.avirus /var/spool/virusmails &>/dev/null
+  /bin/chmod 750 /var/spool/virusmails &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel amavis &>/dev/null
+  /usr/sbin/groupdel avirus &>/dev/null
+}
+

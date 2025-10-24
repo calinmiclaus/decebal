@@ -1,0 +1,24 @@
+NAME=pyorbit
+VERSION=2.0.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Python bindings for the ORBit2 CORBA ORB."
+GROUP=gnome-extra
+LICENSE=LGPLv2.1
+SIZE="237K"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/pyorbit/2.0/pyorbit-2.0.1.tar.bz2"
+
+RUNTIME=">=python-2.4 orbit2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog* INSTALL \
+    NEWS PKG-INFO README TODO
+}

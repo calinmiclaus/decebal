@@ -1,0 +1,184 @@
+#!/bin/bash
+#
+# /sbin/pkg_convert - convert RPM, DEB and TGZ to Decebal Linux packages
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+BASEDIR=$(pwd)
+
+FUNCTIONSDIR="/usr/share"
+
+source $FUNCTIONSDIR/dpack/exit
+source $FUNCTIONSDIR/dpack/tmp
+source $FUNCTIONSDIR/dpack/msg
+
+usage() {
+  cat << EOF
+usage: pkg_convert [options] <file>
+options:
+  -a, --arch         - convert a Arch (tar.gz) package
+  -A, --autodetect   - autodetect package type
+  -c, --crux         - convert a Crux (tar.gz) package
+  -d, --deb          - convert a Debian (DEB) package
+  -r, --rpm          - convert a Red Hat (RPM) package
+  -t, --tgz          - convert a Slackware (TGZ) package
+  -v, --verbose      - be more verbose
+  -V, --version      - print name, version and license
+  -h, --help         - print this message and exit
+
+For a detailed help see pkg_convert (8).
+EOF
+}
+
+version() {
+  cat << EOF
+pkg_convert v0.0.1 (dpack v0.1.6)
+  
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+  
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+  
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+PKG_AUTO=0
+PKG_ARCH=0
+PKG_CRUX=0
+PKG_DEB=0
+PKG_RPM=0
+PKG_TGZ=0
+PKG_VERBOSE=0
+
+PKG_ARGS=""
+
+while [ "$#" -ne 0 ]
+do
+  case "$1" in
+    --autodetect)  PKG_AUTO=1 ;;
+    --arch)        PKG_ARCH=1 ;;
+    --crux)        PKG_CRUX=1 ;;
+    --deb)         PKG_DEB=1 ;;
+    --rpm)         PKG_RPM=1 ;;
+    --tgz)         PKG_TGZ=1 ;;
+    --verbose) PKG_VERBOSE=1 ;;
+    --version)
+      version
+      exit 0
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --*)
+      echo "error: unrecognized option." >&2
+      usage >&2
+      exit 1
+      ;;
+    -*)
+      while getopts "aAcdrtvVh" OPT
+      do
+        case "$OPT" in
+	  a) PKG_ARCH=1    ;;
+	  A) PKG_AUTO=1    ;;
+	  c) PKG_CRUX=1    ;;
+	  d) PKG_DEB=1     ;;
+	  r) PKG_RPM=1     ;;
+	  t) PKG_TGZ=1     ;;
+	  v) PKG_VERBOSE=1 ;;
+	  V)
+	    version
+	    exit 0
+	    ;;
+	  h)
+	    usage
+	    exit 0
+	    ;;
+	  *)
+	    usage >&2
+	    exit 1
+	    ;;
+	esac
+      done
+      ;;
+    *)
+      PKG_ARGS="$1"
+      shift 1
+      for ARG in 1 2 3 4 5 6 7 8 9 10
+      do
+        PKG_ARGS="$PKG_ARGS $1"
+	shift 1
+      done
+      ;;
+  esac
+  shift 1
+done
+
+if [ "$PKG_ARGS" = "" ]
+then
+  echo "error: pkg_convert needs an argument (file)." >&2
+  usage >&2
+  exit 1
+fi
+
+for ARG in $PKG_ARGS
+do
+  if [ "$PKG_AUTO" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/convert/auto
+    pkg_convert_auto $ARG
+  elif [ "$PKG_ARCH" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/convert/arch
+    pkg_convert_arch $ARG
+  elif [ "$PKG_CRUX" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/convert/crux
+    pkg_convert_crux $ARG
+  elif [ "$PKG_DEB" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/convert/deb
+    pkg_convert_deb $ARG
+  elif [ "$PKG_RPM" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/convert/rpm
+    pkg_convert_deb $ARG
+  elif [ "$PKG_TGZ" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/convert/tgz
+    pkg_convert_deb $ARG
+  else # never reached
+    echo "error: unexpected error while running pkg_convert." >&2
+    pkg_exit "main()" "this_should_be_never_reached" "$LINENO" 1
+  fi
+done
+
+cd $BASEDIR
+
+exit 0
+    

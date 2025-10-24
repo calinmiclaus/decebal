@@ -1,0 +1,36 @@
+NAME=faad2
+VERSION=2.0
+ARCH=i686
+RELEASE=1
+URL="http://www.audiocoding.com/faac.php"
+DESC="ISO AAC audio decoder."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="748K"
+HUSE="static xmms"
+
+SOURCES="http://umn.dl.sourceforge.net/sourceforge/faac/faad2-2.0.tar.gz
+         faad2-makefile.patch"
+
+RUNTIME="gcc"
+
+use xmms && RUNTIME="$RUNTIME xmms"
+
+function build() {
+    cd $SRC/$NAME
+    
+    use static && OPTS="--enable-static" || OPTS="--disable-static"
+    use xmms && OPTS="$OPTS --with-xmms"
+    
+    chmod +x bootstrap
+    ./bootstrap
+    ./configure --prefix=/usr \
+                $OPTS
+
+    patch -p0 <../faad2-makefile.patch
+
+    make
+    make DESTDIR=$PKG install
+
+    install_docs AUTHORS COPYING ChangeLog NEWS README README.linux TODO
+}

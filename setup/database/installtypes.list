@@ -1,0 +1,8 @@
+Desktop-Gnome:Gnome desktop
+Desktop-KDE:KDE desktop
+Desktop-Xfce:Xfce desktop
+Desktop-Enlightenment:Enlightenment desktop (beta)
+Desktop:All the stuff you need as a home-user
+Server:All you need for an all-purposed server
+Full:Install everything
+Minimal:Just the basic stuff (very basic)

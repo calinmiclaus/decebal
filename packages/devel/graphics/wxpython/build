@@ -1,0 +1,27 @@
+NAME=wxpython
+VERSION=2.6.0.0
+ARCH=i686
+RELEASE=1
+URL="http://www.wxpython.org"
+DESC="A wxwindows library port for Python."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="17942K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wxpython/wxPython-src-2.6.0.0.tar.gz"
+
+RUNTIME="python wxwidgets xorg gtk2"
+
+build() {
+  cd $SRC/wxPython-src-$VERSION/wxPython
+  
+  python setup.py build install --root=$PKG UNICODE=1 
+
+  cd $SRC/wxPython-src-$VERSION/wxPython/docs
+  install_docs BUILD.txt INSTALL.txt README.txt CHANGES.txt PyManual.txt wxPythonManual.txt
+}
+
+
+
+
+

@@ -1,0 +1,87 @@
+#!/bin/bash
+
+pkg_update_world() {
+  local STARTTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  local TOTAL=0
+  local SUCCESS=0
+  local INSTALLED=0
+  local FAILURE=0
+  local FAILEDPKGS=""
+  local PACKAGES=""
+
+  pkg_log "updating world started"
+  
+  for PKG in $DATABASEDIR/db/*
+  do
+    PKG=${PKG##*/}
+    PKGNAME=$(pkgname $PKG)
+    if [ "$PKG_REINSTALL" = "1" ]
+    then
+      dupdate $DUPDATE_OPTS $PKGNAME
+      if [ $? -eq 0 ]
+      then
+        SUCCESS=$(($SUCCESS + 1))
+      else
+        FAILURE=$(($FAILURE + 1))
+	FAILEDPKGS="$FAILEDPKGS $PKGNAME"
+      fi
+    else
+      local IVER=$(pkgversion $PKG)
+      local IREL=$(pkgrelease $PKG)
+      if [ -f $DATABASEDIR/update/$PKGNAME ]
+      then
+        source $DATABASEDIR/update/$PKGNAME 2>/dev/null
+	if [ ! "$UVERSION" = "$IVER" -o ! "$URELEASE" = "$IREL" ]
+	then
+	  dupdate $DUPDATE_OPTS $PKGNAME
+          if [ $? -eq 0 ]
+          then
+            SUCCESS=$(($SUCCESS + 1))
+          else
+            FAILURE=$(($FAILURE + 1))
+	    FAILEDPKGS="$FAILEDPKGS $PKGNAME"
+          fi
+	fi
+      fi
+    fi
+  done
+  
+  local ENDTIME="$(date -u "+%a %b %e %H:%M:%S %Y")"
+  
+  if [ "$PKG_DOWLOAD" = "1" ]
+  then
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages downloaded successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages download failed        : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the following packages could not be downloaded:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  else
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} total of packages: ${YELLOW}$TOTAL${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages updated successfuly : ${GREEN}$SUCCESS${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages already installed   : ${YELLOW}$INSTALLED${NORMAL}"
+    echo -e "     ${GREEN}[${NORMAL}-${GREEN}]${NORMAL} packages update failed       : ${RED}$FAILURE${NORMAL}"
+    if [ -n "$FAILEDPKGS" ]
+    then
+      echo -e "${GREEN}[${RED}+${GREEN}]${NORMAL} the following packages could not be built/installed:"
+      for EPKG in $FAILEDPKGS
+      do
+        echo -e "\t ${RED}$EPKG${NORMAL}"
+      done
+    fi
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} start time : $STARTTIME"
+    echo -e "${GREEN}[${NORMAL}+${GREEN}]${NORMAL} end time   : $ENDTIME"
+  fi
+													    
+  unset UNAME UVERSION URELEASE UURL UDESC USIZE UDEPENDS UMD5SUM EPKG PACKAGES \
+    INSTALLED SUCCESS FAILURE FAILEDPKGS STARTTIME ENDTIME
+}
+																		  
+	

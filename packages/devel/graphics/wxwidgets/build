@@ -1,0 +1,56 @@
+NAME=wxwidgets
+VERSION=2.6.0.0
+ARCH=i686
+RELEASE=1
+URL="htpp://www.wxwidgets.org"
+DESC="Cross-platform GUI framework"
+GROUP=devel
+LICENSE="GPLv2"
+SIZE="17942K"
+HUSE="debug profile"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/wxpython/wxPython-src-2.6.0.0.tar.gz"
+
+RUNTIME="python glib >=libsdl-1.2.0 xorg >=gtk2-2.4.0 libtiff libjpeg libpng >=zlib-1.1.4"
+
+build() {
+  cd $SRC/wxPython-src-$VERSION
+
+  use debug && OPTS="--enable-debug_info"
+  use profile && OPTS="$OPTS --enable-profile"
+
+  ./configure --prefix=/usr \
+	      --with-gtk \
+	      --with-opengl \
+	      --enable-geometry \
+	      --enable-sound \
+	      --enable-display \
+	      --enable-unicode \
+	      --enable-optimize \
+	      --enable-plugins \
+	      --enable-shared \
+	      --with-libpng \
+	      --with-libjpeg \
+	      --with-libtiff \
+	      --with-libxpm \
+	      --with-expat \
+	      --with-sdl $OPTS
+  make
+  make -C contrib/src/animate
+  make -C contrib/src/gizmos
+  make -C contrib/src/stc 
+
+  make DESTDIR=$PKG install
+
+  ( cd $SRC/wxPython-src-$VERSION/contrib/src/animate ; make DESTDIR=$PKG install )
+  ( cd $SRC/wxPython-src-$VERSION/contrib/src/gizmos ; make DESTDIR=$PKG install )
+  ( cd $SRC/wxPython-src-$VERSION/contrib/src/stc ; make DESTDIR=$PKG install )
+  
+  ( cd $PKG/usr/bin
+    rm -f wx-config
+    ln -s ../lib/wx/config/gtk2-unicode-release-2.6 wx-config )
+
+  cd $SRC/wxPython-src-$VERSION/docs
+
+  install_docs readme.txt preamble.txt changes.txt gpl.txt lgpl.txt todo.txt 	    
+}

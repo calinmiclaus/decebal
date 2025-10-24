@@ -1,0 +1,76 @@
+#!/bin/bash
+
+pkg_update_pkg() {
+  local PKG="$1"
+  
+  if [ ! -f $DATABASEDIR/update/$PKG ]
+  then
+    echo "Package '$PKG' is not available. Use 'dupdate sync' to update the dupdate package database." >&2
+    pkg_exit "pkg_update_pkg()" "check_if_package_is_available" "$LINENO" 1
+  fi
+  
+  . $DATABASEDIR/update/$PKG 2>/dev/null
+  
+  if pkg_is_installed $PKG
+  then
+    IPKG=$(get_installed_pkg $PKG)
+    IVER=$(pkgversion $IPKG)
+    IREL=$(pkgrelease $IPKG)
+    
+    if [ ! "$UVERSION" = "$IVER" -o ! "$URELEASE" = "$IREL" ]
+    then
+      MESSAGE="Upgrading"
+      COMMAND="pkg_upgrade $PKGADD_OPTS"
+    else
+      if [ "$PKG_REINSTALL" = "1" ]
+      then
+        MESSAGE="Reinstalling"
+	COMMAND="pkg_upgrade -r $PKGADD_OPTS"
+      else
+        echo "package $PKG is already installed ($PKG-$UVERSION-$URELEASE)."
+        pkg_exit "pkg_update_pkg()" "check_if_package_is_already_installed" "$LINENO" 1
+      fi
+    fi
+  else
+    MESSAGE="Installing"
+    COMMAND="pkg_install $PKGADD_OPTS"
+  fi
+  
+  msg_start "$MESSAGE $PKG [$UVERSION $URELEASE]"
+  
+  if [ ! "$PKG_NODEPS" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/update/depend
+    pkg_check_dependencies
+  fi
+  
+  [ -d $CACHEDIR ] || mkdir -p $CACHEDIR
+  cd $CACHEDIR
+  
+  msg_nnl "Downloading $PKG-$UVERSION-i686-$URELEASE.tbz2..." ; [ "$PKG_VERBOSE" = "1" ] && echo
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    $DOWNLOADTOOL http://$UPDATEMIRROR/$PKG-$UVERSION-i686-$URELEASE.tbz2
+  else
+    $DOWNLOADTOOL http://$UPDATEMIRROR/$PKG-$UVERSION-i686-$URELEASE.tbz2 >/dev/null 2>&1
+  fi
+  
+  if [ ! -e $PKG-$UVERSION-i686-$URELEASE.tbz2 ]
+  then
+    msg_failed
+    msg_error "Could not $MESSAGE $PKG."
+    msg_error "Downloading package from $UPDATEMIRROR/$PKG-$UVERSION-i686-$URELEASE.tbz2 failed."
+    pkg_exit "pkg_update_pkg()" "download_package_from_update_mirror" "$LINENO" 1
+  else
+    msg_ok
+  fi
+
+  if [ ! "$PKG_MD5SUM" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/update/md5sum
+    pkg_check_md5sum $PKG-$UVERSION-i686-$URELEASE.tbz2
+  fi
+  
+  $COMMAND $PKG-$UVERSION-i686-$URELEASE.tbz2
+  return $?
+}

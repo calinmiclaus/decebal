@@ -1,0 +1,26 @@
+NAME=html-parser-perl
+VERSION=3.45
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~gaas/HTML-Parser-3.45/"
+DESC="Parse and extract information from HTML documents."
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SIZE="80K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/G/GA/GAAS/HTML-Parser-3.45.tar.gz"
+
+RUNTIME="html-tagset-perl"
+
+build() {
+  cd $SRC/HTML-Parser-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs Changes README MANIFEST TODO
+}

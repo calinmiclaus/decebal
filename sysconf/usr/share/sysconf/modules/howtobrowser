@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# Script which lets you browse the howto files.
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+function main_menu()
+{
+local howtopath="/usr/share/doc/linux-howtos"
+local tmp="$tmp/howto"
+mkdir -p $tmp
+
+$dialog --backtitle "$version" --title " Working " --infobox \
+"\nLoading howto files ..." 5 0
+
+local opt="" i
+local filename=""
+for i in $howtopath/*; do
+    filename=`basename $i`
+    opt="$opt $filename -"
+done
+
+local howtofile=`echo $opt|cut -f 1 -d "-"|awk '{print $1}'`
+local mm_but=0
+
+while [ $mm_but -eq 0 ];
+do
+    $dialog --backtitle "$version" --title " Linux HowTo browser " \
+    --ok-label "View" --cancel-label "Back" --default-item "$howtofile" \
+    --menu "\nSelect which HOWTO you want to read\n" 0 0 0 \
+    $opt 2>$tmp/howto_file
+    mm_but=$?
+    howtofile=`cat $tmp/howto_file`
+    rm -f $tmp/howto_file
+
+    if [ $mm_but -eq 0 ];
+    then
+        $dialog --backtitle "$version" --title " $howtofile " \
+	--cancel-label "Back" \
+        --textbox $howtopath/$howtofile 0 0
+    fi
+done
+rm -rf $tmp
+}
+
+tmp=`make_tmp howto`
+$1
+rm -rf $tmp

@@ -1,0 +1,484 @@
+diff -urN svgalib-1.4.3/Makefile svgalib-1.4.3-hacked/Makefile
+--- svgalib-1.4.3/Makefile	2001-04-18 19:35:51.000000000 +0200
++++ svgalib-1.4.3-hacked/Makefile	2002-12-27 04:47:08.000000000 +0100
+@@ -24,6 +24,16 @@
+ export JUMP_DIR
+ export JUMP_LIB
+ 
++# If we're going to install to a dstdir, we're going to have
++# to add a directory to the ld search path
++
++# libdir or sharedlibdir? (hopefully libdir works)
++
++ifdef dstdir
++	override LDFLAGS := $(LDFLAGS) "-L$(dstdir)$(sharedlibdir)" "-L$(dstdir)$(libdir)" 
++	export LDFLAGS
++endif
++
+ # Search the old directories for mkimage and mkstubs.
+ # Make sure mkimage get the right "as" assembler.
+ ifeq (a.out, $(TARGET_FORMAT))
+@@ -109,67 +119,74 @@
+ .PHONY: indent-gnu configaout
+ 
+ installheaders:
+-	@echo Installing header files in $(includedir).
+-	@if [ -f /usr/include/vga.h ]; then \
+-		rm -f /usr/include/vga.h /usr/include/vgagl.h; \
+-		echo Old header files in /usr/include removed.; \
+-	fi
+-	mkdir -p $(includedir)
+-	@cp $(srcdir)/src/vga.h $(includedir)/vga.h
+-	@chmod a+r $(includedir)/vga.h
+-	@cp $(srcdir)/gl/vgagl.h $(includedir)/vgagl.h
+-	@chmod a+r $(includedir)/vgagl.h
+-	@cp $(srcdir)/src/mouse/vgamouse.h $(includedir)/vgamouse.h
+-	@chmod a+r $(includedir)/vgamouse.h
+-	@cp $(srcdir)/src/joystick/vgajoystick.h $(includedir)/vgajoystick.h
+-	@chmod a+r $(includedir)/vgajoystick.h
+-	@cp $(srcdir)/src/keyboard/vgakeyboard.h $(includedir)/vgakeyboard.h
+-	@chmod a+r $(includedir)/vgakeyboard.h
++	@echo Installing header files in $(dstdir)$(includedir).
++	@if [ -f $(dstdir)/usr/include/vga.h ]; then \
++		rm -f $(dstdir)/usr/include/vga.h $(dstdir)/usr/include/vgagl.h; \
++		echo Old header files in $(dstdir)/usr/include removed.; \
++	fi
++	mkdir -p $(dstdir)$(includedir)
++	@cp $(srcdir)/src/vga.h $(dstdir)$(includedir)/vga.h
++	@chmod a+r $(dstdir)$(includedir)/vga.h
++	@cp $(srcdir)/gl/vgagl.h $(dstdir)$(includedir)/vgagl.h
++	@chmod a+r $(dstdir)$(includedir)/vgagl.h
++	@cp $(srcdir)/src/mouse/vgamouse.h $(dstdir)$(includedir)/vgamouse.h
++	@chmod a+r $(dstdir)$(includedir)/vgamouse.h
++	@cp $(srcdir)/src/joystick/vgajoystick.h $(dstdir)$(includedir)/vgajoystick.h
++	@chmod a+r $(dstdir)$(includedir)/vgajoystick.h
++	@cp $(srcdir)/src/keyboard/vgakeyboard.h $(dstdir)$(includedir)/vgakeyboard.h
++	@chmod a+r $(dstdir)$(includedir)/vgakeyboard.h
+ 
+ installsharedlib: $(SHAREDLIBS) $(SVGALIBSHAREDSTUBS)
+ ifeq (a.out, $(TARGET_FORMAT))
+-	@echo Installing shared library stubs in $(libdir).
++	@echo Installing shared library stubs in $(dstdir)$(libdir).
+ 	-@for foo in $(notdir $(SVGALIBSHAREDSTUBS)); do \
+-		$(INSTALL_DATA) sharedlib/$$foo $(libdir)/$$foo; \
+-		chmod a+r $(libdir)/$$foo; \
++		$(INSTALL_DATA) sharedlib/$$foo $(dstdir)$(libdir)/$$foo; \
++		chmod a+r $(dstdir)$(libdir)/$$foo; \
+ 	done
+ endif
+-	@if [ -f /usr/lib/libvga.sa ]; then \
+-		rm -f /usr/lib/libvga.sa /usr/lib/libvgagl.sa; \
+-		echo Old stubs in /usr/lib removed.; \
++	@if [ -f $(dstdir)/usr/lib/libvga.sa ]; then \
++		rm -f $(dstdir)/usr/lib/libvga.sa $(dstdir)/usr/lib/libvgagl.sa; \
++		echo Old stubs in $(dstdir)/usr/lib removed.; \
+ 	fi
+-	@rm -f $(OBSOLETESHAREDIMAGES)
++	@rm -f $(dstdir)/$(OBSOLETESHAREDIMAGES)
+ ifndef KEEPSHAREDLIBS
+ 	@echo "Removing shared library images (old & current)..."
+ 	@for i in $(OBSOLETELDIRS); do \
+-	    rm -f `echo $(OBSOLETESHAREDIMAGES) | sed s?/lib/?$$i?g`; \
++	    rm -f `echo $(OBSOLETESHAREDIMAGES) | sed s?/lib/?$(dstdir)$$i?g`; \
+          done
+ endif
+-	mkdir -p $(sharedlibdir)
++	mkdir -p $(dstdir)$(sharedlibdir)
+ 	@echo Installing shared library image as \
+-		$(addprefix $(sharedlibdir)/,$(notdir $(SHAREDLIBS))).
++		$(addprefix $(dstdir)$(sharedlibdir)/,$(notdir $(SHAREDLIBS))).
+ 	@for foo in $(notdir $(SHAREDLIBS)); do \
+-		$(INSTALL_SHLIB) sharedlib/$$foo $(sharedlibdir)/$$foo; \
+-		(cd $(sharedlibdir); \
++		$(INSTALL_SHLIB) sharedlib/$$foo $(dstdir)$(sharedlibdir)/$$foo; \
++		(cd $(dstdir)$(sharedlibdir); \
+ 		 ln -sf $$foo `echo $$foo | sed 's/\.so\..*/.so/'` ); \
++		 echo "**** ln -sf $$f00 $(dstdir)`echo $$foo | sed 's/\.so\..*/.so/'`"; \
+ 	done
++	
++ifndef dstdir
+ 	@ldconfig
++endif
+ 
+ ifdef INSTALLAOUTDIR
+ 
+ installaoutcompat:
+-	@echo Installing shared a.out compatibility library in $(TOPDIR)/$(INSTALLAOUTDIR).
++	@echo Installing shared a.out compatibility library in $(dstdir)$(TOPDIR)/$(INSTALLAOUTDIR).
+ 	@for foo in $(notdir $(SVGALIBSHAREDAOUTSTUBS)); do \
+-		$(INSTALL_DATA) sharedlib/$$foo $(TOPDIR)/$(INSTALLAOUTDIR)$$foo; \
++		$(INSTALL_DATA) sharedlib/$$foo $(dstdir)$(TOPDIR)/$(INSTALLAOUTDIR)$$foo; \
+ 	done
+ 	@echo Installing shared a.out library compat image as \
+-		$(addprefix $(INSTALLAOUTDIR),$(notdir $(SHAREDLIBS))).
++		$(addprefix $(dstdir)$(INSTALLAOUTDIR),$(notdir $(SHAREDLIBS))).
+ 	@for foo in $(notdir $(SHAREDAOUTLIBS)); do \
+-		$(INSTALL_SHLIB) sharedlib/$$foo $(TOPDIR)/$(INSTALLAOUTDIR)$$foo; \
+-		(cd $(TOPDIR)/$(INSTALLAOUTDIR); \
++		$(INSTALL_SHLIB) sharedlib/$$foo $(dstdir)$(TOPDIR)/$(INSTALLAOUTDIR)$$foo; \
++		(cd $(dstdir)$(TOPDIR)/$(INSTALLAOUTDIR); \
+ 		 ln -sf $$foo `echo $$foo | sed 's/\.so\..*/.so/'` ); \
+ 	done
++	
++ifndef dstdir
+ 	@ldconfig
++endif
+ 
+ else
+ 
+@@ -179,87 +196,92 @@
+ endif
+ 
+ installstaticlib: static
+-	@echo Installing static libraries in $(libdir).
+-	@rm -f /usr/lib/libvga.a
+-	@$(INSTALL_DATA) staticlib/libvga.a $(libdir)/libvga.a
+-	@chmod a+r $(libdir)/libvga.a
+-	@rm -f /usr/lib/libvgagl.a
+-	@$(INSTALL_DATA) staticlib/libvgagl.a $(libdir)/libvgagl.a
+-	@chmod a+r $(libdir)/libvgagl.a
++	@echo Installing static libraries in $(dstdir)$(libdir).
++	@rm -f $(dstdir)/usr/lib/libvga.a
++	@$(INSTALL_DATA) staticlib/libvga.a $(dstdir)$(libdir)/libvga.a
++	@chmod a+r $(dstdir)$(libdir)/libvga.a
++	@rm -f $(dstdir)/usr/lib/libvgagl.a
++	@$(INSTALL_DATA) staticlib/libvgagl.a $(dstdir)$(libdir)/libvgagl.a
++	@chmod a+r $(dstdir)$(libdir)/libvgagl.a
+ 
+ installutils: textutils lrmi
+-	@if [ ! -d $(bindir) ]; then \
+-		echo No $(bindir) directory, creating it.; \
+-		mkdir $(bindir); \
+-	fi
+-	@if [ -f /usr/bin/restorefont ]; then \
+-		echo Removing old utilities in /usr/bin.; \
+-		for x in $(UTILS); do rm -f /usr/bin/$$x; done; \
+-	fi
+-	@if [ -f /usr/bin/convfont ]; then \
+-		echo Removing inappropriate utilities in /usr/bin.; \
+-		rm -f /usr/bin/convfont /usr/bin/setmclk; \
++	@if [ ! -d $(dstdir)$(bindir) ]; then \
++		echo No $(dstdir)$(bindir) directory, creating it.; \
++		mkdir -p $(dstdir)$(bindir); \
++	fi
++	@if [ -f $(dstdir)/usr/bin/restorefont ]; then \
++		echo Removing old utilities in $(dstdir)/usr/bin.; \
++		for x in $(UTILS); do rm -f $(dstdir)/usr/bin/$$x; done; \
++	fi
++	@if [ -f $(dstdir)/usr/bin/convfont ]; then \
++		echo Removing inappropriate utilities in $(dstdir)/usr/bin.; \
++		rm -f $(dstdir)/usr/bin/convfont $(dstdir)/usr/bin/setmclk; \
+ 	fi
+-	@echo Installing textmode utilities in $(bindir):
++	@echo Installing textmode utilities in $(dstdir)$(bindir):
+ 	@echo "restorefont:      Save/restore textmode font."
+-	@cp utils/restorefont $(bindir)
++	@cp utils/restorefont $(dstdir)$(bindir)
+ 	@echo "restorepalette:   Set standard VGA palette."
+-	@cp utils/restorepalette $(bindir)
++	@cp utils/restorepalette $(dstdir)$(bindir)
+ 	@echo "dumpreg:          Write ASCII dump of SVGA registers."
+-	@cp utils/dumpreg $(bindir)
++	@cp utils/dumpreg $(dstdir)$(bindir)
+ 	@echo "restoretextmode:  Save/restore textmode registers."
+-	@cp utils/restoretextmode $(bindir)
++	@cp utils/restoretextmode $(dstdir)$(bindir)
+ 	@echo "textmode:         Script that tries to restore textmode."
+-	@cp utils/textmode $(bindir)
++	@cp utils/textmode $(dstdir)$(bindir)
+ 	@echo "savetextmode:     Script that saves textmode information used by 'textmode'."
+-	@cp utils/savetextmode $(bindir)
++	@cp utils/savetextmode $(dstdir)$(bindir)
+ 	@echo "mode3:       Restore textmode by setting VESA mode 3."
+-	@cp lrmi-0.6m/mode3 $(bindir)
+-	@echo "Installing keymap utilities in $(bindir):"
++	@cp lrmi-0.6m/mode3 $(dstdir)$(bindir)
++	@echo "Installing keymap utilities in $(dstdir)$(bindir):"
+ 	@echo "svgakeymap:       Perl script that generates scancode conversion maps."
+-	@cp utils/svgakeymap $(bindir)
++	@cp utils/svgakeymap $(dstdir)$(bindir)
+ 
+ installconfig:
+-	@if [ ! -d $(datadir) ]; then \
+-		echo Creating configuration directory $(datadir).; \
+-		mkdir $(datadir); \
+-		chmod go-w $(datadir); \
+-	fi
+-	@if [ \( -f /usr/local/lib/libvga.config -a ! -f $(datadir)/libvga.config \) ]; then \
+-		echo "Moving old config file /usr/local/lib/libvga.config to $(datadir)." ; \
+-		mv -f /usr/local/lib/libvga.config $(datadir)/libvga.config; \
+-	fi
+-	@if [ \( -f /usr/local/lib/libvga.et4000 -a ! -f $(datadir)/libvga.et4000 \) ]; then \
+-		echo "Moving old config file /usr/local/lib/libvga.et4000 to $(datadir)." ; \
+-		mv -f /usr/local/lib/libvga.et4000 $(datadir)/libvga.et4000; \
+-	fi
+-	@if [ \( -f /usr/local/lib/libvga.ega -a ! -f $(datadir)/libvga.ega \) ]; then \
+-		echo "Moving old config file /usr/local/lib/libvga.ega to $(datadir)." ; \
+-		mv -f /usr/local/lib/libvga.ega $(datadir)/libvga.ega; \
+-	fi
+-	@if [ \( -f /etc/mach32.eeprom -a ! -f $(datadir)/mach32.eeprom \) ]; then \
+-		echo Consider moving your /etc/mach32.eeprom file to $(datadir) ; \
+-		echo and changing $(datadir)/libvga.config appropriately. ; \
+-	fi
+-	@if [ ! -f $(datadir)/libvga.config ]; then \
+-		echo Installing default configuration file in $(datadir).; \
+-		cp $(confdir)/libvga.config $(datadir)/libvga.config; \
+-	fi
+-	@if [ ! -f $(datadir)/libvga.et4000 ]; then \
+-		echo Installing dynamically loaded ET4000 registers in $(datadir).; \
+-		cp $(confdir)/et4000.regs $(datadir)/libvga.et4000; \
+-	fi
+-	@if [ ! -f $(datadir)/default.keymap ]; then \
+-		echo Installing default keymap file in $(datadir).; \
+-		cp $(confdir)/default.keymap $(datadir)/null.keymap; \
+-	fi
+-	@if [ ! -f $(datadir)/dvorak-us.keymap ]; then \
+-		echo Installing Dvorak keymap file in $(datadir).; \
+-		cp $(confdir)/dvorak-us.keymap $(datadir)/dvorak-us.keymap; \
++	@if [ ! -d $(dstdir)$(datadir) ]; then \
++		echo Creating configuration directory $(dstdir)$(datadir).; \
++		mkdir -p $(dstdir)$(datadir); \
++		chmod go-w $(dstdir)$(datadir); \
++	fi
++	@if [ \( -f $(dstdir)/usr/local/lib/libvga.config -a ! -f $(dstdir)$(datadir)/libvga.config \) ]; then \
++		echo "Moving old config file /usr/local/lib/libvga.config to $(dstdir)$(datadir)." ; \
++		mv -f $(dstdir)/usr/local/lib/libvga.config $(dstdir)$(datadir)/libvga.config; \
++	fi
++	@if [ \( -f $(dstdir)/usr/local/lib/libvga.et4000 -a ! -f $(dstdir)$(datadir)/libvga.et4000 \) ]; then \
++		echo "Moving old config file /usr/local/lib/libvga.et4000 to $(dstdir)$(datadir)." ; \
++		mv -f $(dstdir)/usr/local/lib/libvga.et4000 $(dstdir)$(datadir)/libvga.et4000; \
++	fi
++	@if [ \( -f $(dstdir)/usr/local/lib/libvga.ega -a ! -f $(dstdir)$(datadir)/libvga.ega \) ]; then \
++		echo "Moving old config file /usr/local/lib/libvga.ega to $(dstdir)$(datadir)." ; \
++		mv -f $(dstdir)/usr/local/lib/libvga.ega $(dstdir)$(datadir)/libvga.ega; \
++	fi
++	@if [ \( -f $(dstdir)/etc/mach32.eeprom -a ! -f $(dstdir)$(datadir)/mach32.eeprom \) ]; then \
++		echo Consider moving your $(dstdir)/etc/mach32.eeprom file to $(dstdir)$(datadir) ; \
++		echo and changing $(dstdir)$(datadir)/libvga.config appropriately. ; \
++	fi
++	@if [ ! -f $(dstdir)$(datadir)/libvga.config ]; then \
++		echo Installing default configuration file in $(dstdir)$(datadir).; \
++		cp $(confdir)/libvga.config $(dstdir)$(datadir)/libvga.config; \
++	fi
++	@if [ ! -f $(dstdir)$(datadir)/libvga.et4000 ]; then \
++		echo Installing dynamically loaded ET4000 registers in $(dstdir)$(datadir).; \
++		cp $(confdir)/et4000.regs $(dstdir)$(datadir)/libvga.et4000; \
++	fi
++	@if [ ! -f $(dstdir)$(datadir)/default.keymap ]; then \
++		echo Installing default keymap file in $(dstdir)$(datadir).; \
++		cp $(confdir)/default.keymap $(dstdir)$(datadir)/null.keymap; \
++	fi
++	@if [ ! -f $(dstdir)$(datadir)/dvorak-us.keymap ]; then \
++		echo Installing Dvorak keymap file in $(dstdir)$(datadir).; \
++		cp $(confdir)/dvorak-us.keymap $(dstdir)$(datadir)/dvorak-us.keymap; \
+ 	fi
+ 
+ installman:
++ifeq ("COMPRESSED", $(MANFORMAT))
++	(cd doc; $(MAKE) -f $(srcdir)/doc/Makefile srcdir="$(srcdir)" gzip install )
++else
+ 	(cd doc; $(MAKE) -f $(srcdir)/doc/Makefile srcdir="$(srcdir)" install )
++endif
++
+ 	 
+ install: uninstall $(INSTALLAOUTLIB) installheaders $(INSTALLSHAREDLIB) installconfig \
+ 	$(INSTALLSTATICLIB) $(INSTALLUTILS) $(INSTALLMAN)
+@@ -272,19 +294,19 @@
+ 	@echo "Removing textmode utilities..."
+ 	@for i in $(OBSOLETEBDIRS); do \
+           for prog in $(UTILS); do \
+-            rm -f $$i$$prog ; \
++            rm -f $(dstdir)$$i$$prog ; \
+           done ; \
+          done
+ 	@echo "Removing shared library stubs (old & current)..."
+ 	@for i in $(OBSOLETELDIRS); do \
+ 	    rm -f `echo /lib/libvga.so.$(VERSION) /lib/libvgagl.so.$(VERSION) \
+ 			$(OBSOLETELIBLINKS) /lib/libvga.sa /lib/libvgagl.sa \
+-		     | sed s?/lib/?$$i?g`; \
++		     | sed s?/lib/?$(dstdir)$$i?g`; \
+          done
+ ifndef KEEPSHAREDLIBS
+ 	@echo "Removing shared library images (old & current)..."
+ 	@for i in $(OBSOLETELDIRS); do \
+-	    rm -f `echo $(OBSOLETESHAREDIMAGES) | sed s?/lib/?$$i?g`; \
++	    rm -f `echo $(OBSOLETESHAREDIMAGES) | sed s?/lib/?$(dstdir)$$i?g`; \
+          done
+ endif
+ ifneq ($(INSTALLAOUTDIR), )
+@@ -292,22 +314,22 @@
+ 	@for i in $(OBSOLETEAOUTDIRS); do \
+ 	    rm -f `echo /lib/libvga.so.$(VERSION) /lib/libvgagl.so.$(VERSION) \
+ 			$(OBSOLETELIBLINKS) /lib/libvga.sa /lib/libvgagl.sa \
+-		     | sed s?/lib/?$$i?g`; \
++		     | sed s?/lib/?$(dstdir)$$i?g`; \
+          done
+ ifndef KEEPSHAREDLIBS
+ 	@echo "Removing shared a.out library images (old & current)..."
+ 	@for i in $(OBSOLETEAOUTDIRS); do \
+-	    rm -f `echo $(OBSOLETESHAREDIMAGES) | sed s?/lib/?$$i?g`; \
++	    rm -f `echo $(OBSOLETESHAREDIMAGES) | sed s?/lib/?$(dstdir)$$i?g`; \
+          done
+ endif
+ endif
+ 	@echo "Removing static libraries..."
+ 	@for i in $(OBSOLETELDIRS); do \
+-	    rm -f `echo /lib/libvga.a /lib/libvgagl.a | sed s?/lib/?$$i?g`; \
++	    rm -f `echo /lib/libvga.a /lib/libvgagl.a | sed s?/lib/?$(dstdir)$$i?g`; \
+ 	done
+ 	@echo "Removing header files..."
+ 	@for i in $(OBSOLETEHDIRS); do \
+-	    rm -f `echo $(OBSOLETEHEADERS) | sed s?/inc/?$$i?g`; \
++	    rm -f `echo $(OBSOLETEHEADERS) | sed s?/inc/?$(dstdir)$$i?g`; \
+ 	done
+ 	(cd doc; $(MAKE) -f $(srcdir)/doc/Makefile srcdir="$(srcdir)" uninstall)
+ 	 
+@@ -462,7 +484,7 @@
+ 
+ distclean:
+ 	(cd $(srcdir)/doc; $(MAKE) clean)
+-	(cd $(srcdir)/doc; $(MAKE) ../0-README)
++#	(cd $(srcdir)/doc; $(MAKE) ../0-README)
+ 	(cd $(srcdir)/src; $(MAKE) clean)
+ 	(cd $(srcdir)/gl; $(MAKE) clean)
+ 	(cd $(srcdir)/utils; $(MAKE) clean)
+diff -urN svgalib-1.4.3/Makefile.cfg svgalib-1.4.3-hacked/Makefile.cfg
+--- svgalib-1.4.3/Makefile.cfg	2001-05-29 16:39:13.000000000 +0200
++++ svgalib-1.4.3-hacked/Makefile.cfg	2002-12-27 04:47:08.000000000 +0100
+@@ -22,6 +22,13 @@
+ 
+ confdir = $(srcdir)/src/config
+ 
++
++# destination directory.
++# where everything happens. If it's empty 'we' install directly into the 
++# system
++# NOTE: this directory must exist when you start the install.
++dstdir=
++
+ # Common prefix for installation directories.
+ # NOTE: This directory must exist when you start the install.
+ TOPDIR=
+diff -urN svgalib-1.4.3/doc/Makefile svgalib-1.4.3-hacked/doc/Makefile
+--- svgalib-1.4.3/doc/Makefile	2000-08-06 12:29:12.000000000 +0200
++++ svgalib-1.4.3-hacked/doc/Makefile	2002-12-27 04:49:14.000000000 +0100
+@@ -26,21 +26,13 @@
+ MANPAGES=$(shell cd $(srcdir)/doc; find man? -type f -print)
+ UNCOMANPAGES=$(subst .gz, , $(MANPAGES))
+ 
+-.PHONY: clean ascii dvi ps install gunzip gzip
+-
+-gunzip:
+-	for dir in man?; do\
+-		echo gunzipping manpages in $$dir;\
+-		for file in $$dir/*; do \
+-			gunzip $$file; \
+-		done; \
+-	done
++.PHONY: clean ascii dvi ps install gzip
+ 
+ gzip:
+ 	for dir in man?; do\
+ 		echo gzipping manpages in $$dir;\
+ 		for file in $$dir/*; do \
+-			gzip $$file; \
++			gzip -c $$file > $$file.gz; \
+ 		done; \
+ 	done
+ 
+@@ -65,21 +57,15 @@
+ 	cat $(VGAGL) | grep -v '^\.so ' | troff -man -T$@ > vgagl.$@
+ 	cat $(THREED) | grep -v '^\.so ' | troff -man -T$@ > 3d.$@
+ 
+-install: gzip
+-	mkdir -p $(mandir)/man1 $(mandir)/man3 $(mandir)/man5\
+-		 $(mandir)/man6 $(mandir)/man7 $(mandir)/man8
+-	$(INSTALL_DATA) $(srcdir)/doc/man1/* $(mandir)/man1
+-	$(INSTALL_DATA) $(srcdir)/doc/man3/* $(mandir)/man3
+-	$(INSTALL_DATA) $(srcdir)/doc/man5/* $(mandir)/man5
+-	$(INSTALL_DATA) $(srcdir)/doc/man6/* $(mandir)/man6
+-	$(INSTALL_DATA) $(srcdir)/doc/man7/* $(mandir)/man7
+-	$(INSTALL_DATA) $(srcdir)/doc/man8/* $(mandir)/man8
+-	for dir in man?; do\
+-		echo gunzipping manpages in $$dir;\
+-		for file in $$dir/*; do \
+-			gunzip $$file; \
+-		done; \
+-	done
++install:
++	mkdir -p $(dstdir)$(mandir)/man1 $(dstdir)$(mandir)/man3 $(dstdir)$(mandir)/man5\
++		 $(dstdir)$(mandir)/man6 $(dstdir)$(mandir)/man7 $(dstdir)$(mandir)/man8
++	$(INSTALL_DATA) $(srcdir)/doc/man1/* $(dstdir)$(mandir)/man1
++	$(INSTALL_DATA) $(srcdir)/doc/man3/* $(dstdir)$(mandir)/man3
++	$(INSTALL_DATA) $(srcdir)/doc/man5/* $(dstdir)$(mandir)/man5
++	$(INSTALL_DATA) $(srcdir)/doc/man6/* $(dstdir)$(mandir)/man6
++	$(INSTALL_DATA) $(srcdir)/doc/man7/* $(dstdir)$(mandir)/man7
++	$(INSTALL_DATA) $(srcdir)/doc/man8/* $(dstdir)$(mandir)/man8
+ ifdef MAKEWHATIS
+ 	@echo "Rebuilding the whatis database (this is slow!)"
+ 	@echo "You can comment this out in Makefile.cfg!"
+@@ -89,8 +75,8 @@
+ uninstall:
+ 	@echo Removing all svgalib man pages.
+ 	@for dir in $(mandir) /usr/man /usr/local/man; do \
+-		cd $$dir; \
+-		rm -f $(MANPAGES) $(UNCOMANPAGES); \
++		cd $(dstdir)$$dir && \
++		rm -f $(MANPAGES) $(UNCOMANPAGES) || true; \
+ 	done;\
+ 
+ clean:
+diff -urN svgalib-1.4.3/lrmi-0.6m/Makefile svgalib-1.4.3-hacked/lrmi-0.6m/Makefile
+--- svgalib-1.4.3/lrmi-0.6m/Makefile	1999-06-26 22:14:02.000000000 +0200
++++ svgalib-1.4.3-hacked/lrmi-0.6m/Makefile	2002-12-27 04:47:08.000000000 +0100
+@@ -22,8 +22,8 @@
+ 	$(CC) $(CFLAGS) -o $@ $^
+ 
+ install: mode3 vga_reset
+-	install mode3 /sbin
+-	install vga_reset /sbin
++	install mode3 $(dstdir)/sbin
++	install vga_reset $(dstdir)/sbin
+ 
+ .PHONY: clean
+ clean:
+diff -urN svgalib-1.4.3/src/Makefile svgalib-1.4.3-hacked/src/Makefile
+--- svgalib-1.4.3/src/Makefile	2001-05-29 16:36:53.000000000 +0200
++++ svgalib-1.4.3-hacked/src/Makefile	2002-12-27 04:47:08.000000000 +0100
+@@ -391,8 +391,10 @@
+ 	  -o libvga.so.$(VERSION) $(ALLOBJS) -lm
+ 
+ $(sharedlibdir)/libvga.so.$(VERSION): libvga.so.$(VERSION)
+-	$(INSTALL_PROGRAM) $< $(sharedlibdir)/$<
++	$(INSTALL_PROGRAM) $< $(dstdir)$(sharedlibdir)/$<
++ifndef dstdir
+ 	ldconfig
++endif
+ 
+ install: $(sharedlibdir)/libvga.so.$(VERSION)
+ 
+diff -urN svgalib-1.4.3/utils/Makefile svgalib-1.4.3-hacked/utils/Makefile
+--- svgalib-1.4.3/utils/Makefile	1999-07-21 18:41:18.000000000 +0200
++++ svgalib-1.4.3-hacked/utils/Makefile	2002-12-27 04:47:08.000000000 +0100
+@@ -15,9 +15,10 @@
+ 
+ CFLAGS = $(WARN) $(OPTIMIZE) -I../include
+ #Use the next one for the Alpha/AXP if you need it
+-#LDFLAGS = -L../staticlib 
+-LIBS = -lvga -lm
++#LDFLAGS := -L../staticlib 
++  override LDFLAGS := $(LDFLAGS) "-L$(dstdir)$(sharedlibdir)" "-L$(dstdir)$(libdir)"
+ 
++LIBS = -lvga -lm
+ #----------------------------------------------------------------------
+ # Rules Section
+ #----------------------------------------------------------------------
+@@ -53,7 +54,7 @@
+ 	make .depend
+ 
+ install:
+-	$(INSTALLPROG) $(UTILPROGS) $(UTILINSTALLDIR)
++	$(INSTALLPROG) $(UTILPROGS) $(dstdir)$(UTILINSTALLDIR)
+ 
+ .depend:
+ 	gcc -MM $(patsubst %.o,$(srcdir)/utils/%.c,$(OBJECTS)) >.depend

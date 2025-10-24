@@ -1,0 +1,6 @@
+#
+# /etc/hosts.allow - control file for incomming TCP connections
+#
+
+in.ftpd: 127.0.0.1
+sshd: 127.0.0.1

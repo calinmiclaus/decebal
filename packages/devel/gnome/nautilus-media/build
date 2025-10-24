@@ -1,0 +1,28 @@
+NAME=nautilus-media
+VERSION=0.8.1
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="Media goodies for Nautilus."
+GROUP=gnome
+LICENSE="GPLv2"
+SIZE="409K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/nautilus-media-0.8.1.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="nautilus gstreamer gst-plugins eel"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --disable-test-view
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

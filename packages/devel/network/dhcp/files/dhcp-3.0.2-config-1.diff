@@ -1,0 +1,30 @@
+diff -Naur dhcp-3.0.2/includes/site.h dhcp-3.0.2-config/includes/site.h
+--- dhcp-3.0.2/includes/site.h	2002-03-12 20:33:39.000000000 +0200
++++ dhcp-3.0.2-config/includes/site.h	2005-05-23 23:32:03.000000000 +0300
+@@ -177,3 +177,9 @@
+    traces. */
+ 
+ #define TRACING
++
++#define _PATH_DHCPD_CONF "/etc/dhcp/dhcpd.conf"
++#define _PATH_DHCPD_PID "/var/run/dhcp/dhcpd.pid"
++#define _PATH_DHCPD_DB "/var/lib/dhcp/dhcpd.leases"
++#define _PATH_DHCLIENT_DB "/var/lib/dhcp/dhclient.leases"
++#define DHCPD_LOG_FACILITY LOG_LOCAL1
+diff -Naur dhcp-3.0.2/site.conf dhcp-3.0.2-config/site.conf
+--- dhcp-3.0.2/site.conf	1999-07-07 18:20:10.000000000 +0300
++++ dhcp-3.0.2-config/site.conf	2005-05-23 23:31:15.000000000 +0300
+@@ -1,2 +1,13 @@
+ # Put local site configuration stuff here to override the default
+ # settings in Makefile.conf
++CC = gcc
++LFLAGS = ${LDFLAGS}
++LIBDIR = /usr/lib
++INCDIR = /usr/include
++ETC = /etc/dhcp
++VARDB = /var/lib/dhcp
++VARRUN = /var/run/dhcp
++ADMMANDIR = /usr/share/man/man8
++FFMANDIR = /usr/share/man/man5
++LIBMANDIR = /usr/share/man/man3
++USRMANDIR = /usr/share/man/man1

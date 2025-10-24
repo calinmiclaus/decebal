@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 26 at &>/dev/null
+  /usr/sbin/useradd -g at -u 26 -d /var/spool/atjobs -s/bin/bash at &>/dev/null    
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 26 at &>/dev/null
+  /usr/sbin/useradd -g at -u 26 -d /var/spool/atjobs -s/bin/bash at &>/dev/null    
+}
+
+pre_remove() {
+  /usr/sbin/userdel at &>/dev/null
+  /usr/sbin/groupdel at &>/dev/null
+}

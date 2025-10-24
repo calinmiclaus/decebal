@@ -1,0 +1,48 @@
+NAME=gnome-vfs
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="Virtual filesystem library for GNOME."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2"
+SIZE="1856K"
+HUSE="ipv6 gtkdoc hal static profile"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/platform/2.10/2.10.0/sources/gnome-vfs-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+	   
+RUNTIME=">=xorg-6.7 >=libbonobo-2.8.0 >=gconf-2.8.0 >=gnome-mime-data-2.4.2 >=shared-mime-info-0.15 fam
+	 bzip2 cdparanoia samba"
+
+use gnutls && RUNTIME="$RUNTIME gnutls" || RUNTIME="$RUNTIME >=openssl-0.9.7e"
+use hal && RUNTIME="$RUNTIME hal"
+use gtk-doc && BUILDTIME="$BUILDTIME gtk-doc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  export GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  use hal && OPTS="$OPTS --enable-hal"
+  use static || OPTS="$OPTS --disable-static"
+  use profile && OPTS="$OPTS --enable-profiler"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/sbin \
+	      --localstatedir=/var/opt/gnome \
+	      --disable-schemas-install $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  unset GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL
+  
+  rm -rf $PKG/usr/doc
+  
+  install_docs AUTHORS COPYING* ChangeLog HACKING INSTALL NEWS \
+    README TODO
+}

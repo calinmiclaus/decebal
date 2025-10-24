@@ -1,0 +1,37 @@
+NAME=screen
+VERSION=4.0.2
+ARCH=i686
+RELEASE=1
+DESC="Full-screen window manager that multiplexes a physical terminal."
+URL="http://www.gnu.org/software/screen/"
+GROUP=system
+LICENSE=GPLv2
+SIZE="820K"
+HUSE="pam"
+
+SOURCES="ftp://ftp.uni-erlangen.de/pub/utilities/screen/screen-$VERSION.tar.gz"
+
+RUNTIME=">=ncurses-5.3 shadow"
+
+use pam && RUNTIME="$RUNTIME pam"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use pam && OPTS="$OPTS --enable-pam" || OPTS="--disable-pam"
+  
+  TERMINFO=$PKG/usr/share/terminfo ./configure --prefix=/usr \
+                                               --sysconfdir=/etc \
+					       --infodir=/usr/share/info \
+					       --mandir=/usr/share/man \
+					       --enable-colors256 \
+					       --with-sys-screenrc=/etc/screenrc \
+					       $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  rm -f $PKG/usr/share/terminfo
+  
+  install_docs COPYING ChangeLog doc/FAQ INSTALL NEWS* README \
+    TODO doc/README.DOTSCREEN
+}

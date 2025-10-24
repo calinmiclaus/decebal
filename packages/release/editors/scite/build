@@ -1,0 +1,34 @@
+NAME=scite
+VERSION=1.63
+ARCH=i686
+RELEASE=1
+URL="http://www.scintilla.org/"
+DESC="A free source code editing component for Win32 and GTK+."
+GROUP=editors
+LICENSE="BSDL"
+SIZE="1684K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/scintilla/scintilla163.tgz
+         http://heanet.dl.sourceforge.net/sourceforge/scintilla/scite163.tgz"
+
+BUILDTIME=">=gcc-3.1"
+
+RUNTIME=">=gtk-1.2"
+
+build() {
+  cd $SRC/scintilla/gtk
+  
+  make
+   
+  cd $SRC/$NAME
+  
+  ( cd gtk
+    make
+    make DESTDIR=$PKG install )
+  
+  sed -i "s:^Categories=.*$:Categories=GNOME;Application;TextEditor;:" \
+       $PKG/usr/share/applications/SciTE.desktop
+  chmod 644 $PKG/usr/share/applications/SciTE.desktop
+	 
+  install_docs License.txt README
+}

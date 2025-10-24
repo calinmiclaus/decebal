@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# /etc/rc.d/inetd - control file for the Super Internet daemon
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/inetd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the Internet Super daemon"
+    start_service /usr/sbin/inetd
+    ;;
+  stop)
+    msg "Stopping the Internet Super daemon"
+    stop_service /usr/sbin/inetd
+    ;;
+  reload)
+    msg "Reloading the Internet Super daemon"
+    reload_service /usr/sbin/inetd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/inetd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

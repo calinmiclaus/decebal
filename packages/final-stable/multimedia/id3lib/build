@@ -1,0 +1,21 @@
+NAME=id3lib
+VERSION=3.8.3
+ARCH=i686
+RELEASE=1
+URL="http://id3lib.sourceforge.net/"
+DESC="A library for reading, writing, and manipulating meta-information in digital audio files."
+GROUP=multimedia
+LICENSE="GPLv2"
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/id3lib/$NAME-$VERSION.tar.gz"
+
+function build() {
+    cd $SRC/$NAME-$VERSION
+    
+    ./configure --prefix=/usr
+    
+    make || return 1
+    make DESTDIR=$PKG install || return 1
+
+    install_docs AUTHORS COPYING ChangeLog HISTORY INSTALL \
+	NEWS README THANKS TODO
+}

@@ -1,0 +1,27 @@
+NAME=cvs
+VERSION=1.11.18
+ARCH=i686
+RELEASE=1
+URL="http://www.cvshome.org/"
+DESC="Concurrent Versions System."
+GROUP=devel
+LICENSE="GPLv2 GLGPLv2"
+SIZE="2322K"
+
+SOURCES="http://cougaar.org/frs/download.php/161/cvs-1.11.18.tar.bz2"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs AUTHORS BUGS COPYING* ChangeLog* DEVEL-CVS FAQ \
+    HACKING INSTALL MINOR-BUGS NEWS PROJECTS README* TESTS TODO
+}

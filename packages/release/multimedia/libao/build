@@ -1,0 +1,25 @@
+NAME=libao
+VERSION=0.8.5
+ARCH=i686
+RELEASE=1
+URL="http://www.xiph.org/ao/"
+DESC="Cross-platform audio output library and plugins."
+GROUP=multimedia
+LICENSE=GPLv2
+
+SOURCES="http://www.xiph.org/ao/src/libao-0.8.5.tar.gz"
+
+RUNTIME=">=alsa-lib-1.0.5
+         >=esound-0.2.34"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+	      --sysconfdir=/etc \
+	      --enable-esd
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS CHANGES COPYING README TODO
+}

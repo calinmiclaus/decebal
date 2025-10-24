@@ -1,0 +1,27 @@
+NAME=gnome-volume-manager
+VERSION=1.2.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A hardware monitoring application (daemon), using HAL and D-BUS."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="235K"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-volume-manager-1.2.0.tar.bz2"
+
+BUILDTIME="intltool nautilus"
+
+RUNTIME=">=libgnomeui-2.0 >=libglade-2.0 >=hal-0.2.98 >=dbus-0.20"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+	 
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO HACKING
+}

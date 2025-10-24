@@ -1,0 +1,73 @@
+NAME=gcc
+VERSION=3.4.4
+ARCH=i686
+RELEASE=1
+URL="http://gcc.gnu.org/"
+DESC="The GNU Compiler Collection (GCC)."
+GROUP=base
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="26782K"
+HUSE="f77 java"
+
+SOURCES="ftp://ftp.funet.fi/pub/mirrors/gcc.gnu.org/pub/gcc/releases/gcc-3.4.3/gcc-3.4.4.tar.bz2
+	 gcc-3.4.4-version-1.diff gcc-3.4.4-ssp-1.diff gcc-3.4.4-ssp-libssp-1.diff"
+
+RUNTIME=">=glibc-2.3.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  # What laguages to build...default.
+  local LANGUAGES="c,c++,objc"
+  
+  use f77 && LANGUAGES="${LANGUAGES},f77"
+  use java && LANGUAGES="${LANGUAGES},java"
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  
+  remove_flags -fstack-protector -fstack-protector-all  
+  
+  # Version patch.
+  patch -p1 < ../gcc-3.4.4-version-1.diff 
+    
+  patch -p1 < ../gcc-3.4.4-ssp-1.diff
+  patch -p1 < ../gcc-3.4.4-ssp-libssp-1.diff
+    
+#  sed -e 's|^\(LIBGCC2_CFLAGS.*\)$|\1 -D_LIBC_PROVIDES_SSP_|' -i gcc/Makefile.in
+
+  mkdir -p gcc-build
+  cd gcc-build
+  
+  ../configure --prefix=/usr \
+               --libexecdir=/usr/lib \
+               --infodir=/usr/share/info \
+	       --mandir=/usr/share/man \
+	       --enable-shared \
+	       --enable-threads=posix \
+	       --enable-__cxa_atexit \
+               --enable-languages=$LANGUAGES \
+	       $OPTS
+  make bootstrap
+  make check
+  make DESTDIR=$PKG install
+	        
+  mkdir -p $PKG/lib
+
+  ln -s ../usr/bin/cpp $PKG/lib/cc
+  
+  rm -f $PKG/usr/lib/libiberty.a \
+    $PKG/usr/bin/{i686-pc-linux-gnu-c++,i686-pc-linux-gnu-g++,c++} \
+    $PKG/usr/bin/{i686-pc-linux-gnu-gcc,i686-pc-linux-gnu-gcc-3.4.3}
+  
+  ( cd $PKG/usr/bin
+    ln -s g++ i686-pc-linux-gnu-c++
+    ln -s g++ i686-pc-linux-gnu-g++
+    ln -s gcc i686-pc-linux-gnu-gcc
+    ln -s gcc i686-pc-linux-gnu-gcc-3.4.3 
+    ln -s g++ c++ 
+    ln -s gcc cc)
+    
+  cd $SRC/$NAME-$VERSION
+  
+  install_docs ABOUT-NLS BUGS COPYING* ChangeLog FAQ LAST_UPDATED \
+    MAINTAINERS MD5SUMS NEWS README*
+}

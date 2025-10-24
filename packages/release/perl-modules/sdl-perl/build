@@ -1,0 +1,26 @@
+NAME=sdl-perl
+VERSION=1.19.2
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~dgoehrig/SDL_perl-1.19.2/"
+DESC="SDL bindings for Perl."
+GROUP=perl-modules
+LICENSE="LGPLv2"
+SIZE="664K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/D/DG/DGOEHRIG/SDL_perl-1.19.2.tar.gz"
+
+RUNTIME="libsdl perl sdl_image sdl_mixer smpeg sdl_ttf libjpeg libpng sdl_console sdl_gfx"
+
+build() {
+  cd $SRC/SDL_perl-$VERSION
+  
+  ./configure
+  make
+  make DESTDIR=$PKG install
+  
+  rm -rf $PKG/usr/lib/perl5/5.8.6
+  rm -f $PKG/usr/lib/perl5/site_perl/5.8.6/i686-linux/auto/SDL_perl/.packlist
+  
+  install_docs BUGS COPYING MANIFEST README*
+}

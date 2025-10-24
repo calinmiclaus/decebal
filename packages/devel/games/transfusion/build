@@ -1,0 +1,34 @@
+NAME=transfusion
+VERSION=1.1beta3
+ARCH=i686
+RELEASE=1
+URL="http://www.transfusion-game.com/"
+DESC="A Blood remake."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="54702K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/blood/transfusion-1.1-beta3_patch.zip
+         http://heanet.dl.sourceforge.net/sourceforge/blood/transfusion-1.1-beta3.zip
+	 transfusion"
+
+RUNTIME="xorg"	 
+	 
+build() {
+  cd $SRC/$NAME-1.1-beta3
+  
+  mv -f ../basetf/* basetf/
+  mv -f ../transfusion-glx transfusion-glx
+
+  rm -rf *.dll *.exe
+  
+  chmod 755 transfusion-glx
+  
+  mkdir -p $PKG/usr/games/share/transfusion
+  cp -a * $PKG/usr/games/share/transfusion
+  
+  install -D -m 0755 ../transfusion $PKG/usr/games/bin/transfusion
+  
+  install_docs ../doc/{*.txt,manual.html}
+}
+	 

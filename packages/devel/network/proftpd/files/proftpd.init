@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# /etc/rc.d/proftpd - control file for the ProFTP daemon
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/proftpd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the ProFTP daemon"
+    start_service /usr/sbin/proftpd
+    ;;
+  stop)
+    msg "Stopping the ProFTP daemon"
+    stop_service /usr/bin/proftpd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/proftpd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

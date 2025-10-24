@@ -1,0 +1,58 @@
+NAME=java
+VERSION=1.5.0
+ARCH=i586
+RELEASE=1
+DESC="Java SDK, libraries and documentation"
+URL="http://java.sun.com"
+GROUP=devel
+LICENSE="OwnLicense"
+
+SOURCES="http://ftp.yars.free.net/pub/software/unix/lang/java/j2se/linux/JDK-1.5/jdk-1_5_0-linux-i586.bin
+         jre.sh"
+
+build() {
+        mkdir -p $PKG/usr/lib/firefox/plugins
+        mkdir -p $PKG/usr/share
+        mkdir -p $PKG/usr/bin
+
+        cd $PKG/usr/lib
+        echo "yes" | sh $SRC/jdk-1_5_0-linux-i586.bin
+
+        mv jdk${VERSION} java
+
+        # rm unneeded manpages
+        rm -rf java/man/ja java/man/ja_JP.eucJP
+
+        # rm demo programs
+        rm -rf java/demo
+
+        # rm locales
+        rm -rf java/jre/lib/locale
+
+        # rm README, CHANGES, etc.
+        for i in java/* java/jre/*; do
+          if [ -f $i ] && [ ! "$i" = "java/src.zip" ]; then
+            rm -rf $i;
+          fi
+        done
+
+        mv java/man $PKG/usr/share
+
+        cd $PKG/usr/bin
+        ln -s /usr/lib/java/bin/java java
+        ln -s /usr/lib/java/bin/javac javac
+        ln -s /usr/lib/java/bin/javadoc javadoc
+
+        rm -rf $PKG/usr/lib/java/jre/plugin/desktop
+        rm -rf $PKG/usr/lib/java/jre/plugin/i386/ns4
+        rm -rf $PKG/usr/lib/java/jre/plugin/i386/ns610
+        
+	install -D -m 0644 $SRC/jre.sh $PKG/etc/profile.d/jre.sh
+	
+	chpax -permsx /usr/lib/java/bin/java
+	chpax -permsx /usr/lib/java/bin/javac
+	chpax -permsx /usr/lib/java/bin/javadoc
+	
+        cd $PKG/usr/lib/firefox/plugins
+        ln -s /usr/lib/java/jre/plugin/i386/ns610-gcc32/libjavaplugin_oji.so
+}

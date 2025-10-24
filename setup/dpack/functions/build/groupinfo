@@ -1,0 +1,86 @@
+#!/bin/bash
+
+pkg_info_group() {
+  echo -n "Getting information [takes some time]..."
+
+  pkg_create_tmp
+  
+  # First lets check if installed packages are sincronized with the builds.
+  for PKG in $(grep ^GROUP=$1$ $DATABASEDIR/db/* 2>/dev/null)
+  do
+    PKG="${PKG%:*}"
+    PKG="${PKG##*/}"
+    local PKGNAME=$(pkgname $PKG)
+    if [ ! -f $PACKAGEDIR/$1/$PKGNAME/build ]
+    then
+#      echo && echo
+#      echo "Your builds database is not syncronized. Some installed"
+#      echo "packages do not have package builds in the database."
+#      echo "Please run: 'dsrc sync'"
+#      pkg_exit "pkg_info_group()" "check_if_db_is_synced" "$LINENO" 1
+       echo $PKGNAME
+    fi
+    unset PKGNAME PKG
+  done
+  
+  local TOTAL=0
+  local UPGRADE=0
+  local INSTALLED=0
+  local INSTALL=0
+  for PKG in $PACKAGEDIR/$1/*
+  do
+    PKGNAME="${PKG##*/}"
+    source $PKG/build 2>/dev/null
+    if pkg_is_installed $PKGNAME
+    then
+      local IPKG=$(get_installed_pkg $PKGNAME)
+      local IVER=$(pkgversion $IPKG)
+      local IREL=$(pkgrelease $IPKG)
+      if [ ! "$VERSION" = "$IVER" -o ! "$RELEASE" = "$IREL" ]
+      then
+        echo -e "\t $IPKG -> $NAME-$VERSION-$ARCH-$RELEASE [upgrading]" >> $TMP/packages
+        UPGRADE=$(($UPGRADE + 1))
+	unset IPKG IVER IREL
+      else
+        echo -e "\t $IPKG - [already installed]" >> $TMP/packages
+      fi
+      INSTALLED=$(($INSTALLED + 1))
+    else
+      if [ ! "$PKG_UPGRADE" = "1" ]
+      then
+        echo -e "\t $NAME-$VERSION-$ARCH-$RELEASE - [not installed]" >> $TMP/packages
+        INSTALL=$(($INSTALL + 1))
+      fi
+    fi
+    unset NAME VERSION ARCH RELEASE URL DESC GROUP LICENSE SIZE HUSE \
+      SOURCES BUILDTIME RUNTIME CONFLICTS REPLACES PROVIDES PKGNAME
+    unset -f build
+    TOTAL=$(($TOTAL + 1))
+  done
+  
+  echo "[ DONE ]"
+  
+  if [ "$PKG_REBUILD" = "1" ]
+  then
+    echo "Available packages: $TOTAL"
+    echo "Installed packages: $INSTALLED"
+    echo "Packages that will be rebuilt: $INSTALLED"
+    if [ -f $TMP/packages ]
+    then
+      echo "Package information:"
+      cat $TMP/packages
+    fi
+  else
+    echo "Available packages: $TOTAL"
+    echo "Installed packages: $INSTALLED"
+    echo "Packages that will be upgraded: $UPGRADE"
+    echo "Packages that will be installed: $INSTALL"
+    if [ -f $TMP/packages ]
+    then
+      echo "Package information:"
+      cat $TMP/packages
+    fi
+  fi
+						  
+  pkg_remove_tmp
+}

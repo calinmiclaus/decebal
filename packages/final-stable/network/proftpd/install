@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 84 proftpd &>/dev/null
+  /usr/sbin/useradd -g 84 -u 84 -c "ProFTP daemon" -d /var/lib/proftpd -s /bin/false proftpd &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 84 proftpd &>/dev/null
+  /usr/sbin/useradd -g 84 -u 84 -c "ProFTP daemon" -d /var/lib/proftpd -s /bin/false proftpd &>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel proftpd &>/dev/null
+  /usr/sbin/groupdel proftpd &>/dev/null
+}

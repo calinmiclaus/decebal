@@ -1,0 +1,27 @@
+NAME=cairo
+VERSION=0.4.0
+ARCH=i686
+RELEASE=1
+URL="http://cairographics.org/introduction"
+DESC="A vector graphics library with cross-device output support."
+GROUP=graphics
+LICENSE="GPLv2 LGPLv2.1 MPLv1.1"
+SIZE="763K"
+HUSE="static"
+
+SOURCES="http://cairographics.org/snapshots/cairo-0.4.0.tar.gz"
+
+RUNTIME="libpixman glitz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

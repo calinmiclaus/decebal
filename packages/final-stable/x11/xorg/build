@@ -1,0 +1,136 @@
+NAME=xorg
+VERSION=6.8.2
+ARCH=i686
+RELEASE=2
+URL="http://www.x.org"
+DESC="A fork of the XFree86 Project with a GPL-compatible license."
+GROUP=x11
+LICENSE="MIT X BSDL GPLv2 GPLv1"
+SIZE="43331K"
+
+SOURCES="http://xorg.freedesktop.org/X11R6.8.2/src-single/X11R6.8.2-src.tar.bz2
+	 x11-linux_config.patch x11-xterm.patch startx xsession xdm.init xdm.sysconf
+	 xorg.sh x11.startwithblackscreen.diff.gz x11.libxf86config-monitor-freq.diff.gz x11.hr.diff.gz"
+
+BACKUPS="etc/conf.d/xdm
+         etc/X11/xorg.conf"
+
+BUILDTIME="perl"
+
+RUNTIME=">=freetype2-2.1.8 >=fontconfig-2.2.2 >=libpng-1.2.7 >=ncurses-5.3 >=zlib-1.2.1 libxml2 expat
+desktop-file-utils"
+
+CONFLICTS="xfree86"
+
+REPLACES="xfree86"
+
+PROVIDES="xserver gl glu xlibs"
+
+# X.org doesnt like striping (especialy for modules and extensions) so
+# we set NOSTRIP here and strip allowed files in the build
+PKG_NOSTRIP=1
+
+build() {
+  cd $SRC/xc
+  
+  # there should be a patch for this somewhere...i just cant find it.
+  remove_flags -fstack-protector-all -fstack-protector
+  remove_flags -funroll-loops -ffast-math
+  replace_flags -Os -O2
+  
+  # Some nice patches.
+  patch -p1 < ../x11-linux_config.patch
+  patch -p1 < ../x11-xterm.patch
+  patch -p1 < ../x11.startwithblackscreen.diff
+  patch -p1 < ../x11.libxf86config-monitor-freq.diff
+  patch -p1 < ../x11.hr.diff
+  
+  # Create our host.def file.
+  echo "#define DefaultGcc2i386Opt      $CFLAGS -fno-strength-reduce" >> config/cf/host.def
+  echo "#define XVendorString           \"Decebal (Xorg v$VERSION)\"" >> config/cf/host.def
+  echo "#define TermcapLibrary          -lncurses" >> config/cf/host.def
+  echo "#define ForceNormalLib          YES" >> config/cf/host.def
+  echo "#define SystemManDirectory      /usr/share/man" >> config/cf/host.def
+  echo "#define VarLibDir               /var/lib" >> config/cf/host.def
+  echo "#define InstallXinitConfig      YES" >> config/cf/host.def                                                                                                            
+  echo "#define InstallXdmConfig        YES" >> config/cf/host.def                                                                                                            
+  echo "#define InstallFSConfig         YES" >> config/cf/host.def                                                                                                            
+  echo "#define FSUseSyslog             YES" >> config/cf/host.def 
+  echo "#define HasNCurses              YES" >> config/cf/host.def
+  echo "#define HasFreetype2            YES" >> config/cf/host.def
+  echo "#define UseFontconfig           YES" >> config/cf/host.def
+  echo "#define HasFontconfig           YES" >> config/cf/host.def
+  echo "#define HasLibpng               YES" >> config/cf/host.def
+  echo "#define HasZlib                 YES" >> config/cf/host.def
+  echo "#define HasExpat                YES" >> config/cf/host.def
+  echo "#define HasLibCrypt             YES" >> config/cf/host.def
+  echo "#define HasPam                  NO" >> config/cf/host.def
+  echo "#define HasLibxml2              YES" >> config/cf/host.def      
+  echo "#define PreferXdmcpIPv6         YES" >> config/cf/host.def
+  echo "#define BuildLinuxDocPS         NO" >> config/cf/host.def
+  echo "#define BuildLinuxDocText       NO" >> config/cf/host.def
+  echo "#define BuildLinuxDocHtml       NO" >> config/cf/host.def
+  echo "#define BuildHtmlManPages       NO" >> config/cf/host.def
+  echo "#define BuildSpecsDocs          NO" >> config/cf/host.def
+  echo "#define BuildAllSpecsDocs       NO" >> config/cf/host.def
+  echo "#define BuildCyrillicFonts      NO" >> config/cf/host.def
+  echo "#define BuildArabicFonts        NO" >> config/cf/host.def
+  echo "#define BuildGreekFonts         NO" >> config/cf/host.def
+  echo "#define BuildHebrewFonts        NO" >> config/cf/host.def
+  echo "#define BuildThaiFonts          NO" >> config/cf/host.def
+  echo "#define BuildJapaneseFonts      NO" >> config/cf/host.def
+  echo "#define BuildKoreanFonts        NO" >> config/cf/host.def
+  echo "#define BuildChineseFonts       NO" >> config/cf/host.def
+  echo "#define HasMMXSupport           YES" >> config/cf/host.def
+  echo "#define MesaUseMMX              YES" >> config/cf/host.def
+  echo "#define HasSSESupport           YES" >> config/cf/host.def
+  echo "#define MesaUseSSE              YES" >> config/cf/host.def 
+  echo "#define Has3DNowSupport         YES" >> config/cf/host.def
+  echo "#define MesaUse3DNow            YES" >> config/cf/host.def
+  echo "#define BuildXprint             NO" >> config/cf/host.def
+  echo "#define BuildXprintClients      NO" >> config/cf/host.def
+  echo "#define BuildXprintLib          YES" >> config/cf/host.defS
+  echo "#define XprtServer              NO" >> config/cf/host.def
+
+  make World
+  make DESTDIR=$PKG install
+  make DESTDIR=$PKG install.man
+  
+  rm -rf $PKG/usr/{include,lib}
+  
+  mkdir -p $PKG/usr/{include,lib}
+  ln -sf ../X11R6/include/X11 $PKG/usr/include/X11
+  ln -sf ../X11R6/include/GL $PKG/usr/include/GL
+  ln -sf ../X11R6/include/DPS $PKG/usr/include/DPS
+  
+  # remove installed zlib
+  rm -f /usr/X11R6/lib/libz.a /usr/X11R6/include/{zlib.h,zconf.h}
+  
+  rm -rf $PKG/etc/{init.d,profile.d,rc.d}
+  
+  install -D -m 0644 ../xorg.sh $PKG/etc/profile.d/xorg.sh
+  
+  install -D -m 0700 ../xdm.init $PKG/etc/rc.d/xdm
+  install -D -m 0644 ../xdm.sysconf $PKG/etc/conf.d/xdm
+  install -D -m 0644 ../xsession $PKG/etc/skel/.xsession
+  install -m 0755 ../startx $PKG/usr/X11R6/bin/startx
+  
+  install_docs BUILD ChangeLog LABEL README RELNOTES README.crypto
+  
+  # and now the nice part..lets strip some files
+  for FILE in `find $PKG/usr/X11R6/bin -type f`
+  do
+    if file -b $FILE | grep -q "^ELF 32-bit LSB executable.*not stripped$"
+    then
+      strip --strip-all "$FILE"
+    fi
+  done
+  
+  for FILE in `find $PKG/usr/X11R6/lib -maxdepth 1 -type f`
+  do
+    if file -b $FILE | grep -q "^.*ELF.*shared object.*not stripped$"
+    then
+      strip --strip-unneeded "$FILE"
+    fi
+  done
+}

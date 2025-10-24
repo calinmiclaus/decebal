@@ -1,0 +1,42 @@
+NAME=rhythmbox
+VERSION=0.8.8
+ARCH=i686
+RELEASE=1
+URL="http://www.rhythmbox.org/"
+DESC="An integrated music management application, originally inspired by Apple's iTunes."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="2933K"
+HUSE="static dashboard gst debug"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/rhythmbox/0.8/rhythmbox-0.8.8.tar.gz"
+
+BUILDTIME="intltool gettext"
+
+RUNTIME="libogg libvorbis libgnomeui scrollkeeper"
+
+use gst && RUNTIME="$RUNTIME gst-plugins" || RUNTIME="$RUNTIME xine-lib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use dashboard && OPTS="$OPTS --enable-dashboard"
+  use gst && OPTS="$OPTS --with-player=gstreamer --with-metadata=gstreamer" || OPTS="$OPTS --with-player=xine --with-metadata=xine"
+  use debug && OPTS="$OPTS --with-rhythmdb-debug=3"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --disable-schemas-install \
+              --enable-ipod \
+	      --enable-audiocd \
+	      --enable-mmkeys \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog DOCUMENTERS INSTALL INTERNALS \
+    MAINTAINERS* NEWS README* THANKS TODO
+}
+

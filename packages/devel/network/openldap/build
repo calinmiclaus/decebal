@@ -1,0 +1,74 @@
+NAME=openldap
+VERSION=2.2.26
+ARCH=i686
+RELEASE=1
+DESC="Free LDAP Server."
+URL="http://www.OpenLDAP.org/"
+GROUP=network
+LICENSE=BSDL
+SIZE="2540K"
+HUSE="sasl debug"
+
+SOURCES="ftp://ftp.nl.uu.net/pub/unix/db/openldap/openldap-release/$NAME-$VERSION.tgz
+         slapd.init slapd.sysconf"
+
+BACKUPS="etc/openldap/ldap.conf
+         etc/openldap/slapd.conf
+	 etc/openldap/corba.schema
+	 etc/openldap/core.schema
+	 etc/openldap/cosine.schema
+	 etc/openldap/dyngroup.schema
+	 etc/openldap/inetorgperson.schema
+	 etc/openldap/java.schema
+	 etc/openldap/misc.schema
+	 etc/openldap/nis.schema
+	 etc/openldap/openldap.schema
+	 etc/conf.d/slapd"	 
+
+RUNTIME=">=db-4.2.52 >=openssl-0.9.7e gdbm tcp-wrappers"
+
+use sasl && RUNTIME="$RUNTIME cyrus-sasl"
+	   
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use sasl && OPTS="--with-cyrus-sasl" || OPTS="--without-cyrus-sasl"
+  use debug && OPTS="$OPTS --enable-debug" 
+    
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --libexecdir=/usr/sbin \
+	      --localstatedir=/var/lib/openldap \
+	      --sharedstatedir=/var/lib/sopenldap \
+	      --mandir=/usr/share/man \
+	      --enable-crypt \
+	      --enable-dynamic \
+	      --with-threads \
+	      --enable-wrappers \
+              $OPTS	      
+  make depend
+  make
+  make prefix=$PKG/usr \
+       libexecdir=$PKG/usr/sbin \
+       sysconfdir=$PKG/etc/openldap \
+       mandir=$PKG/usr/share/man \
+       localstatedir=/var/lib/sopenldap \
+       sharedstatedir=/var/lib/sopenldap install
+  
+  for file in slapadd slapcat slapdn slapindex slappasswd slaptest
+  do
+    rm -f $PKG/usr/sbin/$file
+    ln -sf slapd $PKG/usr/sbin/$file
+  done
+  
+  chmod 0755 $PKG/usr/lib/liblber-2.2.so.7.0.19
+  chmod 0755 $PKG/usr/lib/libldap-2.2.so.7.0.19
+  chmod 0755 $PKG/usr/lib/libldap_r-2.2.so.7.0.19
+  
+  mkdir -p $PKG/var/lib/{sopenldap,openldap}
+  
+  install -D -m 0700 ../slapd.init $PKG/etc/rc.d/slapd
+  install -D -m 0644 ../slapd.sysconf $PKG/etc/conf.d/slapd
+  
+  install_docs ANNOUNCEMENT CHANGES INSTALL COPYRIGHT LICENSE README  
+}

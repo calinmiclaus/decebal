@@ -1,0 +1,41 @@
+NAME=esound
+VERSION=0.2.35
+ARCH=i686
+RELEASE=1
+URL="www.tux.org/~ricdude/EsounD.html"
+DESC="The Enlightened Sound Daemon"
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="375K"
+HUSE="wrap ipv6 static debug"
+
+SOURCES="http://ftp.gnome.org/pub/gnome/sources/esound/0.2/esound-0.2.35.tar.bz2
+         esound.init"
+
+RUNTIME=">=audiofile-0.2.6 >=alsa-lib-1.0.5"
+
+use wrap && RUNTIME="$RUNTIME tcp-wrappers"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  use static || OPTS="$OPTS --disable-static"
+  use debug && OPTS="$OPTS --enable-debugging"
+  use wrap && OPTS="$OPTS --with-libwrap"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/esound \
+	      --localstatedir=/var/lib \
+	      --mandir=/usr/share/man \
+	      --with-audiofile \
+	      --enable-alsa \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install -D -m 0755 ../esound.init $PKG/etc/rc.d/esound
+
+  install_docs AUTHORS COPYING* ChangeLog INSTALL MAINTAINERS NEWS \
+    README TIPS TODO
+}

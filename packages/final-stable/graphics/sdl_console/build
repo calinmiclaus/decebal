@@ -1,0 +1,30 @@
+NAME=sdl_console
+VERSION=2.1
+ARCH=i686
+RELEASE=1
+URL="http://sdlconsole.sourceforge.net/"
+DESC="A quake-like drop-down console for SDL."
+GROUP=graphics
+LICENSE="LGPLv2"
+SIZE="286K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/sdlconsole/sdlconsole-2.1.tar.gz"
+
+RUNTIME="libsdl sdl_image"
+
+build() {
+  cd $SRC/sdlconsole-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --enable-sdlimage \
+	      --enable-opengl \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

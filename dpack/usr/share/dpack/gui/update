@@ -1,0 +1,45 @@
+#!/bin/bash
+
+update_package_gui() {
+  dialog --backtitle "$BACKTITLE" \
+         --title " Update Package Menu " \
+	 --cancel-label "Exit" \
+	 --ok-label "Proceed" \
+	 --extra-button \
+	 --extra-label "Back" \
+	 --help-button \
+	 --menu \
+"\nPlease select an action to perform:\n\n" 0 0 0 \
+"sync" "Update the package update database." \ 
+"update" "Update a package (from list)." \
+"group" "Update a group (from list)." \
+"world" "Update the entire system." > $TMP/update_answer
+  local RETVAL=$?
+  local ANSWER=$(cat $TMP/update_answer)
+  case "$RETVAL" in
+    0)
+      case "$ANSWER" in
+        sync)
+	  source /usr/share/dpack/gui/dupdate/sync
+	  sync_update_gui
+	  ;;
+	update)
+	  source /usr/share/dpack/gui/dupdate/update
+	  update_packages_gui
+	  ;;
+	group)
+	  source /usr/share/dpack/gui/dupdate/group
+	  update_group_gui
+	  ;;
+	world)
+	  source /usr/share/dpack/gui/dupdate/world
+	  update_world_gui
+	  ;;
+      esac
+      ;;
+    1) pkg_exit "update_package_gui()" "exit_pressed" "$LINENO" 1 ;;
+    2) show_update_help ;;
+    3) main ;;
+   -1) pkg_exit "update_package_gui()" "esc_pressed" "$LINENO" 1 ;;
+  esac
+}

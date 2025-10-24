@@ -1,0 +1,33 @@
+NAME=kdeaddons
+VERSION=3.4.2
+ARCH=i686
+RELEASE=1
+DESC="Additional plugins and scripts for some KDE applications."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="1554K"
+HUSE="debug static"
+
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdemultimedia-3.4.2 >=kdegames-3.4.2 freetype fam qt libpng \
+xorg expat zlib libart_lgpl fontconfig"
+
+build() {
+  OPTS=""
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+  cd $SRC/$NAME-$VERSION
+  
+  export PATH=$PATH:/opt/kde/bin
+
+  ./configure --prefix=/opt/kde \
+              --disable-debug \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+    
+  install_docs README
+}

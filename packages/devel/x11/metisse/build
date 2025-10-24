@@ -1,0 +1,26 @@
+NAME=metisse
+VERSION=0.3.5
+ARCH=i686
+RELEASE=1
+URL="http://insitu.lri.fr/~chapuis/metisse/"
+DESC="An experimental X desktop with some OpenGL capacity."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="4391K"
+
+SOURCES="http://insitu.lri.fr/~chapuis/software/metisse/metisse-0.3.5.tar.bz2"
+
+RUNTIME="nucleo"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  PATH="$PATH:/opt/metisse/bin" ./configure --prefix=/opt/metisse \
+              --sysconfdir=/etc/opt \
+	      --libexecdir=/opt/metisse/lib \
+	      --enable-glx-x86
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

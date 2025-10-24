@@ -1,0 +1,31 @@
+NAME=monodevelop
+VERSION=0.5.1
+ARCH=i686
+RELEASE=1
+URL="http://www.monodevelop.org/"
+DESC="A .NET Integrated Development Tool (Mono IDE)."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="1764K"
+
+SOURCES="http://www.go-mono.com/archive/1.0.5/monodevelop-0.5.1.tar.gz"
+
+RUNTIME=">=mono-1.0 >=gtk-sharp-1.0 >=orbit2-2.8.3 >=gnome-vfs-2.0 >=gecko-sharp-0.6 >=gtksourceview-sharp-0.5
+>=monodoc-1.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  export PKG_CONFIG_PATH="/opt/mono/lib/pkgconfig:/opt/gnome/lib/pkgconfig"
+  export PATH="$PATH:/opt/mono/bin"
+  ./configure --prefix=/opt/mono \
+              --sysconfdir=/etc/opt/mono
+  make
+  make GACUTIL="/opt/mono/bin/gacutil /root $PKG/opt/mono/lib" DESTDIR=$PKG install
+      
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+
+
+	 

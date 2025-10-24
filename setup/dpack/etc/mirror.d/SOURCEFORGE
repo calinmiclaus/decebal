@@ -1,0 +1,19 @@
+#
+# Select the SOURCEFOREMIRROR.
+#
+
+SOURCEFORGEMIRROR="http://heanet.dl.sourceforge.net/sourceforge/"
+
+#SOURCEFORGEMIRROR="http://optusnet.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://voxel.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://mesh.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://puzzle.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://unc.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://jaist.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://internap.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://kent.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://aleron.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://belnet.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://umn.dl.sourceforge.net/sourceforge/"
+#SOURCEFORGEMIRROR="http://ovh.dl.sourceforge.net/sourceforge/"
+ 

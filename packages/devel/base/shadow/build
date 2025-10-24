@@ -1,0 +1,49 @@
+NAME=shadow
+VERSION=4.0.12
+ARCH=i686
+RELEASE=1
+URL="http://shadow.pld.org.pl/"
+DESC="Shadow password file utilities."
+GROUP=base
+LICENSE=BSDL
+
+SOURCES="ftp://ftp.pld.org.pl/software/shadow/$NAME-$VERSION.tar.bz2
+         suauth shadow.cron login.defs useradd"
+
+BACKUPS="etc/login.defs
+         etc/login.access
+	 etc/suauth"
+
+BUILDTIME="gettext"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/lib
+  
+  ./configure --prefix=/usr \
+              --libdir=/usr/lib \
+	      --without-libcrack \
+	      --without-libpam \
+	      --enable-shared
+  make
+  make DESTDIR=$PKG install
+  
+  mv $PKG/usr/lib/libshadow.so.0.0.0 $PKG/lib
+  
+  rm -f $PKG/usr/lib/{libshadow.so.0,libshadow.so}
+  
+  ln -s libshadow.so.0.0.0 $PKG/lib/libshadow.so.0
+  ln -s ../../lib/libshadow.so.0.0.0 $PKG/usr/lib/libshadow.so
+  
+  install -D -m 0644 etc/limits $PKG/etc/limits
+  install -m 0644 etc/login.access $PKG/etc/login.access
+  install -m 0644 ../login.defs $PKG/etc/login.defs
+  install -D -m 0644 ../useradd $PKG/etc/default/useradd
+  install -D -m 755 ../shadow.cron $PKG/etc/cron.d/daily/shadow
+  install -m 0644 ../suauth $PKG/etc/suauth
+  
+  install_docs ABOUT-NLS ChangeLog NEWS README TODO 
+}  

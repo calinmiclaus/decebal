@@ -1,0 +1,102 @@
+#!/bin/bash
+
+pkg_check() {
+  [ "$PKG_CHECK" = "0" ] && msg_verbose_nnl "checking build file..."
+  
+  unset NAME VERSION ARCH RELEASE URL DESC GROUP LICENSE \
+    SIZE SOURCES BACKUPS BUILDTIME RUNTIME CONFLICTS PROVIDES \
+    REPLACES HASUSE
+  unset -f build
+  
+  if [ ! -r $1/build ]
+  then
+    msg_failed_verbose
+    msg_error "Could not find build file for package '${1##*/}'."
+    pkg_exit "pkg_check()" "check_if_buildfile_is_present" "$LINENO" 1
+  fi
+  
+  source $1/build 2>/dev/null
+  if [ -z "$NAME" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'NAME' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_NAME_is_defined" "$LINENO" 1
+  fi
+
+  if [ -z "$VERSION" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'VERSION' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_VERSION_is_defined" "$LINENO" 1
+  fi
+
+  if echo $VERSION | grep -q '-'
+  then
+    msg_failed_verbose
+    msg_error "Variable 'VERSION' cannot contain dashes (-)."
+    pkg_exit "pkg_check()" "check_for_dashes_in_VERSION" "$LINENO" 1
+  fi
+
+  if [ -z "$ARCH" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'ARCH' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_ARCH_is_defined" "$LINENO" 1
+  fi
+
+  if echo $ARCH | grep -q '-'
+  then
+    msg_failed_verbose
+    msg_error "Variable 'ARCH' cannot contain dashes (-)."
+    pkg_exit "pkg_check()" "check_for_dashes_in_ARCH" "$LINENO" 1
+  fi
+
+  if [ -z "$RELEASE" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'RELEASE' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_RELEASE_is_defined" "$LINENO" 1
+  fi
+  
+  if echo $RELEASE | grep -q '-'
+  then
+    msg_failed_verbose
+    msg_error "Variable 'RELEASE' cannot contain dashes (-)."
+    pkg_exit "pkg_check()" "check_for_dashes_in_RELEASE" "$LINENO" 1
+  fi
+  
+  if [ -z "$URL" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'URL' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_URL_is_defined" "$LINENO" 1
+  fi
+
+  if [ -z "$DESC" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'DESC' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_DESC_is_defined" "$LINENO" 1
+  fi
+
+  if [ -z "$GROUP" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'GROUP' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_GROUP_is_defined" "$LINENO" 1
+  fi
+
+  if [ -z "$LICENSE" ]
+  then
+    msg_failed_verbose
+    msg_error "Variable 'LICENSE' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_LICENSE_is_defined" "$LINENO" 1
+  fi
+  
+  if ! declare -f build >/dev/null 2>&1
+  then
+    msg_failed_verbose
+    msg_error "Function 'build' not defined in build files."
+    pkg_exit "pkg_check()" "check_if_build_is_defined" "$LINENO" 1
+  fi
+}

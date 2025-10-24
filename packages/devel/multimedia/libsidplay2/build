@@ -1,0 +1,22 @@
+NAME=libsidplay2
+VERSION=2.1.1
+ARCH=i686
+RELEASE=1
+URL="http://sidplay2.sourceforge.net/"
+DESC="A libary for playing C64 mono and stereo file formats."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="1855K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/sidplay2/sidplay-libs-2.1.1.tar.gz"
+
+build() {
+  cd $SRC/sidplay-libs-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  ( cd libsidplay ;
+    install_docs AUTHORS COPYING ChangeLog INSTALL README TODO )
+}

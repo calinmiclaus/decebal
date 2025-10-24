@@ -1,0 +1,25 @@
+NAME=mime-tools-perl
+VERSION=5.417
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~dskoll/MIME-tools/"
+DESC="Modules for parsing (and creating!) MIME entities."
+GROUP=perl-modules
+LICENSE=BSDL
+SIZE="375K"
+SOURCES="http://search.cpan.org/CPAN/authors/id/D/DS/DSKOLL/MIME-tools-5.417.tar.gz"
+
+RUNTIME="mime-base64-perl"
+
+build() {
+  cd $SRC/MIME-tools-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs COPYING ChangeLog INSTALLING README* MANIFEST
+}

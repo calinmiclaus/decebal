@@ -1,0 +1,35 @@
+NAME=liblockfile
+VERSION=1.06
+ARCH=i686
+RELEASE=1
+URL="http://www.debian.org"
+DESC="Implements a number of functions found in -lmail on SysV systems."
+GROUP=mail
+LICENSE=GPLv2
+SIZE="31K"
+
+SOURCES="http://sluglug.ucsc.edu/debian/pool/main/libl/liblockfile/liblockfile_1.06.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/{bin,include,lib,share/man/man{1,3}}
+  
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+	      --enable-shared \
+	      --with-mailGROUP=12
+  make
+  make ROOT=$PKG install
+  make clean
+  ./configure --prefix=/usr \
+              --mandir=/usr/share/man \
+  	      --with-mailGROUP=12
+  make
+  
+  install -m 0644 liblockfile.a $PKG/usr/lib/liblockfile.a      
+  
+  install_docs README COPYRIGHT
+}      

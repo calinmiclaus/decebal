@@ -1,0 +1,35 @@
+NAME=mousepad
+VERSION=0.1.1
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/~benny/apps.html"
+DESC="A simple, fast and easy-to-use text editor for the Xfce desktop environment."
+GROUP=xfce-extra
+LICENSE="GPLv2"
+SIZE="269K"
+HUSE="debug profile"
+
+SOURCES="http://erikharrison.net/software/mousepad-0.1.1.tar.gz"
+
+BUILDTIME="gettext pkgconfig"
+
+RUNTIME=">=gtk2-2.2.0 >=libxfcegui4-4.2.0 >=libxfce4util-4.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug=full" || OPTS="--disable-debug"
+  use profile && OPTS="$OPTS --enable-profiling" || OPTS="$OPTS --disable-profiling"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --enable-final \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}
+
+                      

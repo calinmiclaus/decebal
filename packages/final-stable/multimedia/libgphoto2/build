@@ -1,0 +1,38 @@
+NAME=libgphoto2
+VERSION=2.1.4
+ARCH=i686
+RELEASE=1
+URL="http://www.gphoto.org"
+DESC="A portable library to gives access to more than 400 digital cameras."
+GROUP=multimedia
+LICENSE="LGPLv2"
+SIZE="1776K"
+
+SOURCES="http://unc.dl.sourceforge.net/gphoto/libgphoto2-2.1.4.tar.bz2"
+
+RUNTIME="libusb libexif libjpeg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+   
+  libtoolize --force
+  aclocal -I libgphoto2_port/m4
+  autoconf
+  automake
+  cd libgphoto2_port
+  libtoolize --force
+  aclocal -I m4
+  autoconf
+  automake
+  cd ..
+  
+  ./configure --prefix=/usr \
+	      --with-exif
+  make
+  make prefix=$PKG/usr install
+
+  mkdir -p $PKG/usr/share/libgphoto2/$VERSION/linux-hotplug
+  cp -r packaging/linux-hotplug/usb* $PKG/usr/share/libgphoto2/$VERSION/linux-hotplug
+
+  install_docs MAINTAINERS NEWS README TESTERS
+}

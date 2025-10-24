@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# /etc/apm/event.d/alsa
+#
+
+case "$1" in
+  resume) /etc/rc.d/alsa start ;;
+  suspend) /etc/rc.d/alsa stop ;;
+esac

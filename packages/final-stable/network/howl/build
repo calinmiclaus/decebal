@@ -1,0 +1,29 @@
+NAME=howl
+VERSION=0.9.10
+ARCH=i686
+RELEASE=1
+URL="http://www.porchdogsoft.com/products/howl/"
+DESC="A cross-platform implementation of Zeroconf networking."
+GROUP=network
+LICENSE="APSL BSDL"
+SIZE="528K"
+
+SOURCES="http://www.porchdogsoft.com/download/howl-0.9.10.tar.gz
+         howl.init howl.sysconf"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/howl \
+              --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 etc/mDNSResponder.conf.sample $PKG/etc/howl/mDNSResponder.conf
+  install -D -m 0700 ../howl.init $PKG/etc/rc.d/howl
+  install -D -m 0644 ../howl.sysconf $PKG/etc/conf.d/howl
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

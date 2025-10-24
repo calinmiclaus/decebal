@@ -1,0 +1,14 @@
+post_install() {
+  [ -e /usr/X11R6/lib/modules/extensions/libglx.a ] && \
+  mv -f /usr/X11R6/lib/modules/extensions/libglx.a /usr/X11R6/lib/modules/extensions/libglx.a.backup
+  /sbin/depmod -a &>/dev/null
+
+}
+
+post_upgrade() {
+  /sbin/depmod -a &>/dev/null
+}
+
+post_remove() {
+  /sbin/depmod -a &>/dev/null
+}

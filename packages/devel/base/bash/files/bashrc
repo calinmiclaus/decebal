@@ -1,0 +1,26 @@
+#
+# /etc/bashrc - when bash is invoked as a non-interactive shell it reads
+#               and executes commands from this file
+#
+
+PATH=/bin:/usr/bin:/usr/local/bin
+
+[ -d /opt/bin ] && PATH=$PATH:/opt/bin
+[ -d /usr/games/bin ] && PATH=$PATH:/usr/games/bin
+
+[ $UID -eq 0 ] && PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
+[ -d /opt/sbin ] && [ $UID -eq 0 ] && PATH=$PATH:/opt/sbin
+
+export PATH LANG=
+
+umask=022
+
+if [ $UID -ge 100 ]
+then
+  ulimit -n 250 -u 100 -f 1000000
+  ulimit -S -c 0
+fi
+
+# get our prompt and aliases file
+[ -r /etc/profile.d/bash_prompt.sh ] && . /etc/profile.d/bash_prompt.sh
+[ -r /etc/profile.d/bash_aliases.sh ] && . /etc/profile.d/bash_aliases.sh

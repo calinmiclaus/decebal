@@ -1,0 +1,24 @@
+NAME=compress-zlib-perl
+VERSION=1.37
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~pmqs/Compress-Zlib-1.37/"
+DESC="A interface to most of the zlib compression library."
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SIZE="147K"
+
+SOURCES="http://search.cpan.org/CPAN/authors/id/P/PM/PMQS/Compress-Zlib-1.37.tar.gz"
+
+build() {
+  cd $SRC/Compress-Zlib-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs ANNOUNCE Changes README MANIFEST
+}

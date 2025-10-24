@@ -1,0 +1,31 @@
+NAME=gnome-blog
+VERSION=0.9
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/"
+DESC="a panel object (aka applet) that can post to bloggerAPI compatible blogs."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="156K"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/gnome-blog/0.9/gnome-blog-0.9.tar.bz2"
+
+BUILDTIME="intltool gettext pkgconfig"
+
+RUNTIME="python >=pygtk-2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --libexecdir=/opt/gnome/lib/applets
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/usr/lib
+  mv $PKG/opt/gnome/lib/python2.4 $PKG/usr/lib/
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

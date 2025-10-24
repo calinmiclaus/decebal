@@ -1,0 +1,325 @@
+diff -Naur binutils-2.16/bfd/elf-bfd.h binutils-2.16-pax/bfd/elf-bfd.h
+--- binutils-2.16/bfd/elf-bfd.h	2005-03-03 14:52:31.000000000 -0600
++++ binutils-2.16-pax/bfd/elf-bfd.h	2005-05-16 20:09:24.000000000 -0500
+@@ -1281,6 +1281,9 @@
+   /* Should the PT_GNU_RELRO segment be emitted?  */
+   bfd_boolean relro;
+ 
++  /* Segment flags for the PT_PAX_FLAGS segment.  */
++  unsigned int pax_flags;
++
+   /* Symbol version definitions in external objects.  */
+   Elf_Internal_Verdef *verdef;
+ 
+diff -Naur binutils-2.16/bfd/elf.c binutils-2.16-pax/bfd/elf.c
+--- binutils-2.16/bfd/elf.c	2005-03-05 20:02:15.000000000 -0600
++++ binutils-2.16-pax/bfd/elf.c	2005-05-16 20:13:06.000000000 -0500
+@@ -1028,6 +1028,7 @@
+ 	    case PT_GNU_EH_FRAME: pt = "EH_FRAME"; break;
+ 	    case PT_GNU_STACK: pt = "STACK"; break;
+ 	    case PT_GNU_RELRO: pt = "RELRO"; break;
++	    case PT_PAX_FLAGS: pt = "PAX_FLAGS"; break;	    
+ 	    default: sprintf (buf, "0x%lx", p->p_type); pt = buf; break;
+ 	    }
+ 	  fprintf (f, "%8s off    0x", pt);
+@@ -2376,6 +2377,9 @@
+     case PT_GNU_RELRO:
+       return _bfd_elf_make_section_from_phdr (abfd, hdr, index, "relro");
+ 
++    case PT_PAX_FLAGS:
++      return _bfd_elf_make_section_from_phdr (abfd, hdr, index, "pax_flags");
++
+     default:
+       /* Check for any processor-specific program segment types.  */
+       bed = get_elf_backend_data (abfd);
+@@ -3720,6 +3724,20 @@
+       pm = &m->next;
+     }
+ 
++    {
++      amt = sizeof (struct elf_segment_map);
++      m = bfd_zalloc (abfd, amt);
++      if (m == NULL)
++       goto error_return;
++      m->next = NULL;
++      m->p_type = PT_PAX_FLAGS;
++      m->p_flags = elf_tdata (abfd)->pax_flags;
++      m->p_flags_valid = 1;
++
++      *pm = m;
++      pm = &m->next;
++    }
++
+   free (sections);
+   sections = NULL;
+ 
+@@ -4424,6 +4442,11 @@
+       ++segs;
+     }
+ 
++    {
++      /* We need a PT_PAX_FLAGS segment.  */
++      ++segs;
++    }
++
+   for (s = abfd->sections; s != NULL; s = s->next)
+     {
+       if ((s->flags & SEC_LOAD) != 0
+@@ -4958,7 +4981,8 @@
+        5. PT_GNU_STACK segments do not include any sections.
+        6. PT_TLS segment includes only SHF_TLS sections.
+        7. SHF_TLS sections are only in PT_TLS or PT_LOAD segments.
+-       8. PT_DYNAMIC should not contain empty sections at the beginning
++       8. PT_PAX_FLAGS segments do not include any sections.
++       9. PT_DYNAMIC should not contain empty sections at the beginning
+           (with the possible exception of .dynamic).  */
+ #define INCLUDE_SECTION_IN_SEGMENT(section, segment, bed)		\
+   ((((segment->p_paddr							\
+@@ -4968,6 +4992,7 @@
+     || IS_COREFILE_NOTE (segment, section))				\
+    && section->output_section != NULL					\
+    && segment->p_type != PT_GNU_STACK					\
++   && segment->p_type != PT_PAX_FLAGS                                   \
+    && (segment->p_type != PT_TLS					\
+        || (section->flags & SEC_THREAD_LOCAL))				\
+    && (segment->p_type == PT_LOAD					\
+diff -Naur binutils-2.16/bfd/elflink.c binutils-2.16-pax/bfd/elflink.c
+--- binutils-2.16/bfd/elflink.c	2005-04-29 08:40:22.000000000 -0500
++++ binutils-2.16-pax/bfd/elflink.c	2005-05-16 20:15:37.000000000 -0500
+@@ -4941,17 +4941,31 @@
+   if (!is_elf_hash_table (info->hash))
+     return TRUE;
+ 
++  elf_tdata (output_bfd)->pax_flags = PF_NORANDEXEC;
++
++  if (info->execheap)
++    elf_tdata (output_bfd)->pax_flags |= PF_NOMPROTECT;
++  else if (info->noexecheap)
++    elf_tdata (output_bfd)->pax_flags |= PF_MPROTECT;
++
+   elf_tdata (output_bfd)->relro = info->relro;
+   if (info->execstack)
+-    elf_tdata (output_bfd)->stack_flags = PF_R | PF_W | PF_X;
++    {
++      elf_tdata (output_bfd)->stack_flags = PF_R | PF_W | PF_X;
++      elf_tdata (output_bfd)->pax_flags |= PF_EMUTRAMP;
++    }
+   else if (info->noexecstack)
+-    elf_tdata (output_bfd)->stack_flags = PF_R | PF_W;
++    {
++      elf_tdata (output_bfd)->stack_flags = PF_R | PF_W;
++      elf_tdata (output_bfd)->pax_flags |= PF_NOEMUTRAMP;
++    }
+   else
+     {
+       bfd *inputobj;
+       asection *notesec = NULL;
+       int exec = 0;
+ 
++      elf_tdata (output_bfd)->pax_flags |= PF_NOEMUTRAMP;
+       for (inputobj = info->input_bfds;
+ 	   inputobj;
+ 	   inputobj = inputobj->link_next)
+@@ -4964,7 +4978,11 @@
+ 	  if (s)
+ 	    {
+ 	      if (s->flags & SEC_CODE)
+-		exec = PF_X;
++               {
++                 elf_tdata (output_bfd)->pax_flags &= ~PF_NOEMUTRAMP;
++                 elf_tdata (output_bfd)->pax_flags |= PF_EMUTRAMP;
++                 exec = PF_X;
++               }
+ 	      notesec = s;
+ 	    }
+ 	  else
+diff -Naur binutils-2.16/binutils/readelf.c binutils-2.16-pax/binutils/readelf.c
+--- binutils-2.16/binutils/readelf.c	2005-04-20 13:43:36.000000000 -0500
++++ binutils-2.16-pax/binutils/readelf.c	2005-05-16 20:16:20.000000000 -0500
+@@ -2330,6 +2330,7 @@
+ 			return "GNU_EH_FRAME";
+     case PT_GNU_STACK:	return "GNU_STACK";
+     case PT_GNU_RELRO:  return "GNU_RELRO";
++    case PT_PAX_FLAGS: return "PAX_FLAGS" ;
+ 
+     default:
+       if ((p_type >= PT_LOPROC) && (p_type <= PT_HIPROC))
+diff -Naur binutils-2.16/include/bfdlink.h binutils-2.16-pax/include/bfdlink.h
+--- binutils-2.16/include/bfdlink.h	2005-03-03 05:58:00.000000000 -0600
++++ binutils-2.16-pax/include/bfdlink.h	2005-05-16 20:16:58.000000000 -0500
+@@ -318,6 +318,14 @@
+      flags.  */
+   unsigned int noexecstack: 1;
+ 
++  /* TRUE if PT_PAX_FLAGS segment should be created with PF_NOMPROTECT
++     flags.  */
++  unsigned int execheap: 1;
++
++  /* TRUE if PT_PAX_FLAGS segment should be created with PF_MPROTECT
++     flags.  */
++  unsigned int noexecheap: 1;
++  
+   /* TRUE if PT_GNU_RELRO segment should be created.  */
+   unsigned int relro: 1;
+ 
+diff -Naur binutils-2.16/include/elf/common.h binutils-2.16-pax/include/elf/common.h
+--- binutils-2.16/include/elf/common.h	2004-10-08 08:55:08.000000000 -0500
++++ binutils-2.16-pax/include/elf/common.h	2005-05-16 20:18:12.000000000 -0500
+@@ -293,12 +293,27 @@
+ #define PT_SUNW_EH_FRAME PT_GNU_EH_FRAME      /* Solaris uses the same value */
+ #define PT_GNU_STACK	(PT_LOOS + 0x474e551) /* Stack flags */
+ #define PT_GNU_RELRO	(PT_LOOS + 0x474e552) /* Read-only after relocation */
++#define PT_PAX_FLAGS   (PT_LOOS + 0x5041580)  /* PaX flags */
+ 
+ /* Program segment permissions, in program header p_flags field.  */
+ 
+ #define PF_X		(1 << 0)	/* Segment is executable */
+ #define PF_W		(1 << 1)	/* Segment is writable */
+ #define PF_R		(1 << 2)	/* Segment is readable */
++
++#define PF_PAGEEXEC    (1 << 4)         /* Enable  PAGEEXEC */
++#define PF_NOPAGEEXEC  (1 << 5)         /* Disable PAGEEXEC */
++#define PF_SEGMEXEC    (1 << 6)         /* Enable  SEGMEXEC */
++#define PF_NOSEGMEXEC  (1 << 7)         /* Disable SEGMEXEC */
++#define PF_MPROTECT    (1 << 8)         /* Enable  MPROTECT */
++#define PF_NOMPROTECT  (1 << 9)         /* Disable MPROTECT */
++#define PF_RANDEXEC    (1 << 10)        /* Enable  RANDEXEC */
++#define PF_NORANDEXEC  (1 << 11)        /* Disable RANDEXEC */
++#define PF_EMUTRAMP    (1 << 12)        /* Enable  EMUTRAMP */
++#define PF_NOEMUTRAMP  (1 << 13)        /* Disable EMUTRAMP */
++#define PF_RANDMMAP    (1 << 14)        /* Enable  RANDMMAP */
++#define PF_NORANDMMAP  (1 << 15)        /* Disable RANDMMAP */
++
+ /* #define PF_MASKOS	0x0F000000    *//* OS-specific reserved bits */
+ #define PF_MASKOS	0x0FF00000	/* New value, Oct 4, 1999 Draft */
+ #define PF_MASKPROC	0xF0000000	/* Processor-specific reserved bits */
+diff -Naur binutils-2.16/ld/emultempl/elf32.em binutils-2.16-pax/ld/emultempl/elf32.em
+--- binutils-2.16/ld/emultempl/elf32.em	2005-04-13 12:59:07.000000000 -0500
++++ binutils-2.16-pax/ld/emultempl/elf32.em	2005-05-16 20:20:08.000000000 -0500
+@@ -1725,6 +1725,16 @@
+ 	  link_info.noexecstack = TRUE;
+ 	  link_info.execstack = FALSE;
+ 	}
++      else if (strcmp (optarg, "execheap") == 0)
++       {
++         link_info.execheap = TRUE;
++         link_info.noexecheap = FALSE;
++       }
++      else if (strcmp (optarg, "noexecheap") == 0)
++       {
++         link_info.noexecheap = TRUE;
++         link_info.execheap = FALSE;
++       }	
+       else if (strcmp (optarg, "relro") == 0)
+ 	link_info.relro = TRUE;
+       else if (strcmp (optarg, "norelro") == 0)
+@@ -1765,6 +1775,7 @@
+   fprintf (file, _("  -z combreloc\t\tMerge dynamic relocs into one section and sort\n"));
+   fprintf (file, _("  -z defs\t\tReport unresolved symbols in object files.\n"));
+   fprintf (file, _("  -z execstack\t\tMark executable as requiring executable stack\n"));
++  fprintf (file, _("  -z execheap\t\tMark executable as requiring executable heap\n"));  
+   fprintf (file, _("  -z initfirst\t\tMark DSO to be initialized first at runtime\n"));
+   fprintf (file, _("  -z interpose\t\tMark object to interpose all DSOs but executable\n"));
+   fprintf (file, _("  -z loadfltr\t\tMark object requiring immediate process\n"));
+@@ -1776,6 +1787,7 @@
+   fprintf (file, _("  -z nodlopen\t\tMark DSO not available to dlopen\n"));
+   fprintf (file, _("  -z nodump\t\tMark DSO not available to dldump\n"));
+   fprintf (file, _("  -z noexecstack\tMark executable as not requiring executable stack\n"));
++  fprintf (file, _("  -z noexecheap\tMark executable as not requiring executable heap\n"));  
+   fprintf (file, _("  -z norelro\t\tDon't create RELRO program header\n"));
+   fprintf (file, _("  -z now\t\tMark object non-lazy runtime binding\n"));
+   fprintf (file, _("  -z origin\t\tMark object requiring immediate \$ORIGIN processing\n\t\t\t  at runtime\n"));
+diff -Naur binutils-2.16/ld/ldgram.y binutils-2.16-pax/ld/ldgram.y
+--- binutils-2.16/ld/ldgram.y	2005-01-21 06:04:25.000000000 -0600
++++ binutils-2.16-pax/ld/ldgram.y	2005-05-16 20:21:46.000000000 -0500
+@@ -1085,6 +1085,8 @@
+ 			    $$ = exp_intop (0x6474e550);
+ 			  else if (strcmp (s, "PT_GNU_STACK") == 0)
+ 			    $$ = exp_intop (0x6474e551);
++                          else if (strcmp (s, "PT_PAX_FLAGS") == 0)
++                            $$ = exp_intop (0x65041580);			    
+ 			  else
+ 			    {
+ 			      einfo (_("\
+diff -Naur binutils-2.16/ld/testsuite/ld-i386/tlsbin.rd binutils-2.16-pax/ld/testsuite/ld-i386/tlsbin.rd
+--- binutils-2.16/ld/testsuite/ld-i386/tlsbin.rd	2004-11-01 23:40:04.000000000 -0600
++++ binutils-2.16-pax/ld/testsuite/ld-i386/tlsbin.rd	2005-05-16 20:23:06.000000000 -0500
+@@ -35,7 +35,7 @@
+ 
+ Elf file type is EXEC \(Executable file\)
+ Entry point 0x8049178
+-There are 6 program headers, starting at offset [0-9]+
++There are 7 program headers, starting at offset [0-9]+
+ 
+ Program Headers:
+   Type +Offset +VirtAddr +PhysAddr +FileSiz +MemSiz +Flg Align
+@@ -46,7 +46,8 @@
+   LOAD.*
+   DYNAMIC.*
+   TLS +0x[0-9a-f]+ 0x[0-9a-f]+ 0x[0-9a-f]+ 0x0+60 0x0+a0 R +0x1000
+-
++  PAX_FLAGS +0x0+ 0x0+ 0x0+ 0x0+ 0x0+ +0x4
++  
+  Section to Segment mapping:
+   Segment Sections...
+    00 +
+@@ -55,6 +56,7 @@
+    03 +.tdata .dynamic .got .got.plt *
+    04 +.dynamic *
+    05 +.tdata .tbss *
++   06 *
+ 
+ Relocation section '.rel.dyn' at offset 0x[0-9a-f]+ contains 9 entries:
+  Offset +Info +Type +Sym.Value +Sym. Name
+diff -Naur binutils-2.16/ld/testsuite/ld-i386/tlsnopic.rd binutils-2.16-pax/ld/testsuite/ld-i386/tlsnopic.rd
+--- binutils-2.16/ld/testsuite/ld-i386/tlsnopic.rd	2004-11-01 23:40:04.000000000 -0600
++++ binutils-2.16-pax/ld/testsuite/ld-i386/tlsnopic.rd	2005-05-16 20:25:22.000000000 -0500
+@@ -32,7 +32,7 @@
+ 
+ Elf file type is DYN \(Shared object file\)
+ Entry point 0x1000
+-There are 4 program headers, starting at offset [0-9]+
++There are 5 program headers, starting at offset [0-9]+
+ 
+ Program Headers:
+   Type +Offset +VirtAddr +PhysAddr +FileSiz +MemSiz +Flg Align
+@@ -40,14 +40,16 @@
+   LOAD.*
+   DYNAMIC.*
+   TLS +0x[0-9a-f]+ 0x[0-9a-f]+ 0x[0-9a-f]+ 0x0+ 0x0+24 R +0x1
+-
++  PAX_FLAGS +0x0+ 0x0+ 0x0+ 0x0+ 0x0+ +0x4
++  
+  Section to Segment mapping:
+   Segment Sections...
+    00 +.hash .dynsym .dynstr .rel.dyn .text *
+    01 +.dynamic .got .got.plt *
+    02 +.dynamic *
+    03 +.tbss *
+-
++   04 *
++   
+ Relocation section '.rel.dyn' at offset 0x[0-9a-f]+ contains 20 entries:
+  Offset +Info +Type +Sym.Value +Sym. Name
+ 0+100d  0+8 R_386_RELATIVE +
+diff -Naur binutils-2.16/ld/testsuite/ld-i386/tlspic.rd binutils-2.16-pax/ld/testsuite/ld-i386/tlspic.rd
+--- binutils-2.16/ld/testsuite/ld-i386/tlspic.rd	2004-11-01 23:40:04.000000000 -0600
++++ binutils-2.16-pax/ld/testsuite/ld-i386/tlspic.rd	2005-05-16 20:26:23.000000000 -0500
+@@ -42,6 +42,7 @@
+   LOAD.*
+   DYNAMIC.*
+   TLS +0x[0-9a-f]+ 0x[0-9a-f]+ 0x[0-9a-f]+ 0x0+60 0x0+80 R +0x1
++  PAX_FLAGS +0x0+ 0x0+ 0x0+ 0x0+ 0x0+ +0x4
+ 
+  Section to Segment mapping:
+   Segment Sections...
+@@ -49,7 +50,8 @@
+    01 +.tdata .dynamic .got .got.plt *
+    02 +.dynamic *
+    03 +.tdata .tbss *
+-
++   04 *
++  
+ Relocation section '.rel.dyn' at offset 0x[0-9a-f]+ contains 26 entries:
+  Offset +Info +Type +Sym.Value +Sym. Name
+ [0-9a-f]+ +0+23 R_386_TLS_DTPMOD3

@@ -1,0 +1,38 @@
+NAME=syslog-ng
+VERSION=1.9.5
+ARCH=i686
+RELEASE=1
+URL="http://www.balabit.com/products/syslog_ng/"
+DESC="A syslogd/klogd replacement."
+GROUP=system
+LICENSE="GPLv2"
+SIZE="566K"
+
+SOURCES="http://www.balabit.com/downloads/syslog-ng/1.9/src/syslog-ng-1.9.5.tar.gz
+         http://www.balabit.com/downloads/libol/0.3/libol-0.3.16.tar.gz
+         syslog-ng.init syslog-ng.conf"
+
+BACKUPS="etc/syslog-ng.conf"
+
+build() {
+  cd $SRC/libol-0.3.16
+
+  ./configure --prefix=/usr \
+             --disable-shared
+  make
+
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --with-libol=../libol-0.3.16 \
+	      --enable-tcp-wrapper
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../syslog-ng.init $PKG/etc/rc.d/syslog-ng
+  install -m 0644 ../syslog-ng.conf $PKG/etc/syslog-ng.conf
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS PORTS \
+    README
+}

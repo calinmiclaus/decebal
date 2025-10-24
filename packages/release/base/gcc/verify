@@ -1,0 +1,4 @@
+md5: b594ff4ea4fbef4ba9220887de713dfe gcc-3.4.4.tar.bz2
+md5: 351cf71636de0dc584c7d3964acf5c12 gcc-3.4.4-version-1.diff
+md5: 9d2874887cda8679415b7645d7beed60 gcc-3.4.4-ssp-1.diff
+md5: 6dac7d14d89526dd57e615cea64114b8 gcc-3.4.4-ssp-libssp-1.diff

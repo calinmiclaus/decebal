@@ -1,0 +1,66 @@
+NAME=module-init-tools
+VERSION=3.2_pre9
+ARCH=i686
+RELEASE=1
+URL="http://www.kernel.org"
+DESC="The Linux module utilities (kernels 2.4 and 2.6)"
+GROUP=base
+LICENSE=GPLv2
+SIZE="349K"
+
+SOURCES="http://www.kernel.org/pub/linux/utils/kernel/$NAME/$NAME-3.2-pre9.tar.bz2
+         http://www.kernel.org/pub/linux/utils/kernel/modutils/v2.4/modutils-2.4.27.tar.bz2
+	 modules.init modules.sysconf no-docbook.patch"
+
+BACKUPS="etc/modprobe.conf
+         etc/modules.conf"
+
+RUNTIME=">=zlib-1.1.4"
+
+build() {
+  cd $SRC/modutils-2.4.27
+  
+  ./configure --prefix=/usr \
+              --sbindir=/sbin
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/{etc,usr/share/man/man8}
+  
+  # rename old module utilities
+  for i in depmod modinfo insmod; do
+    mv $PKG/usr/man/man8/$i.8 $PKG/usr/share/man/man8/${i}.old.8
+    mv $PKG/sbin/$i $PKG/sbin/${i}.old
+  done
+  
+  for i in kallsyms ksyms lsmod modprobe rmmod; do
+    mv $PKG/usr/man/man8/${i}.8 $PKG/usr/share/man/man8/${i}.old.8
+    rm -f $PKG/sbin/$i &&
+    ln -sf insmod.old $PKG/sbin/${i}.old
+  done
+  
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION/modutils-2.4.27
+  
+  cp COPYING CREDITS ChangeLog INSTALL NEWS README TODO \
+    $PKG/usr/share/doc/$NAME-$VERSION/modutils-2.4.27
+
+  cd $SRC/$NAME-3.2-pre9
+  
+  remove_flags -fstack-protector -fstack-protector-all
+    
+  patch -p1 < ../no-docbook.patch
+  
+  ./configure --prefix=/usr \
+              --exec-prefix=/
+  make
+  make DESTDIR=$PKG install
+  
+  mv $PKG/bin/lsmod $PKG/sbin/lsmod
+  rm -rf $PKG/bin
+  
+  install -D -m 0700 ../modules.init $PKG/etc/rc.d/modules
+  install -D -m 0644 ../modules.sysconf $PKG/etc/conf.d/modules
+  install -m 0755 generate-modprobe.conf $PKG/sbin/generate-modprobe.conf
+
+  install_docs AUTHORS COPYING ChangeLog FAQ INSTALL NEWS README TODO
+}

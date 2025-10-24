@@ -1,0 +1,40 @@
+NAME=lesstif
+VERSION=0.94.0
+ARCH=i686
+RELEASE=1
+URL="http://www.lesstif.org/"
+DESC="LGPL'd re-implementation of Motif."
+GROUP=graphics
+LICENSE=GPLv2
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/lesstif/lesstif-0.94.0.tar.bz2"
+
+RUNTIME="xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  mkdir -p $PKG/{etc/X11,usr/{lib,X11R6/lib}}
+  
+  ./configure --prefix=/usr \
+              --enable-editres \
+	      --with-xdnd \
+              --enable-build-21 \
+	      --disable-debug \
+              --enable-production
+  make
+  make DESTDIR=$PKG install
+  
+  mv $PKG/usr/lib/X11/app-defaults $PKG/etc/X11/
+  mv $PKG/usr/lib/X11 $PKG/usr/X11R6/lib/
+  
+  rm $PKG/usr/X11R6/lib/X11/mwm/README
+  
+  mv $PKG/usr/man/man3/Shell.3 $PKG/usr/man/man3/LesstifShell.3
+  mv $PKG/usr/man/man3/Object.3 $PKG/usr/man/man3/LesstifObject.3
+  
+  install_docs AUTHORS BUG-REPORTING COPYING* CREDITS ChangeLog FAQ \
+    INSTALL.txt NEWS README ReleaseNotes.* 
+
+  mv $PKG/usr/LessTif $PKG/usr/share/doc/$NAME-$VERSION/
+}

@@ -1,0 +1,25 @@
+NAME=text-iconv-perl
+VERSION=1.4
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~mpiotr/Text-Iconv-1.4/"
+DESC="A module that provides a Perl interface to the iconv() codeset conversion function."
+GROUP=perl-modules
+LICENSE=Artistic
+SIZE="8K"
+SOURCES="http://search.cpan.org/CPAN/authors/id/M/MP/MPIOTR/Text-Iconv-1.4.tar.gz"
+
+RUMTIME="perl"
+
+build() {
+  cd $SRC/Text-Iconv-$VERSION
+  
+  perl Makefile.PL
+  make                                                                                                                                        
+  make DESTDIR=$PKG install                                                                                                                   
+                                                                                                                                                   
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;                                                                        
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;      
+
+  install_docs Changes MANIFEST README
+}

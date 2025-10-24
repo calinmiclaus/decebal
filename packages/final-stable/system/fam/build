@@ -1,0 +1,35 @@
+NAME=fam
+VERSION=2.7.0
+ARCH=i686
+RELEASE=1
+URL="http://oss.sgi.com/projects/fam/"
+DESC="File Alteration Monitor daemon."
+GROUP=system
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="294K"
+
+SOURCES="http://oss.sgi.com/projects/fam/download/fam-latest.tar.gz
+         famd.init famd.sysconf"
+
+BACKUPS="etc/fam/fam.conf
+         etc/conf.d/famd"
+
+RUNTIME="portmap"
+
+CONFLICTS="gamin"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/fam $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../famd.init $PKG/etc/rc.d/famd
+  install -D -m 0644 ../famd.sysconf $PKG/etc/conf.d/famd
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}

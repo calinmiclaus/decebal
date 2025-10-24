@@ -1,0 +1,17 @@
+post_install() {
+  /sbin/ldconfig >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /opt/gnome/share/mime >/dev/null 2>&1
+}
+
+post_upgrade() {
+  /sbin/ldconfig >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /opt/gnome/share/mime >/dev/null 2>&1
+}
+
+post_remove() {
+  /sbin/ldconfig >/dev/null 2>&1
+  /usr/bin/update-desktop-database >/dev/null 2>&1
+  /usr/bin/update-mime-database /opt/gnome/share/mime >/dev/null 2>&1
+}

@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# /etc/init.d/isapnp - configure ISA PNP devices
+#
+
+. /etc/rc.d/functions
+
+# We exit silently if we dont have a configuration file.
+[ -r /etc/isapnp.conf ] || exit 0
+
+pidfile=""
+
+case "$1" in
+    start)
+	msg "Configuring ISA Plug-and-Play devices (isapnp)"
+	start_service /usr/sbin/isapnp /etc/isapnp.conf
+	;;
+    stop)
+	msg "Stopping ISA Plug-and-Play devices (isapnp)"
+	stop_service /usr/sbin/isapnp
+	;;
+    restart)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+    status)
+	status_service /usr/sbin/isapnp
+	;;
+    *)
+	echo "usage: $0 {start|stop|force-reload|restart|status}"
+	exit 1
+	;;
+esac
+	

@@ -1,0 +1,400 @@
+This is an unofficial translation of the GNU General Public License into
+romanian. It was not published by the Free Software Foundation, and does
+not legally state the distribution terms for software that uses the GNU
+GPL--only the original English text of the GNU GPL does that. However,
+we hope that this translation will help romanian speakers understand the
+GNU GPL better.
+
+Aceasta este o traducere neoficialã a Licentei Publice Generale GNU în
+limba românã. Nu a fost publicatã de Free Software Foundation si nu
+specificã termenii legali de distribuire a programelor care folosesc GNU
+GPL--numai textul original în limba englezã al GNU GPL face acest lucru.
+Cu toate acestea, sperãm ca aceastã traducere sã ajute vorbitorii de
+limbã românã sã înteleaga mai bine GNU GPL.
+
+
+		    LICENTÃ PUBLICÃ GENERALÃ GNU
+		       Versiunea 2, iunie 1991
+
+ Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+ 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+ Este permisã copierea acestui document, dar este interzisã
+ modificarea lui.
+
+			    Prefatã
+
+  Licentele majoritãtii programelor sunt concepute pentru a vã priva
+de libertatea de a modifica si distribui programele respective.  În
+contrast, intentia Licentei Publice Generale GNU este de a vã garanta
+libertatea de a distribui si modifica programele libere si de a se
+asigura cã programele sunt libere pentru toti utilizatorii.  Aceastã
+Licentã Publicã Generalã se aplicã majoritãtii programelor apartinând
+Free Software Foundation precum si tuturor celorlalte programe ai
+cãror autori decid sã o foloseascã.  Alte programe apartinând Free
+Software Foundation sunt puse sub Licenta Publicã Generalã GNU pentru
+Biblioteci.  Aceastã Licentã poate fi de asemenea folositã pentru
+programele dumneavoastrã.
+
+  Libertatea programelor nu implicã neapãrat absenta costului.
+Licentele noastre sunt concepute sã vã garanteze libertatea de a
+distribui copii ale programelor libere (si de a oferi acest serviciu
+contra cost, daca doriti), de a obtine codul sursã, de a schimba
+programul sau a folosi portiuni din el în noi programe libere, si de a
+sti cã puteti face toate aceste lucruri.
+
+  Pentru a vã proteja drepturile, trebuie sã impunem restrictii împotriva
+oricui ar încerca sã vã conteste aceste drepturi sau sã vã cearã sã
+renuntati la ele.  Aceste restrictii implicã anumite responsabilitãti
+pentru dumneavoastrã dacã distribuiti copii ale programelor, sau dacã
+le modificati.
+
+  De exemplu, daca distribuiti copii ale unui program, indiferent dacã
+o faceti gratuit sau contra unei sume de bani, trebuie sã dati
+beneficiarilor toate drepturile pe care le aveti dumneavoastrã.
+Trebuie sã vã asigurati cã ei primesc, sau pot primi, codul sursã al
+programului.  În plus, trebuie sã le arãtati care sunt termenii în
+care primesc programul, pentru ca ei sã stie care le sunt drepturile.
+
+  Drepturile dumneavoastrã sunt protejate în douã etape: (1)
+prin stabilirea drepturilor de autor pentru program, si (2) prin
+aceastã Licentã care vã dã dreptul legal de a copia, distribui si/sau
+modifica programul.
+
+  De asemenea, pentru propria noastrã protectie cât si pentru cea a
+autorilor, vrem sã ne asigurãm cã toatã lumea întelege cã nu existã
+nici un fel de garantie pentru acest program liber.  Dacã programul
+este modificat de altcineva si distribuit mai departe, vrem ca
+beneficiarii programului sã stie cã ceea ce au nu este originalul, în
+asa fel încât nici o problemã introdusã de altcineva nu va avea un
+efect negativ asupra reputatiei autorilor initiali.
+
+  Orice program liber este în mod constant amenintat de patentele
+software.  Noi vrem sã evitãm pericolul ca cei ce redistribuie
+programe libere sã obtinã patente, practic transformând programul
+într-unul aflat sub controlul total al persoanei sau institutiei ce
+detine patentul (engl. proprietary).  Pentru a preveni aceastã
+situatie, facem clarã pozitia noastrã conform cãreia orice patent
+trebuie acordat fie în asa fel încât sã poatã fi folosit gratuit si
+fãrã restrictii de oricine, fie deloc.
+
+  Termenii si conditiile exacte de copiere, distribuire si modificare
+sunt specificate în urmãtoarele paragrafe.
+
+
+		   LICENTA PUBLICÃ GENERALÃ GNU
+    TERMENI ªI CONDITII PENTRU COPIERE, DISTRIBUIRE ªI MODIFICARE
+
+  0. Aceastã Licentã se aplicã oricãrui program sau proiect ce contine
+o mentiune a detinãtorului drepturilor de autor spunând cã poate fi
+distribuit în termenii acestei Licente Publice Generale.  Prin
+"Program" vom întelege orice asemenea program sau proiect, iar prin
+"proiect bazat pe Program" vom întelege fie programul fie orice alt
+proiect derivat din Program conform cu legea drepturilor de autor: un
+proiect ce contine Programul sau portiuni din el, fie în forma
+originalã fie modificatã si/sau tradusã în altã limbã.  (În restul
+acestui document traducerile vor fi incluse fãrã restrictii în
+termenul "modificare".)  Fiecare persoanã autorizatã de aceastã
+Licentã va fi desemnatã prin termenul "dumneavoastrã".
+
+Activitãtile care nu sunt de copiere, distribuire si modificare sunt
+în afara scopului acestei Licente.  Activitatea de executare a
+programului nu este restrictionatã, iar rezultatul programului
+(engl. output) este acoperit de licentã doar în cazul în care
+continutul sãu constituie un proiect bazat pe Program (independent de
+faptul cã a fost obtinut prin rularea Programului).  În ce masura
+acest lucru este adevãrat depinde de natura Programului.
+
+  1. Puteti copia si distribui copii nemodificate ale codului sursa al
+Programului în forma în care îl primiti, prin orice mediu, cu conditia
+sã specificati vizibil pe fiecare copie autorul si lipsa oricãrei
+garantii, sã pãstrati intacte toate notele referitoare la aceastã
+Licentã si la absenta oricãrei garantii si sã distribuiti o copie a
+acestei Licente cu fiecare copie a Programului.
+
+Puteti pretinde o retributie financiarã pentru actul fizic de transfer
+al unei copii, si puteti oferi garantie contra cost.
+
+  2. Puteti efectua modificãri asupra copiilor Programului (sau asupra
+oricãror portiuni ale sale), creând astfel un "proiect bazat pe
+Program".  Copierea si distribuirea unor asemenea modificãri sau
+proiecte se pot face conform termenilor sectiunii precedente (1), doar
+dacã toate conditiile urmãtoarele sunt îndeplinite:
+
+    a) Toate fisierele modificate trebuie sã continã note foarte
+       vizibile mentionând faptul cã dumneavoastrã le-ati modificat,
+       precum si data fiecãrei modificãri.
+
+    b) Orice proiect pe care îl distribuiti sau publicati, care în
+       întregime sau în parte contine sau este derivat din Program
+       (sau orice parte a acestuia), trebuie sã poata fi folosit de
+       oricine, gratuit si în întregime, în termenii acestei Licente.
+
+    c) Daca programul modificat citeste comenzi în mod interactiv,
+       trebuie sã îl modificati în asa fel încât atunci când este
+       pornit în mod interactiv sã afiseze un mesaj referitor la
+       drepturile de autor precum si o notã mentionând lipsa oricãrei
+       garantii (sau sã mentioneze faptul cã dumneavoastrã oferiti o
+       garantie).  De asemenea trebuie specificat faptul cã
+       utilizatorii pot redistribui programul în aceste conditii
+       precum si o explicatie a modalitãtii în care poate fi obtinut
+       textul acestei Licente.  (Exceptie: dacã Programul este
+       interactiv dar nu afiseazã în mod normal un asemenea mesaj, nu
+       este necesar ca proiectul bazat pe Program sã afiseze un
+       mesaj.)
+
+Aceste cerinte se aplicã Programului modificat în întregime.  Daca pot
+fi identificate sectiuni ale proiectului care nu sunt derivate din
+Program, si pot fi considerate de sine stãtãtoare, atunci aceastã
+Licentã si termenii sãi nu se aplicã acelor sectiuni când sunt
+distribuite ca proiecte separate.  Când distribuiti aceleasi sectiuni
+ca parte a unui întreg care este un proiect bazat pe Program,
+distribuirea întregului proiect trebuie sã fie fãcutã în acord cu
+termenii acestei Licente, ale cãrei permisiuni pentru alte licente se
+extind asupra întregului, si deci asupra fiecãrei sectiuni în parte,
+indiferent de autor.
+
+Astfel, nu este în intentia acestei sectiuni sã pretindã drepturi sau
+sã conteste drepturile dumneavoastrã asupra unui proiect efectuat în
+întregime de dumneavoastrã.  Intentia este de a exercita dreptul de a
+controla distributia proiectelor derivate sau colective bazate pe
+Program.
+
+În plus, pura agregare (pe un mediu de stocare sau distributie) cu
+Programul (sau cu un proiect bazat pe Program) al unui alt proiect
+care nu este bazat pe Program nu aduce acel proiect sub incidenta
+acestei Licente.
+
+  3. Puteti copia si distribui Programul (sau un proiect bazat pe el,
+conform Sectiunii 2) în format obiect sau executabil conform
+termenilor Sectiunilor 1 si 2 de mai sus, cu conditia sã îndepliniti
+una dintre conditiile de mai jos:
+
+    a) Sã îl oferiti însotit de codul sursã corespunzãtor, în format
+       citibil de cãtre masinã, care trebuie sã fie distribuit în
+       termenii Sectiunilor 1 si 2 de mai sus pe un mediu de
+       distributie uzual transportului de software; sau
+
+    b) Sã îl oferiti însotit de o ofertã scrisã, (validã pentru cel
+       putin trei ani, pentru o taxã care sã nu depãseascã costul
+       fizic al efectuãrii distributiei sursei), de a oferi o copie
+       completã, în format citibil de cãtre masinã, a codului sursã,
+       distribuit în termenii Sectiunilor 1 si 2 de mai sus, pe un
+       mediu de distributie uzual transportului de software; sau
+
+    c) Sã îl oferiti însotit de informatia pe care ati primit-o
+       referitoare la oferta de a distribui codul sursa corespunzãtor.
+       (Aceastã alternativã este permisã numai pentru distribuiri
+       necomerciale si doar dacã ati primit programul în format obiect
+       sau executabil împreunã cu aceastã ofertã, în conformitate cu
+       Subsectiunea b de mai sus.)
+
+Codul sursã al unui proiect este forma preferatã în care se fac
+modificãri asupra proiectului.  Pentru un proiect executabil, codul
+sursã complet înseamna codul sursa al tuturor modulelor pe care le
+contine, împreunã cu toate fisierele asociate continând definitii ale
+interfetelor si scripturile folosite pentru a controla compilarea si
+instalarea executabilului.  Cu toate acestea, ca o exceptie, nu este
+obligatorie distribuirea împreuna cu codul sursã a acelor componente
+care sunt în mod normal distribuite (în format sursã sau binar) cu
+componentele majore (compilator, nucleu, etc.) ale sistemului de
+operare sub care ruleazã executabilul, exceptând situatia în care acea
+componentã acompaniazã executabilul.
+
+Dacã distributia executabilului sau codului obiect este fãcutã prin
+oferirea permisiunii de copiere dintr-un loc dedicat, atunci oferirea
+permisiunii de copiere a codului sursã din acelasi loc este
+consideratã distribuire a codului sursã, chiar dacã beneficiarul nu
+este obligat sã copieze codul sursã împreuna cu codul obiect.
+
+  4. Nu puteti copia, modifica, sub-autoriza sau distribui Programul
+decât asa cum este prevãzut în aceastã Licentã.  Orice încercare de a
+copia, modifica, sub-autoriza sau distribui Programul în alti termeni
+va duce la anularea drepturilor ce vã revin conform acestei Licente.
+Cu toate acestea, nu vor fi anulate drepturile celor ce au primit
+copii sau drepturi de la dumneavoastrã conform cu aceastã Licentã,
+atâta timp cât rãmân în conformitate cu ea.
+
+  5. Nu sunteti obligat sã acceptati aceastã Licentã, deoarece nu ati 
+semnat-o.  Cu toate aceastea, numai aceastã Licentã vã permite sã
+modificati Programul sau proiectele derivate din el.  Aceste actiuni
+sunt interzise prin lege dacã nu acceptati aceastã Licentã.  În
+consecintã, prin modificarea sau distribuirea Programului (sau a
+oricãrui proiect bazat pe Program), indicati în mod implicit
+acceptarea acestei Licente si a tuturor termenilor si conditiilor de
+copiere, distribuire sau modificare a Programului sau proiectelor
+bazate pe el.
+
+  6. De fiecare datã când redistribuiti Programul (sau orice proiect
+bazat pe Program), beneficiarul primeste o licentã de la licentiatorul
+original care îi permite sã copieze, distribuie sau modifice Programul
+în aceiasi termeni si conditii.  Nu puteti impune nici o restrictie
+aditionalã asupra exercitãrii drepturilor pe care destinatarul le
+primeste prin aceastã Licentã.  Nu sunteti responsabil cu impunerea
+respectãrii acestei Licente de cãtre o tertã parte.
+
+  7. În cazul în care, ca o consecintã a unei decizii judecãtoresti,
+sau pretinsã încãlcare a unui patent, sau pentru orice altã cauzã (nu
+neapãrat limitatã la chestiuni legate de patente), vi se impun
+conditii (prin hotãrâre judecãtoreascã, întelegere sau alte mijloace)
+care contravin conditiilor acestei Licente, acest lucru nu vã permite
+nerespectarea conditiilor acestei Licente.  Dacã nu puteti face în asa
+fel încât sã satisfaceti simultan obligatiile din aceastã Licentã si
+alte obligatii pertinente, atunci, ca o consecintã, vã este interzisã
+distribuirea Programului.  De exemplu, dacã o autorizatie de folosire
+a unui patent nu vã permite redistribuirea gratuitã a Programului de
+cãtre oricine îl primeste de la dumneavoastrã, direct sau indirect,
+atunci singurul mod în care puteti satisface simultan aceste conditii
+si Licenta de fatã este sã nu distribuiti Programul în nici un fel.
+
+Dacã vreo portiune a acestei sectiuni este invalidatã sau de neaplicat
+în anumite circumstante, restul sectiunii continuã sã se aplice, iar
+sectiunea în întregime se aplicã în toate celelalte circumstante.
+
+Nu este în intentia acestei sectiuni sã vã determine sã încãlcati
+vreun patent sau alte pretentii de drepturi de proprietate, sau sã
+contestati valabilitatea oricãror asemenea pretentii; aceastã sectiune
+are ca scop unic protejarea integritãtii sistemului de distribuire de
+programe libere, care este implementat prin licente publice.  Multe
+persoane au contribuit generos la spectrul larg de programe
+distribuite prin acest sistem, bazându-se pe aplicarea sa consistentã;
+este la latitudinea autorului/donatorului sã decidã dacã este dispus
+sã distribuie programe prin orice alt sistem, si o persoanã autorizatã
+sã foloseascã acele programe nu poate impune acea decizie.
+
+Intentia acestei sectiuni este de a clarifica ceea ce este considerat
+a fi o consecintã a restului acestei Licente.
+
+  8. Dacã distributia si/sau folosirea Programului este restrictionatã
+în anumite tãri din cauza patentelor sau din cauza unor interfete
+aflate sub incidenta unor drepturi de autor restrictive, detinãtorul
+drepturilor de autor ce plaseazã Programul sub aceastã Licentã poate
+adãuga o limitare geografica a distribuirii ce exclude acele tãri, în
+asa fel încât distribuirea este permisã doar în (sau între) tãrile
+care nu sunt excluse.  Într-un asemenea caz, Licenta incorporeazã
+aceastã limitare ca si cum ar fi scrisã în corpul acestei Licente.
+
+  9. Free Software Foundation poate publica din când in când noi
+versiuni (sau versiuni revãzute) ale Licentei Publice Generale.
+Asemenea versiuni noi vor fi similare în spirit versiunii prezente,
+dar pot diferi în anumite detalii, pentru a adresa noi probleme sau
+situatii.
+
+Fiecãrei versiuni îi este asociat un numar unic.  Dacã programul
+specificã faptul cã i se aplicã un numar de versiune al acestei
+Licente si "orice versiune ulterioarã", aveti optiunea de a urma
+termenii si conditiile acelei versiuni sau ale oricãrei versiuni
+ulterioare publicate de Free Software Foundation.  Daca Programul nu
+specificã un numar de versiune, puteti alege orice versiune publicatã
+vreodatã de Free Software Foundation.
+
+  10. Dacã doriti sã incorporati pãrti ale Programului în alte
+programe libere ale cãror conditii de distributie sunt diferite,
+cereti permisiunea autorului.  Pentru programe ale cãror drepturi de
+autor apartin Free Software Foundation, cereti permisiunea de la Free
+Software Foundation; uneori facem exceptii pentru aceasta.  Decizia
+noastrã va fi ghidatã de cele douã scopuri de a prezerva statutul
+liber al tuturor proiectelor derivate din programele noastre libere si
+de a promova distribuirea si refolosirea programelor în general.
+
+                          NICI O GARANTIE
+
+  11. DEOARECE PROGRAMUL ESTE OFERIT SUB O LICENTÃ CE NU IMPLICÃ NICI
+UN COST, NU EXISTÃ NICI O GARANTIE PENTRU PROGRAM, ÎN MÃSURA PERMISÃ
+DE LEGILE CE SE APLICÃ.  EXCEPTÂND SITUATIILE UNDE ESTE SPECIFICAT
+ALTFEL ÎN SCRIS, DETINÃTORII DREPTURILOR DE AUTOR ªI/SAU ALTE PÃRTI
+IMPLICATE OFERÃ PROGRAMUL "ÎN FORMA EXISTENTÃ" FÃRÃ NICI O GARANTIE DE
+NICI UN FEL, EXPLICITÃ SAU IMPLICITÃ, INCLUZÂND, DAR FÃRÃ A FI
+LIMITATÃ LA, GARANTII IMPLICITE DE VANDABILITATE ªI CONFORMITATE UNUI
+ANUMIT SCOP.  VÃ ASUMATI ÎN INTREGIME RISCUL ÎN CEEA CE PRIVEªTE
+CALITATEA ªI PERFORMANTA ACESTUI PROGRAM.  ÎN CAZUL ÎN CARE PROGRAMUL
+SE DOVEDEªTE A FI DEFECT, VÃ ASUMATI ÎN ÎNTREGIME COSTUL TUTUROR
+SERVICIILOR, REPARATIILOR ªI CORECTIILOR NECESARE.
+
+  12. ÎN NICI O SITUATIE, EXCEPTÂND CAZURILE ÎN CARE ESTE CERUT DE
+LEGEA APLICABILÃ SAU CA REZULTAT AL UNEI ÎNTELEGERI SCRISE, UN
+DETINÃTOR AL DREPTURILOR DE AUTOR, SAU ORICE ALTÃ PARTE CARE POATE
+MODIFICA ªI/SAU REDISTRIBUI PROGRAMUL CONFORM PERMISIUNILOR DE MAI SUS
+NU VA FI FÃCUT RÃSPUNZATOR PENTRU PAGUBELE DUMNEAVOASTRÃ, INCLUSIV
+CELE GENERALE, SPECIALE, ÎNTÂMPLÃTOARE SAU REZULTANTE, APÃRUTE DIN
+FOLOSIREA SAU INABILITATEA DE A FOLOSI PROGRAMUL (INCLUZÂND, DAR FÃRÃ
+A FI LIMITAT LA PIERDEREA SAU DETERIORAREA DATELOR, SAU PIERDERILE
+SUFERITE DE DUMNEAVOASTRÃ SAU TERTE PERSOANE, SAU O INCAPACITATE A
+PROGRAMULUI DE A INTEROPERA CU ALTE PROGRAME), CHIAR DACÃ DETINÃTORUL
+SAU TERTA PARTE A FOST PREVENITÃ ASUPRA POSIBILITÃTII UNOR ASEMENEA
+PAGUBE.
+
+                 SFÂRªITUL TERMENILOR ªI CONDITIILOR
+
+      Cum sã Aplicati Acesti Termeni Noilor Dumneavoastrã Programe
+
+  Dacã dezvoltati un nou program, si doriti sã fie de cea mai mare
+utilitate publicului, cea mai bunã metodã de a realiza acest lucru
+este sã-l faceti liber, în asa fel încât oricine sã-l poatã
+redistribui si modifica în acesti termeni.
+
+  Pentru a face acest lucru, atasati urmãtoarea notã programului.  Cel
+mai sigur este sã o atasati începutului fiecãrui fisier sursã pentru a
+transmite excluderea garantiei; de asemenea, fiecare fisier ar trebui
+sã continã cel putin linia continând drepturile de autor si o referire
+la locul unde poate fi gãsitã întreaga notã.
+
+    <o linie cu numele programului si o scurtã prezentare a ceea ce face.>
+    Copyright (C) 19yy  <numele autorului>
+
+    Acest program este liber; îl puteti redistribui si/sau modifica în
+    conformitate cu termenii Licentei Publice Generale GNU asa cum
+    este publicatã de Free Software Foundation; fie versiunea 2 a
+    Licentei, fie (la latitudinea dumneavoastrã) orice versiune
+    ulterioarã.
+
+    Acest program este distribuit cu speranta cã va fi util, dar FÃRÃ
+    NICI O GARANTIE, fãrã garantie implicitã de vandabilitate si
+    conformitate unui anumit scop.  Cititi Licenta Publicã Generalã
+    GNU pentru detalii.
+
+    Ar trebui sã fi primit o copie a Licentei Publice Generale GNU
+    împreunã cu acest program; dacã nu, scrieti Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+    02111-1307 USA
+
+De asemenea, specificati modalitãtile în care puteti fi contactat prin
+postã normalã si electronicã.
+
+Daca programul este interactiv, modificati-l în asa fel încât sã
+genereze o scurtã notã atunci când porneste în mod interactiv:
+
+    Gnomovision versiunea 69, Copyright (C) 19yy numele autorului
+    Gnomovision nu oferã ABSOLUT NICI O GARANTIE; pentru detalii
+    tastati `aratã g'.  Acest program este liber, si sunteti
+    bineveniti sã-l redistribuiti în anumite conditii; tastati `aratã
+    c' pentru detalii.
+
+Comenzile ipotetice `aratã g' si `aratã c' ar trebui sã arate
+portiunile corespunzatoare din Licenta Publicã Generalã.  Bineînteles,
+comenzile pe care le veti folosi pot fi denumite altfel decât `aratã
+g' si `aratã c'; ele pot fi plasate pe meniuri, actiuni ale
+mouse-ului--orice este potrivit pentru programul dumneavoastrã.
+
+De asemenea, ar trebui sã obtineti un document semnat de institutia
+pentru care lucrati (dacã lucrati ca programator) sau de
+scoalã/universitate, prin care aceasta renuntã la drepturile de autor
+pentru programul dumneavoastrã.  Urmeazã un exemplu; modificati
+numele:
+
+  Yoyodyne, Inc., prin aceasta renuntã la toate drepturile de autor
+  asupra programului `Gnomovision' (care face cu ochiul
+  compilatoarelor) scris de James Hacker.
+
+  <semnatura lui Ty Coon>, 1 April 1989
+  Ty Coon, President of Vice
+
+Aceastã Licentã Publicã Generalã nu permite incorporarea programului
+dumneavoastrã în programe aflate sub controlul restrictiv al
+institutiilor (engl. proprietary programs).  Daca programul
+dumneavoastrã este o subrutina a unei biblioteci, puteti considera mai
+util sã permiteti legarea la bibliotecã a programelor aflate sub
+controlul restrictiv al institutiilor.  Daca aceasta este ceea ce
+doriti, folositi Licenta Publicã Generalã GNU pentru Biblioteci în
+locul acestei Licente.
+

@@ -1,0 +1,35 @@
+NAME=gtk
+VERSION=1.2.10
+ARCH=i686
+RELEASE=1
+URL="http://www.gtk.org/"
+DESC="The GTK+ toolkit (v1)."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="2801K"
+HUSE="nls"
+
+SOURCES="ftp://ftp.gtk.org/pub/gtk/v1.2/gtk-1.2.10.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=xorg-6.7 glib"
+
+use nls && BUILDTIME="$BUILDTIME gettext"
+
+build() {
+  cd $SRC/${NAME}+-${VERSION}
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --with-input=xfree \
+	      $OPTS
+
+  make
+  make DESTDIR=$PKG install
+
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog* HACKING \
+    INSTALL NEWS* README* TODO
+}

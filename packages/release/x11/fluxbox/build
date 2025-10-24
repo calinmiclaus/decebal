@@ -1,0 +1,45 @@
+NAME=fluxbox
+VERSION=0.9.13
+ARCH=i686
+RELEASE=1
+URL="http://fluxbox.sourceforge.net"
+DESC="A lightweight and highly-configurable window manager with pwm-like tabs."
+GROUP="x11"
+LICENSE=BSDL
+SIZE="648K"
+HUSE="nls static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/fluxbox/fluxbox-0.9.13.tar.bz2
+         xinitrc.fluxbox fluxbox.sh fluxbox.desktop"
+
+BACKUPS="etc/X11/xinit/xinitrc.fluxbox
+         etc/profile.d/fluxbox.sh"
+
+RUNTIME=">=xorg-6.7 imlib2"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/opt/fluxbox \
+              --sysconfdir=/etc/opt/fluxbox \
+	      --localstatedir=/var/opt \
+	      --mandir=/opt/fluxbox/share/man \
+	      --enable-imlib2 \
+	      --enable-xinerama \
+	      --with-x \
+	      $OPTS
+  make
+  make prefix=$PKG/opt/fluxbox install
+  
+  install -D -m 0755 ../xinitrc.fluxbox $PKG/etc/X11/xinit/xinitrc.fluxbox
+  install -D -m 0644 ../fluxbox.sh $PKG/etc/profile.d/fluxbox.sh
+  install -D -m 0755 ../fluxbox.desktop $PKG/etc/X11/Sessions/fluxbox.desktop
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO 
+}

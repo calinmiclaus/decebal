@@ -1,0 +1,23 @@
+NAME=mime-base64-perl
+VERSION=3.05
+ARCH=i686
+RELEASE=1
+URL="http://search.cpan.org/~gaas/MIME-Base64-3.05/"
+DESC="A base64 encoder/decoder and a quoted-printable encoder/decoder."
+GROUP=perl-modules
+LICENSE=ARTISTIC
+SOURCES="http://search.cpan.org/CPAN/authors/id/G/GA/GAAS/MIME-Base64-3.05.tar.gz"
+SIZE="15K"
+
+build() {
+  cd $SRC/MIME-Base64-$VERSION
+
+  echo y | perl Makefile.PL
+  make
+  make DESTDIR=$PKG install
+
+  find $PKG/usr/lib/perl5 -type f -name .packlist -exec rm -f -- {} \;
+  find $PKG/usr/lib/perl5 -type f -name perllocal.pod -exec rm -f -- {} \;
+
+  install_docs Changes README MANIFEST
+}

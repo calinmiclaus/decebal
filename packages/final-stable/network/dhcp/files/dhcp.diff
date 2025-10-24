@@ -1,0 +1,27 @@
+diff -Naur dhcp-3.0.2/includes/cf/linux.h dhcp-3.0.2.new/includes/cf/linux.h
+--- dhcp-3.0.2/includes/cf/linux.h	2004-06-14 10:31:03.000000000 -0500
++++ dhcp-3.0.2.new/includes/cf/linux.h	2005-02-17 03:43:23.152988000 -0600
+@@ -83,11 +83,11 @@
+    directory. */
+ 
+ #ifndef _PATH_DHCPD_DB
+-#define _PATH_DHCPD_DB		"/var/state/dhcp/dhcpd.leases"
++#define _PATH_DHCPD_DB		"/var/lib/dhcp/dhcpd.leases"
+ #endif
+ 
+ #ifndef _PATH_DHCLIENT_DB
+-#define _PATH_DHCLIENT_DB	"/var/state/dhcp/dhclient.leases"
++#define _PATH_DHCLIENT_DB	"/var/lib/dhcp/dhclient.leases"
+ #endif
+ 
+ /* Varargs stuff... */
+diff -Naur dhcp-3.0.2/site.conf dhcp-3.0.2.new/site.conf
+--- dhcp-3.0.2/site.conf	1999-07-07 10:20:10.000000000 -0500
++++ dhcp-3.0.2.new/site.conf	2005-02-17 03:41:56.909099064 -0600
+@@ -1,2 +1,6 @@
+ # Put local site configuration stuff here to override the default
+ # settings in Makefile.conf
++
++INCDIR=/usr/include/dhcp
++LIBDIR=/usr/lib/dhcp
++VARDB=/var/lib/dhcp

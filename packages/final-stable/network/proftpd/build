@@ -1,0 +1,42 @@
+NAME=proftpd
+VERSION=1.2.10
+ARCH=i686
+RELEASE=1
+URL="http://www.proftpd.org/"
+DESC="A performant and multifunctional FTP server."
+GROUP=network
+LICENSE=GPLv2
+SIZE="898K"
+HUSE="ipv6"
+
+SOURCES="ftp://ftp.servus.at/ProFTPD/distrib/source/proftpd-1.2.10.tar.bz2
+         proftpd.init"
+
+RUNTIME=">=ncurses-5.3 shadow"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="--enable-ipv6" || OPTS="--disable-ipv6"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --localstatedir=/var/lib \
+	      --enable-autoshadow \
+	      --enable-cap \
+	      --enable-shadow \
+	      --enable-pool-size \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../proftpd.init $PKG/etc/rc.d/proftpd
+  
+  sed -i "s:\"ProFTPD Default Installation\":\"ProFTP v1.2.10\":" $PKG/etc/proftpd.conf
+  sed -i "s:nobody$:proftpd:" $PKG/etc/proftpd.conf
+  sed -i "s:nogroup$:proftpd:" $PKG/etc/proftpd.conf
+  sed -i "s:\#DefaultRoot:DefaultRoot:" $PKG/etc/proftpd.conf
+    
+  install_docs COPYING CREDITS ChangeLog INSTALL NEWS \
+    README*
+}

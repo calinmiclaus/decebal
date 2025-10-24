@@ -1,0 +1,77 @@
+.\" Hey, Emacs!  This is an -*- nroff -*- source file.
+.\" Build-from-directory and this manpage are Copyright 1994 by Ian Jackson.
+.\" Changes to this manpage are Copyright 1996 by Jeff Noxon.
+.\" More
+.\"
+.\" This is free software; see the GNU General Public Licence version 2
+.\" or later for copying conditions.  There is NO warranty.
+.TH RUN\-PARTS 8 "5 June 1996" "Debian Linux"
+.SH NAME
+run\-parts \- run scripts or programs in a directory
+.SH SYNOPSIS
+.B run\-parts
+[\-\-test] [\-\-verbose] [\-\-report] [\-\-umask=umask] [\-\-arg=argument] [\-\-help] [\-\-version] directory
+.SH DESCRIPTION
+.PP
+.B run\-parts
+runs a number of scripts or programs found in a single directory
+.IR directory .
+Filenames should not end in tilde, .bak, .dpkg-*, or .pre_fcopy, .notslocate or .disabled . Subdirectories of
+.I directory
+will be silently ignored.
+
+All the files should be proper executables, either scripts or other
+kinds of executables.
+
+The files found will be run in the lexical sort order of the filenames.
+.SS OPTIONS
+.TP
+.B \-\-test
+print the names of the scripts which would be run, but don't actually run
+them.
+.TP
+.B \-\-verbose
+print the name of each script to stderr before running.
+.TP
+.B \-\-report
+similiar to
+.BR \-\-verbose ,
+but only prints the name of scripts which produce output.  The script's name is printed to whichever of stdout or stderr the script first produces output on.
+.B
+.TP
+.BI \-\-umask= umask
+Sets the umask to
+.I umask
+before running the scripts.
+.I umask
+should be specified in octal.  By default the umask is set to 022.
+.TP
+.BI \-\-arg= argument
+Pass
+.I argument
+to the scripts.  Use
+.B --arg
+once for each argument you want passed.
+.TP
+.B "\-\-"
+Specifies that this is the end of the options.  Any filename after
+.B "\-\-"
+will be not be interpreted as an option even if it starts with a
+hyphen.
+.TP
+.B \-\-help
+Display usage information and exit.
+.TP
+.B \-\-version
+Display version and copyright and exit.
+
+.SH COPYRIGHT
+Copyright (C) 1994 Ian Jackson.
+Copyright (C) 1996 Jeff Noxon.
+Copyright (C) 1996,1997,1998 Guy Maor
+
+.B run\-parts
+is free software; see the GNU General Public Licence version 2 or
+later for copying conditions.  There is
+.I no
+warranty.

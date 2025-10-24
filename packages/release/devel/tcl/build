@@ -1,0 +1,38 @@
+NAME=tcl
+VERSION=8.4.6
+ARCH=i686
+RELEASE=1
+DESC="The Tool Command Language"
+URL="http://tcl.sourceforge.net/"
+GROUP=devel
+LICENSE="OwnLicense"
+SIZE="3367K"
+
+SOURCES="http://umn.dl.sourceforge.net/sourceforge/tcl/tcl8.4.6-src.tar.gz"
+
+build () { 
+  cd $SRC/tcl${VERSION}/unix/
+
+  ./configure --prefix=/usr
+  make
+  make INSTALL_ROOT=$PKG install
+
+  mkdir -p $PKG/usr/include
+
+  cd $SRC/tcl${VERSION}/generic
+  cp *.h $PKG/usr/include/
+  cp ../unix/tclUnixPort.h $PKG/usr/include/tclPort.h
+  cp ../unix/tclUnixThrd.h $PKG/usr/include/tclThrd.h
+
+  sed -i "s|$SRC/tcl${VERSION}/unix|/usr/lib|" $PKG/usr/lib/tclConfig.sh
+
+  rm $PKG/usr/include/regex.h
+
+  ln -s tclsh8.4 $PKG/usr/bin/tclsh
+
+  rm -rf $PKG/usr/man/mann
+
+  cd $SRC/tcl${VERSION}
+
+  install_docs ChangeLog* changes README license.terms
+}

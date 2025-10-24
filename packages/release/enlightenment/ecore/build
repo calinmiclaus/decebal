@@ -1,0 +1,31 @@
+NAME=ecore
+VERSION=0.9.9.013
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="The Enlightenment Core Library."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="1049K"
+HUSE="static"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=ecore-0.9.9.013.tar.gz
+
+SOURCES="ecore-0.9.9.013.tar.gz"
+
+RUNTIME="=evas-0.9.9.013 =eet-0.9.10.013 >=openssl-0.9.7e"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL NEWS README
+}

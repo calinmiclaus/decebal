@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Next version...not time...dead end here.
+pkg_pie() {
+  local NEWCFLAGS=""
+  local NEWCXXFLAGS=""
+
+  cat << EOF > $TMP/pie.c
+int main() {
+    return 0 ;
+}
+EOF
+  gcc $TMP/pie.c -o $TMP/pie -fpie -pie 2>/dev/null
+  if [ -x $TMP/pie ]
+  then
+    msg_verbose_nnl "activating position idependant executable (PIE)..."    
+    for FLAG in $(echo $CFLAGS)
+    do
+      if [ ! "$FLAG" = "-fPIE" -a ! "$FLAG" = "-pie" -a ! "$FLAG" = "-fpie" ]
+      then
+        NEWCFLAGS="$NEWCFLAGS $FLAG"
+      fi
+    done
+    for FLAG in $(echo $CXXFLAGS)
+    do
+      if [ ! "$FLAG" = "-fpie" -a ! "$FLAG" = "-pie" -a ! "$FLAG" = "-fPIE" ]
+      then
+        NEWCXXFLAGS="$NEWCXXFLAGS $FLAG"
+      fi
+    done
+    export CFLAGS="$NEWCFLAGS -fpie -pie"
+    export CXXFLAGS="$NEWCXXFLAGS -fpie -pie"
+#    export LDFLAGS="-Wl,-z,now -Wl,-z,relro $LDFLAGS"
+    msg_done_verbose
+  else
+    msg_warning "your gcc does not have Position Independant Executable support."
+  fi
+}

@@ -1,0 +1,33 @@
+NAME=gnome-keyring
+VERSION=0.4.2
+ARCH=i686
+RELEASE=1
+URL="http://www/gnome.org/"
+DESC="A program that keep password and other secrets for users."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2"
+SIZE="360K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-keyring-0.4.2.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=gtk2-2.3.1
+         >=glib2-2.3.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+   
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --libexecdir=/opt/gnome/sbin $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS \
+    README TODO
+}

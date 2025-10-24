@@ -1,0 +1,33 @@
+NAME=anjuta
+VERSION=1.2.2
+ARCH=i686
+RELEASE=1
+URL="http://anjuta.sourceforge.net/"
+DESC="Integrated Development Environment (IDE)."
+GROUP=devel
+LICENSE=GPLv2
+SIZE="8355K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/anjuta/anjuta-1.2.2.tar.gz"
+
+RUNTIME=">=openssl-0.9.7e orbit2 gcc pcre bash libgnomeui"		    
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  export PKG_CONFIG_PATH="/opt/gnome/lib/pkgconfig:/usr/X11R6/lib/pkgconfig"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+              --enable-final \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+		      
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog FUTURE INSTALL \
+    NEWS README TODO
+}
+			    

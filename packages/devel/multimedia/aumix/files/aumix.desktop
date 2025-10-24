@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Aumix
+Comment=GTK2 Audio Mixer
+Exec=aumix
+Icon=/usr/share/aumix/aumix.xpm
+Type=Application
+Categories=Application;AudioVideo;
+StartupNotify=true
+Encoding=UTF-8
+Terminal=false

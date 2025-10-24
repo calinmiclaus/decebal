@@ -1,0 +1,33 @@
+NAME=cdrtools
+VERSION=2.01
+ARCH=i686
+RELEASE=1
+DESC="Tools for recording CDs."
+URL="http://www.fokus.fhg.de/research/cc/glone/employees/joerg.schilling/private/cdrecord.html"
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="1367K"
+
+SOURCES="http://gd.tuwien.ac.at/utils/schilling/cdrtools/cdrtools-2.01.tar.bz2
+         cdrtools-2.01-scsi-remote.patch cdrtools-2.01-defaults-1.diff"
+
+RUNTIME="libc"
+
+CONFLICTS="dvdrtools"
+
+REPLACES="dvdrtools"
+
+PROVIDES="cdrtools"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  patch -p1 < ../cdrtools-2.01-scsi-remote.patch
+  patch -p1 < ../cdrtools-2.01-defaults-1.diff    
+  
+  make
+  make INS_BASE=$PKG/usr install
+
+  install_docs ABOUT AN-2.0* BUILD COMPILE COPYING \
+    Changelog INSTALL PORTING README.* README START
+}

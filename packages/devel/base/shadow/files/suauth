@@ -1,0 +1,11 @@
+#
+# /etc/suauth   This file contains the detailed su control
+#               settings. It can change the behaviour of the 
+#               su command, based upon:
+#                
+#               1) the user su is targetting
+#               2) the user executing the su command (or any 
+#		groups he might  be a member of)
+#
+#               See suauth(5) for more information.
+

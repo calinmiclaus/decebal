@@ -1,0 +1,10 @@
+[Desktop Entry]
+Exec=xpdf
+Icon=/usr/share/icons/xpdfIcon.xpm
+Terminal=false
+Type=Application
+Categories=Application;Office;
+StartupNotify=true
+Encoding=UTF-8
+Name=Xpdf
+Comment=PDF Reader

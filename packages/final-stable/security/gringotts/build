@@ -1,0 +1,34 @@
+NAME=gringotts
+VERSION=1.2.8
+ARCH=i686
+RELEASE=1
+URL="http://devel.pluto.linux.it/projects/Gringotts/index.php?page=home"
+DESC="A program that allows you to store sensitive data."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="170K"
+
+SOURCES="http://devel.pluto.linux.it/projects/Gringotts/current/gringotts-1.2.8.tar.bz2
+         gringotts.desktop"
+
+RUNTIME=">=gtk2-2.4.0 >=libgringotts-1.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i -e 's:-DGTK_DISABLE_DEPRECATED::g' src/Makefile.in
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  chmod 755 $PKG/usr/bin/gringotts
+  
+  install -D -m 0644 ../gringotts.desktop $PKG/usr/share/applications/gringotts.desktop
+  
+  rm -rf $PKG/usr/share/gnome
+    
+  install_docs AUTHORS BUGS COPYING ChangeLog FAQ INSTALL \
+    NEWS README TODO
+}
+

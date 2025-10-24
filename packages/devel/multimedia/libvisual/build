@@ -1,0 +1,27 @@
+NAME=libvisual
+VERSION=0.2.0
+ARCH=i686
+RELEASE=1
+URL="http://libvisual.sf.net"
+DESC="A layer for audio visualisation and audio visualisation plugins."
+GROUP=multimedia
+LICENSE="GPLv2 LGPLv2"
+SIZE="422K"
+HUSE="static debug profile"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libvisual/libvisual-0.2.0.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use profile && OPTS="$OPTS --enable-profiling"
+    
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README TODO
+}

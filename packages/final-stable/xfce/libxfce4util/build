@@ -1,0 +1,41 @@
+NAME=libxfce4util
+VERSION=4.2.2
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="Basic utility library for Xfce4."
+GROUP=xfce
+LICENSE="BSDL LGPLv2"
+SIZE="447K"
+HUSE="static debug profile gtkdoc"
+
+SOURCES="http://www.us.xfce.org/archive/xfce-4.2.2/src/libxfce4util-4.2.2.tar.gz
+         xfce.sh"
+
+BACKUPS="etc/profile.d/xfce.sh"
+
+BUILDTIME="pkgconfig"
+
+
+RUNTIME=">=glib-1.2.10"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+        
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --enable-final \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../xfce.sh $PKG/etc/profile.d/xfce.sh
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS \
+    README TODO
+}

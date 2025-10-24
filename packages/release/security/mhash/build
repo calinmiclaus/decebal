@@ -1,0 +1,25 @@
+NAME=mhash
+VERSION=0.9.2
+ARCH=i686
+RELEASE=1
+URL="http://mhash.sourceforge.net/"
+DESC="Provides to access strong hashes such as MD5, SHA1 and other algorithms."
+GROUP=security
+LICENSE=GPLv2
+SIZE="561K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/mhash/mhash-0.9.2.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README THANKS TODO
+}

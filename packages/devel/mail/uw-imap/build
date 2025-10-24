@@ -1,0 +1,69 @@
+NAME=uw-imap
+VERSION=2004b
+ARCH=i686
+RELEASE=1
+URL="http://www.washington.edu/imap/"
+DESC="University of Washington's IMAP/POP server."
+GROUP=mail
+LICENSE=BSDL
+SIZE="2169K"
+
+SOURCES="ftp://ftp.cac.washington.edu/imap/imap.tar.Z"
+
+RUNTIME=">=openssl-0.9.7e"
+
+PROVIDES="imap-server pop2-server pop3-server"
+
+build() {
+  cd $SRC/imap-$VERSION
+  
+  echo y | make slx EXTRACFLAGS="$CFLAGS" \
+             SSLTYPE=unix \
+             SSLDIR=/usr \
+             SSLCERTS=/etc/ssl/uw-imap \
+             IP=6
+
+  install -D -m 755 imapd/imapd $PKG/usr/sbin/imapd
+  install -m 755 ipopd/{ipop2d,ipop3d} $PKG/usr/sbin
+  install -D -m 644 src/imapd/imapd.8 $PKG/usr/share/man/man8/imapd.8
+  install -m 644 src/ipopd/ipopd.8 $PKG/usr/share/man/man8/ipopd.8
+  
+  sed -i 's|/usr/etc/|/usr/sbin/|' $PKG/usr/share/man/man8/*
+  
+  for i in c-client mail imap4r1 rfc822 linkage misc smtp nntp \
+     osdep env_unix env fs ftl nl tcp
+  do
+     install -D -m644 c-client/${i}.h $PKG/usr/include/imap/${i}.h
+  done
+  
+  install -D -m644 c-client/c-client.a $PKG/usr/lib/c-client.a
+  ln -sf c-client.a $PKG/usr/lib/libc-client.a
+  
+  for i in imapd ipop3d
+  do
+    umask 077
+    PEM1=`/usr/bin/mktemp /tmp/openssl.XXXXXX`
+    PEM2=`/usr/bin/mktemp /tmp/openssl.XXXXXX`
+    /usr/bin/openssl req -newkey rsa:1024 -keyout $$PEM1 \
+       -nodes -x509 -days 365 -out  $$PEM2 << EOF
+--
+SomeState
+SomeCity
+SomeOrganization
+SomeOrganizationalUnit
+localhost.localdomain
+root@localhost.localdomain
+EOF
+
+    cat $$PEM1 >  ${i}.pem
+    echo ""    >> ${i}.pem
+    cat $$PEM2 >> ${i}.pem
+    rm $$PEM1 $$PEM2
+    umask 022
+  done
+  
+  install -D -m600 imapd.pem $PKG/etc/ssl/uw-imap/imapd.pem
+  install -D -m600 ipop3d.pem $PKG/etc/ssl/uw-imap/ipop3d.pem
+
+  install_docs CONTENTS CPYRIGHT README SUPPORT
+}

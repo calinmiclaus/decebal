@@ -1,0 +1,28 @@
+NAME=libtheora
+VERSION=1.0alpha4
+ARCH=i686
+RELEASE=1
+URL="http://www.theora.org/"
+DESC="Is Xiph.Org's first publicly released video codec."
+GROUP=multimedia
+LICENSE=BSDL
+SIZE="1713K"
+HUSE="static"
+
+SOURCES="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.bz2"
+
+RUNTIME=">=libogg-1.1 >=libsdl-0.6 alsa-lib"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr \
+              $OPTS
+  
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING README
+}

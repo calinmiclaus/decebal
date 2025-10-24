@@ -1,0 +1,29 @@
+NAME=lzo
+VERSION=1.08
+ARCH=i686
+RELEASE=1
+URL="http://www.oberhumer.com/opensource/lzo/"
+DESC="A real-time data compression library."
+GROUP=libs
+LICENSE="GPLv2"
+SIZE="416K"
+HUSE="static debug profile"
+
+SOURCES="http://www.oberhumer.com/opensource/lzo/download/lzo-1.08.tar.gz"
+
+RUNTIME="libc"
+
+function build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use profile && OPTS="$OPTS --enable-profiling"
+  
+  ./configure --prefix=/usr \
+              --enable-shared $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs AUTHORS BUGS COPYING ChangeLog INSTALL NEWS README THANKS
+}

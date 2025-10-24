@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Xmms
+Comment=X Multimedia Player
+Exec=xmms
+Icon=/usr/share/pixmaps/xmms.png
+Type=Application
+Categories=Application;AudioVideo;

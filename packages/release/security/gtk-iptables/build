@@ -1,0 +1,25 @@
+NAME=gtk-iptables
+VERSION=0.4.21
+ARCH=i686
+RELEASE=1
+URL="http://gtk-iptables.sourceforge.net/"
+DESC="A gtk-based frontend for iptables written in C."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="42K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gtk-iptables/gtk-iptables-0.4.21.tar.gz"
+
+RUNTIME=">=gtk-1.2.10 iptables"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING INSTALL NEWS README
+}
+
+

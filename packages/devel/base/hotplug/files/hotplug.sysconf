@@ -1,0 +1,13 @@
+#
+# /etc/conf.d/hotplug
+#
+
+# If you want your system to start faster, you
+# should set this to no and add all needed modules
+# to /etc/conf.d/modules.
+HOTPLUG="yes"
+usb="yes"
+input="yes"
+pci="yes"
+pnp="yes"
+

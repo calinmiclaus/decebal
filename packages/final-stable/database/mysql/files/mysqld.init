@@ -1,0 +1,108 @@
+#!/bin/bash
+#
+# /etc/rc.d/mysqld - control file for the MySQL daemon
+
+. /etc/rc.d/functions
+. /etc/conf.d/mysqld
+
+pidfile="/var/run/mysql/mysql.pid"
+
+check_mysql() {
+  if [ -d $DATADIR ]
+  then
+    chown -R mysql.mysql $DATADIR
+  else
+    mkdir -p $DATADIR
+    msg "Creating initial MySQL files"
+    run /usr/bin/mysql_install_db --datadir=$DATADIR --user=mysql
+    chown -R mysql.mysql $DATADIR
+  fi
+  
+  if [ -d $LOGDIR ]
+  then
+    chown -R mysql.mysql $LOGDIR
+  else
+    mkdir -p $LOGDIR
+    touch $LOGDIR/$ERRORLOG
+    touch $LOGDIR/$LOGFILE
+    chown -R mysql.mysql $LOGDIR
+  fi
+  
+  if [ ! -d ${pidfile%/*} ]
+  then
+    mkdir -p ${pidfile%/*}
+    chown mysql.mysql ${pidfile%/*}
+  fi
+  
+  # Make sure we can write to /tmp.
+  chmod 1777 /tmp
+}
+
+case "$1" in
+  start)
+    check_mysql
+    msg "Starting the MySQL daemon"
+    if ! check_proc mysqld
+    then
+      /usr/bin/mysqld_safe --datadir=$DATADIR \
+                           --pid-file=$pidfile \
+                	   --socket=${pidfile%/*}/mysql.sock \
+			   --err-log=$LOGDIR/$ERRORLOG \
+			   --log=$LOGDIR/$LOGFILE \
+       			   --user=mysql >/dev/null 2>&1 &
+      if [ $? -eq 0 ]
+      then
+        success
+	touch /var/run/services/mysqld
+      else
+        failure
+      fi			   
+    else
+      already_running
+    fi 	
+    ;;
+  stop)
+    # Special handling: mysql needs some time to sync it's files
+    msg "Stopping the MySQL daemon"
+    if check_proc mysqld
+    then
+      PROCS=`pidof -o %PPID /usr/sbin/mysqld`
+      kill $PROCS 2>/dev/null
+      RETVAL=$?
+      if [ -r $pidfile ]
+      then
+	TIME=60
+	while [ $TIME -gt 0 ]
+	do
+	  sleep 1
+	  TIME=$[$TIME-1]
+	  [ -e $pidfile ] || break
+	done
+      fi
+      
+      if [ $? -eq 0 ]
+      then
+        success
+	rm -f /var/run/services/mysqld
+	rm -f $pidfile
+      else
+        failure
+      fi
+    else
+      not_running
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/mysqld
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+		

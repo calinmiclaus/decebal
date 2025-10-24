@@ -1,0 +1,24 @@
+NAME=xpaint
+VERSION=2.7.3
+ARCH=i686
+RELEASE=1
+URL="https://sourceforge.net/projects/sf-xpaint/"
+DESC="An easy-to-use but reasonably powerful bitmap image editor."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="600K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/sf-xpaint/xpaint-2.7.3.tar.bz2"
+
+RUNTIME="xorg >=libtiff-3.7.1 libjpeg libpng"
+	 
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  SHAREDIR=/usr/X11R6/share/xpaint xmkmf -a
+  make xaw SHAREDIR=/usr/X11R6/share/xpaint
+  make install SHAREDIR=/usr/X11R6/share/xpaint DESTDIR=$PKG
+  make install.man SHAREDIR=/usr/X11R6/share/xpaint DESTDIR=$PKG
+  
+  install_docs ChangeLog Filelist INSTALL README* TODO
+}

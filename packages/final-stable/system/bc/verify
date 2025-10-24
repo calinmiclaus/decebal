@@ -1,0 +1,5 @@
+md5: d44b5dddebd8a7a7309aea6c36fda117 bc-1.06.tar.gz
+md5: c39c39f4b1c9f12790b65905fb133a8d bc-1.06-flex-invocation.patch
+md5: 25ef9fd703d2e767e6f9d426bbf289cb bc-1.06-readline.patch
+md5: e214fea1b2b439ba0c64f691b50cd34d bc-1.06-fixes-1.patch
+md5: 52863fcc30a7be12a43b4ded040cb0b1 bc-1.06-info.patch

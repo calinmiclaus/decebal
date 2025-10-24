@@ -1,0 +1,25 @@
+NAME=imlib
+VERSION=1.9.14
+ARCH=i686
+RELEASE=1
+DESC="General image handling library for X11 and Gtk."
+URL="http://enlightenment.org/pages/imlib.html"
+GROUP=graphics
+LICENSE="GPLv2 , Library GPL v2"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/imlib/1.9/imlib-$VERSION.tar.bz2
+        imlib-1.9.14.patch
+"
+
+RUNTIME="gtk libungif glib xorg libjpeg libpng libtiff"
+
+function build() {
+    cd $SRC/$NAME-$VERSION
+    patch -p1 <../imlib-$VERSION.patch
+    ./configure --prefix=/usr \
+	--enable-shm \
+	--sysconfdir=/etc/imlib
+    make || return 1
+    make DESTDIR=$PKG install
+    install_docs ABOUT-NLS AUTHORS COPYING* ChangeLog NEWS INSTALL README
+}

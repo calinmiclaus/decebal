@@ -1,0 +1,28 @@
+NAME=adesklets
+VERSION=0.4.8
+ARCH=i686
+RELEASE=1
+URL="http://adesklets.sourceforge.net/"
+DESC="An interactive Imlib2 console for the X Window system."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="614K"
+HUSE="debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/adesklets/adesklets-0.4.8.tar.bz2"
+
+RUNTIME=">=python-2.3 >=imlib2-1.1.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc $OPTS
+  make
+  make DESTDIR=$PKG install	      
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL* \
+    NEWS README TODO
+}

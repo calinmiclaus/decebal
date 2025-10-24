@@ -1,0 +1,26 @@
+NAME=gplflash
+VERSION=0.4.13
+ARCH=i686
+RELEASE=1
+URL="http://gplflash.sourceforge.net/"
+DESC="A free, portable and useable alternative to the flash-decoder released by Macromedia."
+GROUP=multimedia
+LICENSE=GPLv2
+SIZE=""
+
+SOURCES="gplflash-0.4.13.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}
+

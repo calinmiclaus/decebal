@@ -1,0 +1,11 @@
+--- s3.c.orig	2005-08-06 05:35:24.000000000 -0500
++++ s3.c	2005-08-06 05:35:11.000000000 -0500
+@@ -474,7 +474,7 @@
+ 	    dac_used->restoreState(regs);
+ 	    return old_values;
+ 	}
+-    default:
++    default:;
+     }
+     return 0;
+ }

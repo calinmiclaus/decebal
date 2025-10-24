@@ -1,0 +1,12 @@
+#
+# /etc/conf.d/ntpd - configuration file for /etc/rc.d/ntpd
+#
+
+# Location of ntpd pidfile.
+PIDFILE=/var/run/ntpd.pid
+
+# Where should ntpd write it's log file?
+LOGFILE=/var/log/ntp.log
+
+# Additional nptd arguments.
+NTPD_OPTS=""

@@ -1,0 +1,11 @@
+md5: 7b4c1d10d478dcb4c52fbbe3e41745d9 firefox-1.0.6-source.tar.bz2
+md5: 9d7cfa0b12e4e058deffc363e334c07f firefox.desktop
+md5: bff260036c5dcca45da3218517fb33d8 firefox.png
+md5: c730b5d0eb9ccd317b16bbb8133dfab5 firefox.sh
+md5: 07a5a1ce0146f1badc4e04849a9b1830 mozilla-firefox-1.0.6-gcc4.patch
+md5: 03df358b463796309e2ce8b87b180085 securebrowserui-iirq.patch
+md5: eafec999c965792bf81df6bcbbe6c5ea gtk-tooltips.patch
+md5: 3970f49b3f72cec38e126a2a140b524f gtk-prompt-service.patch
+md5: 8e7d6f3220336cd4467d20bbe402e09a embedprompter-modal.patch
+md5: 07f9a980afa2dde67554657c00b8be18 mozilla-rpath-1.patch
+md5: f48be110754a5106f06cd313c22c4337 svg-cairo-0.3.0-fix.patch

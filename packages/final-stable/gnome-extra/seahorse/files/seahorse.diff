@@ -1,0 +1,12 @@
+diff -Naur seahorse-0.7.6/agent/Makefile.in seahorse-0.7.6.new/agent/Makefile.in
+--- seahorse-0.7.6/agent/Makefile.in	2005-02-19 08:59:19.000000000 -0600
++++ seahorse-0.7.6.new/agent/Makefile.in	2005-04-13 12:12:59.000000000 -0500
+@@ -576,7 +576,7 @@
+ 
+ 
+ install-exec-hook:
+-	chmod u+s $(bindir)/seahorse-agent
++	chmod u+s $(DESTDIR)$(bindir)/seahorse-agent
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+ .NOEXPORT:

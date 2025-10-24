@@ -1,0 +1,29 @@
+NAME=xbill
+VERSION=2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.xbill.org/"
+DESC="Save the world from the evil hacker known only as Bill."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="75K"
+
+SOURCES="http://www.xbill.org/download/xbill-2.1.tar.gz
+         xbill.desktop xbill.png"
+	 
+RUNTIME="xorg gtk"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr/games \
+              --mandir=/usr/games/share/man \
+	      --localstatedir=/var/lib
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../xbill.desktop $PKG/usr/share/applications/xbill.desktop
+  install -D -m 0644 ../xbill.png $PKG/usr/share/pixmaps/xbill.png
+  
+  install_docs INSTALL README*
+}

@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# /etc/rc.d/squid - control file for the squid web proxy
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/squid
+
+create_directories() {
+  if [ ! -d /var/lib/squid ]
+  then
+    mkdir -p /var/lib/squid
+    chown squid.squid /var/lib/squid
+  fi
+
+  if [ ! -d /var/run/squid ]
+  then
+    mkdir -p /var/run/squid
+    chown squid.squid /var/lib/squid
+  fi
+
+  if [ ! -d /var/log/squid ]
+  then
+    mkdir -p /var/log/squid
+    chown squid.squid /var/lib/squid
+  fi
+}  
+ 
+pidfile="/var/run/squid.pid"
+
+case "$1" in
+  start)
+    create_directories
+    msg "Creating squid's swap directories"
+    run /usr/sbin/squid -z
+    msg "Starting the squid web proxy"
+    start_service /usr/sbin/squid $SQUID_OPTS
+    ;;
+  stop)
+    msg "Stopping the squid web proxy"
+    run /usr/sbin/squid -k shutdown
+    ;;
+  reload)
+    msg "Reloading the squid web proxy"
+    run /usr/sbin/squid -k reload
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/squid
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

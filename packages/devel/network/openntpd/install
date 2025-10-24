@@ -1,0 +1,16 @@
+post_install() {
+  /usr/sbin/groupadd -g 85 openntpd 2>/dev/null
+  /usr/sbin/useradd -g 85 -u 85 -c "OpenNTPD User" -d /var/lib/openntpd/ -s /bin/false openntpd 2>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 85 openntpd 2>/dev/null
+  /usr/sbin/useradd -g 85 -u 85 -c "OpenNTPD User" -d /var/lib/openntpd/ -s /bin/false openntpd 2>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel openntpd 2>/dev/null
+  /usr/sbin/groupdel openntpd 2>/dev/null
+  /sbin/decebal remove openntpd >/dev/null 2>&1
+}
+  

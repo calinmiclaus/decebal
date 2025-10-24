@@ -1,0 +1,25 @@
+--- ./pcimodules.c.orig	2002-09-01 13:38:37.000000000 -0700
++++ ./pcimodules.c	2002-09-01 14:10:33.000000000 -0700
+@@ -66,9 +66,12 @@
+ 	char line[LINELENGTH];
+ 	struct pcimap_entry *entry;
+ 	unsigned int driver_data;
+-	char *prevmodule = "";
++	char *prevmodule;
+ 	char module[LINELENGTH];
+ 
++	prevmodule = xmalloc(1);
++	strcpy(prevmodule, "");
++
+ 	if (uname(&utsname) < 0) {
+ 		perror("uname");
+ 		exit(1);
+@@ -103,7 +106,7 @@
+ 		   to load a module twice. */
+ 		if (strcmp(module, prevmodule) != 0) {
+ 			prevmodule = xmalloc(strlen(module)+1);
+-			strcpy(prevmodule, module);
++			strncpy(prevmodule, module, strlen(module));
+ 		}
+ 		entry->module = prevmodule;
+ 		entry->next = pcimap_list;

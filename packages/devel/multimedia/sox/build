@@ -1,0 +1,23 @@
+NAME=sox
+VERSION=12.17.7
+ARCH=i686
+RELEASE=1
+URL="http://sox.sourceforge.net/"
+DESC="Sound Processing Tool (SOX)."
+GROUP=multimedia
+LICENSE="BSDL GPLv2 LGPLv2.1"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/sox/sox-12.17.7.tar.gz"
+
+RUNTIME="alsa-lib libmad lame libogg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs Changelog Copyright INSTALL LICENSE* \
+    README TODO
+}

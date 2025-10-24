@@ -1,0 +1,7 @@
+#!/bin/sh
+
+KDEDIR=/opt/kde
+PATH=$PATH:$KDEDIR/bin
+MANPATH=$MANPATH:$KDEDIR/share/man
+
+export KDEDIR PATH MANPATH

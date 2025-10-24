@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Blender
+GenericName=3D Graphics Editor
+Comment=Create and edit 3D images
+Exec=blender
+TryExec=blender
+Icon=/usr/share/pixmaps/blender.png
+Categories=Application;Graphics;2DGraphics;RasterGraphics;
+

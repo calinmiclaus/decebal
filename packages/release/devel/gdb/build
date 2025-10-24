@@ -1,0 +1,33 @@
+NAME=gdb
+VERSION=6.3
+ARCH=i686
+RELEASE=1
+DESC="The GNU source-level debugger"
+URL="http://sources.redhat.com/gdb/"
+GROUP=devel
+LICENSE="GPLv2 LGPLv2"
+SIZE="13131K"
+
+SOURCES="http://ftp.gnu.org/gnu/gdb/gdb-6.3.tar.bz2"
+
+RUNTIME=">=ncurses-5.3"
+
+use nls && RUNTIME="$RUNTIME gettext"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  rm -f $PKG/usr/include/{bfd.h,symcat.h,ansidecl.h,bfdlink.h};
+  rm -f $PKG/usr/lib/{libopcodes.a,libopcodes.la};
+  rm -f $PKG/usr/lib/{libiberty.a,libbfd.a,libbfd.la};
+  rm -f $PKG/usr/include/dis-asm.h
+    
+  install_docs COPYING COPYING.LIB README
+}

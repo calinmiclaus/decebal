@@ -1,0 +1,131 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="preconf.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="updconf.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Configuration</h1>
+<p>The configuration file used by <b><code>dsrc</code></b> is <b><code>/etc/dpack/build</code></b>
+, you can presonalize and optimize created packages editing this file.<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+#<br>
+# /etc/dpack/build - configuration file for dsrc<br>
+#<br><br>
+# You can have more than one package threes (lets say you have<br>
+# the package builds for the current release, and builds downloaded<br>
+# for another rsync server).<br>
+<b>THREE=release</b><br><br>
+# Directory where the package build files are kept (dont touch this<br>
+# unless you know what you are doing!!!).<br>
+<b>PACKAGEDIR=/usr/src/packages/$THREE</b><br><br>
+# In case something doesnt work as we expect it to do, <b>dsrc</b> will print<br>
+# an error message containing the last lines from the compilation log,<br>
+# this variable defines how many lines you want dsrc to print (use <b>0</b><br>
+# to show all log).<br>
+<b>ERRORLINES=50</b><br><br>
+# Do you want to strip <b>libraries</b> and <b>binaries</b> (set this to no if you<br>
+# want to debug programs created with <b>dsrc</b>).<br>
+<b>STRIPBINARIES=yes<br>
+STRIPLIBRARIES=yes</b><br><br>
+# If you plan to create your own package builds, and you dont want to<br>
+# include <b>PACKAGER=...</b> in each build the set <b>MAINTAINER</b> here.<br>
+<b>MAINTAINER=""</b><br><br>
+# If you build more then one package at a time (passed as arguments to<br>
+# dsrc) then normally dsrc will exit if one package doesnt build<br>
+# successfully. Set this to yes if you want <b>dsrc</b> continue building<br>
+# even if one of the packages didnt build.<br>
+<b>CONTINUE=no</b><br><br>
+# This is the rsync server that dsrc will use to update package builds. Lets<br>
+# say you want to use another <b>rsync</b> mirror, then you could change this<br>
+# setting here and set the <b>THREE=""</b> variable, this way you could have<br>
+# two package builds databases.<br>
+<b>RSYNCMIRROR="devel.decebal.org"</b><br><br>
+# Enviroment variables and compiler optimizations.<br>
+# <b>CC</b> - the compiler that will be used to compile <b>C</b> (.c) files<br>
+# <b>CXX</b> - the compiled that will be used to compile <b>C++</b> (.cc) files<br>
+# <b>CARCH</b> - the architecture (leave this to <b>i686</b>)<br>
+# <b>CHOST</b> - <br>
+#<br>
+# To optimize your packages you can modify <b>CFLAGS</b> and <b>CXXFLAGS</b>. Here are some usefull flags:<br>
+# <b>-march</b> - will optimize code for the specified CPU, but it will drop (<b>-march</b> implies <b>-mcpu</b>)<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compatibility with other CPU's<br>
+# <b>-mcpu</b>  - will optimize code for specified CPU and keep compatibilty<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with the CPU specified with <b>-march</b><br>
+# The following values are available for <b>-march</b> and <b>-mcpu</b>:<br>
+# <b>pentium2</b> &nbsp;- for <b>Intel Pentium2</b> (<b>Deschutes</b> and <b>Mendochino</b>)<br>
+# <b>pentium3</b> &nbsp;- for <b>Intel Pentium3</b> (<b>Coppermine</b>, <b>Celleron(TM)</b> and <b>Pentium III</b>)<br>
+# <b>pentium4</b> &nbsp;- for <b>Intel Pentium4</b> (<b>Celleron(R)</b> and <b>Pentium(R) 4</b>)<br>
+# <b>athlon</b>&nbsp;&nbsp;&nbsp; - for <b>AMD Athlon</b> (<b>Duron(tm)</b>)<br>
+# <b>athlon-xp</b> - for <b>AMD AthlonXP</b> (<b>Athlon(tm)</b> and <b>AMD Duron(tm)</b>)<br>#<br>
+# Optimization flags:<br>
+# <b>-O1</b> &nbsp;&nbsp;- when you use this FLAG the compiler will try to reduce code<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size and execution time, without performing any optimizations<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that take a great deal of compilation time. If you use this<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG the following optimizations will be enabled:<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fdefer-pop</b>, <b>-fmerge-constants</b>, <b>-fthread-jumps</b>, <b>-floop-optimize</b>,<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fcrossjumping</b>, <b>-fif-conversion</b>, <b>-fif-conversion2</b>, <b>-fdelayed-branch</b>,<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fguess-branch-compatibility</b>, <b>-fcrop-registers</b><br>
+# <b>-O2</b> &nbsp;&nbsp;- the compiler will perform nearly all suported optimizations that do not involve a space-speed<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tradeoff, increasing both compilation time and the performance of the generated code.<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using this FLAG will turn on all optizations of <b>-O1</b> and the following ones:<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fforce-mem</b>, <b>-foptimize-sibling-calls</b>, <b>-fstrench-reduce</b>, <b>-fcse-follow-jumps</b>,<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fcse-skip-blocks</b>, <b>-frerun-cse-after-loop</b>, <b>-frerun-loop-opt</b>, <b>-fgcse</b>,<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fgcse-lm</b>, <b>-fgcse-sm</b>, <b>-fdelete-null-pointer-checks</b>, <b>-fexpensive-optimizations</b>,<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fregmove</b>, <b>-fschedule-insns</b>, <b>-fschedule-insns2</b>, <b>-fsched-interblock</b>,<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fsched-spec</b>, <b>-fcaller-saves</b>, <b>-fpeephole2</b>, <b>-freorder-blocks</b>,<b>-freorder-functions</b>,<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-fstrict-aliasing</b>, <b>-falign-functions</b>, <b>-falign-jumps</b>, <b>-falign-loops</b>, <b>-falign-labels</b><br>
+# <b>-O3</b> &nbsp;&nbsp;- will enable all optimizations from <b>-O2</b> and two more,<b>-finline-functions</b> and <b>-frename-registers</b><br>
+# <b>-pipe</b> - use pipes rather then temporary files for communication between the varios stages of<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compilation (will increase compilation time)<br>
+# <b>-mmmx</b> - these flags will enable the use of built-in functions that allow direct access<br> 
+# <b>-msse</b> &nbsp; to MMX, SSE, SSE2, SSE3 and 3Dnow extensions of the instruction set <br>
+# <b>-msse2</b><br>
+# <b>-m3dnow</b><br>
+# <b>-fomit-frame-pointer</b> - don't keep the frame pointer in a register for functions that don't<br>
+# &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;need one (enabled with <b>-O1</b>, <b>-O2</b> and <b>-O3</b>)<br>
+# Examples:<br>
+# CFLAGS="-march=pentium4 -O3 -pipe -fomit-frame-pointer" <br>
+# CXXFLAGS="-march=pentium4 -O3 -pipe -fomit-frame-pointer" <br>
+# Will optimize code for the <b>Intel Pentium4</b> processor and wont keep compatibility with other CPU's<br>
+#<br>
+# CFLAGS="-march=i686 -mcpu=pentium4 -O3 -pipe -fomit-frame-pointer" <br>
+# CXXFLAGS="-march=i686 -mcpu=pentium4 -O3 -pipe -fomit-frame-pointer" <br>
+# Will optimize code for the <b>Intel Pentium4</b> processor and keep compatibility with all <b>i686</b> CPU's<br><br>
+# <b>LDFLAGS</b> - the <b>LDFLAGS</b> options are passed to the linkter (ld)<br>
+# <b>CPPFLAGS</b> - <br>
+# <b>MAKEFLAGS</b> - specify how many instances paraller builds to run (ex: <b>-j2</b>,<b>-j3</b>)<br>
+<b>CC=gcc<br>
+CXX=g++<br>
+CARCH="i686"<br>
+CHOST="i686-pc-linux-gnu"<br>
+CFLAGS="-march=i686 -O2 -pipe"<br>
+CXXFLAGS="-march=i686 -O2 -pipe"<br>
+LDFLAGS=""<br>
+CPPFLAGS=""<br>
+MAKEFLAGS=""</b><br><br>
+# Global <b>USE</b> flags (will be used for all built packages that support it).<br>
+# When building a package it is possible to set additional configuration options,<br>
+# ex: <b>USE="selinux" dsrc dbus</b>, will build dbus with selinux support. If you want<br>
+# to use these options for all packages that you build set them here.<br>
+# <b>nls</b>&nbsp; - will enable nls (Native Language Support)<br>
+# <b>x</b>&nbsp;&nbsp;&nbsp; - will enable Xorg (X11) (--with-x)<br>
+# <b>ipv6</b> - will enable IPv6 support for all packages that support it<br>
+<b>GLOBALUSE="nls ipv6"</b><br>
+<br></code></font></td></tr></table>
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="preconf.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="updconf.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Configuring precompiled package handling</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Configuring precompiled update handling</td></tr></table>
+</body>
+</html>
+

@@ -1,0 +1,27 @@
+NAME=lcms
+VERSION=1.14
+ARCH=i686
+RELEASE=1
+URL="http://www.littlecms.com/"
+DESC="A free color management engine in 100K."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="653K"
+HUSE="static"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/lcms/lcms-1.14.tar.gz"
+
+RUNTIME="libjpeg libtiff >=zlib-1.2.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --with-python $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README.1ST
+}

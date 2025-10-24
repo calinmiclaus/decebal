@@ -1,0 +1,35 @@
+NAME=freeciv
+VERSION=2.0.1
+ARCH=i686
+RELEASE=1
+URL="http://www.freeciv.org/index.php/Freeciv"
+DESC="Freeciv is a multiplayer strategy game, released under the GNU General Public License."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="8243K"
+HUSE="nls gtk xaw3d"
+
+SOURCES="ftp://ftp.freeciv.org/pub/freeciv/stable/freeciv-2.0.1.tar.bz2"
+
+RUNTIME=">=gtk2-2.2.1 >=libsdl-1.0.0 >=alsa-lib-1.0 >=audiofile-0.2 >=esound-0.0.20"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls || OPTS="--disable-nls"
+    
+  ./configure --prefix=/usr/games \
+              --mandir=/usr/games/share/man \
+              --with-readline \
+	      --enable-client=gtk2 $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/share
+  mv $PKG/usr/games/share/applications $PKG/usr/share/
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog \
+    INSTALL NEWS README
+}

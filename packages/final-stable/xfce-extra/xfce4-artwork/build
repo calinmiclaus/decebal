@@ -1,0 +1,23 @@
+NAME=xfce4-artwork
+VERSION=0.0.4
+ARCH=i686
+RELEASE=1
+DESC="Additional artwork for the XFce4 desktop environment."
+URL="http://www.xfce.org/"
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="1852K"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-artwork-0.0.4.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce
+
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

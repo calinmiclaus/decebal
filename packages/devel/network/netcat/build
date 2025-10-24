@@ -1,0 +1,24 @@
+NAME=netcat
+VERSION=0.7.1
+ARCH=i686
+RELEASE=1
+URL="http://netcat.sourceforge.net/"
+DESC="Unix utility which reads and writes data across network connections."
+GROUP=network
+LICENSE="GPL"
+SIZE="318K"
+
+SOURCES="ftp://osdn.dl.sourceforge.net/pub/sourceforge/n/ne/netcat/netcat-0.7.1.tar.bz2"
+
+RUNTIME=""
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info
+  make
+  make DESTDIR=$PKG install    
+
+  install_docs README ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS TODO
+}

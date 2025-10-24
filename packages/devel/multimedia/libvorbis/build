@@ -1,0 +1,28 @@
+NAME=libvorbis
+VERSION=1.1.0
+ARCH=i686
+RELEASE=1
+URL="http://www.xiph.org/ogg/vorbis/download"
+DESC="Vorbis codec library."
+GROUP=multimedia
+LICENSE="OwnLicense"
+SIZE="1300K"
+HUSE="static"
+
+SOURCES="http://downloads.xiph.org/releases/vorbis/libvorbis-1.1.0.tar.gz"
+
+RUNTIME=">=libogg-1.0"
+
+build() {
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/usr $OPTS
+  
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING README
+}

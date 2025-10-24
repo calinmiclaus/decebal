@@ -1,0 +1,17 @@
+NAME=xmms2
+VERSION=
+ARCH=i686
+RELEASE=1
+URL=""
+DESC=""
+GROUP=multimedia
+LICENSE=""
+SIZE=""
+
+SOURCES="http://xmms2.xmms.org/snapshots/xmms2-bk-snapshot-050507.tar.gz"
+
+build() {
+  cd $SRC/$NAME-
+  
+  install_docs 
+}

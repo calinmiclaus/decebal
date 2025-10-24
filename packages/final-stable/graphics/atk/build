@@ -1,0 +1,36 @@
+NAME=atk
+VERSION=1.9.0
+ARCH=i686
+RELEASE=2
+URL="http://www.gtk.org/"
+DESC="A library providing a set of interfaces for accessibility."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="505K"
+HUSE="static gtkdoc"
+
+SOURCES="ftp://ftp.gtk.org/pub/gtk/v2.6/atk-1.9.0.tar.bz2"
+
+BUILDTIME="perl"
+
+RUNTIME=">=glib2-2.5.7"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtk-doc"
+
+function build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --localstatedir=/var/lib \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

@@ -1,0 +1,31 @@
+NAME=expect
+VERSION=5.43.0
+ARCH=i686
+RELEASE=1
+DESC="Powerfull scripting language"
+URL="http://expect.nist.gov/"
+GROUP=devel
+LICENSE="OwnLicense"
+SIZE="513K"
+
+SOURCES="http://expect.nist.gov/expect.tar.gz"
+#         expect-5.40.0-spawn.patch"
+
+RUNTIME="bash tcl"
+
+build () { 
+  cd $SRC/$NAME-5.43
+  
+#  patch -p1 <../expect-5.40.0-spawn.patch
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --with-tcl=/usr/lib
+  make
+  make INSTALL_ROOT=$PKG install
+
+  rm -f $PKG/usr/lib/libexpect5.43.a
+  ln -sf expect5.40/libexpect5.43.a $PKG/usr/lib/libexpect5.43.a
+
+  install_docs ChangeLog FAQ HISTORY INSTALL NEWS README
+}

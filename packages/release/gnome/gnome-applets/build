@@ -1,0 +1,40 @@
+NAME=gnome-applets
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="The GNOME desktop."
+GROUP=gnome
+LICENSE="GPLv2 FDLv1.1"
+SIZE="5529K"
+HUSE="ipv6 static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gnome-applets-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="gail gnome-panel libxklavier libgtop gst-plugins apmd"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  # we dont want the scrollkeeper update
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+    sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi
+  
+  use static || OPTS="--disable-static"
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share \
+	      --libexecdir=/opt/gnome/lib/applets \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README
+}

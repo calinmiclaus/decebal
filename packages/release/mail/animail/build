@@ -1,0 +1,22 @@
+NAME=animail
+VERSION=2.0.6
+ARCH=i686
+RELEASE=1
+DESC="A spam filtering capable mail client."
+URL="http://animail.sourceforge.net"
+GROUP=mail
+LICENSE="OwnLicense"
+
+SOURCES="http://www.escomposlinux.org/fer_y_juanjo/archivos/animail_2.0.6.tar.gz"
+
+RUNTIME="python"
+
+BUILDTIME="python"
+
+build () 
+{ 
+    cd $SRC/$NAME-estable;
+    make;
+    make DESTDIR=$PKG install;
+    mv $PKG/usr/share/doc/$NAME $PKG/usr/share/doc/$NAME-$VERSION
+}

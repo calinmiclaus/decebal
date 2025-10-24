@@ -1,0 +1,47 @@
+NAME=directfb
+VERSION=0.9.21
+ARCH=i686
+RELEASE=1
+URL="http://www.directfb.org"
+DESC="A hardware-accelerated graphics library on top of the Linux fb device."
+GROUP=graphics
+LICENSE=LGPLv2.1
+SIZE="1695K"
+HUSE="static"
+
+SOURCES="http://www.directfb.org/download/DirectFB/DirectFB-0.9.21.tar.gz"
+
+RUNTIME="libpng libjpeg libtiff freetype2 xorg"
+
+build() {
+  cd $SRC/DirectFB-$VERSION
+  
+  use static && OPTS="--enable-static"
+
+  ./configure --prefix=/usr \
+              --enable-fbdev \
+	      --disable-multi \
+	      --disable-linux-input \
+	      --enable-text \
+	      --enable-sdl \
+	      --enable-sysfs \
+              --enable-jpeg \
+	      --enable-zlib \
+	      --enable-png \
+	      --enable-gif \
+	      --enable-freetype \
+              --disable-video4linux \
+	      --with-gfxdrivers="ati128 cle266 cyber5k i810 mach64 matrox neomagic nsc nvidia radeon tdfx unichrome" $OPTS
+
+# This shit requires linux/fusion.h (and since we have a vanilla kernel
+# we dont enable it). If you want that more then one applications to use
+# directfb then enable this (it will not compile). !!!FIXME!!!
+#	      --enable-multi \
+#	      --enable-linux-input \ # this depends on fusion.h too
+#             --with-gfxdrivers=savage \ #also needs this
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+}
+    

@@ -1,0 +1,128 @@
+diff --speed-large-files --minimal -Nru control-center-2.10.0.orig/capplets/background/gnome-wp-info.c control-center-2.10.0/capplets/background/gnome-wp-info.c
+--- control-center-2.10.0.orig/capplets/background/gnome-wp-info.c	2005-02-27 06:15:58.000000000 +1100
++++ control-center-2.10.0/capplets/background/gnome-wp-info.c	2005-03-09 15:42:48.487955080 +1100
+@@ -22,6 +22,36 @@
+ #include <gnome.h>
+ #include "gnome-wp-info.h"
+ 
++static void _invalidate_thumb (const gchar * uri, const gchar * thumburi) {
++  GnomeVFSFileInfo * info;
++  GnomeVFSResult result;
++  time_t mtime, thumb_mtime;
++
++  info = gnome_vfs_file_info_new ();
++  result = gnome_vfs_get_file_info (gnome_vfs_escape_path_string (uri), info,
++				    GNOME_VFS_FILE_INFO_DEFAULT);
++  if (info != NULL && result == GNOME_VFS_OK) {
++    mtime = info->mtime;
++  } else {
++    mtime = 0;
++  }
++
++  result = gnome_vfs_get_file_info (gnome_vfs_escape_path_string (thumburi), info,
++				    GNOME_VFS_FILE_INFO_DEFAULT);
++  if (info != NULL && result == GNOME_VFS_OK) {
++    thumb_mtime = info->mtime;
++  } else {
++    thumb_mtime = 0;
++  }
++
++  gnome_vfs_file_info_unref (info);
++
++
++  if (!mtime || !thumb_mtime || mtime > thumb_mtime) {
++    gnome_vfs_unlink (thumburi);
++  }
++}
++
+ GnomeWPInfo * gnome_wp_info_new (const gchar * uri,
+ 				 GnomeThumbnailFactory * thumbs) {
+   GnomeWPInfo * new;
+@@ -66,6 +96,7 @@
+ 				   gnome_thumbnail_md5 (gnome_vfs_escape_path_string (uri)),
+ 				   ".png",
+ 				   NULL);
++      _invalidate_thumb(uri, new->thumburi);
+     }
+     new->name = g_strdup (info->name);
+     new->mime_type = g_strdup (info->mime_type);
+diff --speed-large-files --minimal -Nru control-center-2.10.0.orig/configure control-center-2.10.0/configure
+--- control-center-2.10.0.orig/configure	2005-03-08 11:34:51.000000000 +1100
++++ control-center-2.10.0/configure	2005-03-09 14:44:08.000000000 +1100
+@@ -22420,7 +22420,7 @@
+ cat confdefs.h >>conftest.$ac_ext
+ cat >>conftest.$ac_ext <<_ACEOF
+ /* end confdefs.h.  */
+-#include <X11/Intrinsic.h>
++#include <X11/Xlib.h>
+ _ACEOF
+ if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+@@ -22447,7 +22447,7 @@
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+   for ac_dir in $ac_x_header_dirs; do
+-  if test -r "$ac_dir/X11/Intrinsic.h"; then
++  if test -r "$ac_dir/X11/Xlib.h"; then
+     ac_x_includes=$ac_dir
+     break
+   fi
+@@ -22461,18 +22461,18 @@
+   # See if we find them without any special options.
+   # Don't add to $LIBS permanently.
+   ac_save_LIBS=$LIBS
+-  LIBS="-lXt $LIBS"
++  LIBS="-lX11 $LIBS"
+   cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+ cat confdefs.h >>conftest.$ac_ext
+ cat >>conftest.$ac_ext <<_ACEOF
+ /* end confdefs.h.  */
+-#include <X11/Intrinsic.h>
++#include <X11/Xlib.h>
+ int
+ main ()
+ {
+-XtMalloc (0)
++XSync ()
+   ;
+   return 0;
+ }
+@@ -22510,7 +22510,7 @@
+ do
+   # Don't even attempt the hair of trying to link an X program!
+   for ac_extension in a so sl; do
+-    if test -r $ac_dir/libXt.$ac_extension; then
++    if test -r $ac_dir/libX11.$ac_extension; then
+       ac_x_libraries=$ac_dir
+       break 2
+     fi
+diff --speed-large-files --minimal -Nru control-center-2.10.0.orig/configure.in control-center-2.10.0/configure.in
+--- control-center-2.10.0.orig/configure.in	2005-03-08 10:37:16.000000000 +1100
++++ control-center-2.10.0/configure.in	2005-03-09 14:44:08.000000000 +1100
+@@ -49,7 +49,7 @@
+ AC_CHECK_FUNCS(putenv)
+ AC_CHECK_FUNCS(setenv)
+ 
+-AC_PATH_XTRA
++AC_PATH_XTRA( [X11], [X11/Xlib.h], [XSync ()])
+ x_libs="$X_PRE_LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
+ 
+ AC_CHECK_FUNC(XScreenSaverQueryInfo, [
+diff --speed-large-files --minimal -Nru control-center-2.10.0.orig/gnome-settings-daemon/eggaccelerators.c control-center-2.10.0/gnome-settings-daemon/eggaccelerators.c
+--- control-center-2.10.0.orig/gnome-settings-daemon/eggaccelerators.c	2004-04-01 15:59:55.000000000 +1000
++++ control-center-2.10.0/gnome-settings-daemon/eggaccelerators.c	2005-03-09 14:44:08.000000000 +1100
+@@ -352,8 +352,11 @@
+ 			bad_keyval = TRUE;
+ 		    }
+ 		}
+-	    } else if (keycode != NULL)
++	    } else if (keycode != NULL) {
+ 		*keycode = XKeysymToKeycode (GDK_DISPLAY(), keyval);
++		if (*keycode == 0)
++		  bad_keyval = TRUE;
++	    }
+ 
+           accelerator += len;
+           len -= len;

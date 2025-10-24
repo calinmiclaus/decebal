@@ -1,0 +1,30 @@
+NAME=fmirror
+VERSION=0.8.4
+ARCH=i686
+RELEASE=1
+URL="http://linux.maruhn.com/sec/fmirror.html"
+DESC="A C program to mirror a directory tree from a remote ftp server."
+GROUP=network
+LICENSE="GPLv2"
+SIZE="58K"
+
+SOURCES="ftp://ftp.nectec.or.th/pub/linux-distributions/Debian/pool/main/f/fmirror/fmirror_0.8.4-8.diff.gz
+         ftp://ftp.nectec.or.th/pub/linux-distributions/Debian/pool/main/f/fmirror/fmirror_0.8.4.orig.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../fmirror_0.8.4-8.diff
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --mandir=/usr/share/man \
+	      --datadir=/srv
+  make
+  make DESTDIR=$PKG install
+  
+  chmod 644 $PKG/usr/share/man/man1/*
+  
+  install_docs ChangeLog INSTALL README COPYING
+}
+	 

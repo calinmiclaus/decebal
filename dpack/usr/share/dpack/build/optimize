@@ -1,0 +1,55 @@
+#!/bin/bash
+
+pkg_optimize() {
+  local MODEL="$(grep '^model name' /proc/cpuinfo 2>/dev/null)"
+  local MODEL="${MODEL##*:}"
+  if [ ! "`echo $MODEL | grep 'Athlon(tm)'`" = "" ]
+  then
+    CPU="athlon-xp"
+  elif [ ! "`echo $MODEL | grep 'Pentium(R) 4'`" = "" ]
+  then
+    CPU="pentium4"
+  elif [ ! "`echo $MODEL | grep 'Coppermine'`" = "" ]
+  then
+    CPU="pentium3"
+  elif [ ! "`echo $MODEL | grep 'Celeron(TM)'`" = "" ]
+  then
+    CPU="pentium3"
+  elif [ ! "`echo $MODEL | grep 'Celeron(R)'`" = "" ]
+  then
+    CPU="pentium4"
+  elif [ ! "`echo $MODEL | grep 'Duron(tm)'`" = "" ]
+  then
+    CPU="athlon"
+  elif [ ! "`echo $MODEL | grep 'Deschutes'`" = "" ]
+  then
+    CPU="pentium2"
+  elif [ ! "`echo $MODEL | grep 'Mendocino'`" = "" ]
+  then
+    CPU="pentium2"
+  elif [ ! "`echo $MODEL | grep 'Pentium III'`" = "" ]
+  then
+    CPU="pentium3"
+  elif [ ! "`echo $MODEL | grep 'AMD Duron(tm)'`" = "" ]
+  then
+    CPU="athlon-xp"
+  else
+    CPU="i686"
+  fi
+
+  msg_verbose_nnl "optimizing build for $CPU..."
+
+  local OCFLAGS=""
+  local OCXXFLAGS=""
+  for FLAG in $(echo $CFLAGS)
+  do
+    OCFLAGS="$OCFLAGS `echo $FLAG | egrep -iv '\-march|\-mcpu|\-O[[:digit:]]|\-pipe|\-fomit-frame-pointer'`"
+  done
+  for FLAG in $(echo $CXXFLAGS)
+  do
+    OCXXFLAGS="$OCXXFLAGS `echo $FLAG | egrep -iv '\-march|\-mcpu|\-O[[:digit:]]|\-pipe|\-fomit-frame-pointer'`"
+  done
+  export CFLAGS="-march=$CPU -O2 -pipe -fomit-frame-pointer $OCFLAGS"
+  export CXXFLAGS="-march=$CPU -O2 -pipe -fomit-frame-pointer $OCXXFLAGS"
+  msg_done_verbose
+}

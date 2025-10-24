@@ -1,0 +1,47 @@
+NAME=ncurses
+VERSION=5.4
+ARCH=i686
+RELEASE=2
+URL="http://www.gnu.org/software/ncurses/ncurses.html"
+DESC="A free software emulation of curses in System V Release 4.0,and more."
+GROUP=base
+LICENSE=MIT
+SIZE="2103K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/ncurses/ncurses-5.4.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+	      --mandir=/usr/share/man \
+	      --with-manpage-format=gzip \
+              --with-install-prefix=$PKG \
+	      --with-normal \
+	      --with-rcs-ids \
+	      --enable-syslinks \
+	      --with-shared \
+	      --without-gpm
+  make
+  make install
+  
+  mkdir -p $PKG/lib
+  
+  rm -f $PKG/usr/lib/libncurses.so
+  
+  mv $PKG/usr/lib/{libncurses.so.5.4,libncurses.so.5} $PKG/lib/
+  
+  ln -s ../../lib/libncurses.so.5.4 $PKG/usr/lib/libncurses.so
+  
+  rm -f $PKG/usr/lib/libcurses.so
+  
+  ln -s ../../lib/libncurses.so.5.4 $PKG/usr/lib/libcurses.so
+  
+  chmod 755 $PKG/lib/libncurses.so.5.4 \
+    $PKG/usr/lib/{libform.so.5.4,libmenu.so.5.4,libpanel.so.5.4}
+   
+  install_docs ANNOUNCE INSTALL MANIFEST NEWS README* TO-DO
+}
+    

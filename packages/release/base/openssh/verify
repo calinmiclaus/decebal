@@ -1,0 +1,4 @@
+md5: 7b36f28fc16e1b7f4ba3c1dca191ac92 openssh-4.0p1.tar.gz
+md5: c2ef4c792869b757e0c8efb860d8456f sshd.init
+md5: 936f1e52a3b2cf6e4e7c32836a809f46 sshd.sysconf
+md5: f8fca55bd803e345e70569ad0f6e6fc8 sshd_config

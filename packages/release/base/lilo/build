@@ -1,0 +1,25 @@
+NAME=lilo
+VERSION=22.7
+ARCH=i686
+RELEASE=1
+DESC="Generic Boot Loader for Linux."
+URL="http://lilo.go.dyndns.org/"
+GROUP=base
+LICENSE=BSDL
+SIZE="418K"
+
+SOURCES="http://home.san.rr.com/johninsd/pub/linux/lilo/lilo-22.7.src.tar.gz
+         lilo.conf"
+
+BUILDTIME="bin86"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  make all
+  make ROOT=$PKG install
+
+  install -m 0644 ../lilo.conf $PKG/etc/lilo.conf
+
+  install_docs CHANGES COPYING INCOMPAT README*
+}

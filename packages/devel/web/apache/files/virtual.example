@@ -1,0 +1,8 @@
+<VirtualHost www.example.com:80>
+  ServerName www.example.com
+  ServerAdmin webmaster@example.com
+  DocumentRoot /srv/www/virtual/www.example.com
+  ErrorLog /var/log/httpd/example.com-error_log
+  CustomLog /var/log/httpd/example.com-access_log common
+</VirtualHost>
+  

@@ -1,0 +1,43 @@
+NAME=frozen-bubble
+VERSION=1.0.0
+ARCH=i686
+RELEASE=1
+URL="http://www.frozen-bubble.org/"
+DESC=" Full-featured, colorful animated penguin eyecandy, You need this game."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="7149K"
+
+SOURCES="http://zarb.org/~gc/fb/frozen-bubble-1.0.0.tar.bz2
+         http://ftp.debian.org/debian/pool/main/f/frozen-bubble/frozen-bubble_1.0.0-6.diff.gz
+         1.0.0-no-chainreaction.patch
+	 1.0.0-sdl-perl-check.patch
+	 frozone-bubble-makefile.diff
+	 makefile.patch"
+
+RUNTIME="sdl_image >=sdl_mixer-1.2.2 >=sdl-perl-1.19.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  # patches from Gentoo.
+#  patch -p0 < ../1.0.0-no-chainreaction.patch
+#  patch -p1 < ../1.0.0-sdl-perl-check.patch
+#  patch -p1 < ../frozone-bubble-makefile.diff   
+#  patch -p1 < ../makefile.patch   
+  patch -p1 < ../frozen-bubble_1.0.0-6.diff  
+
+  sed -i -e 's:INSTALLDIRS=.*:PREFIX=${D}/usr/games:' c_stuff/Makefile
+  
+  make OPTIMIZE="${CFLAGS}" \
+       PREFIX=/usr  \
+       BINDIR=/usr/games/bin \
+       DATADIR=/usr/games/share \
+       MANDIR=/usr/games/share/man
+  make install PREFIX=$PKG/usr
+  
+  rm -rf $PKG/usr/lib/perl5/5.8.6
+  rm -f $PKG/usr/lib/perl5/site_perl/5.8.6/i686-linux/auto/fb_c_stuff/.packlist
+    
+  install_docs AUTHORS CHANGES COPYING INSTALL README
+}

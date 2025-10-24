@@ -1,0 +1,102 @@
+NAME=apache
+VERSION=2.0.54
+ARCH=i686
+RELEASE=1
+URL="http://httpd.apache.org/"
+DESC="The Apache HTTP Web Server."
+GROUP=web
+LICENSE=APACHEv2
+SIZE="4960K"
+HUSE="info"
+
+SOURCES="http://apache.iasi.roedu.net/httpd/httpd-2.0.54.tar.bz2
+         httpd.init httpd.sysconf DECEBAL.layout virtual.example
+	 virtual.conf modules.conf"
+
+BACKUPS="etc/httpd/httpd.conf
+         etc/httpd/ssl.conf
+	 etc/conf.d/httpd
+	 etc/httpd/virtual.conf
+	 etc/httpd/modules.conf"
+
+BUILDTIME="sed"
+
+RUNTIME=">=zlib-1.1.4 >=openssl-0.9.7e >=db-4.2.52 perl expat gdbm openldap"
+
+build() {
+  cd $SRC/httpd-$VERSION
+  
+  cat ../DECEBAL.layout | tee -a srclib/{..,apr,apr-util}/config.layout
+
+  use info && OPTS="$OPTS --enable-info"
+  
+  ./configure --enable-layout=DECEBAL \
+              --enable-so \
+	      --enable-modules=all \
+	      --enable-mods-shared=all \
+	      --enable-proxy \
+	      --enable-proxy-connect \
+	      --enable-proxy-ftp \
+	      --enable-proxy-http \
+	      --enable-cgi \
+	      --enable-cgid \
+	      --enable-cache \
+	      --enable-disk-cache \
+	      --enable-mem-cache \
+	      --enable-deflate \
+	      --enable-ssl \
+	      --with-ssl=/usr \
+	      --with-perl=/usr/bin/perl \
+	      --with-ldap \
+	      --enable-ldap \
+	      --enable-auth-ldap \
+	      --with-expat=/usr \
+	      --with-z \
+	      --with-port=80 \
+	      --with-suexec-safepath="/bin:/usr/bin:/usr/local/bin" \
+	      --with-suexec-logfile=/var/log/httpd/suexec_log \
+	      --with-suexec-usedir=public_html \
+	      --with-suexec-caller=apache \
+	      --with-suexec-docroot=/srv/www \
+	      --with-suexec-uidmin=1000 \
+	      --with-suexec-gidmin=100 \
+	      --with-suexec-umask=077 \
+	      --enable-suexec-shared $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/etc/{ssl/apache,httpd/virtual.d,httpd/mod.d}
+  
+  CERT=$PKG/etc/ssl/apache/server.crt
+  KEY=$PKG/etc/ssl/apache/server.key
+  INFO=".\n.\n.\n.\n.\nlocalhost\nroot@localhost\n"
+  
+  openssl genrsa -rand /proc/meminfo 1024 > $KEY
+  echo -e $INFO	| openssl req -new -key $KEY -x509 -days 365 -out $CERT
+  chmod 0600 $CERT $KEY
+  
+  #aici o sa fie un sed penttru ssl.conf si httpd.conf
+  sed -i "s:^ServerAdmin you@example.com:ServerAdmin webmaster@localhost:" $PKG/etc/httpd/httpd.conf
+  sed -i "s:^User nobody:User apache:" $PKG/etc/httpd/httpd.conf
+  sed -i "s:^Group #-1:Group apache:" $PKG/etc/httpd/httpd.conf
+  sed -i "s:^SSLCertificateFile /etc/httpd/ssl.crt/server.crt:SSLCertificateFile /etc/ssl/apache/server.crt:" $PKG/etc/httpd/ssl.conf 
+  sed -i "s:^SSLCertificateKeyFile /etc/httpd/ssl.key/server.key:SSLCertificateKeyFile /etc/ssl/apache/server.key:" $PKG/etc/httpd/ssl.conf
+  echo >> $PKG/etc/httpd/httpd.conf
+  echo "# Additional configuration settings for virtual hosts and modules." >> $PKG/etc/httpd/httpd.conf
+  echo "Include /etc/httpd/virtual.conf" >> $PKG/etc/httpd/httpd.conf
+  echo "Include /etc/httpd/modules.conf" >> $PKG/etc/httpd/httpd.conf
+      
+  mkdir -p $PKG/var/log/httpd $PKG/srv/www/virtual
+  
+  install -D -m 0700 ../httpd.init $PKG/etc/rc.d/httpd
+  install -D -m 0644 ../httpd.sysconf $PKG/etc/conf.d/httpd
+  install -m 0644 ../virtual.example $PKG/etc/httpd/virtual.d/virtual.example
+  install -m 0644 ../virtual.conf $PKG/etc/httpd/virtual.conf
+  install -m 0644 ../modules.conf $PKG/etc/httpd/modules.conf
+  install -d $PKG/etc/httpd/mod.d
+    
+  chmod 0755 $PKG/usr/sbin/{envvars,envvars-std}
+  
+  install_docs ABOUT_APACHE CHANGES INSTALL LAYOUT LICENSE NOTICE \
+    README* VERSIONING
+}

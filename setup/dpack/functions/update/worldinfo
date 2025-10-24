@@ -1,0 +1,66 @@
+#!/bin/bash
+
+pkg_info_world() {
+  echo -n "Getting information [takes some time]..."
+  
+  pkg_create_tmp  
+  
+  local PKGNAME=""
+  for PKG in $DATABASEDIR/db/*
+  do
+    PKG="${PKG##*/}"
+    PKGNAME=$(pkgname $PKG)
+    if [ ! -f $DATABASEDIR/update/$PKGNAME ]
+    then
+      echo && echo
+      echo "Your package update database is out of date, this means that"
+      echo "some installed packages do not hava a update database entry."
+      echo "Run: 'dupdate sync' to sync the package update database."
+      pkg_exit "pkg_info_group()" "check_if_db_is_synced" "$LINENO" 1
+    fi
+    unset PKG PKGNAME
+  done
+
+  local TOTAL=0
+  local UPGRADE=0
+  for PKG in $DATABASEDIR/db/*
+  do
+    PKG="${PKG##*/}"
+    PKGNAME=$(pkgname $PKG)
+    if [ ! "$PKG_REINSTALL" = "1" ]
+    then
+      local IPKG=$(get_installed_pkg $PKGNAME)
+      local IVER=$(pkgversion $IPKG)
+      local IREL=$(pkgrelease $IPKG)
+      source $DATABASEDIR/update/$PKG $PKGNAME 2>/dev/null
+      if [ ! "$UVERSION" = "$IVER" -o ! "$URELEASE" = "$IREL" ]
+      then
+        echo -e "\t $IPKG -> $UNAME-$UVERSION-i686-$URELEASE" >> $TMP/upgrade
+	UPGRADE=$(($UPGRADE + 1))
+      else
+        INSTALLED=$(($INSTALLED + 1))
+      fi
+      unset UNAME UVERSION URELEASE UURL UDESC UDEPENDS UMD5SUM IPKG \
+        IVER IREL PKG PKGNAME
+    fi
+    TOTAL=$(($TOTAL + 1))
+  done
+  
+  echo "[ DONE ]"
+  
+  echo "Total of packages: $TOTAL"
+  if [ "$PKG_REINSTALL" = "1" ]
+  then
+    echo "Total of packages that will be reinstalled: $TOTAL"
+  else
+    echo "Packages that are already installed: $INSTALLED"
+    echo "Packages that will be upgrade: $UPGRADE"
+  fi
+  if [ -f $TMP/upgrade ]
+  then
+    echo "Package information:"
+    cat $TMP/upgrade
+  fi
+  
+  pkg_remove_tmp    
+}

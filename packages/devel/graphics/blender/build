@@ -1,0 +1,28 @@
+NAME=blender
+VERSION=2.36
+ARCH=i686
+RELEASE=1
+URL="http://www.blender3d.org"
+DESC="3D modeling, animation, rendering, post-production."
+GROUP=graphics
+LICENSE="GPL BL"
+SIZE="6750K"
+
+SOURCES="http://download.blender.org/source/blender-2.36.tar.gz
+         blender.desktop blender.png"
+
+BUILDTIME="gettext"
+
+RUNTIME="scons libsdl freetype2 python xorg python"
+
+build() {
+  cd $NAME
+
+  scons
+
+  install -D -m 0755 blender $PKG/usr/bin/blender
+  install -D -m 0644 ../blender.desktop $PKG/usr/share/applications/blender.desktop
+  install -D -m 0644 ../blender.png $PKG/usr/share/pixmaps/blender.png
+  
+  install_docs COPYING ChangeLog INSTALL README
+}

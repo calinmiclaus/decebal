@@ -1,0 +1,89 @@
+NAME=heimdal
+VERSION=0.6.3
+ARCH=i686
+RELEASE=1
+URL="http://www.pdc.kth.se/heimdal/"
+DESC="A free implementation of Kerberos 5."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="3255K"
+HUSE="x ipv6 static"
+
+SOURCES="ftp://ftp.pdc.kth.se/pub/heimdal/src/$NAME-$VERSION.tar.gz
+         heimdal-0.6.3-fPIC.patch heimdal-0.6.3-fhs_compliance-1.patch
+	 kpasswd.init kadmind.init kdc.init"
+
+BACKUSP="etc/heimdal/krb5.conf"
+
+RUNTIME=">=openssl-0.9.7e openldap readline db"
+
+PROVIDES="krb5"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p0 < ../heimdal-0.6.3-fPIC.patch
+  patch -p1 < ../heimdal-0.6.3-fhs_compliance-1.patch
+  
+  use x && OPTS="--with-x" || OPTS="--without-x"
+  use static || OPTS="$OPTS --disable-static"
+  use ipv6 || OPTS="$OPTS --without-ipv6"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/heimdal \
+	      --includedir=/usr/include/heimdal \
+	      --libexecdir=/usr/sbin \
+	      --datadir=/var/lib/heimdal \
+	      --localstatedir=/var/lib/heimdal \
+	      --enable-shared=yes \
+	      --with-openssl=/usr \
+	      --with-readline=/usr \
+	      --with-openldap=/usr \
+	      --with-berkeley-db \
+	      $OPTS
+  make LDFLAGS="$LDFLAGS -lreadline"
+  make DESTDIR=$PKG install
+  
+  # We dont use the heimdal programs, so we change their names
+  # so that they dont conflict with other packages.
+  ( cd $PKG/usr/bin
+    for FILE in login ftp rcp rsh su telnet mk_cmds
+    do
+      mv $FILE k${FILE}
+    done
+  )
+  ( cd $PKG/usr/sbin
+    for FILE in ftpd rshd telnetd
+    do
+      mv $FILE k${FILE}
+    done
+  )
+  ( cd $PKG/usr/man/man1
+    for FILE in ftp.1 login.1 rsh.1
+    do
+      mv $FILE k${FILE}
+    done
+  )
+  ( cd $PKG/usr/man/man8
+    for FILE in ftpd.8 rshd.8 telnetd.8
+    do
+      mv $FILE k${FILE}
+    done
+  )
+  rm -rf $PKG/usr/man/cat{1,3,5,8}
+  
+  rm -rf $PKG/usr/lib/libss*
+  rm -rf $PKG/usr/man/man5/{ftpusers.5,login.access.5}
+    
+  install -D -m 0644 krb5.conf $PKG/etc/heimdal/krb5.conf
+  install -d $PKG/etc/rc.d
+  
+  for FILE in kadmind.init kdc.init kpasswd.init
+  do
+    install -m 0700 ../$FILE $PKG/etc/rc.d/${FILE%.init}
+  done
+  
+  mkdir -p $PKG/var/lib/heimdal
+  
+  install_docs ChangeLog NEWS README* TODO*
+}

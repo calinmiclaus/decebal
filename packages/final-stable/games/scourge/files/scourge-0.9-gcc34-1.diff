@@ -1,0 +1,15 @@
+diff -Naur scourge-0.9/src/creature.cpp scourge-0.9-gcc34/src/creature.cpp
+--- scourge-0.9/src/creature.cpp	2005-03-02 18:33:10.000000000 +0200
++++ scourge-0.9-gcc34/src/creature.cpp	2005-05-23 10:03:54.000000000 +0300
+@@ -509,9 +509,9 @@
+         angleStep = diff / (float)TURN_STEP_COUNT;
+       }
+ 
+-      if( abs(angle - wantedAngle) > 2.0f ) {
++      if( abs(int ( angle - wantedAngle )) > 2.0f ) {
+         GLfloat diff = Util::diffAngle( wantedAngle, angle );
+-        if( abs( diff ) < angleStep ) {
++        if( abs(int ( diff )) < angleStep ) {
+           angle = wantedAngle;
+         } else {
+           angle += angleStep;

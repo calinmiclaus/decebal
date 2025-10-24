@@ -1,0 +1,34 @@
+NAME=lha
+VERSION=114i
+ARCH=i686
+RELEASE=1
+DESC="The lha archiver for Linux."
+URL="http://www2m.biglobe.ne.jp/~dolphin/lha/"
+GROUP=system
+LICENSE=OL
+SIZE="63K"
+
+SOURCES="http://www2m.biglobe.ne.jp/~dolphin/lha/prog/lha-114i.tar.gz
+         lha-114i-sec.patch lha-114i-symlink.patch"
+
+RUNTIME="glibc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+    
+  patch -p1 <../lha-114i-sec.patch
+  patch -p1 <../lha-114i-symlink.patch
+  
+  sed -i "s:\= \-O2 \-DSUPPORT_LH7 \-DMKSTEMP:\= $CFLAGS \-DSUPPORT_LH7 \-DMKSTEMP:" Makefile
+      
+  mkdir -p $PKG/usr/{bin,share/man/man1}
+
+  make BINDIR=/usr/bin MANDIR=/usr/share/man MANSECT=1
+  make BINDIR=$PKG/usr/bin \
+    MANDIR=$PKG/usr/share/man MANSECT=1 install
+	
+  install_docs CHANGES.euc MACHINES.euc PROBLEMS.euc README.euc
+}
+
+
+    

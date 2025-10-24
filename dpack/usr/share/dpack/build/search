@@ -1,0 +1,25 @@
+#!/bin/bash
+
+pkg_search() {
+  local SEARCH="$1"
+  local INDEX=0
+  
+  for PKGLOCATION in $(find $PACKAGEDIR/ -maxdepth 3 -type d -name "*$SEARCH*" 2>/dev/null)
+  do
+    if [ -f $PKGLOCATION/build ]
+    then
+      . $PKGLOCATION/build 2>/dev/null
+      if [ -n "$NAME" -a -n "$DESC" ]
+      then
+        echo -e "$NAME \t- $DESC"
+	INDEX=$(($INDEX + 1))
+      fi
+    fi
+  done
+  
+  if [ $INDEX -eq 0 ]
+  then
+    echo "No package containing '$SEARCH' could be found. Use: 'dsrc sync' to update"
+    echo "the package builds database."
+  fi
+}

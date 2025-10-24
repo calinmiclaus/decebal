@@ -1,0 +1,14 @@
+post_install() {
+  /usr/sbin/groupadd -g 57 slapd &>/dev/null
+  /usr/sbin/useradd -g slapd -u 57 -d /var/lib/openldap -s/bin/flase slapd &>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 57 slapd &>/dev/null
+  /usr/sbin/useradd -g slapd -u 57 -d /var/lib/openldap -s/bin/flase slapd &>/dev/null
+}
+
+pre_remove() {
+  /usr/sbin/userdel slapd &> /dev/null
+  /usr/sbin/groupdel slapd &> /dev/null
+}

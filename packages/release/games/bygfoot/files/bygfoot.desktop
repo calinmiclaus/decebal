@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Bygfoot
+GenericName=Football Manager
+Comment=A small and simple graphical football manager
+Icon=bygfoot.png
+FilePattern=bygfoot
+TryExec=bygfoot
+Exec=bygfoot
+Categories=Application;Game;Strategy;
+

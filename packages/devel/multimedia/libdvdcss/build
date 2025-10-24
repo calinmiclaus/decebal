@@ -1,0 +1,24 @@
+NAME=libdvdcss
+VERSION=1.2.8
+ARCH=i686
+RELEASE=1
+URL="http://www.videolan.org/libdvdcss/"
+DESC="A cross-platform library for transparent DVD device access with on-the-fly CSS decryption."
+GROUP=multimedia
+LICENSE=GPLv2
+SIZE="204K"
+HUSE="static"
+
+SOURCES="http://download.videolan.org/pub/libdvdcss/1.2.8/libdvdcss-1.2.8.tar.bz2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

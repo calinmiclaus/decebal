@@ -1,0 +1,19 @@
+--- config.h	2003-09-22 22:11:12.000000000 +0300
++++ config.h.new	2004-09-03 00:32:04.000000000 +0300
+@@ -20,7 +20,7 @@
+  * Default settings for Linux - leave these last.
+  */
+ #ifndef DEFAULT_MAIL_COMMAND
+-    #define DEFAULT_MAIL_COMMAND "/bin/mail -s"
++    #define DEFAULT_MAIL_COMMAND "/usr/bin/mail -s"
+ #endif
+ 
+ #ifndef COMPRESS_COMMAND
+@@ -36,6 +36,6 @@
+ #endif
+ 
+ #ifndef STATEFILE
+-    #define STATEFILE "/var/lib/logrotate.status"
++    #define STATEFILE "/var/lib/logrotate/status"
+ #endif
+ 

@@ -1,0 +1,26 @@
+NAME=cube
+VERSION=2004_05_22
+ARCH=i686
+RELEASE=1
+URL=""
+DESC=""
+GROUP=games
+LICENSE=""
+
+SOURCES="http://ovh.dl.sourceforge.net/sourceforge/cube/cube_2004_05_22.tar.gz"
+
+RUNTIME="libsdl
+         sdl_image
+	 sdl_mixer
+	 zlib
+	 libpng
+	 nvidia"
+
+build() {
+  cd $SRC/$name/source
+  
+  unzip cube_2004_05_22_src.zip
+  
+  
+}
+

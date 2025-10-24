@@ -1,0 +1,22 @@
+NAME=whois
+VERSION=4.6.26
+ARCH=i686
+RELEASE=1
+DESC="The whois client by Marco d'Itri."
+URL="http://www.linux.it/~md/software/"
+GROUP=network
+LICENSE=GPLv2
+SIZE="50K"
+
+SOURCES="http://ftp.debian.org/debian/pool/main/w/whois/whois_4.6.26.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  make
+
+  install -D -m 755 whois $PKG/usr/bin/whois
+  install -D -m 644 whois.1 $PKG/usr/share/man/man1/whois.1
+  
+  install_docs COPYING README
+}

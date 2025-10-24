@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Globulation
+GenericName=Strategy Game
+Comment=A Real Time Strategy Game with a Fantasy Story
+Icon=globulation.png
+FilePattern=glob2
+TryExec=glob2
+Exec=glob2
+Categories=Application;Game;StrategyGame;

@@ -1,0 +1,85 @@
+#!/bin/bash
+#
+# /etc/rc.d/postgresqld - control file for the PostgreSQL daemon
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/postgresqld
+
+pidfile="$DATADIR/postmaster.pid"
+
+check_postgresql() {
+  if [ ! -d $LOGDIR ]
+  then
+    mkdir -p $LOGDIR
+    touch $LOGDIR/$LOGFILE
+    chown postgresql.postgresql $LOGDIR/$LOGFILE
+  fi
+  if [ ! -d $DATADIR ]
+  then
+    mkdir -p $DATADIR
+    chmod 700 $DATADIR
+    chown postgresql.postgresql $DATADIR
+
+    if [ -x /usr/bin/initdb ]
+    then
+      msg "Creating PostgreSQL's base files"
+      run su postgresql -c "/usr/bin/initdb -D $DATADIR"
+      
+      [ -d $CONFDIR ] || mkdir -p $CONFDIR
+      
+      ln -sf $DATADIR/pg_hba.conf $CONFDIR/pg_hba.conf
+      ln -sf $DATADIR/pg_ident.conf $CONFDIR/pg_ident.conf
+      ln -sf $DATADIR/postgresql.conf $CONFDIR/postgresql.conf
+    fi
+  fi
+}  
+
+case "$1" in
+  start)
+    check_postgresql
+    msg "Starting the PostgreSQL daemon"
+    if ! check_proc postmaster
+    then
+      run su - postgresql -c "/usr/bin/pg_ctl start -W -D $DATADIR -l $LOGDIR/$LOGFILE"
+      [ $? -eq 0 ] && touch /var/run/services/postgresqld
+    else
+      already_running
+    fi
+    ;;
+  stop)
+    msg "Stopping the PostgreSQL daemon"
+    if check_proc postmaster
+    then
+      run su - postgresql -c "/usr/bin/pg_ctl stop -w -s -D $DATADIR -l $LOGDIR/$LOGFILE"
+      if [ $? -eq 0 ]
+      then
+        rm -f $DATADIR/postmaster.pid
+        rm -f /var/run/services/postgresqld
+      fi
+    else
+      not_running
+    fi
+    ;;
+  reload)
+    msg "Reloading the PostgreSQL daemon"
+    if checkproc postmaster
+    then
+      run su - postgresql -c "/usr/bin/pg_ctl reload -D $DATADIR -l $LOGDIR/$LOGFILE"
+    else
+      not_running
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/bin/postmaster
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

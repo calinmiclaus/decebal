@@ -1,0 +1,29 @@
+NAME=libcaca
+VERSION=0.9
+ARCH=i686
+RELEASE=1
+URL="http://sam.zoy.org/projects/libcaca/"
+DESC="A library that converts images to text."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="167K"
+
+SOURCES="http://sam.zoy.org/projects/libcaca/libcaca-0.9.tar.bz2"
+
+RUNTIME=">=ncurses-5.3 xorg slang imlib2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --enable-ncurses \
+	      --enable-x11 \
+	      --enable-slang \
+	      --disable-doc
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog INSTALL NEWS \
+    NOTES README THANKS TODO
+}
+ 	    

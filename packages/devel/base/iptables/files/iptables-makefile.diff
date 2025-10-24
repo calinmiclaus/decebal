@@ -1,0 +1,22 @@
+diff -Naur iptables-1.3.1/Makefile iptables-1.3.1.new/Makefile
+--- iptables-1.3.1/Makefile	2005-03-07 08:02:23.000000000 -0600
++++ iptables-1.3.1.new/Makefile	2005-04-26 20:53:48.000000000 -0500
+@@ -12,15 +12,15 @@
+ TOPLEVEL_INCLUDED=YES
+ 
+ ifndef KERNEL_DIR
+-KERNEL_DIR=/usr/src/linux
++KERNEL_DIR=/usr
+ endif
+ IPTABLES_VERSION:=1.3.1
+ OLD_IPTABLES_VERSION:=1.3.0
+ 
+-PREFIX:=/usr/local
++PREFIX:=/usr
+ LIBDIR:=$(PREFIX)/lib
+ BINDIR:=$(PREFIX)/sbin
+-MANDIR:=$(PREFIX)/man
++MANDIR:=$(PREFIX)/share/man
+ INCDIR:=$(PREFIX)/include
+ 
+ # directory for new iptables releases

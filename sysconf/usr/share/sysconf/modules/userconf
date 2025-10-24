@@ -1,0 +1,565 @@
+#!/bin/bash
+#
+# Script for configuring the users from /etc/passwd
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+# TODO rewrite the code
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+function delfromlist()
+{
+#deletes $1 from comma-separated $2 and echo's the output
+local list=`echo $2|tr "," " "`
+local list1=""
+local i
+for i in $list;
+do
+  test "$i" != "$1" && \
+  if [ -z "$list1" ];
+  then
+    list1=$i
+  else
+   list1="$list1,$i"
+  fi
+done
+echo $list1
+}
+
+function delfromgroup()
+{
+#deletes user by username and/or userid from /etc/group
+local uid=`id -u $1`
+local first last final i
+for i in `cat /etc/group`;
+do
+  first=`echo $i|cut -f 1-3 -d ":"`
+  last=`echo $i|cut -f 4 -d ":"`
+  last=`delfromlist $1 $last`
+  last=`delfromlist $uid $last`
+  final="$first:$last"
+  echo $final >>$tmp/group
+  cp -f $tmp/group /etc/group
+done
+}
+
+function addtogroup()
+{
+#adauga useru $1 la grupul $2
+local groupline=`cat /etc/group|grep "^$2:"`
+local groupfirst=`echo $groupline|cut -f 1-3 -d ":"`
+local grouplast=`echo $groupline|cut -f 4- -d ":"`
+test -z "`echo $grouplast|grep $1`" && \
+if [ ! -z "$grouplast" ];
+then
+  grouplast="$grouplast,$1"
+else
+  grouplast="$1"
+fi
+local groupfinal="$groupfirst:$grouplast"
+cat /etc/group|replace "$groupline" "$groupfinal" >$tmp/group.tmp
+mv -f $tmp/group.tmp /etc/group
+}
+
+function grouplist()
+{
+local i groupname exist SGLBUTTON
+local SGLCONFIRM=1
+until [ $SGLCONFIRM -eq 0 ];
+do
+local OPT=""
+for i in `cat /etc/group`;
+do
+groupname=`echo $i|cut -f 1 -d ":"`
+exist=`echo $i|cut -f 4- -d ":"|grep $1`
+test -z "$exist" && exist=off || exist=on
+OPT="$OPT $groupname group $exist"
+done
+$dialog --backtitle "$version" --title " Group List " --cancel-label "Back" \
+--checklist "\nSelect the groups which user ($1) should be a member of.\n\n" \
+0 0 0 $OPT 2>$tmp/sglsel
+SGLBUTTON=$?
+local SGLSEL=`cat $tmp/sglsel`
+rm $tmp/sglsel
+if [ $SGLBUTTON -eq 0 ];
+then
+$dialog --backtitle "$version" --title " Groups " \
+--yesno "\nAre you sure you want user ($1) to be a member of the following \
+(and only) group(s) ?\n\n$SGLSEL\n\n" 0 0
+SGLCONFIRM=$?
+if [ $SGLCONFIRM -eq 0 ];
+then
+  delfromgroup $1 
+  for i in $SGLSEL;
+  do
+    addtogroup $1 $i
+  done
+  fi
+else
+  SGLCONFIRM=0
+fi
+done
+unset SGLCONFIRM OPT groupname exist i SGLSEL
+}
+
+function changepass()
+{
+echo $2>$tmp/openssl.pass # fixes openssl if -z $2
+local cryptedpass=`openssl passwd -1 -in $tmp/openssl.pass`
+rm $tmp/openssl.pass
+local linenum=`cat /etc/shadow|grep -n "^$1:"|cut -f 1 -d ":"`
+local linetext=`cat /etc/shadow|grep "^$1:"|cut -f 3- -d ":"`
+head -n $[$linenum-1] /etc/shadow >$tmp/shadowtmp
+echo "$1:$cryptedpass:$linetext" >>$tmp/shadowtmp
+local totallines=`cat /etc/shadow|wc -l`
+local numtail=$[$totallines-$linenum]
+tail -n $numtail /etc/shadow >>$tmp/shadowtmp
+mv -f $tmp/shadowtmp /etc/shadow
+unset cryptedpass linenum linetext totallines numtail
+}
+
+function addusermenu()
+{
+local EXSEL="Real name:"
+local EABUTTON=2
+local EACONFIRM=0
+local realname=""
+local expire=""
+local inactive="-1"
+local initialgroup="users"
+local additionalgroups="audio,video,games,slocate"
+local password=""
+local shell="/bin/bash"
+local uid=""
+$dialog --backtitle "$version" --title " Add User " \
+--inputbox "\nEnter the username you want to add to the userlist\n\n" \
+0 0 2>$tmp/username || return
+local AUSEL=`cat $tmp/username`
+rm $tmp/username
+local homedir="/home/$AUSEL"
+local noexist=`cat /etc/passwd|grep "^$AUSEL:"`
+[ -z $noexist ] || {
+  $dialog --backtitle "$version" --title " Add User " --msgbox \
+  "\nUser $AUSEL exists in the system.\n\n" 0 0
+  return
+  }
+unset noexist
+while [ $EABUTTON -eq 2 -o $EABUTTON -eq 3 -o $EACONFIRM -eq 1 ];
+do
+$dialog --backtitle "$version" --title " Add User " \
+--cancel-label "Back" --ok-label "Add" \
+--help-button --extra-label "Edit" --default-item "$EXSEL" \
+--inputmenu "\nFill in the following values :\n" 35 70 27 \
+"Real name:" "$realname" \
+"Home dir:" "$homedir" \
+"Expire date:" "$expire" \
+"Inactive days:" "$inactive" \
+"Initial group:" "$initialgroup" \
+"Additional groups:" "$additionalgroups" \
+"Password:" "$password" \
+"Shell:" "$shell" \
+"UID:" "$uid" 2>$tmp/expert
+EABUTTON=$?
+case $EABUTTON in
+1) break;;
+0)
+$dialog --backtitle "$version" --title " Confirmation " \
+--yesno "\nAre you sure you want to add user ($AUSEL) with the following \
+settings (empty values will be filled in by the default settings) ?\n\n \
+Real name          : $realname\n \
+Home dir           : $homedir\n \
+Expire date        : $expire\n \
+Inactive days      : $inactive\n \
+Initial group      : $initialgroup\n \
+Additional groups  : $additionalgroups\n \
+Password           : $password\n \
+Shell              : $shell\n \
+UID                : $uid\n\n" 0 0
+EACONFIRM=$?
+local addusercmd=""
+if [ $EACONFIRM -eq 0 ];
+then
+[ ! -z "$realname" ] && addusercmd="$addusercmd -c \"$realname\""
+[ ! -z "$homedir" ] && addusercmd="$addusercmd -d $homedir"
+[ ! -z "$expire" ] && addusercmd="$addusercmd -e $expire"
+[ ! -z "$inactive" ] && addusercmd="$addusercmd -f $inactive"
+[ ! -z "$initialgroup" ] && addusercmd="$addusercmd -g $initialgroup"
+[ ! -z "$additionalgroups" ] && addusercmd="$addusercmd -G $additionalgroups"
+[ ! -z "$uid" ] && addusercmd="$addusercmd -u $uid"
+useradd -m $addusercmd $AUSEL
+AUERROR=$?
+[ $AUERROR -eq 0 ] && \
+{
+changepass $AUSEL $password
+$dialog --backtitle "$version" --title " Add User " --defaultno --yesno \
+"\nDo you want to see a list of groups in order to make $AUSEL member \
+of them ?\n\n" 0 0 && grouplist $AUSEL
+}
+unset password
+unset addusercmd
+if [ $AUERROR -ne 0 ];
+then
+  case $AUERROR in
+    1)AUMSG="can't update password file";;
+    2)AUMSG="invalid command syntax";;
+    3)AUMSG="invalid argument to option";;
+    4)AUMSG="uid already in use";;
+    6)AUMSG="specified group doesn't exist";;
+    9)AUMSG="username already in use";;
+    10)AUMSG="can't update group file";;
+    12)AUMSG="can't create home directory";;
+    13)AUMSG="can't create mail spool";;
+  esac
+  $dialog --backtitle "$version" --title " ERROR " --msgbox "\nAn error occured \
+while trying to add user ($AUSEL). \nThe error message is :\n\n$AUMSG\n\n" 0 0
+  EACONFIRM=1
+fi
+fi
+;;
+2)
+$dialog --backtitle "$version" --title " Help " --textbox $docdir/adduser.help 0 0
+;;
+3)
+EXSEL=`cat $tmp/expert|cut -f 2- -d " "|cut -f 1 -d ":"`
+EXSEL="$EXSEL:"
+renamed=`cat $tmp/expert|cut -f 2- -d " "|cut -f 2- -d ":"`
+renamed=`echo $renamed`
+case "$EXSEL" in
+"Real name:")realname=$renamed;;
+"Home dir:")homedir=$renamed;;
+"Expire date:")expire=$renamed;;
+"Inactive days:")inactive=$renamed;;
+"Initial group:")initialgroup=$renamed;;
+"Additional groups:")additionalgroups=$renamed;;
+"Password:")password=$renamed;;
+"Shell:")shell=$renamed;;
+"UID:")uid=$renamed;;
+esac
+;;
+esac
+done
+}
+
+function getuserlist()
+{
+local OPT=""
+local realname i
+for i in `cat /etc/passwd|cut -f 1 -d ":"`;
+do
+realname=`cat /etc/passwd|grep "^$i:"|cut -f 5 -d ":"`
+test -z "$realname" && realname="-" || realname=`echo $realname|tr " " "_"`
+OPT="$OPT $i $realname"
+done
+$dialog --backtitle "$version" --title " User Select " \
+--cancel-label "Back" --menu "\n$1\n\n" 0 0 0 $OPT 2>$tmp/userselect
+GULBUTTON=$?
+GULSEL=`cat $tmp/userselect`
+rm $tmp/userselect
+test $GULBUTTON -eq 1 && GULSEL=""
+}
+
+function remusermenu()
+{
+getuserlist "Select which user you want to remove"
+if [ ! -z "$GULSEL" ];
+then
+$dialog --backtitle "$version" --title " CONFIRMATION " \
+--yesno "\nAre you sure you want to remove user ($GULSEL) ?\n\n" 0 0
+[ $? -eq 0 ] && {
+  userdel -r $GULSEL
+  local userdelexitcode=$?
+  [ $userdelexitcode -ne 0 ] && {
+    local udmsg=""
+    case $userdelexitcode in
+    1) udmsg="can't update password file";;
+    2) udmsg="invalid command syntax";;
+    6) udmsg="specified user doesn't exist";;
+    8) udmsg="user currently logged in";;
+    10) udmsg="can't update group file";;
+    12) udmsg="can't remove home directory";;
+    esac
+    $dialog --backtitle "$version" --title " ERROR " --msgbox \
+    "\nCouldnt delete user. The error message is :\n\n$udmsg\n\n" 0 0
+  }
+}
+fi
+}
+
+function viewusermenu()
+{
+getuserlist "Select a user for which you want to see details"
+if [ ! -z "$GULSEL" ];
+then
+echo >$tmp/userinfo
+local long=`cat /etc/passwd|grep "^$GULSEL:"`
+local homedir=`echo $long|cut -f 6 -d ":"`
+local realname=`echo $long|cut -f 5 -d ":"`
+local uid=`echo $long|cut -f 3 -d ":"`
+local gid=`echo $long|cut -f 4 -d ":"`
+local shell=`echo $long|cut -f 7 -d ":"`
+echo "User name  : $GULSEL" >>$tmp/userinfo
+echo "Real name  : $realname" >>$tmp/userinfo
+echo "Home dir   : $homedir" >>$tmp/userinfo
+echo "User ID    : $uid" >>$tmp/userinfo
+echo "Group ID   : $gid" >>$tmp/userinfo
+echo "Shell      : $shell" >>$tmp/userinfo
+echo -n "Groups     : " >>$tmp/userinfo
+id -Gn $GULSEL >>$tmp/userinfo
+$dialog --backtitle "$version" --title " User Info " --textbox \
+$tmp/userinfo 0 0
+rm $tmp/userinfo
+unset homedir realname uid gid shell long
+fi
+}
+
+function editusermenu()
+{
+local eubutton=0 eusel
+selecteduser="(none)"
+until [ $eubutton -eq 1 ];
+do
+$dialog --backtitle "$version" --title " Edit User " --cancel-label "Back" \
+--default-item "$eusel" \
+--menu "\nUse 'SELECT' to choose which user you want to edit.\n\
+The other options are self explanatory.\n\n" 0 0 0 \
+"SELECT" "Current : $selecteduser" \
+"Password" "Change an users password" \
+"Realname" "Change an users realname" \
+"Groups" "Edit the groups a user is part of" \
+"Shell" "Change an users shell" \
+"Home" "Change an users home directory" \
+"Enable" "Enable user to login" \
+"Disable" "Disable users to login" \
+2>$tmp/eusel
+eubutton=$?
+eusel=`cat $tmp/eusel`
+[ $eubutton -eq 0 ] &&
+  {
+  case $eusel in
+  "SELECT")
+    getuserlist "Select an user."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ "$GULSEL" != "(none)" ] && selecteduser=$GULSEL
+  ;;
+  "Password")
+    [ "$selecteduser" = "(none)" ] && {
+    GULSEL=""
+    GULBUTTON=0
+    getuserlist "Select an user to change his password."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ -z $GULSEL ] && continue
+    }
+    $dialog --backtitle "$version" --title " Change Password " \
+    --cancel-label "Cancel" --insecure \
+    --passwordbox "\nEnter the new password for user ($GULSEL) :" \
+    0 0 2>$tmp/pass1 || continue
+    $dialog --backtitle "$version" --title " Change Password " \
+    --cancel-label "Cancel" --insecure \
+    --passwordbox "\nEnter the new password again :\n\n" \
+    0 0 2>$tmp/pass2 || continue
+    [ "`cat $tmp/pass1`" != "`cat $tmp/pass2`" ] &&
+      {
+      $dialog --backtitle "$version" --title " ERROR " --msgbox "\nThe \
+two passwords you entered, differ.\n\n" 0 0
+      continue
+      }
+    local passw=`cat $tmp/pass1`
+    rm -f $tmp/pass1 $tmp/pass2
+    changepass $GULSEL $passw
+    unset passw
+    $dialog --backtitle "$version" --title " Success " --msgbox "\nThe \
+password for ($GULSEL) has been changed.\n\n" 0 0
+  ;;
+  "Realname")
+    [ "$selecteduser" = "(none)" ] && {
+    GULSEL=""
+    GULBUTTON=0
+    getuserlist "Select an user to change his realname."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ -z $GULSEL ] && continue
+    }
+    $dialog --backtitle "$version" --title " Realname " \
+    --inputbox "\nEnter the new realname for user ($GULSEL) :\n\n" \
+    0 0 2>$tmp/realname.tmp || continue
+    local newrealname=`cat $tmp/realname.tmp`
+    rm $tmp/realname.tmp
+    local long=`cat /etc/passwd|grep "^$GULSEL:"`
+    local first=`echo $long|cut -f 1-4 -d ":"`
+    local last=`echo $long|cut -f 6- -d ":"`
+    local final="$first:$newrealname:$last"
+
+    local linenum=`cat /etc/passwd|grep -n "^$GULSEL:"|cut -f 1 -d ":"`
+    head -n $[$linenum-1] /etc/passwd >$tmp/passwdtmp
+    echo "$final" >>$tmp/passwdtmp
+    local totallines=`cat /etc/passwd|wc -l`
+    local numtail=$[$totallines-$linenum]
+    tail -n $numtail /etc/passwd >>$tmp/passwdtmp
+    mv -f $tmp/passwdtmp /etc/passwd
+    $dialog --backtitle "$version" --title " Success " --msgbox "\nThe \
+$GULSEL's realname is now ($newrealname).\n\n" 0 0
+    unset newrealname long first last final linenum totallines numtail
+    
+  ;;
+  "Groups")
+    [ "$selecteduser" = "(none)" ] && {
+    GULSEL=""
+    GULBUTTON=0
+    getuserlist "Select an user to change the groups he is part of."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ -z $GULSEL ] && continue
+    }
+    grouplist $GULSEL    
+  ;;
+  "Shell")
+    [ "$selecteduser" = "(none)" ] && {
+    GULSEL=""
+    GULBUTTON=0
+    getuserlist "Select an user to change his shell."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ -z $GULSEL ] && continue
+    }
+    $dialog --backtitle "$version" --title " Realname " \
+    --inputbox "\nEnter the new shell for user ($GULSEL).\n\
+\nRecomended shells are : /bin/bash /bin/sh /bin/tcsh /usr/bin/zsh \
+/bin/false (or other).\n\nBe advised that if you enter an invalid \
+shell, ($GULSEL) wont be able to login.\n\n" 0 0 2>$tmp/shell.tmp || continue
+    local shelltmp=`cat $tmp/shell.tmp`
+    local first=`cat /etc/passwd|grep "^$GULSEL:"|cut -f 1-6 -d ":"`
+    local linenum=`cat /etc/passwd|grep -n "^$GULSEL:"|cut -f 1 -d ":"`
+    head -n $[$linenum-1] /etc/passwd >$tmp/passwdtmp
+    echo "$first:$shelltmp" >>$tmp/passwdtmp
+    local totallines=`cat /etc/passwd|wc -l`
+    local numtail=$[$totallines-$linenum]
+    tail -n $numtail /etc/passwd >>$tmp/passwdtmp
+    mv -f $tmp/passwdtmp /etc/passwd
+    $dialog --backtitle "$version" --title " Success " --msgbox "\nThe \
+shell for ($GULSEL) is now ($shelltmp).\n\n" 0 0
+    unset shelltmp first linenum totallines numtail
+  ;;
+  "Home")
+    [ "$selecteduser" = "(none)" ] && {
+    GULSEL=""
+    GULBUTTON=0
+    getuserlist "Select an user to change his home directory."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ -z $GULSEL ] && continue
+    }
+    $dialog --backtitle "$version" --title " Home Directory " \
+    --inputbox "\nEnter the new home directory for user ($GULSEL) :\n\n" \
+    0 0 2>$tmp/home.tmp || continue
+    local newhome=`cat $tmp/home.tmp`
+    [ -e $newhome ] && [ ! -d $newhome ] &&
+      {
+      $dialog --backtitle "$version" --title " ERROR " --msgbox \
+      "\n$newhome exists but isnt a directory.\n\n" 0 0
+      rm $tmp/home.tmp
+      unset newhome
+      continue
+      }
+    [ -d $newhome ] &&
+      {
+      $dialog --backtitle "$version" --title " New homedir " \
+      --yesno "\nThe directory $newhome already exists. Do you want to \
+change its owner to ($GULSEL) ?\n\n" 0 0 && chown $GULSEL $newhome
+      }
+    [ ! -d $newhome ] &&
+      {
+      $dialog --backtitle "$version" --title " New homedir " \
+      --yesno "\nDirectory $newhome doesent exist. Do you want to \
+create it ?\n\n" 0 0 && 
+        {
+	mkdir -p $newhome
+	chown $GULSEL $newhome
+	}
+      }
+    local long=`cat /etc/passwd|grep "^$GULSEL:"`
+    local first=`echo $long|cut -f 1-5 -d ":"`
+    local last=`echo $long|cut -f 7- -d ":"`
+    local linenum=`cat /etc/passwd|grep -n "^$GULSEL:"|cut -f 1 -d ":"`
+    head -n $[$linenum-1] /etc/passwd >$tmp/passwdtmp
+    echo "$first:$newhome:$last" >>$tmp/passwdtmp
+    local totallines=`cat /etc/passwd|wc -l`
+    local numtail=$[$totallines-$linenum]
+    tail -n $numtail /etc/passwd >>$tmp/passwdtmp
+    mv -f $tmp/passwdtmp /etc/passwd
+    $dialog --backtitle "$version" --title " Success " --msgbox "\nThe \
+new homedir for ($GULSEL) is now $newhome.\n\n" 0 0
+    unset newhome first last linenum totallines numtail
+  ;;
+  "Enable")
+    [ "$selecteduser" = "(none)" ] && {
+    GULSEL=""
+    GULBUTTON=0
+    getuserlist "Select an user to enable his login."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ -z $GULSEL ] && continue
+    }
+    $dialog --backtitle "$version" --title " Confirmation " \
+    --yesno "\nAre you sure you want to enable user ($GULSEL) ?\n\n" \
+    0 0 && 
+      {
+      passwd -u $GULSEL
+      $dialog --backtitle "$version" --title " Success " \
+      --msgbox "\nUser ($GULSEL) is now allowed to login.\n\n" 0 0
+      }
+  ;;
+  "Disable")
+    [ "$selecteduser" = "(none)" ] && {
+    GULSEL=""
+    GULBUTTON=0
+    getuserlist "Select an user to disable his login."
+    [ $GULBUTTON -eq 1 ] && continue
+    [ -z $GULSEL ] && continue
+    }
+    $dialog --backtitle "$version" --title " Confirmation " \
+    --yesno "\nAre you sure you want to disable user ($GULSEL) ?\n\n" \
+    0 0 && 
+      {
+      passwd -l $GULSEL
+      $dialog --backtitle "$version" --title " Success " \
+      --msgbox "\nUser ($GULSEL) is now disallowed to login.\n\n" 0 0
+      }
+  ;;
+  esac
+  }
+
+done
+}
+
+function main_menu()
+{
+local MMBUTTON=0
+until [ $MMBUTTON -eq 1 ];
+do
+$dialog --default-item "$MMSEL" --backtitle "$version" \
+--title " User Configuration " --cancel-label "Back" --menu "\nSelect one of \
+the following options\n\n" 0 0 0 \
+"Add" "Add user" \
+"Remove" "Remove user" \
+"Edit" "Change user settings" \
+"Info" "View user information" \
+"Exit" "Exit user configuration" \
+2>$tmp/mmsel
+MMBUTTON=$?
+local MMSEL=`cat $tmp/mmsel`
+if [ $MMBUTTON -eq 0 ];
+then
+case $MMSEL in
+"Add") addusermenu;;
+"Remove") remusermenu;;
+"Info") viewusermenu;;
+"Edit") editusermenu;;
+"Exit")
+return
+;;
+esac
+fi
+done
+}
+
+tmp=`make_tmp network`
+$1
+rm -rf $tmp

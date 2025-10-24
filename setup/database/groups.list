@@ -1,0 +1,26 @@
+Base:Stuff you really need
+Chat:Comunication programs
+Database:Database related packages
+Devel:Development progs
+Doc-tools:Utilities for sofware documentation
+Editors:Text editors
+Enlightenment:The enlightenment WM
+Games:Games for Linux
+Gnome:Gnome base
+Gnome-extra:Extra packages for Gnome
+Graphics:Graphic editors and tools
+Kde:KDE base
+Kde-apps:KDE applications
+Libs:Libraries
+Mail:Mail programs and daemons
+Multimedia:Multimedia programs
+Network:Networking tools and daemons
+Office:Office tools
+Perl-modules:Modules for perl
+Printing:Printing programs
+Security:Security applications and daemons
+System:Usefull system tools
+Web:Browsers and daemons
+X11:X servers and programs
+Xfce:The Xfce window manager
+Xfce-extra:Some Xfce applications

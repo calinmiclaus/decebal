@@ -1,0 +1,29 @@
+NAME=libwmf
+VERSION=0.2.8.3
+ARCH=i686
+RELEASE=1
+URL="http://wvware.sourceforge.net/libwmf.html"
+DESC="The MSWord conversion library."
+GROUP=office
+LICENSE="GPLv2"
+SIZE="1709K"
+HUSE"static debug"
+
+SOURCES="http://optusnet.dl.sourceforge.net/sourceforge/wvware/libwmf-0.2.8.3.tar.gz"
+
+RUNTIME="expat >=zlib-1.2.1 libpng >=libjpeg-6b freetype2 >=gtk2-2.1.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use debug && OPTS="--enable-debug"
+  use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUILDING COPYING CREDITS ChangeLog INSTALL \
+    NEWS README TODO
+}

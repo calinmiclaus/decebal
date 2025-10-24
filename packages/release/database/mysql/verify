@@ -1,0 +1,7 @@
+md5: 56a6f5cacd97ae290e07bbe19f279af1 mysql-4.1.12.tar.gz
+md5: 3c45d7995399472bd7fff4b60c06b9dd my-large.cnf
+md5: 077a4d6ac8610f56ce39d7d7dd24dc10 my-small.cnf
+md5: 83167abaaabb784679473d15f474d73c my-huge.cnf
+md5: b701de704e1142322b1db89bb1c58186 my-medium.cnf
+md5: b8fc54ad3bf1ae13def95471c81b8cab mysqld.init
+md5: 90906b6c025b289e3b61c57c5639c0eb mysqld.sysconf

@@ -1,0 +1,28 @@
+NAME=scons
+VERSION=0.96.1
+ARCH=i686
+RELEASE=1
+DESC="A software construction tool."
+URL="www.scons.org"
+GROUP=devel
+LICENSE="BSDL"
+SIZE="953K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/scons/scons-src-0.96.1.tar.gz"
+
+RUNTIME=">=python-1.5.2"
+
+BUILDTIME=">=python-1.5.2"
+
+build () { 
+  cd $SRC/$NAME-src-$VERSION
+  
+  export SCONS_LIB_DIR=`pwd`/src/engine
+  python src/script/scons.py build/scons
+
+  cd build/scons
+  python setup.py install --prefix=/usr --root=$PKG
+  
+  install_docs LICENSE* README*
+
+}

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+pkg_unpack_sources() {
+  local MISSINGFILES=""
+  
+  msg "extracting source files..."
+  
+  cd $SRC
+  
+  for FILE in $SOURCES
+  do
+    local LOCALFILE=$(stripurl $FILE)
+    
+    msg_child "$LOCALFILE..."
+    
+    case "$LOCALFILE" in
+      *.tar.gz|*.tgz|*.tar.Z) CMD="tar -zxf $LOCALFILE"   ;;
+      *.tar.bz2|*.tbz2)       CMD="tar -jxf $LOCALFILE"   ;;
+      *.tar)                  CMD="tar -xf $LOCALFILE"    ;;
+      *.zip)                  CMD="unzip -qqo $LOCALFILE" ;;
+      *.gz)                   CMD="gunzip $LOCALFILE"     ;;
+      *.bz2)                  CMD="bzip2 -d $LOCALFILE"   ;;
+    esac
+    
+    if [ -n "$CMD" ]
+    then
+      $CMD 2>/dev/null
+      if [ $? -eq 0 ]
+      then
+        msg_ok_verbose
+      else
+        msg_failed_verbose
+        MISSINGFILES="$MISSINGFILES $LOCALFILE"
+      fi
+      unset CMD
+    else
+      msg_ok_verbose
+    fi
+  done
+  
+  if [ -n "$MISSINGFILES" ]
+  then
+    msg_failed
+    msg_error "Could not extract following source files:"
+    for FILE in $MISSINGFILES
+    do
+      echo -e "\t $FILE"
+    done
+    pkg_exit "pkg_unpack_sources()" "exract_source_files" "$LINENO" 1
+  fi
+  msg_done
+}

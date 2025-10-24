@@ -1,0 +1,29 @@
+NAME=peacock
+VERSION=1.9.1
+ARCH=i686
+RELEASE=1
+URL="http://peacock.sourceforge.net/"
+DESC="A HTML Editor for GTK+/GNOME."
+GROUP=devel
+LICENSE="GPLv2"
+SIZE="142K"
+
+SOURCES="http://mesh.dl.sourceforge.net/sourceforge/peacock/peacock-1.9.1.tar.gz"
+
+RUNTIME=">=libgnomeui-2.2.0 >=gtksourceview-0.5.0 >=libglade-2.0.1"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i -e 's/GtkHTML_Editor\:3\.0/GtkHTML_Editor\:3\.6/g' \
+    src/peacock-mdi.c src/peacock-file-client.c 
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

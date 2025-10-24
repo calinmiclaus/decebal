@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/cupsd - control file for the CUPS print daemon (cupsd)
+# 
+
+. /etc/rc.d/functions
+. /etc/conf.d/cupsd
+
+pidfile="/var/run/cupsd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the CUPS print server"
+    start_service /usr/sbin/cupsd $CUPSD_OPTS
+    ;;
+  stop)
+    msg "Stopping the CUPS print server"
+    stop_service /usr/sbin/cupsd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/cupsd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

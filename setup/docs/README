@@ -1,0 +1,477 @@
+
+1. Goal.
+2. Why.
+  2.1. The init scripts. 
+  2.2. The configuration files.
+3. The instalation.
+4. The package manager.
+5. Security.
+6. How you can help, what do we need.
+7. Future plans.
+8. Authors.
+
+
+
+
+Hi,
+
+this is Decebal Linux 0.9.0rc2 (Agenor).
+
+Decebal Linux is a binary (i686) and source based distribution. written
+from scratch (LFS). Its still in an early stage of development 
+and due to lack of maintainers, the development is slow.
+
+
+
+
+1. Goal.
+
+When we started to write Decebal we had a few things in mind.
+As Slackware fans we wanted to have a simple distribution, one
+that is flexibile enough to fit any purposes (server, desktop...)
+Yet, we found Slackware to be too limited for our tastes. It
+lacked a proper package manager (dependencies and others are
+missing), its an i486 distro, you cand recompile the system and
+others (no disregards ment).
+
+Decebal wants to take the KISS concept (KISS) further so we've
+added a few things.
+
+
+
+
+2. Why.
+
+There are a couple of things that makes Decebal different from
+other distros.
+
+
+2.1. The init scripts. 
+Decebal uses its own initialisation scripts,
+a combination of sysvinit and bsdinit. 
+Here is a snapshot of its init system :
+
+[root@1:~]# ls -la /etc/runlevel.d/
+total 36
+drwxr-xr-x   2 root root 4096 2005-09-10 09:07 .
+drwxr-xr-x  74 root root 4096 2005-09-11 11:09 ..
+-rw-------   1 root root  105 2005-09-10 09:07 halt
+-rw-------   1 root root   97 2005-09-10 09:07 multiuser
+-rw-------   1 root root   75 2005-09-10 09:07 nonetwork
+-rw-------   1 root root  101 2005-09-10 09:07 reboot
+-rw-------   1 root root   47 2005-09-10 09:07 single
+-rw-------   1 root root  173 2005-09-10 09:07 sysinit
+-rw-------   1 root root    6 2005-09-10 09:07 xsession
+[root@1:~]# cat /etc/runlevel.d/multiuser
+Slocalnet
+Spcmcia
+Shotplug
+Ssyslogd
+Sklogd
+Snetwork
+Satd
+Scrond
+Squota
+Sacpi
+Smouse
+Salsa
+Sacpid
+[root@1:~]#
+
+The system services (httpd, sshd, console...) are located in
+/etc/rc.d and are easy to maintain. Also, you can use service
+dependencies and conflicts. For example, if service A depends on
+service B, and you start A, then B will be started first.
+
+
+2.2. The configuration files.
+While still maintaining the simplicity of Slackware, we tought
+that its not enough. We wanted more power. So we created configuration
+files for several services.
+Here are a few examples:
+
+[root@1:~]# ls /etc/conf.d
+acpid    cupsd       hotplug  jack     mysqld   network.rds  slapd    xdm
+apmd     dhcpd       howl     klogd    named    nfsd         squid
+clamd    famd        httpd    modules  nessusd  postgresqld  sshd
+console  grsecurity  init     mouse    network  saslauthd    syslogd
+[root@1:~]# cat /etc/conf.d/httpd
+#
+# /etc/conf.d/httpd - configuration file for /etc/rc.d/httpd
+#
+
+# Set this to yes if you want to use SSL.
+USE_SSL=no
+
+# Set this to yes if you want to use MOD_PHP.
+USE_PHP=no
+
+# Set this to yes if you want to use MOD_PERL.
+USE_PERL=no
+
+# Set this to yes if you want to use MOD_PYTHON.
+USE_PYTHON=no
+
+# Set this to yes if you want to use MOD_TCL.
+USE_TCL=no
+
+# Set this to yes if you want to use MOD_MONO.
+USE_MONO=no
+
+# Set this to yes if you want to use MOD_AUTH_MYSQL.
+USE_AUTH_MYSQL=no
+
+# Set this to yes if you want to use MOD_AUTH_PGSQL (postgresql).
+USE_AUTH_PGSQL=no
+
+# Apache additional arguments.
+APACHE_OPTS=""
+[root@1:~]# cat /etc/conf.d/network
+#
+# /etc/conf.d/network - network configuration file
+#
+# Networking configuration:
+#
+# ONBOOT=yes|no   - start interface on boot?
+# USEDCP=yes|no   - configure interface using dhcp?
+# DHCPHOSTNAME="" - do you have a dhcp hostname?
+# IP=             - ipv4 ip address
+# NETMASK=        - ipv4 netmask
+# BROADCAST=      - ipv4 broadcast
+# IP6=            - ipv6 ip adddress
+# PREFIXLEN=      - ipv6 prefix length
+#
+# Examples:
+#eth0() {
+#  ONBOOT=yes
+#  USEDHCP=no
+#  DHCPHOSTNAME=
+#  IP=192.168.0.2
+#  NETMASK=255.255.255.0
+#  BROADCAST=192.168.0.255
+#  IP6=fe80::260:8ff:fec0:dba0
+#  PREFIXLEN=64
+#}
+#
+#eth0_0() {
+#  ONBOOT=yes
+#  IP=192.168.0.2
+#  NETMASK=255.255.255.0
+#  BROADCAST=192.168.0.255
+#}
+
+# Set the system hostname and domainname.
+HOSTNAME=bendis
+DOMAINNAME=decebal.org
+
+# Default gateway.
+DEFAULTGW=192.168.0.1
+
+# Interfaces to start at boot
+INTERFACES="eth0"
+
+eth0 ()
+{
+    ONBOOT=yes;
+    IP=192.168.0.1;
+    NETMASK=255.255.255.0;
+    BROADCAST=192.168.0.255;
+    USEDHCP=no;
+    DHCPHOSTNAME=
+}
+[root@1:~]#
+
+and so on...
+Also, we provided a tool to start, stop and restart services
+(beside /etc/rc.d/service start...) and other tasks.
+
+[root@1:~]# decebal --help
+usage: decebal [options] <argument>
+options:
+  -s, --start, start <service>          - start service
+  -f, --stop, stop <service>            - stop service
+  -r, --restart, restart <service>      - restart service
+  -r, --reload, reload <service>        - reload service
+  -S, --status, status <service>        - status service
+  -a, --add, add <service> <runlevel>   - add service to runlevel
+  -d, --del, del <service> <runlevel>   - del service from runlevel
+  -p, --show, show <runlevel>           - show services in runlevel
+  -i, --sysinit, init <type>            - set init scripts type
+  -v, --version                         - print name, version and license
+  -H, --howto                           - print a short howto
+  -h, --help                            - print this message and exit
+
+For a detailed help see decebal (8).
+[root@1:~]#
+
+Beside this, you can configure your system with 'sysconf', a collection
+of utilities which configure several aspects of your system with
+interactive menus using dialog. You can configure the network,
+the system users, PPP, xorg and others...
+Everything is done with dialog, so you dont have to be scared of the
+console if you're new to linux (in the future it will run with
+Xdialog too). Note that sysconf's version is 0.2.0 so, still incomplete
+and probably has some bugs.
+
+
+
+
+3. The instalation.
+
+Decebal Linux can be installed from an instalation CD/DVD (several
+CDs actually), from a local directory or a netinstall. So its
+enough to copy the binaries (.tbz2 format) into a local directory
+and perform a local instalation. Or, if you have a good net
+connection, you can choose to perform a netinstall.
+The instalation program ("setup") is based on dialog, so everything
+is interactive, it checks for unresolved dependencies, can partition
+your harddrives (using cfdisk), format the partitions (ext2, ext3,
+reiserfs, jfs, xfs, swap). It lacks for now proper documentation
+but i've tried to explain in the menus, what every action does, what
+is needed and so on...
+In order to perform a local or netinstall, you dont need to download
+a large environment to chroot into, just download the setup tarball
+(1.5mb) and you can install it.
+You need dialog, awk, sed, coreutils, net-utils (for netconfig),
+mkfs stuff, tar, bzip2, cfdisk, chroot (you dont need to run it,
+setup will).
+The source instalation is about 30-40% completed, so for now (11 sept
+2005) it is still disabled.
+So, if you're not using the CD/DVD, extract the tarball in the root
+directory and run setup.
+
+
+
+4. The package manager.
+
+Decebal uses its own package manager and package builds. The package
+manager is written from scratch and can compile a package at a time,
+a group at a time or the whole system. Note that this is still unstable
+and probably there will be some errors with some packages.
+The package manager has the following tools at your disposal :
+
+pkgchk       pkg_install  pkg_rebuild  pkg_upgrade pkgchk.bin
+pkg_convert  pkg_query    pkg_remove   dsrc        dsec
+
+Here are a few snapshots of what dpack can do :
+
+[root@1:~]# dsrc --help
+usage: dsrc [options] <argument>
+options:
+  -b, --builddeps         - install missing dependencies from sources
+  -c, --noclean           - do not remove work files (SRC and PKG)
+  -C, --continue          - use sources from SRC (continue build) (dangerous)
+  -d, --nodeps            - skip dependencies checks
+  -D, --download          - only download sources, do not build packages
+  -e, --sysinfo           - print information about dsrc
+  -f, --force             - force package build
+  -g, --genmd5            - generate verify file
+  -i, --noinstall         - do not install package
+  -I, --info              - print information about a package
+  -k, --keep              - do not remove the package after a successfull build
+  -n, --nostrip           - do not strip libraries and binaries
+  -o, --optimize          - optimize build for current system
+  -p, --nossp             - do not use SSP (Smash Stack Protector)
+  -r, --rmdeps            - remove installed dependencies after a successfull build (dangerous)
+  -R, --rebuild           - rebuild/reinstall package (even if its already installed)
+  -s, --syncdeps          - install dependencies with dupdate
+  -S, --search <string>   - search the builds database for *string*
+  -w, --write <dir>       - save package in <dir> after a successfull build
+  -u, --upgrade           - upgrade installed packages (used for groups)
+  -v, --verbose           - be more verbose
+  -V, --version           - print name, version and license
+  -H, --howto             - print a short howto
+  -h, --help              - print this message and exit
+arguments:
+  <package>               - build/install a package
+  <group>                 - build/install all package in group <group>
+  <world>                 - rebuild/reinstall/upgrade world
+  <sync>                  - update the builds database
+
+For a detalied help see dsrc (8).
+[root@1:~]# pkg_install --help
+usage: pkg_install [options] <package1> <package2> ...
+options:
+  -d, --nodeps        - skip all dependencies checks
+  -f, --force         - force package installation (overwrite existing files)
+  -p, --pretend       - only show actions (dont execute them)
+  -r, --root <dir>    - use an alternate installation path <dir>
+  -v, --verbose       - be more verbose
+  -V, --version       - print name, version and license
+  -h, --help          - print this message and exit
+[root@1:~]#
+[root@1:~]# pkg_upgrade --help
+usage: pkg_upgrade [options] <package1> <package2> ...
+options:
+  -b, --nobackups     - dont save backup files
+  -d, --nodeps        - skip all dependencies checks
+  -f, --force         - force package installation (overwrite existing files)
+  -p, --pretend       - only show actions (dont execute them)
+  -r, --root <dir>    - use an alternate installation path <dir>
+  -v, --verbose       - be more verbose
+  -V, --version       - print name, version and license
+  -h, --help          - print this message and exit
+[root@1:~]# pkg_remove --help
+usage: pkg_del [options] <package>
+options:
+  -b, --nobackups   - remove backup files as well
+  -d, --nodeps      - skip dependencies checks (dangerous)
+  -p, --pretend     - only show actions (dont execute them)
+  -P, --preserve    - move package contents to preserve dir
+  -r, --root <root> - use alternative remove path
+  -v, --verbose     - be more verbose
+  -V, --version     - print name, version and license
+  -h, --help        - print this message and exit
+[root@1:~]# pkg_query --help
+usage: pkg_query [options] <package> , <group> or <file>
+options:
+  -a, --all       - show all installed packages
+  -d, --dump      - dump package database entry
+  -g, --group     - show all package in group
+  -i, --info      - show package meta information
+  -l, --list      - list files contained by package
+  -o, --owns      - print package thats owns file
+  -r, --root      - use alternate query path
+  -V, --version   - print name, version and license
+  -h, --help      - print this message
+
+For a detailed help see pkg_info (8).
+
+And so on...
+Here is how a package build looks like :
+
+[root@1:~]# cat /usr/src/packages/release/base/gcc/build
+NAME=gcc
+VERSION=3.4.4
+ARCH=i686
+RELEASE=1
+URL="http://gcc.gnu.org/"
+DESC="The GNU Compiler Collection (GCC)."
+GROUP=base
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="26782K"
+HUSE="f77 java"
+
+SOURCES="ftp://ftp.funet.fi/pub/mirrors/gcc.gnu.org/pub/gcc/releases/gcc-3.4.3/gcc-3.4.4.tar.bz2
+         gcc-3.4.4-version-1.diff gcc-3.4.4-ssp-1.diff gcc-3.4.4-ssp-libssp-1.diff"
+
+RUNTIME=">=glibc-2.3.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  # What laguages to build...default.
+  local LANGUAGES="c,c++,objc"
+
+  use f77 && LANGUAGES="${LANGUAGES},f77"
+  use java && LANGUAGES="${LANGUAGES},java"
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+
+  # gcc wont compile with fstack enabled
+  remove_flags -fstack-protector -fstack-protector-all
+
+  # Version patch.
+  patch -p1 < ../gcc-3.4.4-version-1.diff
+
+  patch -p1 < ../gcc-3.4.4-ssp-1.diff
+  patch -p1 < ../gcc-3.4.4-ssp-libssp-1.diff
+
+  mkdir -p gcc-build
+  cd gcc-build
+
+  ../configure --prefix=/usr \
+               --libexecdir=/usr/lib \
+               --infodir=/usr/share/info \
+               --mandir=/usr/share/man \
+               --enable-shared \
+               --enable-threads=posix \
+               --enable-__cxa_atexit \
+               --enable-languages=$LANGUAGES \
+               $OPTS
+  make bootstrap
+  make check
+  make DESTDIR=$PKG install
+
+  mkdir -p $PKG/lib
+
+  ln -s ../usr/bin/cpp $PKG/lib/cc
+
+  rm -f $PKG/usr/lib/libiberty.a \
+    $PKG/usr/bin/{i686-pc-linux-gnu-c++,i686-pc-linux-gnu-g++,c++} \
+    $PKG/usr/bin/{i686-pc-linux-gnu-gcc,i686-pc-linux-gnu-gcc-3.4.3}
+
+  ( cd $PKG/usr/bin
+    ln -s g++ i686-pc-linux-gnu-c++
+    ln -s g++ i686-pc-linux-gnu-g++
+    ln -s gcc i686-pc-linux-gnu-gcc
+    ln -s gcc i686-pc-linux-gnu-gcc-3.4.3
+    ln -s g++ c++
+    ln -s gcc cc)
+
+  cd $SRC/$NAME-$VERSION
+
+  install_docs ABOUT-NLS BUGS COPYING* ChangeLog FAQ LAST_UPDATED \
+    MAINTAINERS MD5SUMS NEWS README*
+}
+
+
+
+
+5. Security.
+
+About 99% of the system is compiled with SSP so the system wont be
+vulnerable to stack overflow attacks. If such attacks are tried,
+the process will be killed and a syslog message will be shown.
+Also, you can choose to install a kernel with the grsec patch applied.
+PAX is present.
+
+
+
+
+6. How you can help, what do we need.
+
+Currently, we need package maintainers, to maintain existing packages
+and write builds for new ones.
+
+Testers, to test the stability of the system and hunt for bugs, give
+us feedback.
+
+Hosting mirrors, so we can host the CD/DVD images, binary packages,
+package builds.
+
+Sysconf module writers (bash scripting).
+
+GTK/Python programmers for a future version of sysconf or other stuff.
+
+Donations/jobs. Decebal Linux is a free (as in speech and beer) linux
+distribution. We need to make a living, so help us if you can (with
+donations or system administration jobs or anything else you can spare).
+Thank you
+
+
+
+
+7. Future plans.
+
+We plan to cut Decebal in two parts, a server and a desktop distribution.
+Both using dpack, sysconf... The server part should have SSP, and the
+desktop one, multimedia programs, games, ...
+
+
+
+
+8. Authors.
+
+Decebal was started by two romanians from Arad city, Calin Bogdan Miclaus
+and Adrian Florin Teodor in 2004. Some friends helped us, see THANKS
+for further details.
+
+Calin Bogdan Miclaus <trog@decebal.org>
+Adrian Florin Teodor <slider@decebal.org>
+
+11 sept 2005
+
+
+
+We hope you'll enjoy Decebal Linux, have alot of freedom !
+

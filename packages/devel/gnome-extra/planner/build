@@ -1,0 +1,46 @@
+NAME=planner
+VERSION=0.13
+ARCH=i686
+RELEASE=1
+URL="http://planner.imendio.org/"
+DESC="A project management application for the GNOME Desktop."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="2332K"
+HUSE="static gtkdoc"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/planner/0.13/planner-0.13.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="python evolution-data-server"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtkdoc"
+
+RUNTIME=">=libgda-1.0 >=libgnomeui-2.6.0 >=libgnomeprintui-2.6.0 >=python-2.4 >=pygtk-2.0.0 >=evolution-data-server-1.2.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+	      --disable-update-mimedb \
+	      --enable-database=yes \
+	      --enable-python \
+	      --enable-python-plugin \
+	      --enable-eds \
+	      --enable-eds-backend \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/usr/lib
+  mv $PKG/opt/gnome/lib/python2.4 $PKG/usr/lib/
+    
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

@@ -1,0 +1,58 @@
+#!/bin/bash
+
+pkg_info_world() {
+  local TOTAL=0
+  local UPGRADE=0
+  
+  pkg_create_tmp
+  
+  echo -n "Getting information [takes some time]..."
+   
+  for PKG in $DATABASEDIR/db/*
+  do
+    PKG="${PKG##*/}"
+    PKG="$(pkgname $PKG)"
+        
+    local BUILD="$(find $PACKAGEDIR/ -type d -name $PKG 2>/dev/null)"
+    if [ -n "$BUILD" ]
+    then
+      local IPKG=$(get_installed_pkg $PKG)
+      local IVER=$(pkgversion $IPKG)
+      local IREL=$(pkgrelease $IPKG)
+       
+      source $BUILD/build 2>/dev/null
+      if [ ! "$VERSION" = "$IVER" -o ! "$RELEASE" = "$IREL" ]
+      then
+        echo -e "\t $IPKG -> $NAME-$VERSION-$ARCH-$RELEASE" >> $TMP/upgrade
+        UPGRADE=$(($UPGRADE + 1))
+      fi
+      unset NAME VERSION ARCH RELEASE URL DESC GROUP LICENSE SIZE HUSE \
+        SOURCES BUILDTIME RUNTIME CONFLICTS REPLACES PROVIDES
+      unset -f build
+    fi
+    TOTAL=$(($TOTAL + 1))
+  done
+  
+  echo "[ DONE ]" 
+  
+  if [ "$PKG_REBUILD" = "1" ]
+  then
+    echo "Total of installed packages: $TOTAL"
+    echo "Total of packages that will be rebuilt: $TOTAL"
+    if [ $UPGRADE -ne 0 ]
+    then
+      echo "Packages that will be upgraded: "
+      cat  $TMP/upgrade
+    fi
+  else
+    echo "Total of installed packages: $TOTAL"
+    echo "Total of packages that will be upgraded: $UPGRADE"
+    if [ $UPGRADE -ne 0 ]
+    then
+      echo "Packages that will be upgraded:"
+      cat $TMP/upgrade
+    fi
+  fi
+  
+  pkg_remove_tmp
+}

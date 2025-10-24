@@ -1,0 +1,135 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="dependencies.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="ssp.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Optimizing build</h1>
+<p>There are two ways how you can optimize you packages. One is by editing <b><code>/etc/dpack/build</code></b> and
+it is explained <a href="srcconf.html">here</a>, and the other one is by using the <b><code>-o</code></b> <b><code>--optimize</code></b>) options
+with <b><code>dsrc</code></b>. This will optimize
+the package "on-the-fly" for the running processor.<br><br>
+The default optimization flags look like this:<br>
+<b><code>CFLAGS="-march=CPU -O2 -pipe -fomit-frame-pointer"<br>
+CXXFLAGS="-march=CPU -O2 -pipe -fomit-frame-pointer"</code></b><br><br>
+where CPU will be autodetected and can be one of the following ones:<br>
+pentium2 &nbsp; - for Intel Pentium 2 (Deschutes and Mendochino)<br>
+pentium3 &nbsp; - for Intel Pentium 3 (Coppermine, Celleron(TM) and Pentium III)<br>
+pentium4 &nbsp; - for Intel Pentium 4 (Celleron(R) and Pentium(R) 4)<br>
+athlon &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - for AMD Athlon (Duron(tm))<br>
+athon-xp &nbsp;&nbsp; - for AMD AthlonXP (Athlon(tm) and Athlon Duron(tm))<br><br>
+A optimized ed build:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# dsrc --rebuild --optimize -vkif ed<br>
+[+] building ed...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking dependencies...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> virtual/libc...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] fetching source files...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ed-0.2.tar.gz...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ed-0.2-mkstemp.patch...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] checking source files integrity...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ed-0.2.tar.gz...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ed-0.2-mkstemp.patch...[PASSED]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] extracting source files...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ed-0.2.tar.gz...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ed-0.2-mkstemp.patch...[OK]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] optimizing build for pentium4...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] activating smash stack protector...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] running build...<br>
++ build<br>
++ cd /usr/src/packages/release/base/ed/SRC/ed-0.2<br>
++ patch -p1<br>
+patching file buf.c<br>
++ ./configure --prefix=/usr<br>
+creating cache ./config.cache<br>
+checking whether ln -s works... yes<br>
+checking for ranlib... ranlib<br>
+checking for a BSD compatible install... /usr/bin/install -c<br>
+checking for POSIXized ISC... no<br>
+checking for gcc... gcc<br>
+checking whether we are using GNU C... yes<br>
+checking for working const... yes<br>
+checking how to run the C preprocessor... gcc -E<br>
+checking whether cross-compiling... no<br>
+checking for ANSI C header files... yes<br>
+checking for limits.h... yes<br>
+checking for memory.h... yes<br>
+checking for string.h... yes<br>
+checking for unistd.h... yes<br>
+checking for locale.h... yes<br>
+checking for setbuffer... yes<br>
+checking for sigsetjmp... no<br>
+checking for sigaction... yes<br>
+checking for strerror... yes<br>
+checking for vprintf... yes<br>
+checking for working alloca.h... yes<br>
+checking for alloca... yes<br>
+updating cache ./config.cache<br>
+creating ./config.status<br>
+creating Makefile<br>
+creating config.h<br>
++ make<br>
+./config.status<br>
+creating Makefile<br>
+creating config.h<br>
+config.h is unchanged<br>
+touch stamp-h<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all buf.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all glbl.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all io.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all main.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all re.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all signal.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all sub.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all undo.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all version.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all getopt.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all getopt1.c<br>
+gcc -c -I. -I. -DHAVE_CONFIG_H  -march=pentium4 -O2 -pipe -fomit-frame-pointer -fstack-protector -fstack-protector-all regex.c<br>
+rm -f libed.a<br>
+ar cru libed.a getopt.o getopt1.o regex.o<br>
+ranlib libed.a<br>
+gcc  -o ed buf.o glbl.o io.o main.o re.o signal.o sub.o undo.o version.o libed.a<br>
++ make prefix=/usr/src/packages/release/base/ed/PKG/usr install<br>
+./mkinstalldirs /usr/src/packages/release/base/ed/PKG/usr/bin /usr/src/packages/release/base/ed/PKG/usr/info /usr/src/packages/release/base/ed/PKG/usr/man/man1<br>
+mkdir /usr/src/packages/release/base/ed/PKG/usr<br>
+mkdir /usr/src/packages/release/base/ed/PKG/usr/bin<br>
+mkdir /usr/src/packages/release/base/ed/PKG/usr/info<br>
+mkdir /usr/src/packages/release/base/ed/PKG/usr/man<br>
+mkdir /usr/src/packages/release/base/ed/PKG/usr/man/man1<br>
+/usr/bin/install -c ed /usr/src/packages/release/base/ed/PKG/usr/bin/ed<br>
+rm -f /usr/src/packages/release/base/ed/PKG/usr/bin/red<br>
+cd /usr/src/packages/release/base/ed/PKG/usr/bin; \<br>
+  ln -s ed red<br>
+/usr/bin/install -c -m 644 ./ed.info /usr/src/packages/release/base/ed/PKG/usr/info/ed.info<br>
+/usr/bin/install -c -m 644 ./ed.1 /usr/src/packages/release/base/ed/PKG/usr/man/man1/ed.1<br>
+rm -f /usr/src/packages/release/base/ed/PKG/usr/man/man1/red.1<br>
+cd /usr/src/packages/release/base/ed/PKG/usr/man/man1; \<br>
+  ln -s ed.1 red.1<br>
++ mkdir -p /usr/src/packages/release/base/ed/PKG/bin<br>
++ mv /usr/src/packages/release/base/ed/PKG/usr/bin/ed /usr/src/packages/release/base/ed/PKG/bin/ed<br>
++ rm -f /usr/src/packages/release/base/ed/PKG/usr/bin/red<br>
++ ln -s ../../bin/ed /usr/src/packages/release/base/ed/PKG/usr/bin/red<br>
++ install_docs COPYING ChangeLog INSTALL NEWS POSIX README THANKS TODO<br>
++ set +x<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] compressing info files...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] compressing man pages...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] striping binaries and libraries...[DONE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[-] creating package ed-0.2-i686-1.tbz2<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="dependencies.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="ssp.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Handling dependencies</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Smash Stack Protecor</td></tr></table>
+</body>
+</html>

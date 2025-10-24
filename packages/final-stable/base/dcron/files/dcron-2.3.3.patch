@@ -1,0 +1,91 @@
+diff -ru dcron-2.3.3/Makefile dcron-2.3.3-new/Makefile
+--- dcron-2.3.3/Makefile	Fri Sep  5 21:42:44 1997
++++ dcron-2.3.3-new/Makefile	Thu Aug  9 22:23:34 2001
+@@ -1,8 +1,9 @@
+ # Makefile for dillon's cron and crontab
+ #
+ 
++DESTDIR =
+ CC  = gcc
+-CFLAGS = -O2 -Wall -Wstrict-prototypes
++CFLAGS += -Wall -Wstrict-prototypes
+ LIB = 
+ SRCS = main.c subs.c database.c job.c
+ OBJS = main.o subs.o database.o job.o
+@@ -13,12 +14,10 @@
+ all:	${PROTOS} crond crontab
+ 
+ crond:	${OBJS}
+-	${CC} ${CFLAGS} -o crond ${OBJS} ${LIB}
+-	strip crond
++	${CC} ${CFLAGS} -o crond ${OBJS} ${LIB} ${LDFLAGS}
+ 
+ crontab:  ${D_OBJS}
+-	${CC} ${CFLAGS} -o crontab ${D_OBJS}
+-	strip crontab
++	${CC} ${CFLAGS} -o crontab ${D_OBJS} ${LDFLAGS}
+ 
+ protos.h: ${SRCS} ${D_SRCS}
+ 	fgrep -h Prototype ${SRCS} ${D_SRCS} >protos.h
+@@ -30,10 +29,10 @@
+ 	rm -f *.o dcron.tgz $(PROTOS)
+ 
+ install: crond crontab
+-	install -o root -g root -m 0755 crond /usr/sbin
+-	install -o root -g root -m 4755 crontab /usr/bin
+-	install -o root -g root crontab.1 /usr/man/man1
+-	install -o root -g root  crond.8 /usr/man/man8
++	install -o root -g root -m 0755 -D crond $(DESTDIR)/usr/sbin/crond
++	install -o root -g root -m 4755 -D crontab $(DESTDIR)/usr/bin/crontab
++	install -o root -g root -m 0644 -D crontab.1 $(DESTDIR)/usr/share/man/man1/crontab.1
++	install -o root -g root -m 0644 -D crond.8 $(DESTDIR)/usr/share/man/man8/crond.8
+ 
+ tar: cleano
+ 	(cd ..; tar cvf - dcron | gzip -9 >dcron.tgz.tmp)
+diff -ru dcron-2.3.3/defs.h dcron-2.3.3-new/defs.h
+--- dcron-2.3.3/defs.h	Fri Sep  5 21:44:32 1997
++++ dcron-2.3.3-new/defs.h	Thu Aug  9 22:23:53 2001
+@@ -35,7 +35,7 @@
+ #define OPEN_MAX	256
+ #endif
+ #ifndef SENDMAIL
+-#define SENDMAIL	"/usr/lib/sendmail"
++#define SENDMAIL	"/usr/sbin/sendmail"
+ #endif
+ #ifndef SENDMAIL_ARGS
+ #define SENDMAIL_ARGS	"-t", "-oem", "-i"
+diff -ru dcron-2.3.3/subs.c dcron-2.3.3-new/subs.c
+--- dcron-2.3.3/subs.c	Mon Feb 16 20:35:10 1998
++++ dcron-2.3.3-new/subs.c	Thu Aug  9 22:23:34 2001
+@@ -15,7 +15,7 @@
+ Prototype int ChangeUser(const char *user, short dochdir);
+ Prototype void vlog(int level, int fd, const char *ctl, va_list va);
+ Prototype int slog(char *buf, size_t sz, const char *ctl, va_list va, short useDate);
+-Prototype char *strdup(const char *);
++/*Prototype char *strdup(const char *);*/
+ 
+ void 
+ log9(const char *ctl, ...)
+@@ -80,7 +80,7 @@
+ 
+     buf[0] = 0;
+     if (useDate)
+-	strftime(buf, 128, "%d-%b-%y %H:%M  ", tp);
++	strftime(buf, 128, "%d-%b-%Y %H:%M  ", tp);
+     vsnprintf(buf + strlen(buf), sz - strlen(buf), ctl, va);
+     return(strlen(buf));
+ }
+@@ -131,6 +131,7 @@
+     return(pas->pw_uid);
+ }
+ 
++/*
+ char *
+ strdup(const char *str)
+ {
+@@ -140,4 +141,4 @@
+         strcpy(ptr, str);
+     return(ptr);
+ }
+-
++*/

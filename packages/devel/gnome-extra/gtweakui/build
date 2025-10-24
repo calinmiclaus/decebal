@@ -1,0 +1,35 @@
+NAME=gtweakui
+VERSION=0.4.0
+ARCH=i686
+RELEASE=1
+URL="http://gtweakui.sourceforge.net/"
+DESC="Provides extra configuration settings for GNOME."
+GROUP=gnome-extra
+LICENSE="GPLv2
+SIZE="217K
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gtweakui/gTweakUI-0.4.0.tar.bz2"
+
+BUILDTIME="pkgconfig gettext"
+
+RUNTIME="gconf libgnomeui libglade"
+
+build() {
+  cd $SRC//gTweakUI-$VERSION
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  for FILE in gtweakui-galeon.desktop gtweakui-menus.desktop gtweakui-nautilus.desktop \
+    gtweakui-session.desktop
+  do
+    sed -i "s:\/usr\/share\/gTweakUI/g.png:\/opt\/gnome\/share\/gTweakUI/g.png:" \
+      $PKG/opt/gnome/share/applications/$FILE
+  done
+    
+  install_docs AUTHORS COPYING ChangeLog FAQ GCONF-KEYS \
+    INSTALL NEWS README TODO
+}
+

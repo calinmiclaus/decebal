@@ -1,0 +1,30 @@
+NAME=mktemp
+VERSION=1.5
+ARCH=i686
+RELEASE=1
+URL="http://www.mktemp.org"
+DESC="A simple utility designed to make temporary file handling in shells scripts."
+GROUP=base
+LICENSE="BSDL UCB"
+
+SOURCES="ftp://ftp.mktemp.org/pub/mktemp/mktemp-1.5.tar.gz
+         mktemp-1.5-add-tempfile.patch"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../mktemp-1.5-add-tempfile.patch
+  
+  ./configure --prefix=/usr \
+              --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-libc
+  make
+  make prefix=$PKG/usr install
+  
+  install -m 0755 tempfile $PKG/usr/bin/tempfile
+
+  install_docs INSTALL INSTALL.configure LICENSE README RELEASE_NOTES
+}

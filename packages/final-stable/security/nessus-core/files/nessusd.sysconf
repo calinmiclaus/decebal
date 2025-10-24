@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/nessusd - configuration file for /etc/rc.d/nessusd
+#
+
+# Additional nessusd options.
+NESSUSD_OPTS=""

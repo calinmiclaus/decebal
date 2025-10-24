@@ -1,0 +1,33 @@
+NAME=xfce4-windowlist-plugin
+VERSION=0.1.0
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="Windowlist plugin for the XFCE Panel."
+GROUP=xfce-extra
+LICENSE=BSDL
+SIZE="294K"
+HUSE="static debug profile"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-windowlist-plugin-0.1.0.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=xfce4-panel-4.0.0"
+
+build() {
+  cd $SRC/$NAME
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=full"
+  use profile && OPTS="$OPTS --enable-profiling"
+	
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING INSTALL README
+}
+

@@ -1,0 +1,27 @@
+NAME=gtkhtml
+VERSION=3.6.2
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="GNOME Application library."
+GROUP=gnome-extra
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="1382K"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/gtkhtml/3.6/gtkhtml-3.6.2.tar.bz2"
+
+RUNTIME="gal gail libsoup"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+  
+  rm -rf $PKG/opt/gnome/libexec
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL \
+    NEWS README TODO
+}

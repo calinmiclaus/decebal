@@ -1,0 +1,31 @@
+NAME=libdv
+ARCH=i686
+VERSION=0.103
+RELEASE=1
+URL="http://libdv.sourceforge.net/"
+DESC="A software codec for DV video."
+GROUP=multimedia
+LICENSE="GLGPLv2.1"
+SIZE="516K"
+HUSE="static debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/libdv/libdv-0.103.tar.gz"
+
+builtime=">=popt-1.7"
+
+RUNTIME=">=popt-1.7"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --with-debug"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING COPYRIGHT ChangeLog INSTALL README* \
+    TODO
+}

@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# /etc/cron/daily/makewhatis - update the whatis database
+#
+
+/usr/sbin/makewhatis -u -w

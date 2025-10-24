@@ -1,0 +1,153 @@
+#!/bin/bash
+#
+# Script for configuring the window manager
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+function check_x()
+{
+  [ -z "`which X 2>/dev/null | cut -f 1 -d \":\"`" ] &&
+  {
+    $dialog --backtitle "$version" --title " ERROR " \
+    --msgbox "\nYou dont have any xserver installed. Check your instalation.\n\n" \
+    0 0
+    return 1
+  } || return 0
+}
+
+function setwm()
+{
+local opt=""
+local i short
+local swmbutton=0
+local yesno=1
+local wmnum=`find /etc/X11/xinit/ -name xinitrc.??*|wc -l`
+local file=""
+
+[ $wmnum -eq 0 ] && 
+{
+$dialog --backtitle "$version" --title " ERROR " --msgbox \
+"\nThere are no window managers installed. Check your instalation.\n\n" 0 0
+return
+}
+
+for i in /etc/X11/xinit/xinitrc.*; do
+  [ ! -d $i ] &&
+    {
+    short=`basename $i|cut -f 2 -d "."`
+    [ "$short" != "default" ] && opt="$opt $short Window-Manager"
+    }
+done
+
+local file=`echo $opt|cut -f 1 -d "-"|awk '{print $1}'`
+while [ $yesno -eq 1 ];
+do
+  $dialog --backtitle "$version" --title " X Window Manager Configuration " \
+  --ok-label "Set" --cancel-label "Back" --default-item "$file" \
+  --menu "\nThe following window managers are available on your \
+system. Select which one you want to use.\n\n" 0 0 0 \
+  $opt 2>$tmp/xwmconfig
+  swmbutton=$?
+  
+  file=`cat $tmp/xwmconfig`
+
+  case $swmbutton in
+  0)
+    $dialog --backtitle "$version" \
+    --title " X Window Manager Configuration " \
+    --yesno "\nAre you satisfied with the ($file) window manager ?\n\n" 0 0
+    yesno=$?
+    [ $yesno -eq 0 ] &&
+    {
+    case $2 in
+    "global")
+      rm -f /etc/X11/xinit/xinitrc
+      ln -s /etc/X11/xinit/xinitrc.$file /etc/X11/xinit/xinitrc
+    ;;
+    "local")
+      local homedir=`cat /etc/passwd|grep "^$1"|cut -f 6 -d ":"`
+      [ -e $homedir/.xinitrc ] && \
+      mv -f $homedir/.xinitrc $homedir/.xinitrc.backup
+      
+      cp -f /etc/X11/xinit/xinitrc.$file $homedir/.xinitrc
+      chmod +x $homedir/.xinitrc
+      
+      local group=`cat /etc/passwd|grep "^$1|cut -f 4 -d ":"`
+      chown ${1}.${group} $homedir/.xinitrc
+    ;;
+    esac
+    }
+  ;;
+  1) yesno=0;;
+  esac
+done
+}
+
+function userlist()
+{
+local opt=""
+local i
+local realname
+local uid=`id -u` ruid
+
+for i in `cat /etc/passwd|cut -f 1 -d ":"`;
+do
+  ruid=`cat /etc/passwd|grep "^$i:"|cut -f 3 -d ":"`
+  realname="-"
+  #FIXME
+  #realname=`cat /etc/passwd|grep "^$i:"|cut -f 5 -d ":"`
+  #[ -z "$realname" ] && realname="-" 
+  #|| realname=`echo $realname|tr " " "_"`
+  [ $ruid -ge 100 -o $ruid -eq $uid ] && opt="$opt $i $realname"
+done
+
+$dialog --backtitle "$version" --title " User Select " --cancel-label "Back" \
+--menu "\nSelect an user\n\n" 0 0 0 $opt 2>$tmp/userselect
+local ulbutton=$?
+local ulsel=`cat $tmp/userselect`
+
+rm -f $tmp/userselect
+
+[ $ulbutton -eq 0 ] && setwm $ulsel local
+}
+
+function main_menu()
+{
+local uid=`id -u`
+
+if [ $uid -eq 0 ];
+then
+  
+  local mmbutton=0
+  local mmsel
+  while [ $mmbutton -ne 1 ];
+  do
+  $dialog --backtitle "$version" --title " X Window Manager Configuration " \
+  --cancel-label "Back" --menu "\nYou have the following choices at your \
+disposal." 0 0 0 \
+  "Default" "Change the system wide default WM" \
+  "User" "Change some users WM" \
+  "Exit" "Exit window manager configuration" \
+  2>$tmp/mmsel
+  mmbutton=$?
+  mmsel=`cat $tmp/mmsel`
+  [ $mmbutton -eq 0 ] &&
+    case $mmsel in
+    "Default") setwm default global;;
+    "User") userlist;;
+    "Exit") mmbutton=1;;
+    esac
+  done
+else
+  setwm `whoami` local
+fi
+}
+
+tmp=`make_tmp xwm`
+check_x && $1
+rm -rf $tmp

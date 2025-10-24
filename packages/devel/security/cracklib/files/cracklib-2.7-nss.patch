@@ -1,0 +1,49 @@
+--- cracklib,2.7/cracklib/fascist.c	Tue Oct  2 15:58:43 2001
++++ cracklib,2.7/cracklib/fascist.c	Tue Oct  2 16:06:44 2001
+@@ -10,6 +10,8 @@
+ 
+ #include "packer.h"
+ #include <sys/types.h>
++#include <errno.h>
++#include <limits.h>
+ #include <pwd.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -488,13 +490,35 @@
+     int wc;
+     char *ptr;
+     int gwords;
+-    struct passwd *pwp;
++    struct passwd *pwp, passwd;
+     char gbuffer[STRINGSIZE];
+     char tbuffer[STRINGSIZE];
++    char *sbuffer;
++    size_t sbufferlen;
+     char *uwords[STRINGSIZE];
+     char longbuffer[STRINGSIZE * 2];
+ 
+-    if (!(pwp = getpwuid(uid)))
++    sbuffer = malloc(sbufferlen = LINE_MAX);
++    if (sbuffer == NULL)
++    {
++        return ("memory allocation error");
++    }
++    while ((i = getpwuid_r(uid, &passwd, sbuffer, sbufferlen, &pwp)) != 0)
++    {
++        if (i == ERANGE)
++        {
++            free(sbuffer);
++            sbuffer = malloc(sbufferlen += LINE_MAX);
++            if (sbuffer == NULL)
++            {
++                return ("memory allocation error");
++            }
++        } else {
++            pwp = NULL;
++            break;
++        }
++    }
++    if (pwp == NULL)
+     {
+ 	return ("you are not registered in the password file");
+     }

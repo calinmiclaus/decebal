@@ -1,0 +1,27 @@
+NAME=libsamplerate
+VERSION=0.1.2
+ARCH=i686
+RELEASE=1
+URL="http://www.mega-nerd.com/SRC/"
+DESC="A library for perfroming sample rate conversion of audio data."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="691K"
+HUSE="static debug"
+
+SOURCES="http://www.mega-nerd.com/SRC/libsamplerate-0.1.2.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

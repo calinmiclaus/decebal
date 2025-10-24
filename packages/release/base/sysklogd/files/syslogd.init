@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# /etc/rc.d/syslogd
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/syslogd
+
+conflict syslog-ng
+pidfile="/var/run/syslogd.pid"
+
+check_chroot_named(){
+  if [ -r /etc/conf.d/named ]
+  then
+    . /etc/conf.d/named
+  
+    if checkproc named && [ "$CHROOTED" = "yes" ]
+    then
+      SYSLOGD_OPTS="$SYSLOGD_OPTS -a $CHROOTDIR/dev/log"
+    fi
+  fi
+}
+
+create_xconsole() {
+  if [ ! -b /dev/xconsole ]
+  then
+    rm -f /dev/xconsole
+    mknod -m 640 /dev/xconsole p
+  else
+    chmod 0640 /dev/xconsole
+  fi
+}
+
+case "$1" in
+  start)
+    check_chroot_named
+    create_xconsole
+    msg "Starting the system logging daemon"
+    start_service /sbin/syslogd $SYSLOGD_OPTS
+    ;;
+  stop)
+    msg "Stopping the system logging daemon"
+    stop_service /sbin/syslogd
+    ;;
+  reload)
+    msg "Reloading the system logging daemon"
+    reload_service /sbin/syslogd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /sbin/syslogd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

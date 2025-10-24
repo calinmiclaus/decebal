@@ -1,0 +1,388 @@
+#!/bin/bash
+
+pkg_build() {
+  local PKGNAME="${1##*/}" RETVAL=0
+  
+  # Lets get the variables again.
+  source $CONFDIR/build 2>/dev/null
+  
+  [ -d /var/lock/dpack ] || mkdir -p /var/lock/dpack
+  [ -d /var/cache/dpack/distfiles ] || mkdir -p /var/cache/dpack/distfiles
+  [ -d /var/log/dpack ] || mkdir -p /var/log/dpack
+  
+  if [ -f /var/lock/dpack/${PKGNAME}.lock ]
+  then
+    msg_error "Package '$PKGNAME' is locked. This is happening when :"
+    msg_error "   - you are trying to build '$PKGNAME' at the same time on"
+    msg_error "     different consoles"
+    msg_error "   - two or more packages have '$PKGNAME' as a dependency"
+    msg_error "     and the dependency is built at the same time (very rare)"
+    msg_error "   - you rebooted/shutdown your computer while it was"
+    msg_error "     building this package"
+    msg_error "Fix: remove this file: /var/lock/dpack/${PKGNAME}.lock"
+    pkg_exit "pkg_build()" "check_for_lock_file" "$LINENO" 1
+  fi
+  
+  export DPACKLOCK="/var/lock/dpack/${PKGNAME}.lock"
+  touch $DPACKLOCK
+  
+  msg_start "building ${YELLOW}${PKGNAME}${NORMAL}..."
+  
+  source $FUNCTIONSDIR/dpack/build/use
+  source $FUNCTIONSDIR/dpack/build/flags
+  source $FUNCTIONSDIR/dpack/build/check
+
+  pkg_check $1
+  
+  export SRC=$1/SRC PKG=$1/PKG
+  
+  umask 022
+  
+  pkg_create_tmp
+  
+  if [ "$PKG_DOWNLOAD" = "1" ]
+  then
+    msg_start "Downloading ${NAME} sources..."
+    if [ -n "$SOURCES" ]
+    then
+      local DOWNLOADFAILS=""
+      [ -d $CACHEDIR ] || mkdir -p $CACHEDIR
+      cd $CACHEDIR
+      
+      for FILE in $SOURCES
+      do
+        local LOCALFILE=$(stripurl $FILE)
+	local PROTOCOL=$(echo $FILE | sed 's|://.*||')
+	
+	msg_child "$LOCALFILE"
+	if [ "$PROTOCOL" = "http" -o "$PROTOCOL" = "ftp" ]
+	then
+	  pkg_download $FILE
+	  if [ $? -ne 0 ]
+	  then
+	    msg_failed_verbose
+	    DOWNLOADFAILS="$DOWNLOADFAILS $LOCALFILE"
+	  else
+	    msg_done_verbose
+	  fi
+	else
+	  msg_localfile_verbose
+	fi
+      done
+      
+      if [ -n "$DOWNLOADFAILS" ]
+      then
+        msg_failed
+	msg_error "One or more source files could not be downloaded."
+	msg_error "Following files are missing:"
+	for FILE in $DOWNLOADFAILS
+	do
+	  echo -e "\t $FILE"
+	done
+      fi
+    else
+      if [ "$PKG_VERBOSE" = "1" ]
+      then
+        echo "Package '$NAME' has no source files."
+      else
+        msg_none
+      fi
+    fi
+    continue
+  fi
+  
+  if [ -d $PKG ]
+  then
+    if [ ! "$PKG_CONTINUE" = "1" ]
+    then
+      rm -rf $PKG
+      mkdir -p $PKG
+    fi
+  else
+    mkdir -p $PKG
+  fi
+
+  if [ -d $SRC ]
+  then
+    if [ ! "$PKG_CONTINUE" = "1" ]
+    then
+      rm -rf $SRC
+      mkdir -p $SRC
+    fi
+  else
+    mkdir -p $SRC
+  fi
+  
+  local PACKAGE="$NAME-$VERSION-$ARCH-$RELEASE.tbz2"
+  if [ ! "$PKG_FORCE" = "1" -a -f $1/package/$PACKAGE ] && [ ! "$PKG_REBUILD" = "1" ]
+  then
+    msg_warning "Package '$PACKAGE' already built."
+    pkg_exit "pkg_build()" "check_if_package_si_built" "$LINENO" 1
+  fi
+  
+  if [ ! "$PKG_NODEPS" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/depend
+    pkg_check_dependencies
+  fi
+  
+  if [ -n "$SOURCES" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/fetch
+    pkg_fetch_sources $1
+  fi
+  
+  if [ "$PKG_GENMD5" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/createmd5
+    pkg_create_md5sum $1
+  fi
+  
+  source $FUNCTIONSDIR/dpack/build/checkmd5
+  pkg_check_md5sum $1
+  
+  if [ -n "$SOURCES" -a ! "$PKG_CONTINUE" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/unpack
+    pkg_unpack_sources
+  fi
+  
+  export CC=$CC
+  export CXX=$CXX
+  export CARCH="$CARCH"
+  export CHOST="$CHOST"
+  export CFLAGS="$CFLAGS"
+  export CXXFLAGS="$CXXFLAGS"
+  export LDFLAGS="$LDFLAGS"
+  export CPPFLAGS="$CPPFLAGS"
+  export MAKEFLAGS="$MAKEFLAGS"
+
+  # This is needed when you build an entire group.
+  case "$GROUP" in
+    gnome) source $FUNCTIONSDIR/dpack/modules/gnome ;;
+    kde)   source $FUNCTIONSDIR/dpack/modules/kde   ;;
+    xfce|xfce-extra)  source $FUNCTIONSDIR/dpack/modules/xfce  ;;
+    enlightenment) source $FUNCTIONSDIR/dpack/modules/enlightenment ;;
+  esac
+  
+  if [ "$PKG_OPTIMIZE" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/optimize
+    pkg_optimize
+  fi
+  
+  if [ ! "$PKG_NOSSP" = "1" -a "$HARDENED" = "yes" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/ssp
+    pkg_ssp
+  fi
+  
+  cd $SRC && source $FUNCTIONSDIR/dpack/build/doc
+  
+  # We need the new created enviroment, so we source /etc/profile here.
+  source /etc/profile >/dev/null 2>&1
+  
+  msg_nnl "running build..."
+  if [ "$PKG_VERBOSE" = "1" ]
+  then
+    (set -e ; echo ; build)
+  else
+    (set -e ; build) 1>$TMP/build.log 2>&1
+  fi
+  RETVAL=$?
+  if [ $RETVAL -eq 0 ]
+  then
+    msg_done
+    source $FUNCTIONSDIR/dpack/build/compress
+    pkg_compress_info
+    pkg_compress_man
+    if [ ! "$PKG_NOSTRIP" = "1" ]
+    then
+      source $FUNCTIONSDIR/dpack/build/strip
+      pkg_strip_files
+    fi
+  else
+    msg_failed
+    msg_error "Package creation failed."
+    if [ ! "$PKG_VERBOSE" = "1" ]
+    then
+      if [ "$LINES" = "0" ]
+      then
+        msg_error "Build log (use ESC to exit from log view):"
+	less $TMP/build.log
+      else
+        msg_error "Last $LINES lines from build log:"
+	tail -n $LINES $TMP/build.log
+      fi
+    fi
+    pkg_exit "pkg_build()" "error_while_compilling_sources" "$LINENO" 1
+  fi
+  
+  cd $PKG
+  local BUILDDATE=$(date -u "+%a %b %e %H:%M:%S %Y")
+  local USIZE=$(du -cbh $PKG | tail -n 1 | awk '{print $1}')
+  local INDEX=0
+  
+  tar cvf /dev/null * | sort > FILES
+  > .FILES
+  while read LINE
+  do
+    if [ ! "$LINE" = "FILES" ]
+    then
+      echo "FILES[$INDEX]=\"$LINE\"" >> .FILES
+      INDEX=$(($INDEX + 1))
+    fi
+  done < FILES
+  rm -f FILES
+  
+  [ -z "$PACKAGER" ] && PACKAGER="$MAINTAINER"
+  [ -r $1/description ] && cp $1/description .DESCRIPTION
+  
+  cat << EOF > .INFO
+NAME=$NAME
+VERSION=$VERSION
+ARCH=$ARCH
+RELEASE=$RELEASE
+URL="$URL"
+DESC="$DESC"
+GROUP=$GROUP
+LICENSE="$LICENSE"
+MAINTAINER="$PACKAGER"
+USEFLAGS="$USE"
+SIZE="$USIZE"
+BUILDDATE="$BUILDDATE"
+EOF
+
+  if [ -n "$RUNTIME" ]
+  then
+    INDEX=0
+    > .DEPENDS
+    for DEP in $RUNTIME
+    do
+      echo "DEPENDS[$INDEX]=\"$DEP\"" >> .DEPENDS
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if [ -n "$CONFLICTS" ]
+  then
+    INDEX=0
+    > .CONFLICTS
+    for CONFLICT in $CONFLICTS
+    do
+      echo "CONFLICTS[$INDEX]=\"$CONFLICT\"" >> .CONFLICTS
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if [ -n "$REPLACES" ]
+  then
+    INDEX=0
+    > .REPLACES
+    for REPLACE in $REPLACES
+    do
+      echo "REPLACES[$INDEX]=\"$REPLACE\"" >> .REPLACES
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if [ -n "$PROVIDES" ]
+  then
+    INDEX=0
+    > .PROVIDES
+    for PROVIDE in $PROVIDES
+    do
+      echo "PROVIDES[$INDEX]=\"$PROVIDE\"" >> .PROVIDES
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  if [ -n "$BACKUPS" ]
+  then
+    INDEX=0
+    > .BACKUPS
+    for BACKUP in $BACKUPS
+    do
+      echo "BACKUPS[$INDEX]=\"$BACKUP\"" >> .BACKUPS
+      INDEX=$(($INDEX + 1))
+    done
+  fi
+  
+  [ -r $1/install ] && cp $1/install $PKG/.INSTALL
+  
+  msg_nnl "creating package $PACKAGE..."
+  if [ -n "$PKG_DIR" ]
+  then
+    local TARGET="$PKG_DIR"
+  else
+    local TARGET="$1/package"
+  fi
+  [ -d $TARGET ] || mkdir -p $TARGET
+  HAS_INSTALL=$(ls -a $PKG | grep ".INSTALL")
+  HAS_DEPENDS=$(ls -a $PKG | grep ".DEPENDS")
+  HAS_CONFLICTS=$(ls -a $PKG | grep ".CONFLICTS")
+  HAS_PROVIDES=$(ls -a $PKG | grep ".PROVIDES")
+  HAS_REPLACES=$(ls -a $PKG | grep ".REPLACES")
+  HAS_BACKUPS=$(ls -a $PKG | grep ".BACKUPS")
+  HAS_DESC=$(ls -a $PKG | grep ".DESCRIPTION")
+  tar jcf $TARGET/$PACKAGE $HAS_INSTALL $HAS_DEPENDS $HAS_CONFLICTS $HAS_PROVIDES \
+    $HAS_REPLACES $HAS_BACKUPS $HAS_DESC .FILES .INFO * >/dev/null 2>&1		
+  RETVAL=$?
+  if [ $RETVAL -ne 0 ]
+  then
+    msg_failed
+    msg_failed_verbose
+    msg_error "There was an error while creating $PACKAGE (tar error)."
+    pkg_build "pkg_build()" "creating_bzipped_tar_archive" "$LINENO" 1
+  fi
+  msg_done
+  msg_done_verbose
+  
+  if [ ! "$PKG_NOINSTALL" = "1" ]
+  then
+    if pkg_is_installed $NAME
+    then
+      local IPKG=$(get_installed_pkg $NAME)
+      local IVER=$(pkgversion $IPKG)
+      local IREL=$(pkgrelease $IPKG)
+      if [ ! "$PKG_REBUILD" = "1" ]
+      then
+        if [ ! "$VERSION" = "$IVER" -o ! "$RELEASE" = "$IREL" ]
+        then
+	  pkg_upgrade $PKGADD_OPTS $TARGET/$PACKAGE
+        fi
+      else
+        pkg_upgrade $PKGADD_OPTS -r $TARGET/$PACKAGE
+      fi
+    else
+      pkg_install $PKGADD_OPTS $TARGET/$PACKAGE
+    fi     	
+  fi
+    
+  if [ ! "$PKG_KEEP" = "1" ]
+  then
+    rm -f $TARGET/$PACKAGE
+    if [ "$(ls $TARGET)" = "" ]
+    then
+      rm -rf $TARGET
+    fi
+  fi
+  
+  if [ "$PKG_RMDEPS" = "1" ]
+  then
+    source $FUNCTIONSDIR/dpack/build/rmdeps
+    pkg_rmdeps
+  fi
+  
+  unset TARGET
+  
+  source $FUNCTIONSDIR/dpack/build/clean && pkg_clean
+  pkg_remove_tmp
+  rm -f $DPACKLOCK
+  
+  unset PKG SRC CC CXX CARCH CHOST CFLAGS CXXFLAGS LDFLAGS CPPFLAGS MAKEFLAGS
+  unset NAME VERSION ARCH RELEASE URL DESC GROUP LICENSE BUILDTIME RUNTIME
+  unset SOURCES BACKUPS CONFLICTS PROVIDES REPLACES SIZE HUSE USE
+  unset -f build
+  unset CC CXX CARCH CHOST CFLAGS CXXFLAGS LDFLAGS CPPFLAGS MAKEFLAGS
+}

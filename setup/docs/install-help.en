@@ -1,0 +1,49 @@
+
+
+HARD-DISK PARTITIONING GUIDE
+
+
+Decebal Linux uses cfdisk program for partitioning hard-disk. Those who 
+have no idea about this program can learn from this guide.
+
+ 
+NAME OF PARTITIONS IN LINUX ::
+
+For example "C :" drive in windows*tm, is listed as "hda1" by linux naming
+conventions. (a vfat partition is a windows partition) 
+
+The very first step in the installation is partitioning hard-disk. when
+you run (cfdisk) showing all the partitions present in your system.
+
+
+ NEW PARTITION ::
+
+ If your hard-disk is unpartitioned and the partitions in the dialog box
+ is listed as "free spaces" then you create a new partition by highlighing
+ it, after this you will be given options for specifying the space,... for
+ the new partition. Likewise create two partitions, one for Decebal Linux 
+ and the other for linux swap which is optional.
+ We recomend a 3+ GB for Decebal Linux.
+
+
+ CHANGING TYPE ::
+
+ You need to change the type of the partition created. (you will find the 
+ TYPE button), Highlight the main partition, (where Decebal will be installed)
+ and Press the Type, and enter 82 (native linux partition), similarly for 
+ swap partition, Press Type and enter 83 (linux swap patition)
+
+ This also applies to existing partitions where just changing its Type is
+ enough.
+
+ Then make sure you remember the names of the partition you create
+ (eg. hda1) and also the "Disk Drive" which is mentioned at the top of
+ the dialog box (eg hda)
+
+
+ IMPORTANT ::
+ 
+ Before pressing "Quit", press "write" to save the partition table
+
+
+FIXME - to be continued

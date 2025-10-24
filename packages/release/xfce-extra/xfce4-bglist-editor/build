@@ -1,0 +1,30 @@
+NAME=xfce4-bglist-editor
+VERSION=4.2.0
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="Xfce Background List Editor."
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="335K"
+HUSE="static"
+
+SOURCES="http://download.berlios.de/xfce-goodies/xfce4-bglist-editor-4.2.0.tar.gz"
+
+BUILDTIME="gettext pkgconfig"
+
+RUNTIME=">=libxfce4util-4.0.0 >=libxfcegui4-4.0.0 xfce4-panel >=gtk2-2.2.6"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  
+  ./configure --prefix=/opt/xfce \
+              --sysconfdir=/etc/opt/xfce \
+	      --with-locales-dir=/usr/share/locale $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README
+}

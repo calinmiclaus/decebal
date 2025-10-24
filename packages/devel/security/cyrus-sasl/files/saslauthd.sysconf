@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/saslauthd - configuration file for /etc/rc.d/saslauthd
+#
+
+# Additional saslauthd options.
+SASLAUTHD_OPTS=""

@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# /etc/rc.d/nscd - control script for the Name Server Cache Daemon (nscd)
+#
+
+. /etc/init.d/functions
+
+[ -r /etc/nscd.conf ] || exit 6
+
+pidfile="/var/run/nscd.pid"
+
+case "$1" in
+    start)
+	msg "Starting the Name Server Cache Daemon"
+	start_service /usr/sbin/nscd 
+	;;
+    stop)
+	msg "Stopping the Name Server Cache Daemon"
+	stop_service /usr/sbin/nscd
+	;;
+    restart|force-reload)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+    status)
+	status_service /usr/sbin/nscd
+	;;
+    *)
+	echo "usage: $0 {start|stop|force-reload|restart|status}"
+	exit 1
+	;;
+esac

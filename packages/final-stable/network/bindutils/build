@@ -1,0 +1,32 @@
+NAME=bindutils
+VERSION=9.3.0
+ARCH=i686
+RELEASE=1
+URL="http://www.isc.org/products/BIND/"
+DESC="Some bind tools (host,dig and nslookup)."
+GROUP=network
+LICENSE=BSDL
+SIZE="4619K"
+
+SOURCES="ftp://ftp.isc.org/isc/bind9/9.3.0/bind-9.3.0.tar.gz"
+
+build() {
+  cd $SRC/bind-$VERSION
+  
+  ./configure --prefix=/usr
+  make -C lib/dns
+  make -C lib/isc
+  make -C lib/bind9
+  make -C lib/isccfg
+  make -C lib/lwres
+  make -C bin/dig
+  
+  install -D -m 0755 bin/dig/host $PKG/usr/bin/host
+  install -D -m 0644 bin/dig/host.1 $PKG/usr/man/man1/host.1
+  install -D -m 0755 bin/dig/dig $PKG/usr/bin/dig
+  install -D -m 0644 bin/dig/dig.1 $PKG/usr/man/man1/dig.1
+  install -D -m 0755 bin/dig/nslookup $PKG/usr/bin/nslookup
+  install -D -m 0644 bin/dig/nslookup.1 $PKG/usr/man/man1/nslookup.1
+  
+  install_docs COPYRIGHT
+}

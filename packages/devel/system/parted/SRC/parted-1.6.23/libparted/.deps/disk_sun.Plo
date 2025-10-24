@@ -1,0 +1,128 @@
+disk_sun.lo .libs/disk_sun.o: disk_sun.c ../config.h \
+  /usr/include/string.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/gnu/stubs.h \
+  /usr/lib/gcc/i686-pc-linux-gnu/3.4.4/include/stddef.h \
+  /usr/include/bits/string.h /usr/include/bits/string2.h \
+  /usr/include/endian.h /usr/include/bits/endian.h \
+  /usr/include/bits/types.h /usr/include/bits/wordsize.h \
+  /usr/include/bits/typesizes.h /usr/include/stdlib.h \
+  ../include/parted/parted.h ../include/parted/constraint.h \
+  ../include/parted/device.h ../include/parted/timer.h \
+  /usr/include/time.h /usr/include/bits/time.h \
+  ../include/parted/natmath.h ../include/parted/disk.h \
+  ../include/parted/filesys.h ../include/parted/geom.h \
+  ../include/parted/exception.h /usr/include/stdio.h /usr/include/libio.h \
+  /usr/include/_G_config.h /usr/include/wchar.h /usr/include/bits/wchar.h \
+  /usr/include/gconv.h \
+  /usr/lib/gcc/i686-pc-linux-gnu/3.4.4/include/stdarg.h \
+  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+  /usr/include/bits/stdio.h ../include/parted/unit.h \
+  /usr/include/sys/types.h /usr/include/sys/select.h \
+  /usr/include/bits/select.h /usr/include/bits/sigset.h \
+  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
+  /usr/include/bits/sched.h /usr/include/alloca.h \
+  ../include/parted/debug.h ../config.h ../include/parted/endian.h \
+  /usr/include/stdint.h /usr/include/libintl.h /usr/include/locale.h \
+  /usr/include/bits/locale.h
+
+../config.h:
+
+/usr/include/string.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/lib/gcc/i686-pc-linux-gnu/3.4.4/include/stddef.h:
+
+/usr/include/bits/string.h:
+
+/usr/include/bits/string2.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/stdlib.h:
+
+../include/parted/parted.h:
+
+../include/parted/constraint.h:
+
+../include/parted/device.h:
+
+../include/parted/timer.h:
+
+/usr/include/time.h:
+
+/usr/include/bits/time.h:
+
+../include/parted/natmath.h:
+
+../include/parted/disk.h:
+
+../include/parted/filesys.h:
+
+../include/parted/geom.h:
+
+../include/parted/exception.h:
+
+/usr/include/stdio.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/include/bits/wchar.h:
+
+/usr/include/gconv.h:
+
+/usr/lib/gcc/i686-pc-linux-gnu/3.4.4/include/stdarg.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+../include/parted/unit.h:
+
+/usr/include/sys/types.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/bits/select.h:
+
+/usr/include/bits/sigset.h:
+
+/usr/include/sys/sysmacros.h:
+
+/usr/include/bits/pthreadtypes.h:
+
+/usr/include/bits/sched.h:
+
+/usr/include/alloca.h:
+
+../include/parted/debug.h:
+
+../config.h:
+
+../include/parted/endian.h:
+
+/usr/include/stdint.h:
+
+/usr/include/libintl.h:
+
+/usr/include/locale.h:
+
+/usr/include/bits/locale.h:

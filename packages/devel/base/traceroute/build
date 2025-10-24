@@ -1,0 +1,29 @@
+NAME=traceroute
+VERSION=1.4a12
+ARCH=i686
+RELEASE=1
+DESC="Utility for tracing IP packet routes."
+URL="ftp://ftp.ee.lbl.gov/"
+GROUP=base
+LICENSE=PD
+SIZE="73K"
+
+SOURCES="ftp://ftp.ee.lbl.gov/traceroute-1.4a12.tar.gz"
+
+RUNTIME="libc"
+
+build () { 
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/usr/sbin
+
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+
+  chown -R root.root $PKG
+  chmod -R +w $PKG
+  chmod +s $PKG/usr/sbin/traceroute
+  
+  install_docs CHANGES FILES INSTALL README VERSION
+}

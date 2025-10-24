@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Audacity
+Comment=Digital Audio Editor
+Exec=audacity
+Icon=audacity.png
+Type=Application
+Categories=Application;AudioVideo;

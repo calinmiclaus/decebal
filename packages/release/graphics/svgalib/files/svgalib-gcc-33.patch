@@ -1,0 +1,11 @@
+--- svgalib-1.4.3/src/vga.c.orig	2003-12-16 11:26:18.000000000 +0100
++++ svgalib-1.4.3/src/vga.c	2003-12-16 11:28:06.000000000 +0100
+@@ -3914,7 +3914,7 @@
+ 
+ #define ML_GETINT(x) \
+ 	ptr = strtok(NULL, " "); if(!ptr) break; \
+-	mmt.##x = atoi(ptr);
++	mmt.x = atoi(ptr);
+ 
+ 	    ML_GETINT(HDisplay);
+ 	    ML_GETINT(HSyncStart);

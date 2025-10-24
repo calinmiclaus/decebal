@@ -1,0 +1,303 @@
+#!/bin/bash
+#
+# /sbin/pkg_upgrade - upgrade Decebal Linux compatible packages. (remade pkg_add)
+#
+# Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+BASEDIR=$(pwd)
+
+if [ ! "$UID" = "0" ]
+then
+  echo "You need root privilegies to install packages."
+  exit 1
+fi
+
+CONFDIR="/etc/dpack"
+FUNCTIONSDIR="/usr/share"
+
+source $CONFDIR/common
+source $FUNCTIONSDIR/dpack/tmp
+source $FUNCTIONSDIR/dpack/exit
+source $FUNCTIONSDIR/dpack/pkg
+source $FUNCTIONSDIR/dpack/depend
+source $FUNCTIONSDIR/dpack/msg
+source $FUNCTIONSDIR/dpack/exec
+source $FUNCTIONSDIR/dpack/log
+
+usage() {
+  cat << EOF
+usage: pkg_upgrade [options] <package1> <package2> ...
+options:
+  -b, --nobackups     - dont save backup files
+  -d, --nodeps        - skip all dependencies checks
+  -f, --force         - force package installation (overwrite existing files)
+  -p, --pretend       - only show actions (dont execute them)
+  -r, --root <dir>    - use an alternate installation path <dir>
+  -v, --verbose       - be more verbose
+  -V, --version       - print name, version and license
+  -h, --help          - print this message and exit
+EOF
+}
+
+version() {
+  cat << EOF
+pkg_upgrade v0.0.2 (dpack v0.1.6)
+
+Copyright (C) 2003-2005 Teodor Adrian Florin <slider@decebal.org>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+EOF
+}
+
+PKG_BACKUPS=0
+PKG_NODEPS=0
+PKG_FORCE=0
+PKG_PRETEND=0
+PKG_REINSTALL=0
+PKG_VERBOSE=0
+
+PKG_ROOT=""
+PKG_ARGS=""
+
+if [ $# -eq 0 ]
+then
+  echo "error: pkg_upgrade needs an argument." >&2
+  usage >&2
+  pkg_exit "main()" "check_if_we_have_arguments" "$LINENO" 1
+fi
+
+while [ $# -ne 0 ]
+do
+  case "$1" in
+    --nobackups) PKG_BACKUPS=1   ;;
+    --nodeps)    PKG_NODEPS=1    ;;
+    --force)     PKG_FORCE=1     ;;
+    --pretend)   PKG_PRETEND=1   ;;
+    --reinstall) PKG_REINSTALL=1 ;;
+    --verbose)   PKG_VERBOSE=1   ;;
+    --root)
+      PKG_ROOT="$2"
+      shift 1
+      ;;
+    --version)
+      version
+      exit 0
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --*)
+      echo "error: unrecongnized option." >&2
+      usage >&2
+      pkg_exit "main()" "unrecognized option (--*)" "$LINENO" 1
+      ;;
+    -*)
+      while getopts "bdfpvVhr:-" OPT
+      do
+        case "$OPT" in
+	  b) PKG_BACKUPS=1   ;;
+	  d) PKG_NODEPS=1    ;;
+	  f) PKG_FORCE=1     ;;
+	  p) PKG_PRENETD=1   ;;
+	  r) PKG_REINSTALL=1 ;;
+          v) PKG_VERBOSE=1   ;;
+	  V)
+	    version
+	    exit 0
+	    ;;
+	  h)
+	    usage
+	    exit 0
+	    ;;
+	  r)
+	    PKG_ROOT="$OPTARG"
+	    shift 1
+	    ;;
+	  -)
+	    OPTBIND=0
+	    break
+	    ;;
+	  *)
+	    usage >&2
+            pkg_exit "main()" "unrecognized option (--*)" "$LINENO" 1
+	    ;;
+        esac
+      done
+      ;;
+    *)
+      PKG_ARGS="$1"
+      shift 1
+      for ARG in 1 2 3 4 5 6 7 8 9 10
+      do
+        PKG_ARGS="$PKG_ARGS $1"
+	shift 1
+      done
+      ;;
+  esac
+  shift 1
+done
+
+if [ "$PKG_ARGS" = "" ]
+then
+  echo "error: pkg_upgrade needs an argument <package>" >&2
+  usage >&2
+  pkg_exit "main()" "no <package> argument" "$LINENO" 1
+fi
+
+check_dir_contents() {
+  if [ -z "$(ls $1 2>/dev/null)" ]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+pkg_upgrade() {
+  local PACKAGE="$1"
+  local PROTOCOL=$(echo $1 | sed 's|://.*||')
+  local PKGCHECK=$(stripurl $PACKAGE)
+  local PKGCHECK=$(basename $PKGCHECK .tbz2)
+  local CHECKNAME=$(pkgname $PKGCHECK)
+  local PKGVERSION=$(pkgversion $PKGCHECK)
+  local PKGRELEASE=$(pkgrelease $PKGCHECK)
+  
+  ACTION="upgrade"
+  
+  if ! pkg_is_installed $CHECKNAME
+  then
+    echo "package '$CHECKNAME' is not installed (use pkg_install)."
+    pkg_exit "pkg_upgrade()" "check_if_package_is_installed" "$LINENO" 1
+  else
+    local IPKG=$(get_installed_pkg $CHECKNAME)
+    local IVER=$(pkgversion $IPKG)
+    local IREL=$(pkgrelease $IPKG)
+    
+    if [ "$PKGVERSION" = "$IVER" -a "$PKGRELEASE" = "$IREL" ] && [ ! "$PKG_REINSTALL" = "1" ]
+    then
+      echo "package '$CHECKNAME' is already installed (use --reinstall)."
+      pkg_exit "pkg_upgrade()" "package_is_already_installed" "$LINENO" 1
+    fi
+  fi
+  unset PKGCHECK CHECKNAME
+  
+  if [ "$PROTOCOL" = "http" -o "$PROTOCOL" = "ftp" ]
+  then
+    msg_start "downloading $(stripurl $PACKAGE)..."
+    pkg_download $PACKAGE
+    if [ $? -eq 0 ]
+    then
+      msg_ok
+    else
+      msg_failed
+      msg_error "could not download package."
+      pkg_exit "pkg_upgrade()" "downloading $PACKAGE" "$LINENO" 1
+    fi
+  fi
+  
+  source $FUNCTIONSDIR/dpack/shared
+  
+  pkg_check_syntax $PACKAGE
+  
+  local PKG=$(basename $PACKAGE .tbz2)
+  local DIR=$(dirname $PACKAGE)
+  local PKGNAME=$(pkgname $PKG)
+  
+  msg_start_nnl "upgrading $PKGNAME [$IVER-$IREL -> $PKGVERSION-$PKGRELEASE]..."
+  
+  pkg_check_tbz2 $DIR/$PKG
+  pkg_check_regular $PACKAGE
+  pkg_check_integrity $PACKAGE
+  pkg_create_tmp
+  pkg_extract_info $PACKAGE
+  pkg_check_depends
+  pkg_check_conflicts
+  pkg_check_files
+  pkg_unpack $PACKAGE
+  
+  # Remove files that are in the old package but not in the new one.
+  msg_verbose_nnl "removing old files..."
+  . ${PKG_ROOT}${DATABASEDIR}/db/$IPKG 2>/dev/null
+  for FILE in ${FILES[@]}
+  do
+    FILE=${FILE##*=}
+    if ! grep -H -q $FILE $TMP/.FILES
+    then
+      if [ -d $PKG_ROOT/$FILE ]
+      then
+        if check_dir_contents $PKG_ROOT/$FILE
+	then
+	  rm -rf $PKG_ROOT/$FILE
+	fi
+      else
+        rm -f $PKG_ROOT/$FILE
+      fi
+    fi
+  done
+  msg_done_verbose
+  
+  for DEP in ${DEPENDS[@]}
+  do
+    local DEPNAME=$(get_dep_name $DEP)
+    local DIPKG=$(get_installed_pkg $DEPNAME)
+    local INDEX=0
+    if [ -n "$DIPKG" ]
+    then
+      cp ${PKG_ROOT}${DATABASEDIR}/db/$DIPKG $TMP/$DIPKG
+      grep -vE "^REQUIRED\[[[:digit:]]\]=" $TMP/$DIPKG > ${PKG_ROOT}${DATABASEDIR}/db/$DIPKG
+      . $TMP/$DIPKG
+      for REQ in ${REQUIRED[@]}
+      do
+        if [ ! "$PKGNAME" = "$REQ" ]
+	then
+	  echo "REQUIRED[$INDEX]=$REQ" >> ${ROOT}${DATABASEDIR}/db/$DIPKG
+	  INDEX=$((INDEX + 1))
+	fi
+      done
+      unset REQUIRED
+    fi
+  done
+  rm -f ${PKG_ROOT}${DATABASEDIR}/db/$IPKG
+
+  pkg_create_db
+  pkg_remove_tmp
+  pkg_log "upgraded ${PACKAGE##*/} [$IVER-$IREL -> $PKGVERSION-$PKGRELEASE]"
+  msg_ok  
+}
+
+for ARG in $PKG_ARGS
+do
+  pkg_upgrade $ARG
+done
+
+cd $BASEDIR
+
+exit 0

@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# /etc/rc.d/dhcpd - control file for the DHCP daemon (dhcpd)
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/dhcpd
+
+pidfile="/var/run/dhcpd.pid"
+
+case "$1" in
+  start)
+    msg "Starting the DHCP daemon"
+    start_service /usr/sbin/dhcpd $DHCP_OPTS
+    ;;
+  stop)
+    msg "Stopping the DHCP daemon"
+    stop_service /usr/sbin/dhcpd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/dhcpd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

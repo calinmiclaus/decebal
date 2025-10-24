@@ -1,0 +1,15 @@
+#
+# /etc/conf.d/nfsd - configuration file for /etc/rc.d/nfsd
+#
+
+# The numbers of NFS servers wthat will be started.
+NFSD_THREADS=4
+
+# Optional arguments for mountd.
+MOUNTS_OPTS=""
+
+# Start rquoatad?
+RQUOTAD=no
+
+# Start statd?
+STATD=no

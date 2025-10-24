@@ -1,0 +1,44 @@
+#
+# /etc/inittab - this file is readed by init when it changes the runlevels
+#
+#
+#   0 = Halt
+#   1 = Singleuser mode
+#   2 = Unused
+#   3 = Multiuser mode
+#   4 = X11 (KDM/GDM/XDM)
+#   5 = Unused
+#   6 = Reboot
+#
+# Author: Miquel van Smoorenburg, <miquels@cistron.nl>
+# Modified by: Teodor Adrian Florin, <slider@decebal.org> 
+#
+
+# Default runlevel
+id:3:initdefault:
+
+# System initialization (run only once at boot)
+si::sysinit:/etc/rc.d/rc sysinit
+
+l0:0:wait:/etc/rc.d/rc shutdown
+l1:1:wait:/etc/rc.d/rc single
+l2:2:wait:/etc/rc.d/rc nonetwork
+l3:3:wait:/etc/rc.d/rc multiuser
+l4:4:wait:/etc/rc.d/rc xsession
+l5:5:wait:/etc/rc.d/rc multiuser
+l6:6:wait:/etc/rc.d/rc reboot
+
+# What to do at the "Three Finger Salute".
+ca::ctrlaltdel:/sbin/shutdown -t1 -r now
+
+# Virtual Terminals
+1:2345:respawn:/sbin/agetty tty1 9600 linux
+2:2345:respawn:/sbin/agetty tty2 9600 linux
+3:2345:respawn:/sbin/agetty tty3 9600 linux
+4:2345:respawn:/sbin/agetty tty4 9600 linux
+5:2345:respawn:/sbin/agetty tty5 9600 linux
+6:2345:respawn:/sbin/agetty tty6 9600 linux
+7:2345:respawn:/sbin/agetty tty7 9600 linux
+8:2345:respawn:/sbin/agetty tty8 9600 linux
+9:2345:respawn:/sbin/agetty tty9 9600 linux
+10:2345:respawn:/sbin/agetty tty10 9600 linux

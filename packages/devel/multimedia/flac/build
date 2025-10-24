@@ -1,0 +1,35 @@
+NAME=flac
+VERSION=1.1.2
+ARCH=i686
+RELEASE=1
+URL="http://flac.sourceforge.net/"
+DESC="Free Lossless Audio Coder."
+GROUP=multimedia
+LICENSE="FDLv1.1 GPLv2 LGPLv2"
+SIZE="1481K"
+HUSE="xmms"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/flac/flac-1.1.2.tar.gz"
+
+BUILDTIME="nasm"
+
+RUNTIME="libogg id3lib"
+
+use xmms && RUNTIME="$RUNTIME xmms"
+
+build() {
+    cd $SRC/$NAME-$VERSION
+    
+    use xmms || OPTS="--without-xmms"
+    
+    ./configure --prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var/lib \
+		--libexecdir=/usr/lib/$NAME \
+		--infodir=/usr/share/info \
+		--mandir=/usr/share/man $OPTS
+    make
+    make DESTDIR=$PKG install
+
+    install_docs AUTHORS COPYING.* README
+}

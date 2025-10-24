@@ -1,0 +1,31 @@
+NAME=dclib
+VERSION=0.3.7
+ARCH=i686
+RELEASE=1
+URL="http://dcgui.berlios.de"
+DESC="Library for the Direct Connect protocol."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="530K"
+HUSE="debug static"
+
+SOURCES="http://download.berlios.de/dcgui/dclib-0.3.7.tar.bz2"
+
+RUNTIME="openssl libxml2 bzip2"
+
+build() {
+  OPTS=""
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug" || OPTS="$OPTS --disable-debug"
+
+  cd $SRC/$NAME-$VERSION
+  
+  remove_flags -fstack-protector -fstack-protector-all
+  
+  ./configure --prefix=/usr $OPTS
+
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS README TODO
+}

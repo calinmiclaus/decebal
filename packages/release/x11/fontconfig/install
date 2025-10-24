@@ -1,0 +1,9 @@
+post_install() {
+  /sbin/ldconfig &>/dev/null
+  /usr/bin/fc-cache &>/dev/null
+}
+
+post_upgrade() {
+  /sbin/ldconfig &>/dev/null
+  /usr/bin/fc-cache &>/dev/null
+}

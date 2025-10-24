@@ -1,0 +1,28 @@
+NAME=ftmenu
+VERSION=0.2
+ARCH=i686
+RELEASE=1
+URL="http://sourceforge.net/projects/ftmenu/"
+DESC="A little tray menu for use with the Fluxbox."
+GROUP="x11"
+LICENSE=BSDL
+SIZE="81K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/ftmenu/ftmenu-0.2.tar.gz"
+
+RUNTIME="gtk2 xorg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/opt/fluxbox
+  make
+  make DESTDIR=$PKG install
+  
+  install -d $PKG/opt/fluxbox/share/icons
+  
+  install -m 0644 img/fb.png $PKG/opt/fluxbox/share/icons/fb.png
+  install -m 0644 img/fb.xpm $PKG/opt/fluxbox/share/icons/fb.xpm
+    
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}

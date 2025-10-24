@@ -1,0 +1,10 @@
+NAME=gpgsm
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://www.g10code.de/p-gpgsm.html"
+DESC="A full fledged S/MIME implementation."
+GROUP=libs
+LICENSE=
+
+SOURCES="

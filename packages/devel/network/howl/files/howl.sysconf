@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/howl - configuration file for /etc/rc.d/howl
+#
+
+# Additional options for nifd.
+NIFD_OPTS=""

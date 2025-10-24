@@ -1,0 +1,12 @@
+#
+# /etc/conf.d/jack - configuration file for /etc/rc.d/jack
+#
+# NOTE: see man pages and documentation for more details.
+#
+
+# Server options for JACK.
+SERVER_PARAMS="-s -d alsa"
+
+# Driver options for JACK.
+DRIVER_PARAMS="-d hw:0 -p 1024"
+

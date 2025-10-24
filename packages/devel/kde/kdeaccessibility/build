@@ -1,0 +1,28 @@
+NAME=kdeaccessibility
+VERSION=3.5.0
+ARCH=i686
+RELEASE=1
+DESC="Additional plugins and scripts for some KDE applications."
+URL="http://www.kde.org"
+GROUP=kde
+LICENSE="GPLv2"
+SIZE="8239K"
+HUSE="debug static"
+SOURCES="ftp://ftp.roedu.net/pub/mirrors/ftp.kde.org/stable/$VERSION/src/$NAME-$VERSION.tar.bz2"
+
+RUNTIME=">=kdebase-3.5.0 fam qt libpng xorg expat zlib libart_lgpl fontconfig"
+
+function build() {
+    OPTS=""
+    use debug && OPTS="--enable-debug" || OPTS="--disable-debug"
+    use static && OPTS="$OPTS --enable-static" || OPTS="$OPTS --disable-static"
+    cd $SRC/$NAME-$VERSION
+    export PATH=$PATH:/opt/kde/bin
+    ./configure --prefix=/opt/kde \
+        	$OPTS
+
+    make
+    make DESTDIR=$PKG install
+    
+    install_docs COPYING INSTALL
+}

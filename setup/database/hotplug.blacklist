@@ -1,0 +1,134 @@
+#
+# Listing a module here prevents the hotplug scripts from loading it.
+# Usually that'd be so that some other driver will bind it instead,
+# no matter which driver happens to get probed first.  Sometimes user
+# mode tools can also control driver binding.
+#
+# Syntax:  driver name alone (without any spaces) on a line. Other
+# lines are ignored.
+#
+
+# uhci ... usb-uhci handles the same pci class
+usb-uhci
+# usbcore ... module is loaded implicitly, ignore it otherwise
+usbcore
+
+# tulip ... de4x5, xircom_tulip_cb, dmfe (...) handle same devices
+de4x5
+# At least 2.4.3 and later xircom_tulip doesn't have that conflict
+# xircom_tulip_cb
+dmfe
+
+#evbug is a debug tool and should be loaded explicitly (the other 2 modules
+# create a lot of debugging messages in syslog...)
+evbug
+evdev
+tsdev
+
+# Alternate Intel EtherExpress Pro/100 support driver.  List it
+# here so it won't conflict with an already-loaded eepro100 module.
+e100
+
+# Alternate 8139 driver.  Some 8139 cards need this specific driver,
+# though...
+8139cp
+
+# This module causes many Intel motherboards to crash and reboot.
+i810-tco
+
+# Since we use the new alsa sound modules...we dont need the OSS modules
+# loaded...
+emu10k1_gp
+ac97
+ac97_codec
+aci
+ad1816
+ad1848
+ad1889
+adlib_card
+aedsp16
+ali5455
+awe_wave
+btaudio
+cmpci
+cs4232
+cs4281
+cs46xx
+emu10k1
+es1370
+es1371
+esssolo1
+forte
+gus
+i810_audio
+kahlua
+mad16
+maestro
+maestro3
+maui
+mpu401
+msnd
+msnd_classic
+msnd_pinnacle
+nm256_audio
+opl3
+opl3sa
+opl3sa2
+pas2
+pss
+rme96xx
+sb
+sb_lib
+sgalaxy
+sonicvibes
+sound
+sscape
+trident
+trix
+uart401
+uart6850
+v_midi
+via82cxxx_audio
+wavefront
+ymfpci
+
+# Hardware specific video framebuffer modules.  If the user wants
+# these, they can load them manually or de-blacklist them.  Having
+# them load automatically may lead to funny side effects with
+# certain revisions of video hardware.
+atyfb
+sisfb
+radeonfb
+cyber2000fb
+rivafb
+tdfxfb
+vga16fb
+aty128fb
+hgafb
+clgenfb
+pm2fb
+sstfb
+fbgen
+matroxfb_DAC1064
+i2c-matroxfb
+matroxfb_accel
+matroxfb_g450
+matroxfb_Ti3026
+matroxfb_misc
+matroxfb_base
+matroxfb_crtc2
+matroxfb_maven
+fbcon-cfb2
+fbcon-cfb4
+tridentfb
+fbcon-mfb
+fbcon-hga
+pm3fb
+fbcon-vga-planes
+neofb
+
+# These modules dont work on my computer...
+hw_random
+ich2rom
+ichxrom
+shpchp

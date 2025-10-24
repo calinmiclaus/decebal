@@ -1,0 +1,11 @@
+#
+# /etc/pam.d/ftp - authentification rules for the `ftp' service
+#
+
+auth    requisite       pam_listfile.so item=user sense=deny file=/etc/ftpusers
+auth    sufficient      pam_ftp.so
+auth    required        pam_unix.so shadow nullok use_first_pass
+auth    requisite       pam_shells.so
+account required        pam_unix.so
+session required        pam_unix.so
+session required        pam_limits.so

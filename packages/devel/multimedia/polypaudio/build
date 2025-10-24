@@ -1,0 +1,30 @@
+NAME=polypaudio
+VERSION=0.7
+ARCH=i686
+RELEASE=1
+URL="http://www.stud.uni-hamburg.de/users/lennart/projects/polypaudio/"
+DESC="A sound server for Linux and other Unix (esound improvement)."
+GROUP=multimedia
+LICENSE="LGPLv2.1"
+SIZE="923K"
+HUSE="static"
+
+SOURCES="http://0pointer.de/lennart/projects/polypaudio/polypaudio-0.7.tar.gz"
+
+RUNTIME="alsa-lib >=libsamplerate-0.1.0 >=libsndfile-1.0.10"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --disable-lynx \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs LICENSE README
+}
+

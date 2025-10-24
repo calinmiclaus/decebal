@@ -1,0 +1,54 @@
+NAME=coreutils
+VERSION=5.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/coreutils"
+DESC="The GNU core utilities."
+GROUP=base
+LICENSE=GPLv2
+SIZE="4170K"
+
+SOURCES="http://ftp.gnu.org/pub/gnu/coreutils/$NAME-$VERSION.tar.bz2
+	 coreutils-uname.patch dircolors"
+
+BUILDTIME="gettext"
+
+RUNTIME=">=ncurses-5.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../$NAME-uname.patch
+  
+  # we need this (not all programs are compatible with POSIX 200112)
+  # export DEFAULT_POSIX2_VERSION=199209
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --enable-static \
+	      --disable-shared \
+	      --enable-largefile
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/{bin,sbin}
+  
+  mv $PKG/usr/bin/{cat,chgrp,chmod,chown,cp,date,dd,df,echo,false,ln} $PKG/bin/
+  mv $PKG/usr/bin/{ls,mkdir,mknod,mv,pwd,readlink,rm,rmdir,stty,sync} $PKG/bin/
+  mv $PKG/usr/bin/{touch,true,uname} $PKG/bin/
+  mv $PKG/usr/bin/chroot $PKG/sbin/chroot
+  
+  # These files are in other packages...so we remove them here.
+  rm -f $PKG/usr/bin/hostname $PKG/usr/share/man/man1/hostname.1
+  rm -f $PKK/usr/bin/uptime $PKG/usr/share/man/man1/uptime.1
+  rm -f $PKG/usr/bin/su $PKG/usr/share/man/man1/su.1
+  rm -f $PKG/usr/bin/groups $PKG/usr/share/man/man1/groups.1
+  rm -f $PKG/usr/bin/kill $PKG/usr/share/man/man1/kill.1
+  
+  install -D -m 0644 ../dircolors $PKG/etc/dircolors
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS \
+    README THANKS THANKS-to-translators TODO
+}

@@ -1,0 +1,42 @@
+NAME=mergeant
+VERSION=0.52
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome-db.org/"
+DESC="A program which helps administer a DBMS database using the gnome-db framework."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="2010K"
+HUSE="debug gtkdoc"
+
+SOURCES="http://ftp.gnome.org/pub/GNOME/sources/mergeant/0.52/mergeant-0.52.tar.bz2"
+
+BUILDTIME="intltool gettext pkgconfig"
+
+RUNTIME=">=libgnomedb-1.1.3 >=libgnomeui-2.0 >=libgnomeprintui-2.0"
+
+use gtkdoc && BUILDTIME="$BUILDTIME gtkdoc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use gtkdoc && OPTS="--enable-gtk-doc" || OPTS="--disable-gtk-doc"
+  use debug && OPTS="$OPTS --enable-debug"
+  use static || OPTS="$OPTS --disable-static"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib \
+              $OPTS
+  make
+  sed -i 's:\t\(-GCONF_CONFIG_SOURCE\):\t # \1:' data/Makefile
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 $PKG/opt/gnome/share/pixmaps/mergeant/mergeant.png \
+    $PKG/opt/gnome/share/pixmaps/mergeant.png
+  sed -i "s:^Icon=mergeant\/mergeant.png:Icon=mergeant.png:" \
+    $PKG/opt/gnome/share/applications/mergeant.desktop
+  
+  install_docs AUTHORS BUGS COPYING ChangeLog INSTALL \
+    NEWS README TODO
+}

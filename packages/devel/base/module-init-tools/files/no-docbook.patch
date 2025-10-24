@@ -1,0 +1,41 @@
+diff -Naur module-init-tools-3.1/Makefile.in module-init-tools-3.1.new/Makefile.in
+--- module-init-tools-3.1/Makefile.in	2004-11-14 18:59:48.000000000 -0600
++++ module-init-tools-3.1.new/Makefile.in	2005-02-05 12:12:21.426801872 -0600
+@@ -703,22 +703,22 @@
+ 
+ 
+ # docbook2man writes file itself, doesn't do stdout.
+-%.8: doc/%.sgml
+-	if [ "$(DOCBOOKTOMAN)" = "docbook2man" ]; then                     \
+-	    $(DOCBOOKTOMAN) $< > /dev/null 2>&1;                       \
+-	else                                                               \
+-	    $(DOCBOOKTOMAN) $< 2>&1 > $@ | sed 's/^[^:]*://';              \
+-	fi
+-
+-%.5: doc/%.sgml
+-	if [ "$(DOCBOOKTOMAN)" = "docbook2man" ]; then                     \
+-	    $(DOCBOOKTOMAN) $< > /dev/null 2>&1;                       \
+-	else                                                               \
+-	    $(DOCBOOKTOMAN) $< 2>&1 > $@ | sed 's/^[^:]*://';              \
+-	fi
+-
++#%.8: doc/%.sgml
++#	if [ "$(DOCBOOKTOMAN)" = "docbook2man" ]; then                     \
++#	    $(DOCBOOKTOMAN) $< > /dev/null 2>&1;                       \
++#	else                                                               \
++#	    $(DOCBOOKTOMAN) $< 2>&1 > $@ | sed 's/^[^:]*://';              \
++#	fi
++#
++#%.5: doc/%.sgml
++#	if [ "$(DOCBOOKTOMAN)" = "docbook2man" ]; then                     \
++#	    $(DOCBOOKTOMAN) $< > /dev/null 2>&1;                       \
++#	else                                                               \
++#	    $(DOCBOOKTOMAN) $< 2>&1 > $@ | sed 's/^[^:]*://';              \
++#	fi
++#
+ # docbook2man creates extra crap files which need cleaning.
+-distclean: killbuildmanpages
++#distclean: killbuildmanpages
+ 
+ killbuildmanpages:
+ 	rm -f doc/*.tmp manpage.refs manpage.links

@@ -1,0 +1,28 @@
+NAME=libsigsegv
+VERSION=2.2
+ARCH=i686
+RELEASE=1
+URL="http://libsigsegv.sourceforge.net/"
+DESC="a library for handling page faults in user mode."
+GROUP=libs
+LICENSE=GPLv2
+SIZE="352K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnu.org/pub/gnu/libsigsegv/libsigsegv-2.2.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr \
+              --enable-shared $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog ChangeLog.1 INSTALL NEWS \
+    README PORTING README.woe32
+}

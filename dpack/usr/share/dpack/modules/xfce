@@ -1,0 +1,15 @@
+#!/bin/sh
+
+XFCEDIR=/opt/xfce
+
+PATH="$PATH:$XFCEDIR/bin"
+MANPATH="$MANPATH:$XFCEDIR/share/man"
+
+if [ -n "$PKG_CONFIG_PATH" ]
+then
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/xfce/lib/pkgconfig"
+else
+  PKG_CONFIG_PATH="$XFCEDIR/lib/pkgconfig"
+fi
+
+export XFCEDIR PATH PKG_CONFIG_PATH MANPATH

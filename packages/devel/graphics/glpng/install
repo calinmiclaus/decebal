@@ -1,0 +1,11 @@
+post_install() {
+  /sbin/ldconfig >/dev/null 2>&1
+}
+
+post_remove() {
+  /sbin/ldconfig >/dev/null 2>&1
+}
+
+post_remove() {
+  /sbin/ldconfig >/dev/null 2>&1
+}

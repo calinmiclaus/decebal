@@ -1,0 +1,80 @@
+NAME=bash
+VERSION=3.0
+ARCH=i686
+RELEASE=2
+URL="http://cnswww.cns.cwru.edu/~chet/bash/bashtop.html"
+DESC="The standard GNU Bourne Again SHell."
+GROUP=base
+LICENSE=GPLv2
+SIZE="2361K"
+
+SOURCES="ftp://ftp.cwru.edu/pub/bash/$NAME-$VERSION.tar.gz
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-001
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-002
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-003
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-004
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-005
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-006
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-007
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-008
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-009
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-010
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-011
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-012
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-013
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-014
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-015
+	ftp://ftp.cwru.edu/pub/bash/bash-3.0-patches/bash30-016
+        profile bashrc shells .bash_profile .bash_logout bash_prompt.sh
+	.bashrc bash_aliases.sh lang.sh .bash_aliases .bash_prompt bash.1"
+	
+BACKUPS="etc/profile
+         etc/shells
+	 etc/bashrc
+         etc/profile.d/bash_prompt.sh
+	 etc/profile.d/bash_aliases.sh
+	 etc/profile.d/lang.sh"
+
+BUILDTIME="gettext"
+
+RUNTIME=">=ncurses-5.3"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  for PATCH in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16
+  do
+    patch -p0 < ../bash30-0${PATCH}
+  done
+  
+  ./configure --prefix=/usr \
+              --bindir=/bin \
+	      --sysconfdir=/etc \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --with-curses
+  make
+  make DESTDIR=$PKG install
+  
+  rm -f $PKG/bin/bashbug $PKG/usr/share/man/man1/bashbug.1
+  
+  ln -sf bash $PKG/bin/sh
+  ln -sf bash.1.gz $PKG/usr/share/man/man1/sh.1.gz
+  install -m 0644 ../bash.1 $PKG/usr/share/man/man1
+  gzip -9 $PKG/usr/share/man/man1/bash.1
+  
+  install -D -m 0644 ../profile $PKG/etc/profile
+  install -m 0644 ../bashrc $PKG/etc/bashrc
+  install -m 0644 ../shells $PKG/etc/shells
+  install -D -m 0644 ../.bash_profile $PKG/etc/skel/.bash_profile
+  install -m 0644 ../.bashrc $PKG/etc/skel/.bashrc
+  install -m 0644 ../.bash_logout $PKG/etc/skel/.bash_logout
+  install -m 0644 ../.bash_prompt $PKG/etc/skel/.bash_prompt
+  install -m 0644 ../.bash_aliases $PKG/etc/skel/.bash_aliases
+  install -D -m 0644 ../bash_prompt.sh $PKG/etc/profile.d/bash_prompt.sh
+  install -m 0644 ../bash_aliases.sh $PKG/etc/profile.d/bash_aliases.sh
+  install -m 0644 ../lang.sh $PKG/etc/profile.d/lang.sh
+  
+  install_docs AUTHORS CHANGES COMPAT COPYING INSTALL MANIFEST NEWS NOTES \
+    POSIX RBASH README Y2K ABOUT-NLS
+}

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+pkg_check_md5sum() {
+  msg_nnl "checking package integrity..."  
+  
+  if [ "$UMD5SUM" = "$(md5sum $1 | awk '{print $1}')" ]
+  then
+    msg_ok_verbose
+    msg_ok
+  else
+    msg_failed
+    msg_failed_verbose
+    msg_error "Package mdsum is not correct. This could be happening because"
+    msg_error "your package update database is corrupt. Please use 'dupdate sync'"
+    msg_error "to update the package update database."
+    pkg_exit "pkg_check_md5sum()" "check_package_md5sum" "$LINENO" 1
+  fi
+}

@@ -1,0 +1,33 @@
+NAME=lincity
+VERSION=1.12.1
+ARCH=i686
+RELEASE=1
+URL="http://lincity.sourceforge.net/"
+DESC="Lincity is a city simulation game."
+GROUP=games
+LICENSE="GPLv2"
+SIZE="777K"
+HUSE="nls"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/lincity/lincity-1.12.1.tar.gz"
+
+RUNTIME="gzip xorg svgalib"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION  
+
+  use nls || OPTS="--disable-nls"
+  
+  ./configure --prefix=/usr/games \
+              --mandir=/usr/games/share/man \
+              --with-gzip \
+	      --with-svga \
+	      --with-x $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs ABOUT-NLS Acknowledgements CHANGES COPYING COPYRIGHT \
+    README* TODO
+}

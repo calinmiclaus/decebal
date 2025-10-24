@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=SimpleCDR
+GenericName=Simple CD Creator
+Comment=Create and copy data and audio CD
+Exec=simplecdrx
+Terminal=false
+Type=Application
+Icon=simplecdr.png
+Categories=Application;Multimedia;AudioVideo;DiscBurning;

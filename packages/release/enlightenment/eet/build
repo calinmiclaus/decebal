@@ -1,0 +1,36 @@
+NAME=eet
+VERSION=0.9.10.013
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="A library designed to write an arbitary set of chunks of data to a file."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="309K"
+HUSE="static"
+
+#http://enlightenment.freedesktop.org/fetch.php?file=$NAME-$VERSION.tar.gz
+SOURCES="$NAME-$VERSION.tar.gz
+         enlightenment.sh"
+
+RUNTIME="zlib libjpeg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+#  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../enlightenment.sh $PKG/etc/profile.d/enlightenment.sh
+  
+  install_docs AUTHORS COPYING* INSTALL NEWS README
+}
+
+	       
+  

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=XCDRoast
+Comment=CD creation tool
+Exec=xcdroast
+Type=Application
+Icon=xcdricon.png
+Terminal=false
+Type=Application
+StartupNotify=true
+Encoding=UTF-8
+Categories=Application;Multimedia;AudioVideo;DiscBurning;

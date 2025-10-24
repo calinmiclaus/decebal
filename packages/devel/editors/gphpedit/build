@@ -1,0 +1,35 @@
+NAME=gphpedit
+VERSION=0.9.50
+ARCH=i686
+RELEASE=1
+URL="http://www.gphpedit.org/"
+DESC="A PHP/HTML Editor."
+GROUP=editors
+LICENSE="GPLv2"
+SIZE="810K"
+
+SOURCES="http://www.gphpedit.org/download/files/gphpedit-0.9.50.tar.gz"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME="gtk2 libgnomeui gnome-vfs libgtkhtml"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  for FILE in src/calltip.c src/main.h src/main_window.c gphpedit.desktop.in
+  do
+    sed -i "s:\/usr\/:/opt/gnome/:" $FILE
+  done
+	  
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome
+  make
+  make DESTDIR=$PKG install
+
+  echo "MimeType=application/x-php;text-x-php-text/x-php-source;" $PKG/opt/gnome/share/applications/$NAME.desktop
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

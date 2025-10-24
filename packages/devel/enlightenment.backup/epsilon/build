@@ -1,0 +1,33 @@
+NAME=epsilon
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="A small, display independent, and quick thumbnailing library."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="59K"
+HUSE="static"
+
+SOURCES="epsilon-21052005.tar.bz2"
+
+RUNTIME="=epeg-21052005 >=imlib2-1.0.0 libpng"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  echo $PATH
+  
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment \
+	      --with-epeg=/opt/enlightenment $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* INSTALL ChangeLog \
+    NEWS README
+}

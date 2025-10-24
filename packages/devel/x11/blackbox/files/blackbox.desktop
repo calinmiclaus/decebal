@@ -1,0 +1,7 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=BlackBOX Session
+Comment=Use this session to run BlackBOX as your desktop environment
+Exec=/etc/X11/initrc/xinitrc.blackbox
+Icon=/opt/
+Type=Application

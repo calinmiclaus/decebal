@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# /etc/rc.d/crond - control file for the Dillon's Cron daemon
+#
+
+. /etc/rc.d/functions
+
+pidfile="/var/run/crond.pid"
+
+case "$1" in
+    start)
+	msg "Starting the Dillon's cron daemon"
+	if ! check_proc crond
+	then
+	  /usr/sbin/crond -l10 >> /var/log/cron 2>&1
+	  if [ $? -eq 0 ]
+	  then
+	    success
+	    write_pidfile /usr/sbin/crond /var/run/crond.pid
+	    touch /var/run/services/crond
+          else
+	    failure
+	  fi
+	else
+	  already_running
+	fi
+	;;
+    stop)
+	msg "Stopping the Dillon's cron daemon"
+	stop_service /usr/sbin/crond
+	;;
+    restart|force-reload)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+    status)
+	status_service /usr/sbin/crond
+	;;
+    *)
+	echo "usage: $0 {start|stop|force-reload|restart|status}"
+	exit 1
+	;;
+esac

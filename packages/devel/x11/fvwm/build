@@ -1,0 +1,38 @@
+NAME=fvwm
+VERSION=2.5.14
+ARCH=i686
+RELEASE=1
+URL="http://www.fvwm.org/"
+DESC="A fast and highly configurable X11 window manager."
+GROUP=x11
+LICENSE="GPLv2 BSDL"
+SIZE="1930K"
+
+SOURCES="ftp://ftp.fvwm.org/pub/fvwm/version-2/$NAME-$VERSION.tar.bz2
+         fvwm.sh xinitrc.fvwm"
+
+RUNTIME="xorg freetype2 libpng ncurses readline imlib2 fribidi gtk perl"
+
+use nls && BUILDTIME="gettext"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nls && OPTS="--enable-nls" || OPTS="--disable-nls"
+  use gnome && OPTS="$OPTS --with-gnome=yes" || OPTS="$OPTS --with-gnome=no"
+  
+  ./configure --prefix=/opt/fvwm \
+              --sysconfdir=/etc/opt \
+	      --localstatedir=/var/lib \
+	      --libexecdir=/opt/fvwm/lib \
+	      --mandir=/opt/fvwm/share/man \
+	      --enable-extras \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../fvwm.sh $PKG/etc/profile.d/fvwm.sh
+  install -D -m 0755 ../xinitrc.fvwm $PKG/etc/X11/xinit/xinitrc.fvwm
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL* NEWS README
+}

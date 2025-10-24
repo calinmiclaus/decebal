@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [ ! -d ~/.glest ]
+then
+  mkdir ~/.glest
+fi
+
+for DIR in data Tech map tileset glest screens out
+do
+  if [ ! -L ~/.glest/$DIR ]
+  then
+    ln -sf /usr/games/share/glest/$DIR ~/.glest/${DIR##*/}
+  fi
+done
+
+for FILE in glest.ini glest.url configuration.xml
+do
+  if [ ! -e ~/.glest/$FILE ]
+  then
+    cp /usr/games/share/glest/$FILE ~/.glest/$FILE
+  fi
+done
+
+if [ ! -e ~/.glest/glest.log ] ; then
+  touch ~/.glest/glest.log
+fi
+			    
+export LD_LIBRARY_PATH=/usr/games/share/glest/out/i686-pc-linux-gnu/opt/lib/sources:$LD_LIBRARY_PATH
+
+cd ~/.glest
+exec ./glest "$@"
+			    

@@ -1,0 +1,34 @@
+NAME=glib
+VERSION=1.2.10
+ARCH=i686
+RELEASE=1
+URL="http://www.gtk.org/"
+DESC="Common C routines used by Gtk+ and other libs (v1)."
+GROUP=libs
+LICENSE=LGPLv2.1
+SIZE="411K"
+HUSE="static debug"
+
+SOURCES="ftp://ftp.gtk.org/pub/gtk/v1.2/glib-1.2.10.tar.gz
+         glib-1.2.10-gcc34-fix.patch"
+
+BUILDTIME="pkgconfig"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../glib-1.2.10-gcc34-fix.patch
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  ./configure --prefix=/usr \
+              --enable-threads \
+	      --with-threads=posix \
+              $OPTS              
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README
+}
+  

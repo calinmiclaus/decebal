@@ -1,0 +1,32 @@
+NAME=jfsutils
+VERSION=1.1.8
+ARCH=i686
+RELEASE=1
+URL="http://jfs.sourceforge.net/"
+DESC="Utilities for managing IBM's Journaled File System (JFS) under Linux."
+GROUP=base
+LICENSE=GPLv2
+SIZE="510K"
+
+SOURCES="http://jfs.sourceforge.net/project/pub/jfsutils-1.1.8.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sbindir=/sbin \
+              --mandir=/usr/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  ln -sf jfs_mkfs $PKG/sbin/mkfs.jfs
+  ln -sf jfs_fsck $PKG/sbin/fsck.jfs
+  
+  rm -f $PKG/usr/share/man/man8/{fsck.jfs.8,mkfs.jfs.8}
+  ln -sf jfs_fsck.8.gz $PKG/usr/share/man/man8/fsck.jfs.8.gz
+  ln -sf jfs_mkfs.8.gz $PKG/usr/share/man/man8/mkfs.jfs.8.gz
+  
+  install_docs AUTHORS COPYING ChangeLog NEWS README
+}

@@ -1,0 +1,205 @@
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="3" align="center">
+Decebal Package Manager Handbook</th></tr>
+<tr><td width="10%" align="left" valign="bottom"><a href="upackages.html">Prev</a></td>
+<td width="80%" align="center" valign="bottom"></td>
+<td width="10%" align="right" valign="bottom"><a href="dpack.html">Next</a></td></tr></table>
+<hr align="left" width="100%">
+<h1>Querying the package database</h1>
+<p>Every installed package has a database entry. Since this files is "not that" human readable<br>
+you can use <b><code>pkg_query</code></b> to get information about the installed packages. The following options<br>
+will allow you to query the package database:<br><br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_query -h<br>
+usage: pkg_query [options] &lt;name&gt;, &lt;group&gt; or &lt;file&gt;<br>
+&nbsp;&nbsp;-a, --all &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - show all installed packages<br>
+&nbsp;&nbsp;-d, --dump &nbsp;&nbsp;&nbsp; - dump package database entry<br>
+&nbsp;&nbsp;-g, --group &nbsp;&nbsp; - show all packages in group &lt;group&gt;<br>
+&nbsp;&nbsp;-i, --info &nbsp;&nbsp;&nbsp; - show package meta information<br>
+&nbsp;&nbsp;-l, --list &nbsp;&nbsp;&nbsp; - list package contents<br>
+&nbsp;&nbsp;-o, --owns &nbsp;&nbsp;&nbsp; - print package that owns &lt;file&gt;<br>
+&nbsp;&nbsp;-r, --root &nbsp;&nbsp;&nbsp; - use an alternate &lt;path&gt; for querying<br>
+&nbsp;&nbsp;-V, --version &nbsp;- print name, version and license<br>
+&nbsp;&nbsp;-h, --help &nbsp&nbsp;&nbsp; - print this message and exit<br>
+<br>
+For a detailed help see pkg_query (8).<br>
+[root@localhost:~]#<br></code></font></td></tr></table><br>
+The detailed options explication is here:<br><br>
+<b><code>-a, --all</code></b><ul>this option will print all installed packages (the printed information
+will be in this form <b><code>name-version-arch-release</code></b>).</ul>
+<b><code>-d, --dump</code></b><ul>this option will print the contents of the package database entry (not
+human readable but usefull for scripting).</ul>
+<b><code>-g, --group</code></b><ul>if the argument suplied is a group the this option will print all packages
+contained in <b><code>&lb;group&gt;</code></b>, else if argument is a package it will print the group
+that owns this package.</ul>
+<b><code>-i, --info</code></b><ul>will print information about an installed package (the output will contain
+the following variables: <b><code>NAME</code></b>, <b><code>VERSION</code></b>, <b><code>ARCH</code></b>, <b><code>RELEASE</code></b>
+<b><code>LICENSE</code></b>, <b><code>PACKAGER</code></b>, <b><code>URL</code></b>, <b><code>DESCRIPTION</code></b>,
+<b><code>BUILD DATE</code></b>, <b><code>INSTALL DATE</code></b>, <b><code>UNCOMPRESSED</code></b>, <b><code>COMPRESSED</code></b>,
+<b><code>DEPENDS</code></b>, <b><code>CONFLICTS</code></b>, <b><code>PROVIDES</code></b> and <b><code>REQUIRED</code></b>).</ul>
+<b><code>-l, --list</code></b><ul>will print the contents of a package (output will be in this form: <b><code>name - file</code></b>).</ul>
+<b><code>-o, --owns</code></b><ul>will print the package that owns <b><code>&lt;file&gt;</code></b>.</ul>
+<b><code>-r, --root</code></b><ul>usefull if you want to get information about packages that are installed on
+another system (you dont have to use <b><code>chroot</code></b> for this to work).</ul>
+Examples:<br><br>
+Print all installed packages:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_query -a<br>
+a2ps-4.13b-i686-1<br>
+a52dec-07.4-i686-1<br>
+...<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Dump the package database entry:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+NAME=ed<br>
+VERSION=0.2<br>
+ARCH=i686<br>
+RELEASE=1<br>
+URL="http://www.gnu.org/software/ed/ed.html"<br>
+DESC="A line-oriented text editor."<br>
+GROUP=base<br>
+LICENSE="GPLv2"<br>
+MAINTAINER="Decebal Linux (http://www.decebal.org/)<br>
+USIZE="171K"<br>
+CSIZE="68K"<br>
+BUILDDATE="Sat Apr 2 08:35:59 2005"<br>
+INSTALLDATE="Mon Apr 4 08:56:26 2005"<br><br>
+FILES[0]="bin/"<br>
+FILES[1]="bin/ed"<br>
+FILES[2]="usr/"<br>
+FILES[3]="usr/bin/"<br>
+FILES[4]="usr/bin/red"<br>
+FILES[5]="usr/share/"<br>
+FILES[6]="usr/share/doc/"<br>
+FILES[7]="usr/share/doc/ed-02/<br>
+FILES[8]="usr/share/doc/ed-0.2/ChangeLog"<br>
+FILES[9]="usr/share/doc/ed-0.2/COPYING"<br>
+FILES[10]="usr/share/doc/ed-0.2/INSTALL"<br>
+FILES[11]="usr/share/doc/ed-0.2/NEWS"<br>
+FILES[12]="usr/share/doc/ed-0.2/POSIX"<br>
+FILES[13]="usr/share/doc/ed-0.2/README"<br>
+FILES[14]="usr/share/doc/ed-0.2/THANKS"<br>
+FILES[15]="usr/share/doc/ed-0.2/TODO"<br>
+FILES[16]="usr/share/info/"<br>
+FILES[17]="usr/share/info/ed.info.gz"<br>
+FILES[18]="usr/share/man/"<br>
+FILES[19]="usr/share/man/man1/"<br>
+FILES[20]="usr/share/man/man1/ed.1.gz"<br>
+FILES[21]="usr/share/man/man1/red.1.gz"<br>
+FILES[22]=""<br><br>
+DEPENDS[0]="virtual/libc"<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Print all packages contained in group <b><code>base</code></b>:
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+base autoconf-2.59-noarch-1<br>
+base automake-1.9.4-noarch-1<br>
+base bash-3.0-i686-1<br>
+...<br>
+base xfsprogs-2.6.25-i686-1<br>
+base zlib-1.2.2-i686-1<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Print information about a package:<br>
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_query -i bash<br>
+NAME &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : bash<br>
+VERSION &nbsp;&nbsp;&nbsp;&nbsp; : 3.0<br>
+ARCH &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : i686<br>
+RELEASE &nbsp;&nbsp;&nbsp;&nbsp; : 1<br>
+LICENSE &nbsp;&nbsp;&nbsp;&nbsp; : GPLv2<br>
+GROUP &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : base<br>
+PACKAGER &nbsp;&nbsp;&nbsp; : Decebal Linux (http://www.decebal.org/)<br>
+URL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : http://cnswww.cns.crwu.edu/~chet/bash/bashtop.html<br>
+DESCRIPTION &nbsp;: The standard GNU Bourne Again SHell.<br>
+BUILD DATE &nbsp; : Sun Feb &nbsp;6 07:37:31 2005<br>
+INSTALL DATE : Man Mar 28 19:42:26 2005<br>
+UNCOMPRESSED : 1.7M<br>
+COMPRESSED &nbsp; : 652K<br>
+DEPENDS &nbsp;&nbsp;&nbsp;&nbsp; : >=ncurses-5.3<br>
+CONFLICTS &nbsp;&nbsp; : NONE<br>
+PROVIDES &nbsp;&nbsp;&nbsp : NONE<br>
+REQUIRED &nbsp;&nbsp;&nbsp; : initscripts autoconf automake dpack expect gettext hotplug
+intltool libdvdnav man orbit2 tcp-wrappers openoffice<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+List contents of package <b><code>bash</code></b>:
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_query -l bash<br>
+bash /bin/<br>
+bash /bin/bash<br>
+bash /bin/sh<br>
+bash /etc/<br>
+bash /etc/bashrc<br>
+bash /etc/profile<br>
+bash /etc/profile.d/<br>
+bash /etc/profile.d/bash_aliases.sh<br>
+bash /etc/profile.d/bash_prompt.sh<br>
+bash /etc/profile.d/lang.sh<br>
+bash /etc/shells<br>
+bash /etc/skel/<br>
+bash /etc/skel/.bash_aliases<br>
+bash /etc/skel/.bash_logout<br>
+bash /etc/skel/.bash_profile<br>
+bash /etc/skel/.bash_prompt<br>
+bash /etc/skel/.bashrc<br>
+bash /usr/<br>
+bash /usr/share/<br>
+bash /usr/share/doc/<br>
+bash /usr/share/doc/bash-3.0/<br>
+bash /usr/share/doc/bash-3.0/ABOUT-NLS<br>
+bash /usr/share/doc/bash-3.0/AUTHORS<br>
+bash /usr/share/doc/bash-3.0/CHANGES<br>
+bash /usr/share/doc/bash-3.0/COMPAT<br>
+bash /usr/share/doc/bash-3.0/COPYING<br>
+bash /usr/share/doc/bash-3.0/INSTALL<br>
+bash /usr/share/doc/bash-3.0/MANIFEST<br>
+bash /usr/share/doc/bash-3.0/NEWS<br>
+bash /usr/share/doc/bash-3.0/NOTES<br>
+bash /usr/share/doc/bash-3.0/POSIX<br>
+bash /usr/share/doc/bash-3.0/RBASH<br>
+bash /usr/share/doc/bash-3.0/README<br>
+bash /usr/share/doc/bash-3.0/Y2K<br>
+bash /usr/share/info/<br>
+bash /usr/share/info/bash.info.gz<br>
+bash /usr/share/locale/<br>
+bash /usr/share/locale/en@boldquot/<br>
+bash /usr/share/locale/en@boldquot/LC_MESSAGES/<br>
+bash /usr/share/locale/en@boldquot/LC_MESSAGES/bash.mo<br>
+bash /usr/share/locale/en@quot/<br>
+bash /usr/share/locale/en@quot/LC_MESSAGES/<br>
+bash /usr/share/locale/en@quot/LC_MESSAGES/bash.mo<br>
+bash /usr/share/man/<br>
+bash /usr/share/man/man1/<br>
+bash /usr/share/man/man1/bash.1.gz<br>
+bash /usr/share/man/man1/sh.1.gz<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+Print package that owns file <b><code>/bin/bash</code></b>:
+<table border="0" bgcolor="#E0E0E0" width="100%">
+<tr><td><font color="#000000"><code>
+[root@localhost:~]# pkg_query -o /bin/bash<br>
+/bin/bash is owned by bash-3.0-i686-1<br>
+[root@localhost:~]#
+<br></code></font></td></tr></table><br>
+This action can take up to 30 seconds (depending on the file and how many you have installed).<br>
+</p>
+<hr align="left" width="100%">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="upackages.html">Prev</a></td>
+<td width="34%" align="center" valign="top"><a href="index.html">Home</a></td>
+<td width="33%" align="right" valign="top"><a href="dpack.html">Next</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Upgrading packages</td>
+<td width="34%" align="center" valign="top">Home</td>
+<td width="33%" align="right" valign="top">Using dpack</td></tr></table>
+</body>
+</html>

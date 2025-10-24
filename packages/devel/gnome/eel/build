@@ -1,0 +1,32 @@
+NAME=eel
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A collection of widgets and extensions for GNOME."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2.1"
+SIZE="650K"
+HUSE="static profile"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/eel-2.10.0.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME="gnome-desktop gnome-menus gail"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" 
+  use profile && OPTS="$OPTS --enable-profiler"
+  
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog INSTALL NEWS README \
+    HACKING MAINTAINERS THANKS TODO
+}

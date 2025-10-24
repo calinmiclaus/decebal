@@ -1,0 +1,46 @@
+NAME=rox
+VERSION=2.2.0
+ARCH=i686
+RELEASE=1
+URL="http://rox.sourceforge.net/phpwiki/index.php/ROX-Filer"
+DESC="A File Manager that can be used to manage desktop backgrounds and icons."
+GROUP=x11
+LICENSE=GPLv2
+SIZE="1986K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/rox/rox-2.2.0.tgz
+         rox.desktop rox.png"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=gtk2-2.2.0 >=glib2-2.2.0 >=libxml2-2.4.23 >=shared-mime-info-0.9 librsvg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ROX-Filer/AppRun --compile
+  (cd ROX-Filer/src; make clean) > /dev/null
+  
+  install -D -m 0644 rox.1 $PKG/usr/share/man/man1/rox.1
+  
+  cp -rf ROX-Filer/ $PKG/usr/share/
+  
+  mkdir -p $PKG/usr/bin
+  
+  echo "#!/bin/sh" > $PKG/usr/bin/rox
+  echo "exec /usr/share/ROX-Filer/AppRun \"\$@\"" >> $PKG/usr/bin/rox
+  chmod a+x $PKG/usr/bin/rox
+  
+  install -D -m 0644 rox.xml $PKG/usr/share/mime/packages/rox.xml
+  
+  cp -r Choices $PKG/usr/share/	
+	
+  mkdir -p $PKG/usr/share/icons
+  
+  ln -s /usr/share/ROX-Filer/ROX $PKG/usr/share/icons/ROX
+  
+  install -D -m 0644 ../rox.desktop $PKG/usr/share/applications/rox.desktop
+  install -D -m 0644 ../rox.png $PKG/usr/share/applications/rox.png
+  
+  install_docs README*
+}

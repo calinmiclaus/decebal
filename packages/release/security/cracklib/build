@@ -1,0 +1,42 @@
+NAME=cracklib
+VERSION=2.7
+ARCH=i686
+RELEASE=1
+URL="http://www.crypticide.org/users/alecm/"
+DESC="A library which may be used in a passwd-like program."
+GROUP=security
+LICENSE=BSDL
+SIZE="1509K"
+
+SOURCES="http://www.crypticide.com/users/alecm/security/cracklib,2.7.tar.gz
+         cracklib-2.7-nss.patch cracklib-2.7-rh.patch crack.h
+         http://ftp.gnu.org/gnu/miscfiles/miscfiles-1.4.2.tar.gz"
+
+build() {
+  cd $SRC/${NAME},${VERSION}
+  
+  mkdir -p cracklib-dicts
+  
+  patch -p1 < ../cracklib-2.7-nss.patch
+  patch -p1 < ../cracklib-2.7-rh.patch
+  
+  # set our CFLAGS here
+  sed s/"\$(RPM_OPT_FLAGS)"/"$CFLAGS"/ -i cracklib/Makefile
+  sed s/"\$(RPM_OPT_FLAGS)"/"$CFLAGS"/ -i util/Makefile
+  
+  cp ../crack.h cracklib/crack.h
+  
+  cp ../miscfiles-1.4.2/web2 cracklib-dicts/
+  
+  mkdir -p $PKG/usr/{lib,include,sbin,share/dict}
+  
+  make all DICTPATH=/usr/share/dict
+  make install ROOT=$PKG DICTPATH=/usr/share/dict
+  
+  mv $PKG/usr/lib $PKG/
+  
+  ln -s libcrack.so.2.7 $PKG/lib/libcrack.so.2
+  
+  install_docs HISTORY LICENCE MANIFEST POSTER README
+}
+  

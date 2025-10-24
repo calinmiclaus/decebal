@@ -1,0 +1,46 @@
+NAME=openal
+VERSION=0.0.8
+ARCH=i686
+RELEASE=1
+URL="http://www.openal.org/"
+DESC="A free (LGPL-ed) and open source, cross platform audio library used for 3D and 2D sound."
+GROUP=multimedia
+LICENSE="GPLv2"
+SIZE="6136K"
+HUSE="debug profile arts esd smpeg"
+
+SOURCES="http://www.decebal.org/sources/openal.tar.bz2"
+
+RUNTIME="alsa-lib libvorbis libsdl"
+
+use arts && RUNTIME="$RUNTIME arts"
+use esd && RUNTIME="$RUNTIME esound"
+use smpeg && RUNTIME="$RUNTIME smpeg"
+
+build() {
+  cd $SRC/$NAME/linux
+  
+  use profile && OPTS="$OPTS --enable-profile"
+  use debug && OPTS="$OPTS --enable-debug"
+  use arts && OPTS="$OPTS --enable-arts" || OPTS="$OPTS --disable-arts"
+  use esd && OPTS="$OPTS --enable-esd"
+  use smpeg && OPTS="$OPTS --enable-smpeg"
+  
+  ./autogen.sh
+  ./configure --prefix=/usr \
+              --exec-prefix=/usr \
+	      --enable-optimization \
+	      --enable-paranoid-locks \
+	      --enable-capture \
+	      --enable-alsa \
+	      --enable-vorbis \
+	      --enable-sdl \
+	      $OPTS
+  make
+  make DESTDIR=$PKG/usr/ install
+  
+  chmod 644 $PKG/usr/lib/libopenal.a
+  
+  install_docs CREDITS ChangeLog INSTALL NOTES \
+    PLATFORM TODO
+}

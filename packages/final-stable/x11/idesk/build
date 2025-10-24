@@ -1,0 +1,30 @@
+NAME=idesk
+VERSION=0.7.3
+ARCH=i686
+RELEASE=1
+URL="http://idesk.sourceforge.net/"
+DESC="A program that allows you to put icons on your desktop."
+GROUP=x11
+LICENSE="GPLv2"
+SIZE="202K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/idesk/$NAME-$VERSION.tar.gz"
+
+RUNTIME="imlib2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  if [ ! -d /usr/share/automake-1.7 ]
+  then
+    ln -s automake /usr/share/automake-1.7
+  fi
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL README NEWS TODO
+
+}
+

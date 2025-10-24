@@ -1,0 +1,50 @@
+#!/bin/bash
+
+. /etc/rc.d/functions
+
+[ -r /etc/vsftpd.conf ] || exit 1
+
+checkvsftpd() {
+  if ! grep -q "^listen=YES" /etc/vsftpd.conf
+  then
+    echo "You must set listen=YES in /etc/vsftpd.conf in"
+    echo "order to run vsftpd as a standalone daemon."
+    exit 1
+  fi
+}
+
+case "$1" in
+  start)
+    checkvsftpd
+    msg "Starting the Very Secure FTP server"
+    if ! checkproc vsftpd
+    then
+      /usr/sbin/vsftpd 2>&1 &
+      if [ $? -eq 0 ]
+      then
+        success
+        touch /var/lock/subsys/vsftpd
+      else
+        failure
+      fi
+    else
+      already_running
+    fi
+    ;;
+  stop)
+    msg "Stopping the Very Secure FTP server"
+    stop_service /usr/sbin/vsftpd
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status_service /usr/sbin/vsftpd
+    ;;
+  *)
+    echo "usage: $0 {start|stop|force-reload|restart|status}"
+    exit 1
+    ;;
+esac

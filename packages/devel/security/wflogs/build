@@ -1,0 +1,31 @@
+NAME=wflogs
+VERSION=0.9.8
+ARCH=i686
+RELEASE=1
+URL="http://www.wallfire.org/"
+DESC="Tool for examining firewall logs in the Wallfire project."
+GROUP=security
+LICENSE="GPLv2"
+SIZE="493K"
+
+SOURCES="http://www.wallfire.org/download/wflogs-0.9.8.tar.bz2"
+
+RUMTIME="wfnetobjs"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  use profile && OPTS="$OPTS --enable-profiling"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --with-wfnetobjs-incdir=/usr/include \
+	      --with-wfnetobjs-libdir=/usr/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README* TODO
+}

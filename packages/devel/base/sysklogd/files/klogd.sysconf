@@ -1,0 +1,6 @@
+#
+# /etc/conf.d/klogd - configuration file for /etc/rc.d/klogd
+#
+
+# Additional klogd options.
+KLOGD_OPTS="-c 3 -p"

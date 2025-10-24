@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# /etc/cron/daily/updatedb - update the slocate database
+#
+
+if [ -x /usr/bin/updatedb ]
+then
+  if [ -f /etc/updatedb.conf ]
+  then
+    /usr/bin/updatedb
+  else
+    /usr/bin/updatedb -f proc
+  fi
+else
+  [ -x /usr/bin/logger ] && logger -i -s -p warning "can't find updatedb binary"
+fi

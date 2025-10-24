@@ -1,0 +1,29 @@
+NAME=nmap
+VERSION=3.81
+ARCH=i686
+RELEASE=1
+URL="http://www.insecure.org/"
+DESC="A very powerfull security/port scanner."
+GROUP=security
+LICENSE=GPLv2
+SIZE="1407K"
+HUSE="nmapfe"
+
+SOURCES="http://www.insecure.org/nmap/dist/nmap-3.81.tar.bz2"
+
+RUNTIME=">=pcre-4.5 >=openssl-0.9.7e gcc"
+
+use nmapfe && RUNTIME="$RUNTIME gtk"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use nmapfe && OPTS="$OPTS --with-nmapfe" || OPTS="$OPTS --without-nmapfe"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  install_docs CHANGELOG COPYING HACKING INSTALL README-WIN32
+}

@@ -1,0 +1,89 @@
+#!/bin/bash
+
+ppp_path=/etc/ppp
+
+function show_help()
+{
+echo
+echo "usage:"
+echo "`basename $0`            - make pppd call the default account ($ppp_path/default)"
+echo "`basename $0` account    - make pppd call <account> (from $ppp_path/peers)"
+echo "`basename $0` -l         - list available accounts"
+echo "`basename $0` -d         - show default account"
+echo "`basename $0` -d account - make <account> the default account"
+echo "`basename $0` -h  --help - show this help"
+echo
+}
+
+case "$1" in
+-h|--help) show_help;;
+"-l")
+  echo -e "\nThe following accounts are available :\n"
+  for i in $ppp_path/peers/*;
+  do
+    echo `basename $i`
+  done
+  echo
+;;
+
+"-d")
+  if [ -z "$2" ];
+  then
+    if [ -a $ppp_path/default ];
+    then
+      echo "Default account : `cat $ppp_path/default`"
+    else
+      echo "There is no default account. Use pppconf or ppp-go -d to set it."
+    fi
+  else
+    if [ -a $ppp_path/peers/$2 ];
+    then
+      echo "$2" >$ppp_path/default
+      echo "\"$2\" is the new default account."
+    else
+      echo "No such account, \"$2\". Use ppp-go -l to list all available accounts."
+    fi
+  fi
+;;
+
+*)
+  if [ ! -e /dev/modem ];
+  then
+    if [ -e $ppp_path/modem ];
+    then
+      [ -s $ppp_path/modem ] && ln -s `cat $ppp_path/modem` /dev/modem
+    else
+      echo "No /dev/modem device. Use pppconf to set up your modem."
+      exit 1
+    fi
+  fi
+
+  if [ ! -z "$1" ];
+  then  # $1 is not empty - calling the $1 account
+    if [ ! -e $ppp_path/peers/$1 ];
+    then
+      echo "Account \"$1\" does not exist. Use pppconf to set up ppp."
+      exit 1
+    else
+      account=$1
+    fi
+  else  # $1 is empty - no account specified as parameter, using default
+    if [ ! -e $ppp_path/default ];
+    then
+      echo "No default account specified. Use pppconf to set it up."
+      exit 1
+    fi
+  
+    if [ ! -e $ppp_path/peers/`cat $ppp_path/default` ];
+    then
+      echo "Default account `cat $ppp_path/default` does not exist. Use pppconf to set up ppp."
+      exit 1
+    else
+      account=`cat $ppp_path/default`
+    fi
+  fi
+  
+  echo "Calling $account"
+  pppd call $account
+;;
+esac

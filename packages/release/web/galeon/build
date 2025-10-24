@@ -1,0 +1,39 @@
+NAME=galeon
+VERSION=1.3.20
+ARCH=i686
+RELEASE=1
+URL="http://galeon.sourceforge.net/"
+DESC="A gecko-based GNOME web browser."
+GROUP=web
+LICENSE="GPLv2"
+SIZE="3969K"
+HUSE="static debug"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/galeon/galeon-1.3.20.tar.bz2"
+
+BUILDTIME="pkgconfig gettext intltool"
+
+RUNTIME="gtkhtml mozilla >=libgnomeui-2.5.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static"
+  use debug && OPTS="$OPTS --enable-debug"
+  
+  PKG_CONFIG_DIR="$PKG_CONFIG_DIR:/opt/gnome/lib/pkgconfig" \
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib \
+	      --disable-gtkhtml \
+	      --disable-nautilus-view \
+	      --with-mozilla=mozilla \
+	      --disable-schemas-install $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING* ChangeLog FAQ* INSTALL \
+    NEWS README* THANKS TODO
+}
+

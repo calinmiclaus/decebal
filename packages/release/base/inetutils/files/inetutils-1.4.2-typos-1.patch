@@ -1,0 +1,73 @@
+diff -Naur inetutils-1.4.2.orig/rcp/rcp.c inetutils-1.4.2/rcp/rcp.c
+--- inetutils-1.4.2.orig/rcp/rcp.c	2002-09-02 14:14:39.000000000 +0000
++++ inetutils-1.4.2/rcp/rcp.c	2003-09-10 16:24:35.000000000 +0000
+@@ -90,7 +90,7 @@
+ # include <kerberosIV/des.h>
+ # include <kerberosIV/krb.h>
+ 
+-char	dst_realm_buf[REALM_SZ];
++char	dest_realm_buf[REALM_SZ];
+ char	*dest_realm = NULL;
+ int	use_kerberos = 1;
+ CREDENTIALS 	cred;
+@@ -181,8 +181,8 @@
+ 
+ #ifdef	KERBEROS
+       case 'k':
+-	dest_realm = dst_realm_buf;
+-	strncpy(dst_realm_buf, optarg, REALM_SZ);
++	dest_realm = dest_realm_buf;
++	strncpy(dest_realm_buf, optarg, REALM_SZ);
+ 	break;
+ 
+ #ifdef CRYPT
+diff -Naur inetutils-1.4.2.orig/rlogin/rlogin.c inetutils-1.4.2/rlogin/rlogin.c
+--- inetutils-1.4.2.orig/rlogin/rlogin.c	2002-06-26 03:15:06.000000000 +0000
++++ inetutils-1.4.2/rlogin/rlogin.c	2003-09-10 16:27:06.000000000 +0000
+@@ -103,7 +103,7 @@
+ CREDENTIALS cred;
+ Key_schedule schedule;
+ int use_kerberos = 1, doencrypt;
+-char dst_realm_buf[REALM_SZ], *dest_realm = NULL;
++char dest_realm_buf[REALM_SZ], *dest_realm = NULL;
+ #endif
+ 
+ /*
+@@ -282,7 +282,7 @@
+ 	  strncpy (dest_realm_buf, optarg, sizeof dest_realm_buf);
+ 	  /* Make sure it's null termintated.  */
+ 	  dest_realm_buf[sizeof (dest_realm_buf) - 1] = '\0';
+-	  dest_realm = dst_realm_buf;
++	  dest_realm = dest_realm_buf;
+ 	  break;
+ #endif
+ 
+diff -Naur inetutils-1.4.2.orig/rsh/rsh.c inetutils-1.4.2/rsh/rsh.c
+--- inetutils-1.4.2.orig/rsh/rsh.c	2002-06-26 03:15:06.000000000 +0000
++++ inetutils-1.4.2/rsh/rsh.c	2003-09-10 16:29:45.000000000 +0000
+@@ -71,13 +71,13 @@
+ #endif
+ 
+ #ifdef KERBEROS
+-# include <kerberosIV/des.h>
+-# include <kerberosIV/krb.h>
++#include <kerberosIV/des.h>
++#include <kerberosIV/krb.h>
+ 
+ CREDENTIALS cred;
+ Key_schedule schedule;
+ int use_kerberos = 1, doencrypt;
+-char dst_realm_buf[REALM_SZ], *dest_realm;
++char dest_realm_buf[REALM_SZ], *dest_realm;
+ extern char *krb_realmofhost();
+ #endif
+ 
+@@ -259,7 +259,7 @@
+ 	case 'k':
+ 	  strncpy (dest_realm_buf, optarg, sizeof dest_realm_buf);
+ 	  dest_realm_buf [REALM_SZ - 1] = '\0';
+-	  dest_realm = dst_realm_buf;
++	  dest_realm = dest_realm_buf;
+ 	  break;
+ 
+ # ifdef ENCRYPTION

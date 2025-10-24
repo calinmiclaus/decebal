@@ -1,0 +1,27 @@
+NAME=libgcrypt
+VERSION=1.2.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gnupg.org/"
+DESC="A general purpose crypto library."
+GROUP=libs
+LICENSE="LGPLv2.1 GPLv2"
+SIZE="755K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.2.1.tar.bz2"
+
+RUNTIME=">=libgpg-error-1.0"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS BUGS COPYING* ChangeLog INSTALL NEWS \
+    README* THANKS TODO VERSION
+}

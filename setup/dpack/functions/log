@@ -1,0 +1,18 @@
+#!/bin/bash
+
+pkg_log() {
+  [ -d $LOGDIR ] || mkdir -p $LOGDIR
+  if [ "$LOGMETHOD" = "combined" ]
+  then
+    echo "$(date): $@" >> $LOGDIR/dpack.log
+  elif [ "$LOGMETHOD" = "separate" ]
+  then
+    case "$ACTION" in
+      install) echo "$(date): $@" >> $LOGDIR/install.log ;;
+      upgrade) echo "$(date): $@" >> $LOGDIR/upgrade.log ;;
+      remove) echo "$(date): $@" >> $LOGDIR/remove.log ;;
+      update) echo "$(date): $@" >> $LOGDIR/update.log ;;
+      build) echo "$(date): $@" >> $LOGDIR/build.log ;;
+    esac
+  fi                      
+}

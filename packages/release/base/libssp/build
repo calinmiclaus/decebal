@@ -1,0 +1,26 @@
+NAME=libssp
+VERSION=0.2
+ARCH=i686
+RELEASE=1
+URL="http://www.debian-hardened.org/"
+DESC="A static/shared library which contains the SSP functions."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="10K"
+
+SOURCES="http://ufpr.dl.sourceforge.net/sourceforge/debianhardened/libssp-0.2.tar.gz"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  mkdir -p $PKG/{lib,usr/lib}
+
+  make
+  make DESTDIR=$PKG install
+  
+  chmod 755 $PKG/lib/libssp.so.0.2
+    
+  install_docs AUTHORS COPYING
+}

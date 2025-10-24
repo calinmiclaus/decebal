@@ -1,0 +1,37 @@
+NAME=nautilus
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="The GNOME File Manager."
+GROUP=gnome
+LICENSE="GPLv2 LGPLv2.1 FDLv1.1"
+SIZE="5760K"
+HUSE="ipv6 static profile"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/nautilus-2.10.0.tar.bz2
+         libnautilus.pc"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=librsvg-2.0.1 eel >=libexif-0.5.12 eject gnome-icon-theme gnome-desktop librsvg libgsf
+	 libcroco cdparanoia >=libjpeg-6b >=startup-notification-0.8 >=libgnomeui-2.6"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6"
+  use static && OPTS="$OPTS --enable-static"
+  use profile && OPTS="$OPTS --enable-profiler"
+    
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../libnautilus.pc $PKG/opt/gnome/lib/pkgconfig/libnautilus.pc
+  
+  install_docs AUTHORS COPYING* ChangeLog* INSTALL HACKING \
+    NEWS README MAINTAINERS TODO THANKS
+}

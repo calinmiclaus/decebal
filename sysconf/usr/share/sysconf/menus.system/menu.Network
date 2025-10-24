@@ -1,0 +1,15 @@
+^
+^Here you can configure your network devices.
+^
+^Choose "System" to configure your network cards, domainname,
+^hostname, nameservers.
+^Also here you can save your network settings and start the network.
+^
+^If you want to configure your dialup (PPP) connection,
+^choose 'PPP'.
+^
+^Choose 'inetd' if you want to configure which services
+^should be started/stopped by inetd
+System:.netconf.main_menu:System network settings
+PPP:.pppconf.main_menu:Configure Point to Point Protocol
+inetd:.inetdconf.main_menu:Configure the Internet Super Daemon

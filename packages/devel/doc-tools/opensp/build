@@ -1,0 +1,45 @@
+NAME=opensp
+VERSION=1.5.1
+ARCH=i686
+RELEASE=1
+URL="http://openjade.sourceforge.net/"
+DESC="Tools for parsing and manipulating SGML and XML documents."
+GROUP=doc-tools
+LICENSE=BSDL
+SIZE="1385K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/openjade/OpenSP-1.5.1.tar.gz
+         OpenSP-1.5.1-LITLEN-1.patch"
+
+BUILDTIME=">=sgml-common-0.6.3
+           gettext"
+
+RUNTIME=">=sgml-common-0.6.3"
+
+build() {
+  cd $SRC/OpenSP-$VERSION
+  
+  patch -p1 < ../OpenSP-1.5.1-LITLEN-1.patch
+  
+  ./configure --prefix=/usr\
+              --disable-static \
+              --enable-http \
+              --enable-default-catalog=/etc/sgml/catalog:/etc/xml/catalog \
+              --enable-default-search-path=/usr/share/sgml:/usr/share/xml \
+	      --enable-xml-messages
+  make
+  make DESTDIR=$PKG pkgdatadir=/usr/share/sgml/OpenSP-1.5.1 install
+  
+  ln -s onsgmls $PKG/usr/bin/nsgmls
+  ln -s osgmlnorm $PKG/usr/bin/sgmlnorm
+  ln -s ospam $PKG/usr/bin/spam
+  ln -s ospcat $PKG/usr/bin/spcat
+  ln -s ospent $PKG/usr/bin/spent
+  ln -s osx $PKG/usr/bin/sx
+  ln -s osx $PKG/usr/bin/sgml2xml
+  ln -s libosp.so $PKG/usr/lib/libsp.so
+  
+  mv $PKG/usr/share/doc/OpenSP $PKG/usr/share/doc/OpenSP-$VERSION
+}
+
+

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=NeverBall
+GenericName=Puzzle Game
+Comment=Neverball is part puzzle game
+Icon=/usr/games/share/icons/neverball/neverball.png
+FilePattern=neverball
+TryExec=neverball
+Exec=neverball
+Categories=Application;Game;PuzzleGame;

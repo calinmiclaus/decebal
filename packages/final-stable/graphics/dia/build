@@ -1,0 +1,36 @@
+NAME=dia
+VERSION=0.94
+ARCH=i686
+RELEASE=1
+URL="http://www.gnome.org/projects/dia/"
+DESC="A diagram editor."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="3270K"
+HUSE="static cairo gnome python"
+
+SOURCES="http://ftp.gnome.org/mirror/gnome.org/sources/dia/0.94/dia-0.94.tar.bz2"
+
+BUILDTIME="intltool"
+
+RUNTIME=">=gtk2-2.6.4 libart_lgpl xorg popt libxslt desktop-file-utils"
+
+use cairo && RUNTIME="$RUNTIME cairo"
+use gnome && RUNTIME="$RUNTIME >=libgnomeui-2.0"
+use python && RUNTIME="$RUNTIME >=python-1.5.2"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use cairo && OPTS="--with-cairo"
+  use static && OPTS="$OPTS --enable-static"
+  use gnome && OPTS="$OPTS --enable-gnome"
+  use python && OPTS="$OPTS --with-python"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL KNOWN_BUGS NEWS \
+    README RELEASE-PROCESS THANKS TODO
+}

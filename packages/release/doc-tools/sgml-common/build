@@ -1,0 +1,31 @@
+NAME=sgml-common
+VERSION=0.6.3
+ARCH=i686
+RELEASE=1
+URL="http://www.docbook.org/"
+DESC="Stuff for creating SGML catalogs"
+GROUP=doc-tools
+LICENSE=GPLv2
+SIZE="74K"
+
+SOURCES="http://gd.tuwien.ac.at/hci/kde/devel/docbook/SOURCES/sgml-common-0.6.3.tgz"
+
+BUILDTIME=">=bash-2.05b"
+
+RUNTIME=">=bash-2.05b"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS ChangeLog NEWS README
+  
+  mv $PKG/usr/doc/$NAME-$VERSION/html $PKG/usr/share/doc/$name-$version/
+  rm -rf $PKG/usr/doc
+}
+
+

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=FluxBOX
+Comment=This session starts the Fluxbox window manager
+Exec=startfluxbox
+Icon=
+Type=Application

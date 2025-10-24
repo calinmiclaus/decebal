@@ -1,0 +1,66 @@
+diff -Naur tecnoballz-0.91/Makefile.in tecnoballz-0.91-destdir/Makefile.in
+--- tecnoballz-0.91/Makefile.in	2005-03-01 16:15:08.000000000 +0200
++++ tecnoballz-0.91-destdir/Makefile.in	2005-05-22 07:43:35.000000000 +0300
+@@ -8,6 +8,7 @@
+ CXX = g++
+ CFLAGS = @CFLAGS@
+ 
++DESTDIR=
+ 
+ # program name
+ tecnoballz	= tecnoballz
+@@ -115,15 +116,15 @@
+ 	rm -f $(BINDIR)/$(tecnoballz)
+ 
+ install_bin:
+-	install -d $(BINDIR) 
+-	install --owner=root --group=games --mode=2755 $(PROG) $(BINDIR)
++	install -d $(DESTDIR)$(BINDIR) 
++	install --owner=root --group=games --mode=2755 $(PROG) $(DESTDIR)$(BINDIR)
+ 
+ uninstall_vars:
+ 	rm -f $(VARDIR)/tecnoballz.hi
+ 
+ install_vars:
+-	install --owner=root --group=games --mode=0770 -d $(VARDIR) 
+-	install --owner=root --group=games --mode=0664 tecnoballz.hi $(VARDIR)
++	install --owner=root --group=games --mode=0770 -d $(DESTDIR)$(VARDIR) 
++	install --owner=root --group=games --mode=0664 tecnoballz.hi $(DESTDIR)$(VARDIR)
+ 
+ uninstall_data:
+ 	rm -f $(DATADIR)/*.bmp $(DATADIR)/*.list $(DATADIR)/*.data
+@@ -136,20 +137,20 @@
+ 	rmdir $(DATADIR)
+ 	
+ install_data:
+-	install -d $(DATADIR) 
+-	install --owner=root --group=root --mode=0644 $(DATAFILES) $(DATADIR)
+-	install -d $(MUSICS) 
+-	install -d $(SOUNDS) 
+-	install -d $(BITMAPS)
+-	install -d $(TEXTURES)
+-	install --owner=root --group=root --mode=0644 src/TecnoballZ/musics/*.mod $(MUSICS)
+-	install --owner=root --group=root --mode=0644 src/TecnoballZ/sounds/*.wav $(SOUNDS)
+-	install --owner=root --group=root --mode=0644 src/TecnoballZ/*.bmp $(BITMAPS)
+-	install --owner=root --group=root --mode=0644 src/TecnoballZ/textures/*.bmp $(TEXTURES)
+-	install -d $(SCREEN_320)
+-	install -d $(SCREEN_640)
+-	install --owner=root --group=root --mode=0644 src/TecnoballZ/lores/*.bmp $(SCREEN_320)
+-	install --owner=root --group=root --mode=0644 src/TecnoballZ/hires/*.bmp $(SCREEN_640)
++	install -d $(DESTDIR)$(DATADIR) 
++	install --owner=root --group=root --mode=0644 $(DATAFILES) $(DESTDIR)$(DATADIR)
++	install -d $(DESTDIR)$(MUSICS) 
++	install -d $(DESTDIR)$(SOUNDS) 
++	install -d $(DESTDIR)$(BITMAPS)
++	install -d $(DESTDIR)$(TEXTURES)
++	install --owner=root --group=root --mode=0644 src/TecnoballZ/musics/*.mod $(DESTDIR)$(MUSICS)
++	install --owner=root --group=root --mode=0644 src/TecnoballZ/sounds/*.wav $(DESTDIR)$(SOUNDS)
++	install --owner=root --group=root --mode=0644 src/TecnoballZ/*.bmp $(DESTDIR)$(BITMAPS)
++	install --owner=root --group=root --mode=0644 src/TecnoballZ/textures/*.bmp $(DESTDIR)$(TEXTURES)
++	install -d $(DESTDIR)$(SCREEN_320)
++	install -d $(DESTDIR)$(SCREEN_640)
++	install --owner=root --group=root --mode=0644 src/TecnoballZ/lores/*.bmp $(DESTDIR)$(SCREEN_320)
++	install --owner=root --group=root --mode=0644 src/TecnoballZ/hires/*.bmp $(DESTDIR)$(SCREEN_640)
+ 	
+ 
+ all: $(PROG)

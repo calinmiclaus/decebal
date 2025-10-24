@@ -1,0 +1,28 @@
+NAME=sdl_net
+VERSION=1.2.5
+ARCH=i686
+RELEASE=1
+URL="http://www.libsdl.org/projects/SDL_net/"
+DESC="Cross-platform networking library for SDL."
+GROUP=network
+LICENSE="GPLv2"
+SIZE="165K"
+HUSE="static"
+
+SOURCES="http://www.libsdl.org/projects/SDL_net/release/SDL_net-1.2.5.tar.gz"
+
+RUNTIME="libsdl"
+
+build() {
+  cd $SRC/SDL_net-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+    
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs CHANGES COPYING README
+}
+

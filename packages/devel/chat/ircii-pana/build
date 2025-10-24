@@ -1,0 +1,73 @@
+NAME=ircii-pana
+VERSION=1.1
+ARCH=i686
+RELEASE=1
+URL="http://www.bitchx.org"
+DESC="A console-based IRC client (BitchX)."
+GROUP=chat
+LICENSE="GPLv2"
+SIZE="2473K"
+HUSE="ipv6 glib gtk imlib esound audiofile tcl xmms"
+
+SOURCES="http://bitchx.org/files/source/ircii-pana-1.1-final.tar.gz
+	 ircii-makefile-patch.diff config.h"
+	 
+RUNTIME="glibc ncurses >=openssl-0.9.7e"
+
+use glib && RUNTIME="$RUNTIME glib"
+use gtk && RUNTIME="$RUNTIME gtk"
+use imlib && RUNTIME="$RUNTIME imlib"
+use esd && RUNTIME="$RUNTIME esound"
+use audiofile && RUNTIME="$RUNTIME audiofile"
+use tcl && RUNTIME="$RUNTIME tcl"
+use xmms && RUNTIME="$RUNTIME xmms"
+
+function build() {
+  cd $SRC/BitchX
+  
+  use ipv6 && OPTS="$OPTS --enable-ipv6" || OPTS="$OPTS --disable-ipv6"
+  use glib && OPTS="$OPTS --with-glib" || OPTS="$OPTS --disable-glibtest --without-glib"
+  use gtk && OPTS="$OPTS --with-gtk" || OPTS="$OPTS --disable-gtktest --without-gtk"
+  use imlib && OPTS="$OPTS --with-imlib" || OPTS="$OPTS --without-imlib"
+  use esd && OPTS="$OPTS --with-esd" || OPTS="$OPTS --without-esd"
+  use audiofile && OPTS="$OPTS --with-audiofile" || OPTS="$OPTS --without-audiofile"
+  use tcl && OPTS="$OPTS --with-tcl" || OPTS="$OPTS --without-tcl"
+  use xmms && OPTS="$OPTS --with-xmms" || OPTS="$OPTS --without-xmms"
+  
+  patch -p0 <../ircii-makefile-patch.diff
+  cd doc
+
+  patch -p0 <../../ircii-makefile-patch.diff
+  cd ..
+
+  remove_flags -fstack-protector -fstack-protector-all
+
+  ./configure --prefix=/usr \
+              --enable-cdrom \
+              --with-ssl \
+	      $OPTS
+
+  cp -f $SRC/config.h $SRC/BitchX/include/
+  make
+  make prefix=$PKG/usr install
+  
+  cd $PKG/usr/bin
+  rm -f BitchX && ln -sf BitchX-$VERSION-final BitchX
+  
+  cd $SRC/BitchX
+
+  install_docs COMPILE-PROBLEMS Changelog INSTALL IPv6-support README*
+  
+  cp -R $SRC/BitchX/bitchx-docs/ \
+    $PKG/usr/share/doc/$NAME-$VERSION/
+  cp -R $SRC/BitchX/script/ \
+    $PKG/usr/share/doc/$NAME-$VERSION/
+  
+  mkdir -p $PKG/etc/skel/.BitchX
+  cp BitchX.help BitchX.ircnames BitchX.quit BitchX.reasons \
+     $PKG/etc/skel/.BitchX/
+
+  cd $PKG/usr/man/man1
+  bzip2 -d BitchX.1.bz2
+  gzip -9 BitchX.1
+}

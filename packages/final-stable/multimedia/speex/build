@@ -1,0 +1,33 @@
+NAME=speex
+VERSION=1.1.8
+ARCH=i686
+RELEASE=1
+URL="http://www.speex.org/"
+DESC="A free codec for free speech"
+GROUP=multimedia
+LICENSE="OwnLicense"
+SIZE="574K"
+HUSE="static"
+
+SOURCES="http://www.speex.org/download/speex-1.1.8.tar.gz"
+
+RUNTIME="libogg"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  ./configure --prefix=/usr $OPTS
+  make
+  make prefix=$PKG/usr install
+  
+  for file in `ls $PKG/usr/include/speex`
+  do
+    ln -s speex/$file $PKG/usr/include/$file
+  done
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+
+  chmod 644 $PKG/usr/share/doc/$NAME-$VERSION/README
+}

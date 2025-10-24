@@ -1,0 +1,62 @@
+NAME=foomatic
+VERSION=3.0.2
+ARCH=i686
+RELEASE=1
+DESC="The knowledge about printers, drivers, and driver options."
+URL="http://www.linuxprinting.org/foomatic.html"
+GROUP=printing
+LICENSE=GPLv2
+SIZE="972K"
+
+SOURCES="http://www.linuxprinting.org/download/foomatic/foomatic-filters-3.0.2.tar.gz
+         http://www.linuxprinting.org/download/foomatic/foomatic-db-engine-3.0.2.tar.gz
+	 http://www.linuxprinting.org/download/foomatic/foomatic-db-hpijs-1.4-1.tar.gz
+	 http://www.linuxprinting.org/download/foomatic/foomatic-db-20050205.tar.gz"
+
+BACKUPS="etc/footmatic/filter.conf"       
+       
+BUILDTIME="a2ps cups"
+
+RUNTIME="perl"
+
+build() {
+  cd $SRC/foomatic-db-20050205
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs COPYING ChangeLog README TODO USAGE
+  
+  cd $SRC/foomatic-db-engine-3.0.2
+  
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION/foomatic-db-engine
+  cp -a COPYING ChangeLog Foomatic-Devel-Ideas.txt README* \
+	TODO USAGE $PKG/usr/share/doc/$NAME-$VERSION/foomatic-db-engine
+
+  cd $SRC/foomatic-db-hpijs-1.4-1
+
+  ./configure --prefix=/usr
+  make
+  make DESTDIR=$PKG install
+
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION/foomatic-db-hpijs
+  cp -a COPYING ChangeLog README TODO \
+    USAGE $PKG/usr/share/doc/$NAME-$VERSION/foomatic-db-hpijs
+
+  cd $SRC/foomatic-filters-3.0.2
+  ./configure --prefix=/usr \
+	      --sysconfdir=/etc
+  make
+  make DESTDIR=$PKG install
+
+  mkdir -p $PKG/usr/share/doc/$NAME-$VERSION/foomatic-filters-3.1
+  cp -a COPYING README TODO USAGE \
+	$PKG/usr/share/doc/$NAME-$VERSION/foomatic-filters-3.1
+  rm -f $PKG/usr/lib/perl5/site_perl/5.8.5/i686-linux/auto/Foomatic/.packlist
+  rm -f $PKG/usr/share/foomatic/db/source/driver/gimp-print.xml
+}

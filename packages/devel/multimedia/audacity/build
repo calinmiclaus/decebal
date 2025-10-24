@@ -1,0 +1,45 @@
+NAME=audacity
+VERSION=1.2.3
+ARCH=i686
+RELEASE=1
+URL="http://audacity.sourceforge.net/"
+DESC="Audacity is a cross-platform multitrack audio editor."
+GROUP=multimedia
+LICENSE="GPLv2 BSDL"
+SIZE="4078K"
+HUSE="resample flac myquist portmixer soundtouch"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/audacity/audacity-src-1.2.3.tar.gz
+         audacity.desktop audacity.png"
+
+RUNTIME="wxgtk libmad libvorbis libsndfile libid3tag ladspa"
+
+use resample && RUNTIME="$RUNTIME libresample" 
+use flac && RUNTIME="$RUNTIME flac"
+use nyquist && RUNTIME="$RUNTIME libnyquist"
+use portmixer && RUNTIME="$RUNTIME portmixer"
+use soundtouch && RUNTIME="$RUNTIME soundtouch"
+
+build() {
+  cd $SRC/$NAME-src-$VERSION
+  
+  use resample && OPTS="$OPTS --with-libresample" || OPTS="$OPTS --without-libresample"
+  use flac && OPTS="$OPTS --with-libflac" || OPTS="$OPTS --without-libflac"
+  use myquist && OPTS="$OPTS --with-nyquist" || OPTS="$OPTS --without-nyquist"
+  use portmixer && OPTS="$OPTS --with-portmixer" || OPTS="$OPTS --without-portmixer"
+  use soundtouch && OPTS="$OPTS --with-soundtouch" || OPTS="$OPTS --without-soundtouch"
+  
+  ./configure --prefix=/usr \
+	      --with-libsndfile \
+	      $OPTS
+#	      --with-id3tag \
+#	      --with-vorbis \
+#             --with-libmad \
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0644 ../audacity.png $PKG/usr/share/pixmaps/audacity.png
+  install -D -m 0644 ../audacity.desktop $PKG/usr/share/applications/audacity.desktop
+    
+  install_docs LICENSE.txt README.txt
+}

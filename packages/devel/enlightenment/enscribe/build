@@ -1,0 +1,38 @@
+NAME=enscribe
+VERSION=21052005
+ARCH=i686
+RELEASE=1
+URL="http://www.enlightenment.org/"
+DESC="Simple text editor using EFL and Esmart_Textarea."
+GROUP=enlightenment
+LICENSE="BSDL"
+SIZE="303K"
+HUSE="static"
+
+SOURCES="enscribe-21052005.tar.bz2
+	 Makefile"
+
+RUNTIME="=evas-21052005 =ecore-21052005 =edb-21052005 =edje-21052005 =emotion-21052005"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static || OPTS="--disable-static"
+  
+  for FILE in $(find ./ -type f -name Makefile.am)
+  do
+    cp $FILE ${FILE%/*}/Makefile.in
+  done
+
+  ./autogen.sh
+  CPPFLAGS="$CPPFLAGS -I/opt/enlightenment/include" \
+  ./configure --prefix=/opt/enlightenment \
+              --sysconfdir=/etc/opt/enlightenment $OPTS
+
+  cp -f $SRC/Makefile .
+
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog README
+}

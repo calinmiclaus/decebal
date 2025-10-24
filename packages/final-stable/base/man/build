@@ -1,0 +1,44 @@
+NAME=man
+VERSION=1.5p
+ARCH=i686
+RELEASE=2
+URL="http://www.win.tue.nl/~aeb/linux/man/"
+DESC="A utility for formating and displaying the on-line manual pages."
+GROUP=base
+LICENSE="GPLv2"
+SIZE="228K"
+
+SOURCES="ftp://ftp.win.tue.nl/pub/linux-local/utils/man/man-1.5p.tar.gz
+         makewhatis"
+
+RUNTIME=">=bash-2.05b"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  sed -i "s:DEFAULTLESSOPT=\"-is\":DEFAULTLESSOPT=\"-isR\":" configure
+  
+  ./configure -default \
+              --confdir=/etc \
+	      --mandir=/usr/share/man \
+	      +lang all
+  make
+  make PREFIX=$PKG install
+  
+  cd man2html
+  
+  make PREFIX=$PKG install-scripts
+  
+  cd ../
+
+  install -D -m 0755 ../makewhatis $PKG/etc/cron.d/daily/makewhatis
+  
+  install_docs COPYING HISTORY INSTALL LSM README README.GNU-WIN32 \
+        README.HP README.IRIX TODO
+
+  # we move man2html stuff to /srv/www
+  mkdir -p $PKG/srv
+  mv $PKG/home/httpd $PKG/srv/www/
+  rm -rf $PKG/home
+}
+  

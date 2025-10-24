@@ -1,0 +1,18 @@
+NAME=gnochm
+VERSION=0.9.5
+ARCH=i686
+RELEASE=1
+URL="http://gnochm.sourceforge.net/"
+DESC=""
+GROUP=doc-tools
+LICENSE=""
+SIZE="304K"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/gnochm/gnochm-0.9.5.tar.gz"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  install_docs ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README
+}

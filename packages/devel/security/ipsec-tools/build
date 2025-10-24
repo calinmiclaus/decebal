@@ -1,0 +1,61 @@
+NAME=ipsec-tools
+VERSION=0.5
+ARCH=i686
+RELEASE=1
+URL="http://ipsec-tools.sourceforge.net/"
+DESC="A port of KAME's IPsec utilities to the Linux-2.6 IPsec implementation."
+GROUP=security
+LICENSE="NS"
+SIZE="631K"
+HUSE="static ipv6 gssapi hybrid radius"
+
+SOURCES="http://heanet.dl.sourceforge.net/sourceforge/ipsec-tools/ipsec-tools-$VERSION.tar.bz2
+         ipsec-tools-0.5.1.patch racoon.init racoon.sysconf"
+
+BUILDTIME="kernel-sources"
+
+RUNTIME=">=openssl-0.9.7e readline"
+
+use gssapi && RUNTIME="$RUNTIME gpgme"
+use radius && RUNTIME="$RUNTIME libradius"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+#  patch -p1 < ../ipsec-tools-0.5.1.patch
+  
+  sed -i  -e 's|^adminsockdir =.*|adminsockdir = \$\{localstatedir\}/racoon/|g' \
+    -e 's|install-exec-local ||g' src/racoon/Makefile.in
+				  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use ipv6 || OPTS="$OPTS --disable-ipv6"
+  use gssapi && OPTS="$OPTS --enable-gssapi"
+  use hybrid && OPTS="$OPTS --enable-hybrid"
+  use radius && OPTS="$OPTS --with-libradius"
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --exec-prefix=/ \
+	      --libdir=/lib \
+	      --localstatedir=/var/lib \
+              --sharedstatedir=/var/run \
+	      --mandir=/usr/share/man \
+              --enable-shared \
+	      --enable-adminport \
+	      --enable-frag \
+	      --enable-stats \
+	      --enable-dpd \
+	      --enable-samode-unspec \
+	      --enable-natt \
+	      --with-readline \
+	      --with-openssl \
+	      $OPTS
+#	      --with-kernel-headers=/usr/include \
+  make
+  make DESTDIR=$PKG install
+  
+  install -D -m 0700 ../racoon.init $PKG/etc/rc.d/racoon
+  install -D -m 0644 ../racoon.sysconf $PKG/etc/conf.d/racoon
+  
+  install_docs ChangeLog NEWS README
+}

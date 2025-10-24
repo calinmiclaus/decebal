@@ -1,0 +1,38 @@
+NAME=pango
+VERSION=1.8.1
+ARCH=i686
+RELEASE=1
+URL="http://www.gtk.org/"
+DESC="A library for layout and rendering of text."
+GROUP=graphics
+LICENSE="GPLv2"
+SIZE="973K"
+HUSE="static gtkdoc"
+
+SOURCES="ftp://ftp.gtk.org/pub/gtk/v2.6/pango-1.8.1.tar.bz2"
+
+BUILDTIME="pkgconfig"
+
+RUNTIME=">=glib2-2.5.7 >=freetype2-2.0.0 xorg expat"
+
+use gtkdoc && BUILDTIME="gtkdoc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+              --localstatedir=/var/lib \
+	      --libexecdir=/usr/lib/$NAME \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README.win32 \
+    TODO TODO.xml README
+}

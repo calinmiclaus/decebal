@@ -1,0 +1,23 @@
+NAME=icu
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://www.ibm.com/software/globalization/icu"
+DESC=""
+GROUP=libs
+LICENSE=
+
+SOURCES=""
+
+RUNTIME="gcc bash"
+
+build() {
+  cd $SRC/$NAME/source
+  
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs
+}

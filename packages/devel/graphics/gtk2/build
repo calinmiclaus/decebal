@@ -1,0 +1,40 @@
+NAME=gtk2
+VERSION=2.6.7
+ARCH=i686
+RELEASE=1
+URL="http://www.gtk.org"
+DESC="The GTK+ Toolkit (v2)."
+GROUP=graphics
+LICENSE=GPLv2
+SIZE="11156K"
+HUSE="static debug gtkdoc"
+
+SOURCES="ftp://ftp.gtk.org/pub/gtk/v2.6/gtk+-2.6.7.tar.bz2"
+
+BUILDTIME="gettext pkgconfig"
+	   
+RUNTIME=">=glib2-2.6.0 >=libjpeg-6b >=libtiff-3.7.1 >=atk-1.0.1 >=pango-1.7.0 xorg"
+								  
+build() {
+  cd $SRC/gtk+-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use debug && OPTS="$OPTS --enable-debug=yes"
+  use gtkdoc && OPTS="$OPTS --enable-gtk-doc"
+      
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc \
+	      --sharedstatedir=/var/lib \
+	      --infodir=/usr/share/info \
+	      --mandir=/usr/share/man \
+	      --enable-shm \
+	      --enable-xkb \
+	      --with-xinput=yes \
+	      $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  mkdir -p $PKG/etc/gtk-2.0
+  
+  install_docs AUTHORS COPYING ChangeLog* HACKING INSTALL NEWS* README*
+}

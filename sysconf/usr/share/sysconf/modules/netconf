@@ -1,0 +1,666 @@
+#!/bin/bash
+#
+# Script for configuring your network interfaces
+#
+# Copyright (C) 2005 Miclaus Calin Bogdan <trog@decebal.org>
+# All rights reserved.
+# Released under the terms of the GPL license, version 2
+#
+. /etc/sysconf.conf
+. /usr/share/sysconf/functions
+
+netconf_wlan()
+# configure a wireless card, $1="wlanX" where X is the card number
+# TODO add descriptions to all fields
+{
+local number_tmp=`echo $1|wc -c`
+let number_tmp=$number_tmp-1
+local number=`echo $1|cut -b $number_tmp`
+
+local nw_but=3 nw_sel="" nw_item="" nw_value=""
+
+. /etc/conf.d/network
+    [ ! -z "`declare -f $1`" ] && \
+      {
+      $1
+      IP_wlan[$number]=$IP
+      ESSID_wlan[$number]=$ESSID
+      NICK_wlan[$number]=$NICK
+      MODE_wlan[$number]=$MODE
+      RATE_wlan[$number]=$RATE
+      } || \
+      {
+      IP_wlan[$number]=""
+      ESSID_wlan[$number]=""
+      NICK_wlan[$number]=""
+      MODE_wlan[$number]=""
+      RATE_wlan[$number]=""
+      }
+
+while [ $nw_but -eq 3 ];
+do
+
+$dialog --backtitle "$version" --cancel-label "Cancel" \
+--default-item "$nw_item" --extra-label "Edit" \
+--title " $1 configuration " --ok-label "OK" \
+--inputmenu "\nWhat you want to configure ? \n\n" 24 50 15 \
+"IP" "${IP_wlan[$number]}"  \
+"ESSID" "${ESSID_wlan[$number]}" \
+"NICK" "${NICK_wlan[$number]}" \
+"MODE" "${MODE_wlan[$number]}" \
+"RATE" "${RATE_wlan[$number]}" \
+2>$tmp/$1
+nw_but=$?
+nw_sel=`cat $tmp/$1`
+rm -f $tmp/$1
+
+case $nw_but in
+  3)
+  nw_item=`echo $nw_sel|cut -f 2 -d " "`
+  nw_value=`echo $nw_sel|cut -f 3- -d " "`
+  case $nw_item in
+    "IP")
+    IP_wlan[$number]=$nw_value
+    ;;
+    "ESSID")
+    ESSID_wlan[$number]=$nw_value
+    ;;
+    "NICK")
+    NICK_wlan[$number]=$nw_value
+    ;;
+    "MODE")
+    MODE_wlan[$number]=$nw_value
+    ;;
+    "RATE")
+    RATE_wlan[$number]=$nw_value
+    ;;
+  esac
+  ;;
+  0)
+  # this interface is configured, used when saving
+  [ -z "`echo $setup_interfaces|grep $1`" ] && setup_interfaces="$setup_interfaces $1"
+
+  $dialog --backtitle "$version" --title " Confirmation " \
+  --yesno "\n\nDo you want to start $1 at boot-time ?\n\n" 0 0
+  [ $? -eq 0 ] && \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|sort|uniq >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+      interfaces="$interfaces $i"
+    done
+    } || \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|grep -v "$1" >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+    interfaces="$interfaces $i"
+    done
+    }
+cat <<EOF>$tmp/interface.$i
+$i() {
+   IP=${IP_wlan[$number]};
+   ESSID=${ESSID_wlan[$number]};
+   NICK=${NICK_wlan[$number]};
+   MODE=${MODE_wlan[$number]};
+   RATE=${RATE_wlan[$number]};
+}
+EOF
+  ;;
+esac
+done
+}
+
+netconf_eth()
+# configure an ethernet card, $1
+{
+local number=`echo $1|cut -f 2 -d "h"`
+local ne_but=3 ne_sel="" ne_item="" ne_value=""
+
+. /etc/conf.d/network
+[ -z "`echo $setup_interfaces|grep -w $1`" ] && \
+  {
+    [ ! -z "`declare -f $1`" ] && \
+      {
+      $1
+      USEDHCP_eth[$number]=$USEDHCP
+      DHCPHOSTNAME_eth[$number]=$DHCPHOSTNAME
+      IP_eth[$number]=$IP
+      NETMASK_eth[$number]=$NETMASK
+      BROADCAST_eth[$number]=$BROADCAST
+      IP6_eth[$number]=$IP6
+      PREFIXLEN_eth[$number]=$PREFIXLEN
+      } || \
+      {
+      USEDHCP_eth[$number]="no"
+      DHCPHOSTNAME_eth[$number]=""
+      IP_eth[$number]="192.168.$number.255"
+      NETMASK_eth[$number]="255.255.255.0"
+      BROADCAST_eth[$number]="192.168.$number.255"
+      IP6_eth[$number]=""
+      PREFIXLEN_eth[$number]=64
+      }
+  }
+while [ $ne_but -eq 3 ];
+do
+
+$dialog --backtitle "$version" --cancel-label "Cancel" \
+--default-item "$ne_item" --extra-label "Edit" \
+--title " $1 configuration " --ok-label "OK" \
+--inputmenu "\nWhat you want to configure ? \n\n\
+USE_DHCP      : set to 'yes' if you use DHCP else 'no' \n\
+DHCP_HOSTNAME : your DHCP hostname (optional) \n\
+IP            : your ip            (mandatory)\n\
+NETMASK_IP    : subclass netmask   (mandatory)\n\
+BROADCAST_IP  : broadcast ip       (mandatory)\n\
+IP6           : ipv6 ip            (optional)\n\
+PREFIXLEN     :                    (optional)\n\n" 37 60 21 \
+"USE_DHCP" "${USEDHCP_eth[$number]}"  \
+"DHCP_HOSTNAME" "${DHCPHOSTNAME_eth[$number]}" \
+"IP" "${IP_eth[$number]}" \
+"NETMASK_IP" "${NETMASK_eth[$number]}" \
+"BROADCAST_IP" "${BROADCAST_eth[$number]}" \
+"IP6" "${IP6_eth[$number]}" \
+"PREFIXLEN" "${PREFIXLEN_eth[$number]}" \
+2>$tmp/$1
+ne_but=$?
+ne_sel=`cat $tmp/$1`
+rm -f $tmp/$1
+
+case $ne_but in
+  3)
+  ne_item=`echo $ne_sel|cut -f 2 -d " "`
+  ne_value=`echo $ne_sel|cut -f 3- -d " "|cut -f 1 -d "["`
+  case $ne_item in
+    "USE_DHCP")
+    USEDHCP_eth[$number]=$ne_value
+    ;;
+    "DHCP_HOSTNAME")
+    DHCPHOSTNAME_eth[$number]=$ne_value
+    ;;
+    "IP")
+    IP_eth[$number]=$ne_value
+    ;;
+    "NETMASK_IP")
+    NETMASK_eth[$number]=$ne_value
+    ;;
+    "BROADCAST_IP")
+    BROADCAST_eth[$number]=$ne_value
+    ;;
+    "IP6")
+    IP6_eth[$number]=$ne_value
+    ;;
+    "PREFIXLEN")
+    PREFIXLEN_eth[$number]=$ne_value
+    ;;
+  esac
+  ;;
+  0)
+  # this interface is configured, used when saving
+  [ -z "`echo $setup_interfaces|grep -w $1`" ] && setup_interfaces="$setup_interfaces $1"
+
+  $dialog --backtitle "$version" --title " Confirmation " \
+  --yesno "\n\nDo you want to start $1 at boot-time ?\n\n" 0 0
+  [ $? -eq 0 ] && \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|sort|uniq >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+      interfaces="$interfaces $i"
+    done
+    } || \
+    {
+    touch $tmp/interfaces
+    echo $1 >>$tmp/interfaces
+    cat $tmp/interfaces|grep -v "$1" >$tmp/interfaces.tmp
+    mv -f $tmp/interfaces.tmp $tmp/interfaces
+
+    interfaces=""
+    for i in `cat $tmp/interfaces`;
+    do
+    interfaces="$interfaces $i"
+    done
+    }
+    cat <<EOF>$tmp/interface.$i
+$i() {
+   USEDHCP=${USEDHCP_eth[$number]};
+   DHCPHOSTNAME=${DHCPHOSTNAME_eth[$number]};
+   IP=${IP_eth[$number]};
+   NETMASK=${NETMASK_eth[$number]};
+   BROADCAST=${BROADCAST_eth[$number]};
+   IP6=${IP6_eth[$number]};
+   PREFIXLEN=${PREFIXLEN_eth[$number]}
+}
+EOF
+  ;;
+esac
+done
+}
+
+function network_cards_menu()
+# displays a menu with ethernet and wireless cards. lets you configure them
+{
+eth_cards=`lspci 2>/dev/null|grep "Ethernet controller"|wc -l`
+eth_cards=`echo $eth_cards`
+
+local i=0 eth_cards_tmp=""
+# little trick to "compose" "eth0 eth1" from the information lspci gives
+while [ $i -lt $eth_cards ]
+do
+  eth_cards_tmp="$eth_cards_tmp eth$i"
+  let i=$i+1
+done
+
+eth_cards=$eth_cards_tmp
+
+wlan_cards=`iwconfig 2>/dev/null|grep IEEE|cut -f 1 -d " ">$tmp/wlan.cards`
+wlan_cards=`cat $tmp/wlan.cards`
+rm -f $tmp/wlan.cards
+
+local i=0 opt="" ncmsel=""
+
+# no cards at all ? ...
+if [ -z "$eth_cards" -a -z "$wlan_cards" ];
+then
+$dialog --backtitle "$version" --title " Network Configuration " \
+--msgbox "\nNo network cards found, leaving configuration.\n\n" 0 0
+return
+fi
+
+# set the menu settings for ethernet cards
+local number=0
+[ ! -z "$eth_cards" ] && \
+  for i in $eth_cards
+  do
+    opt="$opt eth${number} ethernet"
+    let number=$number+1
+  done
+
+# set the menu settings for wireless cards
+local number=0
+[ ! -z "$wlan_cards" ] && \
+  for i in $wlan_cards;
+  do
+    opt="$opt $i wireless"
+    let number=$number+1
+  done
+
+# main loop
+local ncmbut=0
+while [ $ncmbut -ne 1 ];
+do
+$dialog --backtitle "$version" --cancel-label "Back" \
+--title " Network Configuration " --default-item "$ncmsel" \
+--menu "\nThe following network controllers were detected on your system. \
+Select the network controller you want to configure\n\n" 0 0 0 $opt \
+2> $tmp/network_card.select
+ncmbut=$?
+ncmsel=`cat $tmp/network_card.select`
+rm -f $tmp/network_card.select
+
+case $ncmbut in
+    1)
+    return
+    ;;
+    0)
+    [ -z "`echo $wlan_cards|grep $ncmsel`" ] || netconf_wlan $ncmsel && netconf_eth $ncmsel
+    ;;
+esac
+done
+}
+
+function network_save()
+# saves network settings
+# in /etc/network
+{
+
+  echo "$setup_hostname" >/etc/hostname
+
+  cat /etc/hosts|grep -v "^127.0.0.1" >$tmp/hosts.tmp
+  echo "127.0.0.1 $setup_domainname $setup_hostname" >>$tmp/hosts.tmp
+  mv -f $tmp/hosts.tmp /etc/hosts
+
+
+# save the nameservers
+local i=0
+cat /etc/resolv.conf|grep -v "^nameserver" >$tmp/resolv.conf.tmp
+mv -f $tmp/resolv.conf.tmp /etc/resolv.conf
+#  while [ $i -le $nameserver_num ]
+  for (( i=1;i<=$nameserver_num;i=$i+1 ))
+  do
+    [ ! -z "${nameserver[$i]}" ] && \
+      {
+      [ -z "`cat /etc/resolv.conf|grep "^${nameserver[$i]}"`" ] && \
+        echo "nameserver ${nameserver[$i]}" >>/etc/resolv.conf
+      }
+  done
+
+#get rid of leading or ending space
+  interfaces=`echo $interfaces`
+
+  make_tmp_interfaces
+
+  for i in $setup_interfaces;
+  do
+  [ -z "`echo $wlan_cards|grep -w $i`" ] && \
+    {
+# this is an ehternet card....
+    local number=`echo $i|cut -f 2 -d "h"`
+
+    cat <<EOF>$tmp/interface.$i
+# $i Configuration :
+$i ()
+{
+    USEDHCP=${USEDHCP_eth[$number]};
+    DHCPHOSTNAME=${DHCPHOSTNAME_eth[$number]};
+    IP=${IP_eth[$number]};
+    NETMASK=${NETMASK_eth[$number]};
+    BROADCAST=${BROADCAST_eth[$number]};
+    IP6=${IP6_eth[$number]};
+    PREFIXLEN=${PREFIXLEN_eth[$number]};
+}
+
+EOF
+    } || \
+    {
+# this is a wireless card....
+    local number=`echo $i|cut -f 2 -d "n"`
+    cat <<EOF>$tmp/interface.$i
+# $i Configuration :
+$i ()
+{
+    IP=${IP_wlan[$number]};
+    ESSID=${ESSID_wlan[$number]};
+    NICK=${NICK_wlan[$number]};
+    MODE=${MODE_wlan[$number]};
+    RATE=${RATE_wlan[$number]};
+}
+
+EOF
+    }
+  done
+cat <<EOF>/etc/conf.d/network
+#
+# /etc/conf.d/network - network configuration file
+#
+# Networking configuration:
+#
+# ONBOOT=yes|no   - start interface on boot?
+# USEDCP=yes|no   - configure interface using dhcp?
+# DHCPHOSTNAME="" - do you have a dhcp hostname?
+# IP=             - ipv4 ip address
+# NETMASK=        - ipv4 netmask
+# BROADCAST=      - ipv4 broadcast
+# IP6=            - ipv6 ip adddress
+# PREFIXLEN=      - ipv6 prefix length
+#
+# Examples:
+#eth0() {
+#  ONBOOT=yes
+#  USEDHCP=no
+#  DHCPHOSTNAME=
+#  IP=192.168.0.2
+#  NETMASK=255.255.255.0
+#  BROADCAST=192.168.0.255
+#  IP6=fe80::260:8ff:fec0:dba0
+#  PREFIXLEN=64
+#}
+#
+#eth0_0() {
+#  ONBOOT=yes
+#  IP=192.168.0.2
+#  NETMASK=255.255.255.0
+#  BROADCAST=192.168.0.255
+#}
+
+# Set the system hostname and domainname.
+HOSTNAME=$setup_hostname
+DOMAINNAME=$setup_domainname
+
+# Default gateway.
+DEFAULTGW=$setup_gateway
+
+# Interfaces to start at boot
+INTERFACES="$interfaces"
+
+EOF
+for i in $tmp/interface.*;
+do
+  cat $i >>/etc/conf.d/network
+  echo >>/etc/conf.d/network
+done
+  $dialog --backtitle "$version" --title " Save " --msgbox \
+  "\nNetwork configuration saved.\n\n" 0 0
+}
+
+function add_nameserver()
+# adds nameservers to the $nameserver[] array
+{
+local ans_but ans_sel=""
+$dialog --backtitle "$version" --title " Nameserver " --inputbox \
+"\nEnter the IP address of an nameserver (DNS server). Looks like \
+a.b.c.d where a,b,c,d are numbers between 0 and 255.\n\n" 0 0 2>$tmp/nameserver
+ans_but=$?
+[ $ans_but -eq 0 ] && \
+  {
+  ans_sel=`cat $tmp/nameserver`
+  rm -f $tmp/nameserver
+  let nameserver_num=$nameserver_num+1
+  nameserver[$nameserver_num]=$ans_sel
+
+#  $dialog --backtitle "$version" --title " Nameserver " --yesno \
+#  "\nDo you want to add another nameserver ?\n\n" 0 0 && add_nameserver
+  } || rm -f $tmp/nameserver
+}
+
+function nameserver_menu()
+# displays a menu of nameserver, with the possibility to add & remove
+{
+local opt="" i nsmbut=1 nsmsel
+nameserver_num=`cat /etc/resolv.conf|grep "^nameserver"|wc -l`
+[ $nameserver_num -eq 0 ] && add_nameserver || \
+  {
+  local number=0
+  for i in `cat /etc/resolv.conf|grep "^nameserver"|awk '{print $2}'`;
+  do
+    [ ! -z "$i" ] && \
+      {
+      let number=$number+1
+#      opt="$opt $i -"
+      nameserver[$number]=$i
+      }
+  done
+  nameserver_num=$number
+  
+until [ $nsmbut -eq 0 -o $nameserver_num -eq 0 ]
+do
+  opt=""
+  for (( i=1;i<=$nameserver_num;i=$i+1 ))
+  do
+    opt="$opt ${nameserver[$i]} -"
+  done
+
+  $dialog --backtitle "$version" --title " Nameservers " \
+  --cancel-label "Add" --help-button --help-label "Delete" --menu \
+  "\nHere is the list of the nameservers your system uses. A nameserver \
+is used to resolve a hosts ip (eg. www.host.com - 123.123.123.123). \
+Nameservers are needed if you're connected to the internet.\n\n" 0 0 0 \
+$opt 2>$tmp/nameserver
+  
+  nsmbut=$?
+  nsmsel=`cat $tmp/nameserver`
+  rm -f $tmp/nameserver
+  
+  case $nsmbut in
+  2) # delete
+  local nsmsel_tmp=`echo $nsmsel|cut -f 2 -d " "`
+  cat /dev/null >$tmp/nameservers
+  
+  for (( i=1;i<=$nameserver_num;i=$i+1 ))
+  do
+    [ "${nameserver[$i]}" != "$nsmsel_tmp" ] && echo "${nameserver[$i]}" >>$tmp/nameservers
+  done
+
+  [ ! -s $tmp/nameservers ] && \
+    {
+    nsmbut=1
+    nameserver_num=0
+    } || \
+    {
+    nameserver_num=0
+    for i in `cat $tmp/nameservers`;
+    do
+      let nameserver_num=$nameserver_num+1
+      nameserver[$nameserver_num]=$i
+    done
+    rm -f $tmp/nameservers
+    }
+  ;;
+  1) add_nameserver ;;
+  esac
+done
+  }
+}
+
+function make_tmp_interfaces()
+# takes from /etc/conf.d/network all interfaces and puts them in $tmp/interface.$i
+{
+cat <<EOF>$tmp/cut_interfaces.sh
+#!/bin/bash
+. /etc/conf.d/network
+rm -f $tmp/interface.*
+
+declare -F|cut -f 3 -d " " >$tmp/interfaces.all
+
+while read i;
+do
+  declare -f \$i >$tmp/interface.\$i
+done <$tmp/interfaces.all
+EOF
+(sh $tmp/cut_interfaces.sh)
+rm -f $tmp/interfaces.all $tmp/cut_interfaces.sh
+}
+
+
+function main_menu()
+# network configuration main menu
+# has one parameter, for "Save" ...saves in $1/etc/network
+{
+init
+
+local nmmbutton=0
+local nmmsel=""
+while [ $nmmbutton -ne 1 ];
+do
+# FIXME la meniu tre sa-i zic ca ii RECOMENDED sa le configureze pe toate
+# si sa-i zic defaulturile
+$dialog --backtitle "$version" --title " Network Configuration " \
+--cancel-label "Back" --default-item "$nmmsel" --ok-label "OK" \
+--menu "\nSelect what you want to configure\n\n" 0 0 0 \
+"Hostname" "Set your hostname in the network" \
+"Domain" "Set the network domain" \
+"Gateway" "Set your default gateway" \
+"Cards" "Configure your network cards" \
+"Nameserver" "Add a nameserver" \
+"Save" "Save network configuration" \
+"Start" "Start the network" \
+2>$tmp/nmmsel
+nmmbutton=$?
+nmmsel=`cat $tmp/nmmsel`
+rm -f $tmp/nmmsel
+case $nmmbutton in
+0)
+  case $nmmsel in
+  "Hostname")
+    setup_hostname=`hostname`
+    $dialog --backtitle "$version" --title " Host Name " --inputbox \
+"\nEnter the hostname for this machine. The hostname is used by many of the \
+networking programs to identify this machine. The hostname is a single
+word (no spaces or dots).\n\n" 0 0 "$setup_hostname" 2>$tmp/hostname.tmp
+    [ $? -eq 0 ] && setup_hostname=`cat $tmp/hostname.tmp`
+    rm -f $tmp/hostname.tmp
+  ;;
+  "Domain")
+    setup_domainname=`domainname`
+    $dialog --backtitle "$version" --title " Domain Name " --inputbox \
+"\nEnter the domain name for this machine. The domainname is used by many of \
+the networking programs to identify this machine. The domainname may contain \
+dots but no spaces. It can also be an empty string \n\n" 0 0 "$setup_domainname" \
+   2>$tmp/domainname.tmp
+    [ $? -eq 0 ] && setup_domainname=`cat $tmp/domainname.tmp`
+    rm -f $tmp/domainname.tmp
+  ;;
+  "Gateway")
+    setup_gateway=`route -n|grep "^0.0.0.0"|awk '{print $2}'`
+    $dialog --backtitle "$version" --title " Gateway " --inputbox \
+    "\nEnter the if of the gateway for this machine if you have one. The gateway \
+is a server trough which the packages are routed.\n\n" \
+    0 0 "$setup_gateway" 2>$tmp/gateway.tmp
+    [ $? -eq 0 ] && setup_gateway=`cat $tmp/gateway.tmp`
+    rm -f $tmp/gateway.tmp
+  ;;
+  "Cards") network_cards_menu ;;
+  "Save")
+    network_save
+#    nmmbutton=1
+  ;;
+  "Nameserver") nameserver_menu;;
+  "Start")
+    network_save
+    decebal start network
+  ;;
+  esac
+;;
+esac
+done
+}
+
+function init()
+# initialise variables and everything else
+{
+nameserver_num=0
+setup_interfaces=""
+setup_gateway="`route -n|grep \"^0.0.0.0\"|awk '{print $2}'`"
+setup_hostname=`hostname`
+setup_domainname=`domainname`
+
+. /etc/conf.d/network
+interfaces=$INTERFACES
+
+local number=0
+for (( number=0;number<=100;number=$number+1 ))
+do
+  USEDHCP_eth[$number]="no"
+  DHCPHOSTNAME_eth[$number]=""
+  IP_eth[$i]="192.168.$number.255"
+  NETMASK_eth[$i]="255.255.255.0"
+  BROADCAST_eth[$i]="192.168.$number.255"
+  IP6_eth[$number]=""
+  PREFIXLEN_eth[$number]=64
+
+  IP_wlan[$number]=""
+  ESSID_wlan[$number]=""
+  NICK_wlan[$number]=""
+  MODE_wlan[$number]=""
+  RATE_wlan[$number]=""
+done
+}
+
+tmp=`make_tmp network`
+$1
+rm -rf $tmp

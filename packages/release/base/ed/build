@@ -1,0 +1,36 @@
+NAME=ed
+VERSION=0.2
+ARCH=i686
+RELEASE=1
+DESC="A line-oriented text editor."
+URL="http://www.gnu.org/software/ed/ed.html"
+GROUP=base
+LICENSE="GPLv2"
+SIZE="181K"
+
+SOURCES="ftp://ftp.gnu.org/gnu/ed/ed-0.2.tar.gz
+         ed-0.2-mkstemp.patch"
+
+BACKUPS="etc/ed"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  patch -p1 < ../ed-0.2-mkstemp.patch
+  
+  ./configure --prefix=/usr
+  make
+  make prefix=$PKG/usr install
+  
+  mkdir -p $PKG/bin
+  mv $PKG/usr/bin/ed $PKG/bin/ed
+  rm -f $PKG/usr/bin/red
+  ln -s ../../bin/ed $PKG/usr/bin/red
+  
+  mkdir -p $PKG/etc
+  echo a > $PKG/etc/ed
+  
+  install_docs COPYING ChangeLog INSTALL NEWS POSIX README THANKS TODO
+}

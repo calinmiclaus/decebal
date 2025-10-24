@@ -1,0 +1,114 @@
+#!/bin/bash
+# v0.2.0
+
+run_module() {
+# runs function named $2 from a sysconf module named $1
+# this is a function since i may way want to change stuff in the future
+[ ! -e $modules_dir/$1 ] && \
+  {
+  $dialog --backtitle "$version" --title " ERROR " --msgbox \
+  "\nCound not find module ($1). Could not execute ($2).\n\n" 0 0
+  return 1
+  }
+  
+(sh $modules_dir/$1 $2)
+} # end of run_module()
+
+show_menu() {
+#first argument = menu menu
+
+[ ! -e $menu_dir/menu.$1 ] && \
+  {
+  $dialog --backtitle "$version" --title " ERROR " \
+  --msgbox "\nThe menu ($1) doesent exist, please report this problem \
+on http://www.decebal.org or to <trog@decebal.org>.\n\n" 0 0
+  return 1
+  }
+
+local i sm_but=0 item desc
+local dialog_opts=""
+for i in `egrep -v $"#" $menu_dir/menu.$1|grep ":"|tr " " "_"`;
+do
+  item=`echo $i|cut -f 1 -d ":"`
+  desc=`echo $i|cut -f 3 -d ":"`
+  dialog_opts="$dialog_opts $item \"$desc\""
+done
+
+dialog_opts=`echo $dialog_opts|tr "_" " "`
+
+cat <<EOF>$tmp/menu.$1.sh
+#!/bin/bash
+touch $tmp/menu.$1.sel
+default_item=\`cat $tmp/menu.$1.sel\`
+$dialog --backtitle "$version" --title " $1 menu " \\
+--default-item "\$default_item" \\
+--cancel-label "Back" --menu \\
+"
+EOF
+egrep $"\^" $menu_dir/menu.$1|cut -b 2- >>$tmp/menu.$1.sh
+cat <<EOF>>$tmp/menu.$1.sh
+" 0 0 0 $dialog_opts \\
+2>$tmp/menu.$1.sel
+EOF
+
+unset i dialog_opts item desc
+
+until [ $sm_but -eq 1 ];
+do
+  sh $tmp/menu.$1.sh
+  sm_but=$?
+
+  [ $sm_but -eq 0 ] && \
+    {
+    local sm_sel=`cat $tmp/menu.$1.sel`
+    sm_sel=`egrep $"$sm_sel:" $menu_dir/menu.$1|cut -f 2 -d ":"`
+    case `echo $sm_sel|cut -b 1` in
+      ".")
+      local module_name=`echo $sm_sel|cut -f 2 -d "."`
+      local module_func=`echo $sm_sel|cut -f 3 -d "."`
+      run_module $module_name $module_func
+      unset module_name module_func
+      ;;
+      "@") show_menu `echo $sm_sel|cut -b 2-` ;;
+      "%")
+      local run=`echo $sm_sel|cut -b 2-`
+      (sh -c "$run")
+      unset run
+      ;;
+    esac
+    }
+done
+
+rm -f $tmp/menu.$1.{sel,sh}
+
+} # end of show_menu()
+
+function make_tmp()
+{
+if [ ! -z "`which mktemp 2>/dev/null | cut -f 1 -d \":\"`" ]; then
+    local mktemp=`which mktemp`
+    local tmp=`$mktemp -d /tmp/$1.XXXXXXXXXX` 1>/dev/null
+    if [ ! -d $tmp ]; then
+        echo "error: can't create tmp directory ($tmp)."
+        exit 1
+    fi
+    echo $tmp
+else
+    echo "error: you need mktemp."
+    exit 2
+fi
+} # end of make_tmp
+
+function replace()
+{
+#local a=$1 b=$2 line
+#read line
+# need this since i dont know how to make sed not interpret "/"
+# hopefully $1 and $2 dont contain "ä"
+#[ ! -z "`echo $line|grep \"/\"`" ] && line=`echo $line|tr "/" "ä"`
+#[ ! -z "`echo $a|grep \"/\"`" ] && a=`echo "$a"|tr "/" "ä"`
+#[ ! -z "`echo $b|grep \"/\"`" ] && b=`echo "$b"|tr "/" "ä"`
+#echo "$line"|sed s/^"$a".*/"$b"/#|tr "ä" "/"
+sed s/^"$1".*/"$2"/
+} # end of replace()
+

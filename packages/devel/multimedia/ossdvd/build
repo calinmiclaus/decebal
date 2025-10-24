@@ -1,0 +1,12 @@
+NAME=ossdvd
+VERSION=
+ARCH=i686
+RELEASE=1
+URL="http://crashrecovery.org/oss-dvd.html"
+DESC="A package that add DVD extensions to cdrtools."
+GROUP=multimedia
+LICENSE=""
+SIZE=""
+
+SOURCES="http://crashrecovery.org/oss-dvd/cdrtools-2.01a32-ossdvd.patch.bz2"
+

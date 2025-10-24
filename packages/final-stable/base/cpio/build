@@ -1,0 +1,29 @@
+NAME=cpio
+VERSION=2.6
+ARCH=i686
+RELEASE=1
+URL="http://www.gnu.org/software/cpio"
+DESC="A tool to copy files into or out of a cpio or tar archive."
+GROUP=base
+LICENSE="GPLv2 LGPLv2"
+SIZE="437K"
+
+SOURCES="http://ftp.gnu.org/gnu/cpio/cpio-2.6.tar.bz2"
+
+RUNTIME="libc"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  ./configure --prefix=/usr \
+              --libexecdir=/usr/bin
+  make 
+  make prefix=$PKG/usr libexecdir=$PKG/usr/bin install
+  
+  mkdir -p $PKG/bin
+  
+  mv $PKG/usr/bin/cpio $PKG/bin/
+   
+  install_docs COPYING ChangeLog INSTALL NEWS README ABOUT-NLS AUTHORS \
+    THANKS TODO
+}

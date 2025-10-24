@@ -1,0 +1,29 @@
+NAME=terminal
+VERSION=0.2.4
+ARCH=i686
+RELEASE=1
+URL="http://www.xfce.org/"
+DESC="A unique terminal emulator for the X windowing system."
+GROUP=xfce-extra
+LICENSE=GPLv2
+SIZE="984K"
+
+SOURCES="http://download.berlios.de/xfce-goodies/Terminal-0.2.4.tar.bz2"
+
+BUILDTIME="gettext xml-parser-perl >=pkgconfig-0.9.0"
+
+RUNTIME=">=exo-0.3.0 >=vte-0.11.11 >=startup-notification-0.4 >=dbus-0.22"
+
+build() {
+  cd $SRC/Terminal-$VERSION
+  
+  PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/gnome/lib/pkgconfig"  
+  ./configure --prefix=/opt/xfce \
+              --libexecdir=/opt/xfce/sbin \
+	      --mandir=/opt/xfce/share/man
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog HACKING INSTALL \
+    NEWS README THANKS TODO
+}

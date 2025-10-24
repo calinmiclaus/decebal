@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=NeverPutt
+GenericName=Puzzle Game
+Comment=Neverputt is part puzzle game
+Icon=/usr/games/share/icons/neverball/neverputt.png
+FilePattern=neverputt
+TryExec=neverputt
+Exec=neverputt
+Categories=Application;Game;PuzzleGame;

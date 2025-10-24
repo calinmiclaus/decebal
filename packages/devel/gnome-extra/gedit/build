@@ -1,0 +1,35 @@
+NAME=gedit
+VERSION=2.10.0
+ARCH=i686
+RELEASE=1
+URL="http://gnome.org/"
+DESC="A small and lightweight UTF-8 text editor for the GNOME environment."
+GROUP=gnome-extra
+LICENSE="GPLv2"
+SIZE="3024K"
+HUSE="static"
+
+SOURCES="ftp://ftp.gnome.org/pub/gnome/desktop/2.10/2.10.0/sources/gedit-2.10.0.tar.bz2"
+
+RUNTIME="eel gtksourceview aspell libgnomeprintui"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+
+  find . -name Makefile.in -exec sed -i -e 's/-scrollkeeper-update.*//' {} \;
+  if [ -f omf.make ]; then
+   sed -i -e 's/-scrollkeeper-update.*//' omf.make
+  fi	 
+
+  use static && OPTS="--enable-static"
+
+  ./configure --prefix=/opt/gnome \
+              --sysconfdir=/etc/opt/gnome \
+	      --mandir=/opt/gnome/share/man \
+	      --localstatedir=/var/lib $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL NEWS README \
+    MAINTAINERS THANKS TODO
+}

@@ -1,0 +1,33 @@
+NAME=poppler
+VERSION=0.3.2
+ARCH=i686
+RELEASE=1
+URL="http://poppler.freedesktop.org/"
+DESC="A PDF rendering library based on the xpdf-3.0 code base."
+GROUP=libs
+LICENSE="GPLv2"
+SIZE="703K"
+HUSE="static qt"
+
+SOURCES="http://poppler.freedesktop.org/poppler-0.3.2.tar.gz"
+
+RUNTIME=">=gtk2-2.0 >=libjpeg-6b freetype2 >=cairo-0.4.0 glib"
+
+use qt && RUNTIME="$RUNTIME qt"
+
+build() {
+  cd $SRC/$NAME-$VERSION
+  
+  use static && OPTS="--enable-static" || OPTS="--disable-static"
+  use qt || OPTS="$OPTS --disable-poppler-qt"
+  
+  ./configure --prefix=/usr \
+              $OPTS
+  make
+  make DESTDIR=$PKG install
+  
+  install_docs AUTHORS COPYING ChangeLog INSTALL \
+    NEWS README* TODO
+}
+
+

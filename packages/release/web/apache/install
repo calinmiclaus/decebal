@@ -1,0 +1,15 @@
+post_install() {
+  /usr/sbin/groupadd -g 30 apache 2>/dev/null
+  /usr/sbin/useradd -g 30 -u 30 -c "Apache Web Server" -d /srv/www -s /bin/false apache 2>/dev/null
+}
+
+post_upgrade() {
+  /usr/sbin/groupadd -g 30 apache 2>/dev/null
+  /usr/sbin/useradd -g 30 -u 30 -c "Apache Web Server" -d /srv/www -s /bin/false apache 2>/dev/null
+}
+
+post_remove() {
+  /usr/sbin/userdel apache 2>/dev/null
+  /usr/sbin/groupdel apache 2>/dev/null
+}
+  

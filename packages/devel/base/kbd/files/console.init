@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# /etc/rc.d/init.d/console - load the console settings
+#
+
+. /etc/rc.d/functions
+. /etc/conf.d/console
+
+# not really needed...devfs is obsolete...but just in case
+[ -e /dev/.devfsd ] && ttydevice=/dev/vc/vc || ttydevice=/dev/tty
+
+retval=0
+
+error() {
+  echo "$1 not defined in /etc/conf.d/console."
+}
+
+case "$1" in
+ start)
+   if [ -n "$KEYMAP" ]
+   then
+     msg "Loading default keymap: $KEYMAP"
+     run loadkeys $KEYMAP 
+   else
+     error KEYMAP
+   fi
+   
+   if [ -n "$FONT" ]
+   then
+     msg "Setting default console font: $FONT"
+     for tty in `seq 1 12`
+     do
+       setfont $FONT -C ${ttydevice}${tty}
+       retval=$[$retval+$?]
+     done
+     [ $retval -eq 0 ] && success || failure
+     retval=0
+   else
+     error FONT
+   fi
+
+   if [ -n "$BLANK_DELAY" ]
+   then
+     msg "Setting screen blanking time: $BLANK_DELAY"
+     run setterm -blank $BLANK_DELAY -powersave $POWERSAME_MODE -powerdown $POWERDOWN
+   else
+     error BLANK_DELAY
+   fi
+
+   if [ -n "$KEYBOARD_RATE" -a -n "$KEYBOARD_DELAY" ]
+   then
+     msg "Setting keyboard rate and delay: $KEYBOARD_RATE $KEYBOARD_DELAY"
+     run kbdrate -r $KEYBOARD_RATE -d $KEYBOARD_DELAY
+   else
+     error "KEYBOARD_RATE and/or KEYBOARD_DELAY"
+   fi
+   
+   if [ "$NUMLOCK" = "yes" ]
+   then
+     msg "Enabling numlock on tty: $TTYS"
+     for console in $TTYS
+     do
+       for tty in ${ttydevice}${console}
+       do
+         setleds -D +num < $tty
+	 retval=$[$retval+$?]
+       done
+     done
+      
+     [ $retval -eq 0 ] && success || failure
+    fi
+    ;;	
+  reload|force-reload|restart)
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|reload|force-reload|restart}"
+    exit 1
+    ;;
+esac
